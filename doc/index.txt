@@ -1,0 +1,11 @@
+.. include:: ../README.txt
+
+.. toctree::
+    :maxdepth: 2
+
+    api
+    about
+    changes
+
+
+- :ref:`genindex`
