@@ -1,0 +1,21 @@
+================
+Developing batou
+================
+
+:Author:
+    `gocept <http://gocept.com/>`_ <mail@gocept.com>
+
+:Online documentation:
+    http://docs.gocept.com/batou/
+
+:PyPI page:
+    http://pypi.python.org/pypi/batou/
+
+:Issue tracker:
+    https://projects.gocept.com/projects/batou/
+
+:Source code:
+    https://code.gocept.com/hg/public/batou/
+
+:Current change log:
+    https://code.gocept.com/hg/public/batou/raw-file/tip/CHANGES.txt
