@@ -21,6 +21,10 @@ setup(
 
     install_requires=[
         'distribute',
+        'Fabric',
+        'Mako',
+        'Jinja2',
+        'mock',
         ],
 
     extras_require={
@@ -28,12 +32,16 @@ setup(
             ],
         },
 
-    entry_points={
-        },
+    entry_points="""
+        [console_scripts]
+            batou-remote = batou.remote:main
+            batou-local = batou.local:main
+            secretsedit = batou.secrets:edit
+    """,
 
     author='gocept <mail@gocept.com>',
     author_email='mail@gocept.com',
-    license='ZPL 2.1',
+    license='BSD',
     url='https://projects.gocept.com/projects/batou/',
 
     keywords='deployment',

@@ -10,3 +10,4 @@ eggs
 local.cfg
 parts
 *.egg-info
+*.pyc
