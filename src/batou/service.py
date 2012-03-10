@@ -1,7 +1,7 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
 
-from .component import Component
+from .component import load_components_from_file
 from .host import Host
 from batou import Environment
 import batou.utils
@@ -47,7 +47,7 @@ class ServiceConfig(object):
 
     def scan_components(self):
         for filename in glob.glob(self.component_pattern):
-            for factory, name in Component.from_file(filename):
+            for factory, name in load_components_from_file(filename):
                 self.service.components[name] = factory
 
     def scan_environments(self):
@@ -70,13 +70,11 @@ class ServiceConfig(object):
         config = ConfigParser.SafeConfigParser()
         config.read('%s/environments/%s.cfg' % (
             self.service.base, environment))
-        try:
-            env = Environment(environment, self.service)
-            env.configure(dict(config.items('environment')))
-        except Exception, e:
-            print "Problem loading environment %s: %r (ignored)" % (
-                environment, e)
-            return
+        env = Environment(environment, self.service)
+        env_config = {}
+        if 'environment' in config.sections():
+            env_config.update(dict(config.items('environment')))
+        env.configure(env_config)
         # load hosts
         for hostname in config.options('hosts'):
             fqdn = env.normalize_host_name(hostname)
@@ -91,22 +89,14 @@ class ServiceConfig(object):
                 components.setdefault(component, [])
                 if feature:
                     components[component].append(feature)
-            for component, features in components.items():
-                factory = self.service.components[component]
+            for name, features in components.items():
+                component = self.service.components[name]
                 component_config = {}
-                if config.has_section('component:%s' % component):
+                if config.has_section('component:%s' % name):
                     component_config.update(
-                        dict(config.items('component:%s' % component)))
-                if not features:
-                    features = factory.features
-                host.components.append(factory(
-                    component, host, features, component_config))
+                        dict(config.items('component:%s' % name)))
+                host.components.append(component.bind(host))
         self.service.environments[env.name] = env
-
-    def configure_components(self, environment):
-        for host in environment.hosts.values():
-            for component in host.components:
-                component._configure()
 
 
 class Service(object):

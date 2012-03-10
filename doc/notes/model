@@ -1,0 +1,45 @@
+
+
+# Model processor:
+
+
+Component definition:
+
+
+    # It's a component
+    supervisor = Component()
+
+    # Define hooks we depend upon
+    supervisor.programs = subscribe_local('.*:supervisor')
+
+    # Define parameters, those can be overriden per environment,
+    # parameters should have a .customize(str) method.
+    supervisor.address = Address('${host.fqdn}:9001')
+
+    # Resource addition
+    supervisor += Buildout()
+    supervisor += UserInit() # only on gocept.net environments!
+
+    # A resource that only runs some code, similar to puppets exec
+    @supervisor.resource
+    def touch(host):
+        host.cmd('touch asdf')
+    # same as supervisor += asdf
+
+
+
+
+    portal = Component()
+
+    portal += Buildout(setting=...)
+    portal += SupervisorCmd('bin/foo')
+
+
+
+Resource definition:
+
+    class SupervisorCmd(object):
+
+        def apply(self)
+
+

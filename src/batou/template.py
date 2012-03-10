@@ -38,21 +38,10 @@ class TemplateEngine(object):
             return Jinja2Engine()
         raise NotImplementedError('template engine not known', enginename)
 
-    def template(self, sourcefile, targetfile, args):
-        """Render template from `sourcefile` to `targetfile`.
-
-        Return True if the targetfile has actually been changed.
+    def template(self, sourcefile, args):
+        """Render template from `sourcefile` and return the value.
         """
-        interpolated = self._render_template_file(sourcefile, args)
-        try:
-            with open(targetfile, 'r') as old:
-                if old.read() == interpolated.getvalue():
-                    return False
-        except EnvironmentError:
-            pass
-        with open(targetfile, 'w') as output:
-            output.write(interpolated.getvalue())
-        return True
+        return self._render_template_file(sourcefile, args).getvalue()
 
     def _render_template_file(sourcefile, args):
         """Expand template found in `sourcefile` and return it as StringIO."""

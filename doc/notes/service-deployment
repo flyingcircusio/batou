@@ -1,0 +1,40 @@
+component:
+    set of resources
+        -> resource needs to be able to determine current and desirable state
+
+
+a resource:
+    has properties
+        -> describe the content on the system
+
+        -> validation (zope.schema?)
+
+    parameters
+        -> influence how the resource works
+
+    meta-parameters
+        -> require, trigger, ...
+
+    special property:
+        ensure
+
+
+provider:
+    parse on-system status to 'is status' of resource and flush to system from
+    'should be' status of resource
+
+
+
+commands: 
+    * update load balancer
+    * update app servers
+        -> restart app servers
+    * restart app servers
+    * 
+
+
+
+batou-remote:
+    gather the current status of all resource from the remote nodes first,
+    then figure out what to do, especially if interdependencies need to be
+    managed
