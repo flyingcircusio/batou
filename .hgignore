@@ -11,3 +11,6 @@ local.cfg
 parts
 *.egg-info
 *.pyc
+*.swp
+*.swo
+examples/*/work

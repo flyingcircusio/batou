@@ -3,6 +3,8 @@
 
 from .service import ServiceConfig
 import argparse
+import sys
+import logging
 
 
 def main():
@@ -15,8 +17,9 @@ def main():
         'hostname', help='Host to deploy.')
     args = parser.parse_args()
 
+    logging.basicConfig(stream=sys.stdout, level=-1000)
+
     config = ServiceConfig('.', [args.environment])
     config.scan()
     environment = config.service.environments[args.environment]
-    config.configure_components(environment)
     environment.get_host(args.hostname).deploy()
