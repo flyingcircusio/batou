@@ -1,13 +1,17 @@
 syntax: glob
-
-.installed.cfg
+.batou-lock
+.batou-passphrase
 bin
 build
 develop-eggs
 dist
 doc/_api
+*.egg-info
 eggs
+include/python2.*
+.installed.cfg
+lib64
+lib/python2.*
 local.cfg
 parts
-*.egg-info
 *.pyc
