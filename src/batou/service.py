@@ -5,6 +5,7 @@ from .component import Component
 from .host import Host
 from batou import Environment
 import batou.utils
+import collections
 import ConfigParser
 import glob
 import os
@@ -82,7 +83,7 @@ class ServiceConfig(object):
             fqdn = env.normalize_host_name(hostname)
             env.hosts[fqdn] = host = Host(fqdn, env)
             # load components for host
-            components = {}
+            components = collections.OrderedDict()
             for component in batou.utils.string_list(
                     config.get('hosts', hostname)):
                 feature = None
