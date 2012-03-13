@@ -127,12 +127,18 @@ class Component(object):
     def touch(self, filename):
         open(filename, 'wa').close()
 
-    def template(self, filename):
+    def template(self, component, filename):
         engine = batou.template.MakoEngine()
         return engine.template(filename,
-                               dict(component=self,
+                               dict(component=component,
                                     host=self.host))
 
+    @contextlib.contextmanager
+    def chdir(self, path):
+        old = os.getcwd()
+        os.chdir(path)
+        yield
+        os.chdir(old)
 
 
 class RootComponent(object):
