@@ -42,7 +42,7 @@ class FileComponent(Component):
 class Content(FileComponent):
 
     content = None
-    template = False
+    is_template = False
     source = None
 
     def configure(self):
@@ -51,8 +51,8 @@ class Content(FileComponent):
             return
         if not self.source:
             self.source = os.path.join(self.root.defdir, self.path)
-        if self.template:
-            self.content = self.template(self.source)
+        if self.is_template:
+            self.content = self.template(self.parent, self.source)
         else:
             self.content = open(self.source, 'r').read()
 
