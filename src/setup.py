@@ -1,9 +1,6 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
-
-# This should be only one line. If it must be multi-line, indent the second
-# line onwards to keep the PKG-INFO file format intact.
-"""A utility for automating multi-host, multi-environment software builds and deployments.
+"""A sample deployment configuration.
 """
 
 from setuptools import setup, find_packages
@@ -16,27 +13,16 @@ def project_path(*names):
 
 
 setup(
-    name='batou',
+    name='hello',
     version='0.1.dev0',
 
     install_requires=[
-        'distribute',
-        'ssh',
-        'Mako',
-        'Jinja2',
-        'mock',
+        'batou',
         ],
 
-    extras_require={
-        'test': [
-            ],
-        },
-
     entry_points="""
-        [console_scripts]
-            batou-remote = batou.remote:main
-            batou-local = batou.local:main
-            secretsedit = batou.secrets:edit
+        [components]
+        hello = hello:hello
     """,
 
     author='gocept <mail@gocept.com>',

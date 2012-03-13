@@ -2,56 +2,65 @@
 # See also LICENSE.txt
 
 from batou.passphrase import PassphraseFile
-import fabric.api
-import fabric.contrib.files
-import fabric.main
+from batou.service import ServiceConfig
+from ssh.client import SSHClient
+from ssh import AutoAddPolicy
+import argparse
+import logging
 import os
+import os.path
 import re
 import subprocess
+import sys
 
+logger = logging.getLogger('batou.remote')
 
 def main():
-    # Bootstrap this batou project on the remote hosts and invoke local channel
-    # deployments there.
-    # This fabric call will turn around, use our stub fabfile which will then
-    # in turn use the FabricTask wrapper to bootstrap remote hosts and
-    # invoke us over there.
-    fabric.main.main()
+    parser = argparse.ArgumentParser(
+        description=u'Deploy a batou environment remotely.')
+    parser.add_argument(
+        'environment', help='Environment to deploy.',
+        type=lambda x:x.replace('.cfg', ''))
+    args = parser.parse_args()
+
+    batou = logging.getLogger('batou')
+    batou.setLevel(-1000)
+    handler = logging.StreamHandler()
+    handler.setLevel(-1000)
+    batou.addHandler(handler)
+
+    config = ServiceConfig('.', [args.environment])
+    config.scan()
+    environment = config.service.environments[args.environment]
+
+    for host in environment.hosts.values():
+        deployment = RemoteDeployment(host, environment)
+        deployment()
 
 
-class FabricTask(fabric.tasks.Task):
-    """Adapter to bind fabric's task API and our environment/hosts together."""
+class RemoteDeployment(object):
 
-    def __init__(self, config, name):
-        self.config = config
-        self.service = config.service
-        self.environment = config.service.environments[name]
-        self.name = name
+    def __init__(self, host, environment):
+        self.host = host
+        self.environment = environment
+        self.remote_base = '~%s/deployment' % self.environment.service_user
 
-    @classmethod
-    def from_config(cls, config):
-        tasks = {}
-        for name in config.service.environments:
-            tasks[name] = task = cls(config, name)
-            task.__doc__ = 'Deploy to %s environment' % name
-        return tasks
+    def _connect(self):
+        self.ssh = SSHClient()
+        self.ssh.load_system_host_keys()
+        self.ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
+        self.ssh.set_missing_host_key_policy(AutoAddPolicy())
+        self.ssh.connect(self.host.fqdn)
+        self.sftp = self.ssh.open_sftp()
+        self.cwd = []
+        self.cwd = [self.cmd('pwd', service_user=False).strip()]
 
-    def get_hosts(self, arg_hosts, arg_roles, arg_exclude_hosts, env=None):
-        """Compute effective subset if hosts have been named on commandline."""
-        allowed_hosts = set(self.environment.hosts)
-        if arg_hosts:
-            arg_hosts = set((self.environment.normalize_host_name(h)
-                             for h in arg_hosts))
-            return set(arg_hosts).intersection(allowed_hosts)
-        return allowed_hosts
-
-    def setup_passphrase(self):
-        """Set up passphrase on remote host in .batou-passphrase"""
-        with PassphraseFile(u'environment "%s"' % self.environment.name) as pf:
-            fabric.api.put(pf, u'/tmp/batou-passphrase')
-        self.cmd(u'install -m0600 /tmp/batou-passphrase %s/.batou-passphrase' %
-                 self.remote_base)
-        fabric.api.run(u'rm -f /tmp/batou-passphrase')
+    def __call__(self):
+        self._connect()
+        self.bootstrap()
+        with self.cd(self.remote_base):
+            self.cmd('bin/batou-local %s %s' %
+                     (self.environment.name, self.host.fqdn))
 
     def bouncedir_name(self):
         """Pick suitable name for hg repository bounce dir."""
@@ -62,22 +71,24 @@ class FabricTask(fabric.tasks.Task):
 
     def bootstrap(self):
         """Ensure that the batou code base is current."""
-        bouncedir = fabric.api.run(u'echo -n ~/%s' % self.bouncedir_name())
+        bouncedir = self.cmd(u'echo -n ~/%s' % self.bouncedir_name(),
+                             service_user=False)
         if not self.exists(bouncedir):
-            fabric.api.run(u'hg init %s' % bouncedir)
+            self.cmd(u'hg init %s' % bouncedir, service_user=False)
         try:
             subprocess.check_call(['hg push --new-branch ssh://%s/%s' %
-                                   (fabric.api.env.host, bouncedir)], shell=True)
+                                   (self.host.fqdn, bouncedir)], shell=True)
         except subprocess.CalledProcessError, e:
             if e.returncode != 1:
                 # 1 means: nothing to push
                 raise
+        return
         if not self.exists(self.remote_base):
             self.cmd(u'hg clone %s %s' % (bouncedir, self.remote_base))
         else:
             with self.cd(self.remote_base):
                 self.cmd(u'hg pull %s' % bouncedir)
-        self.setup_passphrase()
+        # XXX self.setup_passphrase()
         with self.cd(self.remote_base):
             self.cmd(u'hg update -C %s' % self.environment.branch)
             if not self.exists('bin/python2.7'):
@@ -87,30 +98,44 @@ class FabricTask(fabric.tasks.Task):
             self.cmd('bin/python2.7 bootstrap.py')
             self.cmd('bin/buildout -t 15')
 
-    def run(self):
-        """This is fabric's `run`. We would call this 'deploy'."""
-        # Lazy loading of the config to limit this to the environment we
-        # actually need.
-        self.environment = self.config.service.environments[self.name]
-        self.name = self.environment.name
-        self.remote_base = '~%s/deployment' % self.environment.service_user
-        self.config.configure_components(self.environment)
-
-        host = self.environment.hosts[fabric.api.env.host]
-        self.bootstrap()
-        with fabric.api.cd(self.remote_base):
-            # Run local batou deployment on remote host
-            self.cmd('bin/batou-local %s %s' %
-                     (self.environment.name, host.fqdn))
-
     # Fabric convenience
 
-    def cmd(self, cmd):
+    def cmd(self, cmd, service_user=True):
         """Execute `cmd` in the remote service user's context."""
-        return fabric.api.sudo(cmd, user=self.environment.service_user)
+        prefixes = []
+        if service_user:
+            prefixes.append('sudo -S')
+        prefixes.append('cd %s &&' % '/'.join(self.cwd))
+        prefixes.append(cmd)
+        cmd = ' '.join(prefixes)
+        logger.debug(cmd)
+        stdin, stdout, stderr = self.ssh.exec_command(cmd)
+        result = stdout.read()
+        logger.debug(result)
+        logger.debug(stderr.read())
+        return result
 
     def cd(self, path):
-        return fabric.api.cd(path)
+        return WorkingDirContextManager(self, path)
 
     def exists(self, path):
-        return fabric.contrib.files.exists(path)
+        path = '/'.join(self.cwd+[path])
+        logger.debug('exists? '+path)
+        try:
+            self.sftp.stat(path)
+        except:
+            return False
+        return True
+
+
+class WorkingDirContextManager(object):
+
+    def __init__(self, remote, path):
+        self.remote = remote
+        self.path = path
+
+    def __enter__(self):
+        self.remote.cwd.append(self.path)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.remote.pop()

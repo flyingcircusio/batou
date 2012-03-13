@@ -2,6 +2,7 @@
 # See also LICENSE.txt
 
 from batou.template import TemplateEngine
+import batou
 import batou.utils
 import contextlib
 import filecmp
@@ -11,7 +12,6 @@ import os.path
 import re
 import shutil
 import subprocess
-
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +23,17 @@ def load_components_from_file(filename):
     defdir = os.path.dirname(filename)
     os.chdir(defdir)
     execfile(filename, g, l)
-    for name, candidate in l.items():
-        if isinstance(candidate, Component):
-            candidate.name = name
+    for candidate in l.values():
+        if candidate in globals().values():
+            # Ignore anything we pushed into the globals before execution
+            continue
+        if (isinstance(candidate, type) and
+            issubclass(candidate, Component)):
             candidate.defdir = defdir
-            yield candidate, name
+            candidate.name = candidate.__name__.lower()
+            yield candidate
     os.chdir(oldcwd)
+
 
 def subscribe(self, required_name):
     hooks = []
@@ -64,34 +69,97 @@ def config_attr(self, name, datatype='str'):
 
 class Component(object):
 
-    def __init__(self):
-        self.resources = []
+    namevar = ''
 
-    def __add__(self, resource):
-        self.resources.append(resource)
+    def __init__(self, namevar=None, **kw):
+        if self.namevar:
+            kw[self.namevar] = namevar
+        self.__dict__.update(kw)
+        self.sub_components = []
+
+    def prepare(self, service, environment, host, root, parent=None):
+        self.service = service
+        self.environment = environment
+        self.host = host
+        self.root = root
+        self.parent = parent
+        self.configure()
+        for sub_component in self.sub_components:
+            sub_component.prepare(service, environment, host, root, self)
+
+    def configure(self):
+        # May be implemented by sub components
+        pass
+
+    def verify(self):
+        pass
+
+    def update(self):
+        pass
+
+    def __add__(self, component):
+        self.sub_components.append(component)
         return self
 
-    def bind(self, host):
-        clone = self.__class__.__new__(self.__class__)
-        clone.__dict__.update(self.__dict__)
-        clone.host = host
-        clone.service = host.environment.service
-        return clone
+    def deploy(self):
+        for sub_component in self.sub_components:
+            sub_component.deploy()
+        try:
+            self.verify()
+        except batou.UpdateNeeded:
+            logger.debug('Updating {0}:{1}'.format(
+                    self.__class__.__name__, getattr(self, self.namevar, '')))
+            self.update()
+
+    # Helper functions
+
+    def assert_file_is_current(self, result, requirements=[]):
+        if not os.path.exists(result):
+            raise batou.UpdateNeeded()
+        current = os.stat(result).st_mtime
+        for requirement in requirements:
+            if current < os.stat(requirement).st_mtime:
+                raise batou.UpdateNeeded()
+
+    def cmd(self, cmd):
+        return subprocess.check_output([cmd], shell=True)
+
+    def touch(self, filename):
+        open(filename, 'wa').close()
+
+    def template(self, filename):
+        engine = batou.template.MakoEngine()
+        return engine.template(filename,
+                               dict(component=self,
+                                    host=self.host))
+
+
+
+class RootComponent(object):
+    """Wrapper to manage root components.
+
+    It has a name and owns the working directory for it's component.
+    """
+
+    def __init__(self, name, component):
+        self.component = component
+        self.name = name
 
     @property
     def compdir(self):
-        return '%s/work/%s' % (self.service.base, self.name)
+        return '%s/work/%s' % (self.component.service.base, self.name)
+
+    @property
+    def defdir(self):
+        # Awkward indirection as the defdir is annotated on the factories of
+        # the top level components.
+        return self.component.defdir
 
     def _update_compdir(self):
         if not os.path.exists(self.compdir):
             os.makedirs(self.compdir)
 
     def deploy(self):
-        """Run all methods annotated with @step(n) in sequence."""
-        logger.info('deploy: %s' % self.name)
         self._update_compdir()
         os.chdir(self.compdir)
-        for resource in self.resources:
-            logger.info('resource: %s' % resource.id)
-            resource.prepare(env=dict(host=self.host, component=self))
-            resource.commit()
+        self.component.deploy()

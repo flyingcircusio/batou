@@ -47,8 +47,8 @@ class ServiceConfig(object):
 
     def scan_components(self):
         for filename in glob.glob(self.component_pattern):
-            for factory, name in load_components_from_file(filename):
-                self.service.components[name] = factory
+            for factory in load_components_from_file(filename):
+                self.service.components[factory.name] = factory
 
     def scan_environments(self):
         """Set up basic environment objects for all configs found."""
@@ -81,21 +81,13 @@ class ServiceConfig(object):
             env.hosts[fqdn] = host = Host(fqdn, env)
             # load components for host
             components = {}
-            for component in batou.utils.string_list(
+            for name in batou.utils.string_list(
                     config.get('hosts', hostname)):
-                feature = None
-                if ':' in component:
-                    component, feature = component.split(':')
-                components.setdefault(component, [])
-                if feature:
-                    components[component].append(feature)
-            for name, features in components.items():
-                component = self.service.components[name]
-                component_config = {}
-                if config.has_section('component:%s' % name):
-                    component_config.update(
-                        dict(config.items('component:%s' % name)))
-                host.components.append(component.bind(host))
+                component_config = {} # XXX extract from environment
+                component = self.service.components[name](**component_config)
+                root = batou.component.RootComponent(name, component)
+                component.prepare(self.service, environment, host, root)
+                host.components.append(root)
         self.service.environments[env.name] = env
 
 

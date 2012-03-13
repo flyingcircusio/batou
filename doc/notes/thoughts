@@ -1,0 +1,48 @@
+
+- batou only needed when making changes
+- no runtime components, don't add stuff the application itself doesn't need
+
+
+- reuse: composition or sub-class? probably composition, shared data, multiple
+  things working on it?
+
+  hierarchical data?
+
+
+  reuse components as resources? are they the same? is a resource a component
+  and is a component a resource for something else?
+
+
+- formalize hook requirements and hook announcements?
+
+
+  ('id:
+
+  which directions do hooks have?
+
+  nginx -> haproxy -> zope
+  |          |
+  |          |
+
+
+
+- data model versus binding behaviour
+
+
+    /webwork
+
+        /components
+
+            /webfrontend
+
+            /
+
+        /environments
+
+            /staging
+
+                /webworkstag
+
+            /dev
+
+- multi-instances of reusable components within the same service
