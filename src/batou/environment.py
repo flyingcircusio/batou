@@ -11,6 +11,7 @@ class Environment(object):
     service_user = pwd.getpwuid(os.getuid()).pw_name
     host_domain = None
     branch = u'default'
+    platform = None
 
     def __init__(self, name, service):
         self.name = name
@@ -19,9 +20,9 @@ class Environment(object):
 
     def configure(self, config):
         """Pull options that come from cfg file out of `config` dict."""
-        self.service_user = config.get('service_user', self.service_user)
-        self.host_domain = config.get('host_domain', self.host_domain)
-        self.branch = config.get('branch', self.branch)
+        for key in ['service_user', 'host_domain', 'branch', 'platform']:
+            if key in config:
+                setattr(self, key, config[key])
 
     def normalize_host_name(self, hostname):
         """Ensure the given host name is an FQDN for this environment."""
