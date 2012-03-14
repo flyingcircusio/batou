@@ -71,7 +71,7 @@ class Component(object):
 
     namevar = ''
 
-    def __init__(self, namevar=None, **kw):
+    def __init__(self, namevar=namevar, **kw):
         if self.namevar:
             kw[self.namevar] = namevar
         self.__dict__.update(kw)
@@ -107,9 +107,24 @@ class Component(object):
         try:
             self.verify()
         except batou.UpdateNeeded:
-            logger.debug('Updating {0}:{1}'.format(
-                    self.__class__.__name__, getattr(self, self.namevar, '')))
+            logger.debug('Updating {}'.format(self.breadcrumbs))
             self.update()
+
+    @property
+    def breadcrumbs(self):
+        result = ''
+        if self.parent is not None:
+            result += self.parent.breadcrumbs + '/'
+        result += self.breadcrumb
+        return result
+
+    @property
+    def breadcrumb(self):
+        result = self.__class__.__name__
+        name = getattr(self, self.namevar, None)
+        if name:
+            result += ':' + name
+        return result
 
     # Helper functions
 
@@ -139,6 +154,9 @@ class Component(object):
         os.chdir(path)
         yield
         os.chdir(old)
+
+    def find_hooks(self, expression, host):
+        return []
 
 
 class RootComponent(object):
