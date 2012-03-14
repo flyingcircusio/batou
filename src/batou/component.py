@@ -75,6 +75,7 @@ class Component(object):
         if self.namevar:
             kw[self.namevar] = namevar
         self.__dict__.update(kw)
+        self.hooks = {}
         self.sub_components = []
 
     def prepare(self, service, environment, host, root, parent=None):
@@ -156,7 +157,17 @@ class Component(object):
         os.chdir(old)
 
     def find_hooks(self, expression, host):
-        return []
+        hooks = []
+        components = []
+        for host in self.environment.hosts.values():
+            for root in host.components:
+                components.append(root.component)
+        while components:
+            current = components.pop()
+            components.extend(current.sub_components)
+            if expression in current.hooks:
+                hooks.append(current.hooks[expression])
+        return hooks
 
 
 class RootComponent(object):
