@@ -43,17 +43,16 @@ class RemoteDeployment(object):
     def __init__(self, host, environment):
         self.host = host
         self.environment = environment
-        self.remote_base = '~%s/deployment' % self.environment.service_user
 
     def _connect(self):
+        logger.debug('Connecting to {}'.format(self.host.fqdn))
         self.ssh = SSHClient()
         self.ssh.load_system_host_keys()
         self.ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
         self.ssh.set_missing_host_key_policy(AutoAddPolicy())
         self.ssh.connect(self.host.fqdn)
         self.sftp = self.ssh.open_sftp()
-        self.cwd = []
-        self.cwd = [self.cmd('pwd', service_user=False).strip()]
+        self.cwd = [self.cmd('pwd', service_user=False, ensure_cwd=False).strip()]
 
     def __call__(self):
         self._connect()
@@ -82,7 +81,9 @@ class RemoteDeployment(object):
             if e.returncode != 1:
                 # 1 means: nothing to push
                 raise
-        return
+        self.remote_base = self.cmd(
+            'echo ~{}/deployment'.format(self.environment.service_user))
+        self.remote_base = self.remote_base.strip()
         if not self.exists(self.remote_base):
             self.cmd(u'hg clone %s %s' % (bouncedir, self.remote_base))
         else:
@@ -100,16 +101,27 @@ class RemoteDeployment(object):
 
     # Fabric convenience
 
-    def cmd(self, cmd, service_user=True):
+    def cmd(self, cmd, service_user=True, ensure_cwd=True):
         """Execute `cmd` in the remote service user's context."""
-        prefixes = []
+        real_cmd = '{}'
         if service_user:
-            prefixes.append('sudo -S')
-        prefixes.append('cd %s &&' % '/'.join(self.cwd))
-        prefixes.append(cmd)
-        cmd = ' '.join(prefixes)
+            real_cmd = 'sudo -u {0} -i bash -c "{{}}"'.format(
+                self.environment.service_user)
+        if ensure_cwd:
+            real_cmd = real_cmd.format('cd {} && {{}}'.format(self.cwd[-1]))
+        cmd = real_cmd.format(cmd)
         logger.debug(cmd)
-        stdin, stdout, stderr = self.ssh.exec_command(cmd)
+        return self._cmd(cmd)
+
+    def _cmd(self, cmd):
+        chan = self.ssh._transport.open_session()
+        chan.exec_command(cmd)
+        stdin = chan.makefile('wb')
+        stdout = chan.makefile('rb')
+        stderr = chan.makefile_stderr('rb')
+        status = chan.recv_exit_status()
+        if status != 0:
+            raise RuntimeError(status, stderr.read())
         result = stdout.read()
         logger.debug(result)
         logger.debug(stderr.read())
@@ -119,14 +131,18 @@ class RemoteDeployment(object):
         return WorkingDirContextManager(self, path)
 
     def exists(self, path):
-        path = '/'.join(self.cwd+[path])
-        logger.debug('exists? '+path)
+        path = self.ensure_working_dir(path)
+        logger.debug('exists? '+ repr(path))
         try:
             self.sftp.stat(path)
-        except:
+        except Exception, e:
             return False
         return True
 
+    def ensure_working_dir(self, path):
+        if path[0] in ['/', '~']:
+            return path
+        return '{0}/{1}'.format(self.cwd[-1], path)
 
 class WorkingDirContextManager(object):
 
@@ -138,4 +154,4 @@ class WorkingDirContextManager(object):
         self.remote.cwd.append(self.path)
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.remote.pop()
+        self.remote.cwd.pop()
