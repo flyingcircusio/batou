@@ -25,10 +25,11 @@ class Supervisor(Component):
     http_port = Address('localhost:9001')
 
     def configure(self):
-        self.programs = self.find_hooks('.*:supervisor', self.host)
+        self.programs = self.find_hooks('supervisor', self.host)
         self += buildout.Buildout(
                     python='2.7',
                     config=file.Content('buildout.cfg', is_template=True))
+        # Enable userinit, ...
         # self += UserInit('supervisor', source='init.sh')
 
     def verify(self):

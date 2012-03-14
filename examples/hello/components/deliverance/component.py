@@ -15,8 +15,10 @@ class Deliverance(Component):
     dev_password = 'password'
 
     def configure(self):
+        self.hooks['supervisor'] = (
+            '30 deliverance (startsecs=10) {0}/bin/deliverance-proxy '
+            '[{0}/rules.xml] true'.format(self.root.compdir))
         self += buildout.Buildout(python='2.6')
         self += git.Clone('themes',
                 source='git@github.com:deliverance/Deliverance.git')
         self += file.Content('rules.xml', is_template=True)
-
