@@ -78,7 +78,10 @@ class ServiceConfig(object):
             print "Problem loading environment %s: %r (ignored)" % (
                 environment, e)
             return
-        # load hosts
+        self.load_hosts(env, config)
+        self.service.environments[env.name] = env
+
+    def load_hosts(self, env, config):
         for hostname in config.options('hosts'):
             fqdn = env.normalize_host_name(hostname)
             env.hosts[fqdn] = host = Host(fqdn, env)
@@ -92,17 +95,20 @@ class ServiceConfig(object):
                 components.setdefault(component, [])
                 if feature:
                     components[component].append(feature)
-            for component, features in components.items():
-                factory = self.service.components[component]
-                component_config = {}
-                if config.has_section('component:%s' % component):
-                    component_config.update(
-                        dict(config.items('component:%s' % component)))
-                if not features:
-                    features = factory.features
-                host.components.append(factory(
-                    component, host, features, component_config))
-        self.service.environments[env.name] = env
+            self.assemble_host_components(host, config, components)
+
+    def assemble_host_components(self, host, config, components):
+        """Create all components for a host and do the wire-up."""
+        for component, features in components.items():
+            factory = self.service.components[component]
+            component_config = {}
+            if config.has_section('component:%s' % component):
+                component_config.update(
+                    dict(config.items('component:%s' % component)))
+            if not features:
+                features = factory.features
+            host.components.append(factory(
+                component, host, features, component_config))
 
     def configure_components(self, environment):
         for host in environment.hosts.values():
