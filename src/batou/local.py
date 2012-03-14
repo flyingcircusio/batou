@@ -17,7 +17,7 @@ def main():
         'hostname', help='Host to deploy.')
     args = parser.parse_args()
 
-    logging.basicConfig(stream=sys.stdout, level=-1000)
+    logging.basicConfig(stream=sys.stdout, level=-1000, format='%(message)s')
 
     config = ServiceConfig('.', [args.environment])
     config.scan()

@@ -31,6 +31,20 @@ class Presence(Component):
         open(self.path, 'w').close()
 
 
+class Directory(Component):
+
+    namevar = 'path'
+
+    def verify(self):
+        if not os.path.isdir(self.path):
+            raise UpdateNeeded()
+
+    def update(self):
+        if os.path.exists(self.path):
+            os.unlink(self.path)
+        os.makedirs(self.path)
+
+
 class FileComponent(Component):
 
     namevar = 'path'
@@ -43,13 +57,13 @@ class Content(FileComponent):
 
     content = None
     is_template = False
-    source = None
+    source = ''
 
     def configure(self):
         super(Content, self).configure()
         if self.content is not None:
             return
-        if not self.source:
+        if not self.source.startswith('/'):
             self.source = os.path.join(self.root.defdir, self.path)
         if self.is_template:
             self.content = self.template(self.parent, self.source)
@@ -104,7 +118,7 @@ class Mode(FileComponent):
 
     def configure(self):
         super(Mode, self).configure()
-        self.mode = 0100000 | self.mode
+        self.mode = 0o100000 | self.mode
 
     def verify(self):
         current = os.stat(self.path).st_mode

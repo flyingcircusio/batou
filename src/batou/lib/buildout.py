@@ -1,5 +1,5 @@
 from batou.component import Component
-from batou.lib import file
+from batou.lib import file, python
 from batou import UpdateNeeded
 import os.path
 
@@ -30,17 +30,23 @@ class Buildout(Component):
 
     timeout = 3
     extends = ()    # Extends need to be aspects that have a path
-    python = None
+    config = None
 
     def configure(self):
-        self += file.Content('buildout.cfg')
-        self += Bootstrap(python=self.python)
-        # Maybe allow SourceDir to be given as a parameter.
-        # self += SourceDir('profiles')
+        if self.config is None:
+            self.config = file.Content('buildout.cfg')
+        if isinstance(self.config, Component):
+            self.config = [self.config]
+        for component in self.config:
+            self += component
+        venv = python.VirtualEnv(self.python)
+        self += venv
+        self += Bootstrap(python=venv.python)
 
     def verify(self):
+        config_paths = [x.path for x in self.config]
         self.assert_file_is_current(
-            '.installed.cfg', ['bin/buildout', 'buildout.cfg'])
+            '.installed.cfg', ['bin/buildout'] + config_paths)
         self.assert_file_is_current(
             '.batou.buildout.success', ['.installed.cfg'])
 
