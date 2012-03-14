@@ -14,6 +14,15 @@ from batou.component import Component
 logger = logging.getLogger(__name__)
 
 
+def ensure_path_nonexistent(path):
+    if not os.path.exists(path):
+        return
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+    else:
+        os.unlink(path)
+
+
 class Presence(Component):
 
     namevar = 'path'
@@ -23,11 +32,7 @@ class Presence(Component):
             raise UpdateNeeded()
 
     def update(self):
-        if os.path.exists(self.path):
-            if os.path.isdir(self.path):
-                shutil.rmtree(self.path)
-            else:
-                os.unlink(self.path)
+        ensure_path_nonexistent(self.path)
         open(self.path, 'w').close()
 
 
@@ -40,8 +45,7 @@ class Directory(Component):
             raise UpdateNeeded()
 
     def update(self):
-        if os.path.exists(self.path):
-            os.unlink(self.path)
+        ensure_path_nonexistent(path)
         os.makedirs(self.path)
 
 
@@ -66,7 +70,7 @@ class Content(FileComponent):
         if not self.source.startswith('/'):
             self.source = os.path.join(self.root.defdir, self.path)
         if self.is_template:
-            self.content = self.template(self.parent, self.source)
+            self.content = self.template(self.source, self.parent)
         else:
             self.content = open(self.source, 'r').read()
 
@@ -127,3 +131,22 @@ class Mode(FileComponent):
 
     def update(self):
         os.chmod(self.path, self.mode)
+
+
+class Symlink(Component):
+
+    namevar = 'target'
+
+    def configure(self):
+        if not self.source.startswith('/'):
+            self.source = os.path.join(self.root.defdir, self.source)
+
+    def verify(self):
+        if not os.path.islink(self.target):
+            raise UpdateNeeded()
+        if os.path.realpath(self.target) != self.source:
+            raise UpdateNeeded()
+
+    def update(self):
+        ensure_path_nonexistent(self.target)
+        os.symlink(self.source, self.target)

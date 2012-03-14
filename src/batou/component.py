@@ -70,6 +70,7 @@ def config_attr(self, name, datatype='str'):
 class Component(object):
 
     namevar = ''
+    platforms = []
 
     def __init__(self, namevar=namevar, **kw):
         if self.namevar:
@@ -85,6 +86,9 @@ class Component(object):
         self.root = root
         self.parent = parent
         self.configure()
+        for platform in self.platforms:
+            if platform.__name__.lower() == self.environment.platform:
+                self += platform()
         for sub_component in self.sub_components:
             sub_component.prepare(service, environment, host, root, self)
 
@@ -143,11 +147,24 @@ class Component(object):
     def touch(self, filename):
         open(filename, 'wa').close()
 
-    def template(self, component, filename):
+    def expand(self, string):
         engine = batou.template.MakoEngine()
-        return engine.template(filename,
-                               dict(component=component,
-                                    host=self.host))
+        return engine.expand(string, self._template_args())
+
+    def template(self, filename, component=None):
+        engine = batou.template.MakoEngine()
+        return engine.template(
+            filename, self._template_args(component=component))
+
+    def _template_args(self, component=None):
+        if component is None:
+            component = self
+        args = dict(
+            host=self.host,
+            environment=self.environment,
+            service=self.environment.service,
+            component=self if component is None else component)
+        return args
 
     @contextlib.contextmanager
     def chdir(self, path):
@@ -156,11 +173,13 @@ class Component(object):
         yield
         os.chdir(old)
 
-    def find_hooks(self, expression, host):
+    def find_hooks(self, expression, host=None):
         hooks = []
         components = []
-        for host in self.environment.hosts.values():
-            for root in host.components:
+        for candidate_host in self.environment.hosts.values():
+            if host is not None and candidate_host != host:
+                continue
+            for root in candidate_host.components:
                 components.append(root.component)
         while components:
             current = components.pop()
