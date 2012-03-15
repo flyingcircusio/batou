@@ -43,6 +43,21 @@ class RemoteDeployment(object):
     def __init__(self, host, environment):
         self.host = host
         self.environment = environment
+        # It may be that the service definition isn't in the root of the
+        # repository. As we expect `batou-remote` to be called with a working
+        # directory that is the root, we simply make this relative to the
+        # repository.
+        self.service_base = os.getcwd()
+        repository_base = self._repository_config('bundle.mainreporoot')
+        self.service_base = self.service_base.replace(repository_base, '')
+
+    def _repository_config(self, key):
+        config = subprocess.check_output('hg show', shell=True)
+        for line in config.split('\n'):
+            k, v = line.split('=', 1)
+            if k == key:
+                return v
+        raise KeyError(key)
 
     def _connect(self):
         logger.debug('Connecting to {}'.format(self.host.fqdn))
@@ -57,7 +72,7 @@ class RemoteDeployment(object):
     def __call__(self):
         self._connect()
         self.bootstrap()
-        with self.cd(self.remote_base):
+        with self.cd(self.remote_base + self.service_base):
             self.cmd('bin/batou-local %s %s' %
                      (self.environment.name, self.host.fqdn))
 
