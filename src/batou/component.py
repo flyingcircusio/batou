@@ -89,8 +89,6 @@ class Component(object):
         for platform in self.platforms:
             if platform.__name__.lower() == self.environment.platform:
                 self += platform()
-        for sub_component in self.sub_components:
-            sub_component.prepare(service, environment, host, root, self)
 
     def configure(self):
         # May be implemented by sub components
@@ -104,6 +102,8 @@ class Component(object):
 
     def __add__(self, component):
         self.sub_components.append(component)
+        component.prepare(self.service, self.environment,
+                          self.host, self.root, self)
         return self
 
     def deploy(self):
@@ -165,6 +165,10 @@ class Component(object):
             service=self.environment.service,
             component=self if component is None else component)
         return args
+
+    @property
+    def secrets(self):
+        return self.find_hooks('secrets')[0]
 
     @contextlib.contextmanager
     def chdir(self, path):

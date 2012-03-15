@@ -33,7 +33,9 @@ class Presence(Component):
 
     def update(self):
         ensure_path_nonexistent(self.path)
-        open(self.path, 'w').close()
+        with open(self.path, 'w'):
+            # We're just touching it.
+            pass
 
 
 class Directory(Component):
@@ -72,16 +74,17 @@ class Content(FileComponent):
         if self.is_template:
             self.content = self.template(self.source, self.parent)
         else:
-            self.content = open(self.source, 'r').read()
-
+            with open(self.source, 'r') as source:
+                self.content = source.read()
 
     def verify(self):
-        current = open(self.path, 'r').read()
-        if current != self.content:
-            raise UpdateNeeded()
+        with open(self.path, 'r') as target:
+            if target.read() != self.content:
+                raise UpdateNeeded()
 
     def update(self):
-        open(self.path, 'w').write(self.content)
+        with open(self.path, 'w') as target:
+            target.write(self.content)
 
 
 class Owner(FileComponent):

@@ -8,18 +8,6 @@ from batou import UpdateNeeded
 import os
 
 
-
-class UserInit(Component):
-
-    namevar = 'service'
-
-    def configure(self):
-        target = '/var/spool/init.d/{0}/{1}'.format(self.environment.service_user, self.service)
-        self += file.Directory(os.path.dirname(target), leading=True)
-        self += file.Content(target, source=self.source, is_template=True)
-        self += file.Mode(target, mode=0o755)
-
-
 class Supervisor(Component):
 
     http_port = Address('localhost:9001')
@@ -29,8 +17,6 @@ class Supervisor(Component):
         self += buildout.Buildout(
                     python='2.7',
                     config=file.Content('buildout.cfg', is_template=True))
-        # Enable userinit, ...
-        # self += UserInit('supervisor', source='init.sh')
 
     def verify(self):
         self.assert_file_is_current('var/supervisord.pid',
