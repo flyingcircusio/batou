@@ -2,8 +2,9 @@
 # See also LICENSE.txt
 
 from __future__ import print_function, unicode_literals
-from batou.component import Component, Buildout
+from batou.component import Component
 from batou.tests import TestCase
+import batou
 import mock
 import os
 import os.path
@@ -14,105 +15,114 @@ import tempfile
 
 class ComponentTests(TestCase):
 
-    def setUp(self):
-        self.host = mock.Mock()
-        self.config = dict()
-        self.component = Component('haproxy', self.host, (), self.config)
-        self.component.hooks['haproxy'] = mock.Mock()
-        self.host.components = [self.component]
-        self.component.environment.hosts = dict(host=self.host)
-        self.fixture = os.path.dirname(__file__) + '/fixture/component'
+    def test_init_with_no_arguments_creates_plain_component(self):
+        component = Component()
+        self.assertEquals({}, component.hooks)
+        self.assertEquals([], component.sub_components)
 
-    def test_general_attributes_initialized(self):
-        self.component.service.base = '<basedir>'
-        self.assertEqual('haproxy', self.component.name)
-        self.assertIs(self.host, self.component.host)
-        self.assertIs(self.host.environment, self.component.environment)
-        self.assertIs(self.host.environment.service, self.component.service)
-        self.assertTrue('<basedir>/work/haproxy', self.component.compdir)
+    def test_init_component_with_namevar_uses_first_argument(self):
+        class TestComponent(Component):
+            namevar = 'asdf'
+        component = TestComponent('foobar')
+        self.assertEquals('foobar', component.asdf)
 
-    # component wire-up
+    def test_init_component_with_namevar_fails_without_argument(self):
+        class TestComponent(Component):
+            namevar = 'asdf'
+        with self.assertRaises(ValueError):
+            component = TestComponent()
 
-    def test_find_components_only_returns_if_tag_matches_no_host_given(self):
-        self.assertRaises(RuntimeError, self.component.find_hooks, 'asdf')
-        self.assertEqual(
-            [self.component.hooks['haproxy']],
-            list(self.component.find_hooks('haproxy')))
+    def test_init_keyword_args_update_dict(self):
+        component = Component(foobar=1)
+        self.assertEquals(1, component.foobar)
 
-    def test_find_components_only_returns_if_tag_and_host_matches(self):
-        self.assertRaises(RuntimeError,
-                          self.component.find_hooks, 'haproxy', mock.Mock())
-        self.assertEqual(
-            [self.component.hooks['haproxy']],
-            list(self.component.find_hooks('haproxy', self.host)))
+    def test_prepare_sets_up_vars(self):
+        service = mock.Mock()
+        environment = mock.Mock()
+        host = mock.Mock()
+        root = mock.Mock()
+        parent = mock.Mock()
+        component = Component()
+        component.prepare(
+            service, environment, host, root, parent)
+        self.assertEquals(service, component.service)
+        self.assertEquals(environment, component.environment)
+        self.assertEquals(host, component.host)
+        self.assertEquals(root, component.root)
+        self.assertEquals(parent, component.parent)
 
-    # convenience api
+    def test_prepare_calls_configure(self):
+        component = Component()
+        component.configure = mock.Mock()
+        component.prepare(None, None, None, None)
+        self.assertTrue(component.configure.called)
 
-    def test_install_should_create_leading_dirs(self):
-        with open('myfile', 'w') as f:
-            print('hello world', file=f)
-        self.component.install('myfile', 'tmp-a/b/c/d/myfile')
-        self.assertFileExists('tmp-a/b/c/d/myfile')
-        os.unlink('myfile')
-        shutil.rmtree('tmp-a')
+    def test_prepare_configures_applicable_platforms_as_subcomponents(self):
+        class MyPlatform(Component):
+            platform = 'testplatform'
+        class MyOtherPlatform(Component):
+            platform = 'other'
+        class MyComponent(Component):
+            platforms = [MyPlatform, MyOtherPlatform]
+        environment = mock.Mock()
+        environment.platform = 'testplatform'
+        component = MyComponent()
+        component.prepare(None, environment, None, None)
+        self.assertEquals(1, len(component.sub_components))
+        self.assertIsInstance(component.sub_components[0], MyPlatform)
 
-    def test_install_should_set_mode(self):
-        with open('myfile1', 'w') as f:
-            print('hello world', file=f)
-        self.component.install('myfile1', 'myfile2', mode=0o654)
-        self.assertEqual(os.stat('myfile2').st_mode & 0o7777, 0o654)
-        os.unlink('myfile1')
-        os.unlink('myfile2')
+    def test_deploy_empty_component_runs_without_error(self):
+        component = Component()
+        component.deploy()
 
-    def test_install_should_do_nothing_if_identical(self):
-        with tempfile.NamedTemporaryFile(prefix='install') as tf:
-            shutil.copyfile('%s/haproxy.cfg' % self.fixture, tf.name)
-            os.utime(tf.name, (1, 1))
-            self.component.install('%s/haproxy.cfg' % self.fixture, tf.name)
-            self.assertEqual(1, os.stat(tf.name).st_mtime)
-            self.assertEqual(set(), self.component.changed_files)
+    def test_deploy_update_performed_if_needed(self):
+        class MyComponent(Component):
+            updated = False
+            def verify(self):
+                raise batou.UpdateNeeded()
+            def update(self):
+                self.updated = True
+        component = MyComponent()
+        component.prepare(None, None, None, None)
+        component.deploy()
+        self.assertTrue(component.updated)
 
-    def test_install_should_record_changed_file(self):
-        with tempfile.NamedTemporaryFile(prefix='install') as tf:
-            self.component.install('%s/haproxy.cfg' % self.fixture, tf.name)
-            self.assertEqual(set([tf.name]), self.component.changed_files)
+    def test_deploy_update_not_performed_if_not_needed(self):
+        class MyComponent(Component):
+            updated = False
+            def verify(self):
+                pass
+            def update(self):
+                self.updated = True
+        component = MyComponent()
+        component.prepare(None, None, None, None)
+        component.deploy()
+        self.assertFalse(component.updated)
 
-    def test_chdir(self):
-        olddir = os.getcwd()
-        with self.component.chdir('/tmp'):
-            self.assertEqual('/tmp', os.getcwd())
-        self.assertEqual(olddir, os.getcwd())
+    def test_sub_components_are_deployed_first(self):
+        log = []
+        class MyComponent(Component):
+            namevar = 'id'
+            def verify(self):
+                log.append('{}:verify'.format(self.id))
+                raise batou.UpdateNeeded()
+            def update(self):
+                log.append('{}:update'.format(self.id))
+        top = MyComponent('1')
+        top.prepare(None, None, None, None)
+        top += MyComponent('2')
+        top.deploy()
+        self.assertEquals(
+            [u'2:verify', u'2:update', u'1:verify', u'1:update'], log)
 
-    # template api
+    def test_adding_subcomponents_prepares_them_immediately(self):
+        class MyComponent(Component):
+            prepared = False
+            def configure(self):
+                self.prepared = True
+        component = Component()
+        component.prepare(None, None, None, None)
+        my = MyComponent()
+        component += my
+        self.assertTrue(my.prepared)
 
-    def test_expand(self):
-        self.assertEqual('hello haproxy',
-                         self.component.expand('hello ${component.name}'))
-
-    def test_template_should_do_nothing_if_identical(self):
-        with tempfile.NamedTemporaryFile(prefix='install') as tf:
-            with open(tf.name, 'w') as interpolated:
-                interpolated.write("""\
-frontend
-        name haproxy
-""")
-            os.utime(tf.name, (1, 1))
-            self.component.template('%s/haproxy.cfg' % self.fixture, tf.name)
-            self.assertEqual(1, os.stat(tf.name).st_mtime,
-                             'file has been touched')
-            self.assertEqual(set(), self.component.changed_files)
-
-    def test_template_should_record_changed_file(self):
-        with tempfile.NamedTemporaryFile(prefix='install') as tf:
-            self.component.template('%s/haproxy.cfg' % self.fixture, tf.name)
-            self.assertEqual(set([tf.name]), self.component.changed_files)
-
-
-class BuildoutTests(TestCase):
-
-    @mock.patch('os.symlink')
-    def test_determine_python_config(self, symlink):
-        c = Buildout(mock.Mock(), mock.Mock(), mock.Mock(), mock.Mock())
-        c.python = 'python%s' % sysconfig.get_python_version()
-        c._install_python_config()
-        self.assertTrue(symlink.called)
