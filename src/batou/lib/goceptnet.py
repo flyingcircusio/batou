@@ -1,16 +1,11 @@
 """gocept.net specific platform components.""" 
-from batou.component import Component
+from batou.component import Component, platform
+from batou.lib import file
+import batou
 import batou.lib.haproxy
 import batou.lib.service
 import batou.lib.ssh
-from batou.lib import file
 import os.path
-
-
-def platform(name, component):
-    def register_platform(cls):
-        component.add_platform(name, cls)
-    return register_platform
 
 
 @platform('gocept.net', batou.lib.ssh.SSHDir)

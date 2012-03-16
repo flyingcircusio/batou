@@ -2,7 +2,7 @@
 # See also LICENSE.txt
 
 from __future__ import print_function, unicode_literals
-from batou.component import Component
+from batou.component import Component, platform
 from batou.tests import TestCase
 import batou
 import mock
@@ -58,18 +58,29 @@ class ComponentTests(TestCase):
         self.assertTrue(component.configure.called)
 
     def test_prepare_configures_applicable_platforms_as_subcomponents(self):
-        class MyPlatform(Component):
-            platform = 'testplatform'
-        class MyOtherPlatform(Component):
-            platform = 'other'
         class MyComponent(Component):
-            platforms = [MyPlatform, MyOtherPlatform]
+            pass
+        class MyOtherComponent(MyComponent):
+            pass
+        @platform('testplatform', MyComponent)
+        class MyPlatform(Component):
+            pass
+        @platform('otherplatform', MyComponent)
+        class MyOtherPlatform(Component):
+            pass
         environment = mock.Mock()
         environment.platform = 'testplatform'
         component = MyComponent()
         component.prepare(None, environment, None, None)
         self.assertEquals(1, len(component.sub_components))
         self.assertIsInstance(component.sub_components[0], MyPlatform)
+        # Because we currently have no defined behaviour about this
+        # I'm playing this rather safe: a sub-class of a component does not
+        # automatically get to have the same platform components applied.
+        other_component = MyOtherComponent()
+        other_component.prepare(None, environment, None, None)
+        self.assertEquals(0, len(other_component.sub_components))
+
 
     def test_deploy_empty_component_runs_without_error(self):
         component = Component()
