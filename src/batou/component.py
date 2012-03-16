@@ -29,55 +29,28 @@ def load_components_from_file(filename):
             continue
         if (isinstance(candidate, type) and
             issubclass(candidate, Component)):
-            candidate.defdir = defdir
-            candidate.name = candidate.__name__.lower()
-            yield candidate
+            factory = RootComponentFactory(
+                    candidate.__name__.lower(),
+                    candidate,
+                    defdir)
+            yield factory
     os.chdir(oldcwd)
-
-
-def subscribe(self, required_name):
-    hooks = []
-    required_name = re.compile(required_name)
-    for candidate_host in self.host.environment.hosts.values():
-        if host and candidate_host is not host:
-            continue
-        for component in candidate_host.components:
-            for name, hook in component.hooks.items():
-                if required_name.match(name):
-                    # Ensure that if some component is requested, we will
-                    # always return components that have been configured
-                    # previously.
-                    component._configure()
-                    if name not in component.hooks.keys():
-                        # Configuration may have caused hook to be
-                        # disabled.
-                        continue
-                    hook._name = name
-                    hooks.append(hook)
-    if not hooks:
-        raise RuntimeError('No hook found: name=%s, host=%s' %
-                           (required_name.pattern, host))
-    return iter(hooks)
-
-def config_attr(self, name, datatype='str'):
-    value = self.config.get(name, getattr(self, name, ''))
-    value = self.expand(str(value))
-    value = batou.utils.convert_type(value, datatype)
-    setattr(self, name, value)
-    return value
 
 
 class Component(object):
 
     namevar = ''
-    platforms = []
 
-    def __init__(self, namevar=namevar, **kw):
+    def __init__(self, namevar=None, **kw):
         if self.namevar:
+            if namevar is None:
+                raise ValueError('Namevar %s required' % self.namevar)
             kw[self.namevar] = namevar
         self.__dict__.update(kw)
         self.hooks = {}
         self.sub_components = []
+
+    # Configuration phase
 
     def prepare(self, service, environment, host, root, parent=None):
         self.service = service
@@ -86,25 +59,28 @@ class Component(object):
         self.root = root
         self.parent = parent
         self.configure()
-        for platform in self.platforms:
-            if platform.__name__.lower() == self.environment.platform:
-                self += platform()
+        self += self.get_platform()
 
     def configure(self):
-        # May be implemented by sub components
+        """Configure the component.
+
+        At this point the component has been embedded into the overall
+        structure, so that service, environment, host, root, and parent are
+        set.
+
+        Also, any environment-specific attributes have been set.
+
+        At this point the component should add sub-components as required and
+        use the configured values so that calls to verify/update can, without
+        much overhead, perform their work.
+
+        Also, any computation that happens in the configure phase is run while
+        building the model so that this can be used to ensure some level of
+        internal consistency before invoking the remote control layer.
+        """
         pass
 
-    def verify(self):
-        pass
-
-    def update(self):
-        pass
-
-    def __add__(self, component):
-        self.sub_components.append(component)
-        component.prepare(self.service, self.environment,
-                          self.host, self.root, self)
-        return self
+    # Deployment phase
 
     def deploy(self):
         for sub_component in self.sub_components:
@@ -112,26 +88,60 @@ class Component(object):
         try:
             self.verify()
         except batou.UpdateNeeded:
-            logger.debug('Updating {}'.format(self.breadcrumbs))
+            logger.debug('Updating {}'.format(self._breadcrumbs))
             self.update()
 
-    @property
-    def breadcrumbs(self):
-        result = ''
-        if self.parent is not None:
-            result += self.parent.breadcrumbs + '/'
-        result += self.breadcrumb
-        return result
+    def verify(self):
+        """Verify whether this component has been deployed correctly or needs
+        to be updated.
 
-    @property
-    def breadcrumb(self):
-        result = self.__class__.__name__
-        name = getattr(self, self.namevar, None)
-        if name:
-            result += ':' + name
-        return result
+        Raises the UpdateNeeded exception if an update is needed.
 
-    # Helper functions
+        Implemented by specific components.
+        """
+        pass
+
+    def update(self):
+        """Is called if the verify method indicated that an update is needed.
+
+        This method needs to handle all cases to move the current deployed
+        state of the component, whatever it is, to the desired new state.
+
+        Implemented by specific components.
+
+        """
+        pass
+
+    # Sub-component mechanics
+
+    def __add__(self, component):
+        """Add a new sub-component.
+
+        This will also automatically prepare the added component.
+
+        """
+        # Allow `None` components to flow right through. This makes the API a
+        # bit more convenient in some cases, e.g. with platform handling.
+        if component is not None:
+            self.sub_components.append(component)
+            component.prepare(self.service, self.environment,
+                              self.host, self.root, self)
+        return self
+
+    # Platform mechanics
+
+    @classmethod
+    def add_platform(cls, name, platform):
+        if not '_platforms' in cls.__dict__:
+            cls._platforms = {}
+        cls._platforms[name] = platform
+
+    def get_platform(self):
+        """Return the platform component for this component if one exists."""
+        platforms = getattr(self, '_platforms', {})
+        return platforms.get(self.environment.platform, lambda:None)()
+
+    # Component (convenience) API 
 
     def assert_file_is_current(self, result, requirements=[]):
         if not os.path.exists(result):
@@ -192,26 +202,56 @@ class Component(object):
                 hooks.append(current.hooks[expression])
         return hooks
 
+    # internal methods
+
+    @property
+    def _breadcrumbs(self):
+        result = ''
+        if self.parent is not None:
+            result += self.parent._breadcrumbs + ' > '
+        result += self._breadcrumb
+        return result
+
+    @property
+    def _breadcrumb(self):
+        result = self.__class__.__name__
+        name = getattr(self, self.namevar, None)
+        if name:
+            result += '({})'.format(name)
+        return result
+
+
+class RootComponentFactory(object):
+
+    def __init__(self, name, factory, defdir):
+        self.name = name
+        self.factory = factory
+        self.defdir = defdir
+
+    def __call__(self, service, environment, host, config):
+        component = self.factory(**config)
+        root = RootComponent(self.name, component, self.defdir)
+        component.prepare(service, environment, host, root)
+        return root
+
 
 class RootComponent(object):
-    """Wrapper to manage root components.
+    """Wrapper to manage top-level components assigned to hosts in an
+    environment.
 
-    It has a name and owns the working directory for it's component.
+    Root components have a name and "own" the working directory for itself and
+    its sub-components.
+
     """
 
-    def __init__(self, name, component):
+    def __init__(self, name, component, defdir):
         self.component = component
         self.name = name
+        self.defdir = defdir
 
     @property
     def compdir(self):
         return '%s/work/%s' % (self.component.service.base, self.name)
-
-    @property
-    def defdir(self):
-        # Awkward indirection as the defdir is annotated on the factories of
-        # the top level components.
-        return self.component.defdir
 
     def _update_compdir(self):
         if not os.path.exists(self.compdir):

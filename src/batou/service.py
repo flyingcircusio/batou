@@ -84,9 +84,8 @@ class ServiceConfig(object):
             for name in batou.utils.string_list(
                     config.get('hosts', hostname)):
                 component_config = {} # XXX extract from environment
-                component = self.service.components[name](**component_config)
-                root = batou.component.RootComponent(name, component)
-                component.prepare(self.service, env, host, root)
+                root = self.service.components[name]
+                root = root(self.service, env, host, component_config)
                 host.components.append(root)
         self.service.environments[env.name] = env
 

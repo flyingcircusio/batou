@@ -1,32 +1,39 @@
 """gocept.net specific platform components.""" 
-import gocept.batou.lib
+from batou.component import Component
+import batou.lib.haproxy
+import batou.lib.service
+import batou.lib.ssh
+from batou.lib import file
+import os.path
 
 
-class Base(Component):
+def platform(name, component):
+    def register_platform(cls):
+        component.add_platform(name, cls)
+    return register_platform
 
-    platform = 'goceptnet'
 
-
+@platform('gocept.net', batou.lib.ssh.SSHDir)
 class SSHDir(Component):
     """Sets the SSH dir to the one of the (current) service user
     and ensures a mode accepted by OpenSSH.
     """
 
-    sshdir = os.path.expanduser(u'~/.ssh')
-    _type = gocept.batou.lib.ssh.SSHDir
+    path = os.path.expanduser(u'~/.ssh')
 
     def configure(self):
-        self.parent.ssh_dir = self.ssh_dir
-        self += file.Directory(self.sshdir)
-        self += file.Mode(self.sshdir, mode=0o711)
+        self.parent.path = self.path
+        self += file.Directory(self.path)
+        self += file.Mode(self.path, mode=0o711)
 
 
+@platform('gocept.net', batou.lib.service.Service)
 class UserInit(Component):
     """Register a service with user-init."""
 
-    namevar = 'service'
-
     def configure(self):
+        self.executable = self.parent.executable
+        self.pidfile = self.parent.pidfile
         target = '/var/spool/init.d/{0}/{1}'.format(self.environment.service_user, self.service)
         init_source = os.path.join(
             os.path.dirname(__file__), 'resources', 'init.sh')
@@ -35,15 +42,20 @@ class UserInit(Component):
         self += file.Mode(target, mode=0o755)
 
 
-class Supervisor(Component):
-    """Registers the installed supervisor with userinit."""
-
-    _type = gocept.batou.lib.supervisor.Supervisor
+@platform('gocept.net', batou.lib.haproxy.HAProxy)
+class SystemWideHAProxy(Component):
+    """gocep.net-specific component to integrate haproxy.
+    """
 
     def configure(self):
-        self += UserInit('supervisor', executable='bin/supervisord')
+        self += file.Symlink('/etc/haproxy.cfg', source='haproxy.cfg')
 
+    def verify(self):
+        self.assert_file_is_current('/var/run/haproxy.pid',
+            ['/etc/haproxy.cfg'])
 
-for component in globals():
-    if hasattr(component, '_type'):
-        _type.platforms.add(component)
+    def update(self):
+        try:
+            self.cmd('sudo /etc/init.d/haproxy reload')
+        except:
+            self.cmd('sudo /etc/init.d/haproxy restart')

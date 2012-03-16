@@ -1,15 +1,14 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
 
+from batou.component import Component
+import batou
 import grp
 import logging
 import os.path
 import pwd
 import shutil
 import stat
-
-from batou import UpdateNeeded
-from batou.component import Component
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class Presence(Component):
 
     def verify(self):
         if not os.path.isfile(self.path):
-            raise UpdateNeeded()
+            raise batou.UpdateNeeded()
 
     def update(self):
         ensure_path_nonexistent(self.path)
@@ -44,10 +43,10 @@ class Directory(Component):
 
     def verify(self):
         if not os.path.isdir(self.path):
-            raise UpdateNeeded()
+            raise batou.UpdateNeeded()
 
     def update(self):
-        ensure_path_nonexistent(path)
+        ensure_path_nonexistent(self.path)
         os.makedirs(self.path)
 
 
@@ -80,7 +79,7 @@ class Content(FileComponent):
     def verify(self):
         with open(self.path, 'r') as target:
             if target.read() != self.content:
-                raise UpdateNeeded()
+                raise batou.UpdateNeeded()
 
     def update(self):
         with open(self.path, 'w') as target:
@@ -97,7 +96,7 @@ class Owner(FileComponent):
     def verify(self):
         current = os.stat(self.path).uid
         if current != self.owner:
-            raise UpdateNeeded()
+            raise batou.UpdateNeeded()
 
     def update(self):
         group = os.stat(self.path).gid
@@ -114,7 +113,7 @@ class Group(FileComponent):
     def verify(self):
         current = os.stat(self.path).gid
         if current != self.group:
-            raise UpdateNeeded()
+            raise batou.UpdateNeeded()
 
     def update(self):
         owner = os.stat(self.path).uid
@@ -130,7 +129,7 @@ class Mode(FileComponent):
     def verify(self):
         current = os.stat(self.path).st_mode
         if current != self.mode:
-            raise UpdateNeeded()
+            raise batou.UpdateNeeded()
 
     def update(self):
         os.chmod(self.path, self.mode)
@@ -146,9 +145,9 @@ class Symlink(Component):
 
     def verify(self):
         if not os.path.islink(self.target):
-            raise UpdateNeeded()
+            raise batou.UpdateNeeded()
         if os.path.realpath(self.target) != self.source:
-            raise UpdateNeeded()
+            raise batou.UpdateNeeded()
 
     def update(self):
         ensure_path_nonexistent(self.target)

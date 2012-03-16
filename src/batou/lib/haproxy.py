@@ -6,24 +6,6 @@ from batou.component import Component
 from batou.lib import file
 
 
-class GoceptNet(Component):
-    """GoceptNet-specific component to integrate haproxy.
-    """
-
-    def configure(self):
-        self += file.Symlink('/etc/haproxy.cfg', source='haproxy.cfg')
-
-    def verify(self):
-        self.assert_file_is_current('/var/run/haproxy.pid',
-            ['/etc/haproxy.cfg'])
-
-    def update(self):
-        try:
-            self.cmd('sudo /etc/init.d/haproxy reload')
-        except:
-            self.cmd('sudo /etc/init.d/haproxy restart')
-
-
 class HAProxy(Component):
     """Load balancing component.
 
@@ -39,7 +21,6 @@ class HAProxy(Component):
 
     address = '${host.fqdn}:8002'
     backend_hook = None
-    platforms = [GoceptNet]
 
     def configure(self):
         self.hooks['frontend'] = self.address = Address(self.expand(self.address))

@@ -73,8 +73,8 @@ class RemoteDeployment(object):
         self._connect()
         self.bootstrap()
         with self.cd(self.remote_base + self.service_base):
-            self.cmd('bin/batou-local %s %s' %
-                     (self.environment.name, self.host.fqdn))
+            self.cmd('%s/bin/batou-local %s %s' %
+                     (self.remote_base, self.environment.name, self.host.fqdn))
 
     def bouncedir_name(self):
         """Pick suitable name for hg repository bounce dir."""
@@ -109,9 +109,10 @@ class RemoteDeployment(object):
             self.cmd(u'hg update -C %s' % self.environment.branch)
             if not self.exists('bin/python2.7'):
                 self.cmd('virtualenv --no-site-packages --python python2.7 .')
-            # XXX We're having upgrade issues with setuptools. We always
-            # bootstrap, for now.
-            self.cmd('bin/python2.7 bootstrap.py')
+            if not self.exists('bin/buildout'):
+                # XXX We tend to have upgrade issues with setuptools. We used
+                # to always bootstrap but it's becoming a pain.
+                self.cmd('bin/python2.7 bootstrap.py')
             self.cmd('bin/buildout -t 15')
 
     # Fabric convenience
@@ -136,7 +137,9 @@ class RemoteDeployment(object):
         stderr = chan.makefile_stderr('rb')
         status = chan.recv_exit_status()
         if status != 0:
-            raise RuntimeError(status, stderr.read())
+            logger.debug(stdout.read())
+            logger.debug(stderr.read())
+            raise RuntimeError(status)
         result = stdout.read()
         logger.debug(result)
         logger.debug(stderr.read())
