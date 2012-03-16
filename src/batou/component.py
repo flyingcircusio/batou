@@ -16,6 +16,16 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 
+def platform(name, component):
+    """Class decorator to register a component class as a platform-component
+    for the given platform and component.
+    """
+    def register_platform(cls):
+        component.add_platform(name, cls)
+        return cls
+    return register_platform
+
+
 def load_components_from_file(filename):
     g = l = {}
     g.update(globals())
@@ -138,7 +148,9 @@ class Component(object):
 
     def get_platform(self):
         """Return the platform component for this component if one exists."""
-        platforms = getattr(self, '_platforms', {})
+        if not hasattr(self.environment, 'platform'):
+            return
+        platforms = self.__class__.__dict__.get('_platforms', {})
         return platforms.get(self.environment.platform, lambda:None)()
 
     # Component (convenience) API 
