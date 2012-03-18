@@ -23,8 +23,6 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         self.config = ServiceConfig(os.path.dirname(__file__) +
                    '/fixture/basic_service', ['dev'])
         self.config.scan()
-        for env in self.config.service.environments.values():
-            self.config.configure_components(env)
         self.service = self.config.service
 
     def test_service_options_are_set(self):
@@ -41,8 +39,6 @@ class ConfigTestsBasicScenario(unittest.TestCase):
     def test_production_environment_is_loaded(self):
         self.config.environments = set(['production'])
         self.config.scan()
-        self.config.configure_components(
-            self.config.service.environments['production'])
         production = self.service.environments['production']
         self.assertEquals('alice', production.service_user)
         self.assertEquals('production', production.branch)
@@ -57,7 +53,7 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         self.assertEqual('host1.example.com', host1.fqdn)
         self.assertEqual(1, len(host1.components))
         zope = host1.components[0]
-        self.assertIsInstance(zope, Component)
+        self.assertIsInstance(zope.component, Component)
         self.assertEqual('zope', zope.name)
 
     def test_dev_environment_is_loaded(self):
@@ -75,7 +71,7 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         components.sort(key=lambda x:x.name)
         self.assertEqual(['zeo', 'zope'], [x.name for x in components])
         zeo = components[0]
-        self.assertIsInstance(zeo, Component)
+        self.assertIsInstance(zeo.component, Component)
         self.assertEqual('zeo', zeo.name)
 
     def test_component_has_features_set(self):

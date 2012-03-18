@@ -81,13 +81,35 @@ class ServiceConfig(object):
             env.hosts[fqdn] = host = Host(fqdn, env)
             # load components for host
             components = {}
-            for name in batou.utils.string_list(
-                    config.get('hosts', hostname)):
+            for name, features in parse_host_components(
+                    config.get('hosts', hostname)).items():
                 component_config = {} # XXX extract from environment
                 root = self.service.components[name]
-                root = root(self.service, env, host, component_config)
+                root = root(self.service, env, host, features, component_config)
                 host.components.append(root)
         self.service.environments[env.name] = env
+
+
+def parse_host_components(components):
+    """Parse a component list as given in an environment config for a host
+    into a mapping of compoment -> features.
+
+    Expected syntax:
+
+    component[:feature], component[:feature]
+
+    """
+    result = {}
+    for name in components.split(','):
+        name = name.strip()
+        if ':' in name:
+            name, feature = name.split(':', 1)
+        else:
+            feature = None
+        result.setdefault(name, [])
+        if feature:
+            result[name].append(feature)
+    return result
 
 
 class Service(object):
