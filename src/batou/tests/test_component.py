@@ -2,15 +2,17 @@
 # See also LICENSE.txt
 
 from __future__ import print_function, unicode_literals
-from batou.component import Component, platform
+from batou.component import Component, RootComponent, platform
 from batou.tests import TestCase
 import batou
 import mock
 import os
 import os.path
 import shutil
+import subprocess
 import sysconfig
 import tempfile
+import time
 
 
 class ComponentTests(TestCase):
@@ -20,6 +22,12 @@ class ComponentTests(TestCase):
         self.assertEquals({}, component.hooks)
         # Lazy initialized attribute
         self.assertFalse(hasattr(component, 'sub_components'))
+
+    def test_plain_component_runs_noop_configure_verify_update(self):
+        component = Component()
+        component.configure()
+        component.verify()
+        component.update()
 
     def test_init_component_with_namevar_uses_first_argument(self):
         class TestComponent(Component):
@@ -138,3 +146,135 @@ class ComponentTests(TestCase):
         component += my
         self.assertTrue(my.prepared)
 
+    # AFIC = assert file is current
+    def test_afic_raises_if_nonexisting_file(self):
+        component = Component()
+        with self.assertRaises(batou.UpdateNeeded):
+            component.assert_file_is_current('idonotexist')
+
+    def test_afic_doesnt_raise_if_file_exists_but_no_reference_is_given(self):
+        component = Component()
+        component.assert_file_is_current(__file__)
+
+    def test_afic_raises_if_file_isolder_than_reference(self):
+        fd, reference = tempfile.mkstemp()
+        self.addCleanup(os.unlink, reference)
+        component = Component()
+        with self.assertRaises(batou.UpdateNeeded):
+            component.assert_file_is_current(__file__, [reference])
+
+    def test_cmd_returns_output(self):
+        c = Component()
+        self.assertEquals('1\n', c.cmd('echo 1'))
+
+    def test_cmd_raises_if_error(self):
+        c = Component()
+        with self.assertRaises(subprocess.CalledProcessError):
+            c.cmd('non-existing-command')
+
+    def test_touch_creates_new_file(self):
+        reference = tempfile.mktemp()
+        self.assertFalse(os.path.exists(reference))
+        c = Component()
+        c.touch(reference)
+        self.assertTrue(os.path.exists(reference))
+        self.addCleanup(os.unlink, reference)
+
+    def test_touch_updates_mtime_leaves_content_intact(self):
+        fd, reference = tempfile.mkstemp()
+        self.addCleanup(os.unlink, reference)
+        with open(reference, 'w') as r:
+            r.write('Hello world')
+        mtime = os.stat(reference).st_mtime
+        c = Component()
+        time.sleep(1)
+        c.touch(reference)
+        self.assertLess(mtime, os.stat(reference).st_mtime)
+        with open(reference, 'r') as r:
+            self.assertEqual('Hello world', r.read())
+
+    def test_expand(self):
+        c = Component()
+        c.prepare(None, None, 'localhost', None)
+        self.assertEqual('Hello localhost', c.expand('Hello ${host}'))
+
+    def test_templates(self):
+        sample = tempfile.mktemp()
+        with open(sample, 'w') as template:
+            template.write('Hello ${host}')
+            self.addCleanup(os.unlink, sample)
+        c = Component()
+        c.prepare(None, None, 'localhost', None)
+        self.assertEqual('Hello localhost', c.template(sample))
+
+    def test_secrets_attribute_looks_up_secrets_hook(self):
+        class Secrets(Component):
+            def configure(self):
+                self.hooks['secrets'] = self
+        environment = batou.environment.Environment('test', None)
+        host = batou.host.Host('localhost', environment)
+        environment.hosts['localhost'] = host
+        c = Component()
+        c.prepare(None, environment, host, None)
+        secrets = Secrets()
+        c += secrets
+        root = RootComponent('component', c, None)
+        host.components = [root]
+        self.assertIs(c.secrets, secrets)
+
+    def test_chdir_contextmanager_is_stackable(self):
+        outer = os.getcwd()
+        inner1 = os.path.join(os.path.dirname(__file__), 'fixture')
+        inner2 = os.path.join(os.path.dirname(__file__))
+        c = Component()
+        with c.chdir(inner1):
+            self.assertEqual(inner1, os.getcwd())
+            with c.chdir(inner2):
+                self.assertEqual(inner2, os.getcwd())
+            self.assertEqual(inner1, os.getcwd())
+        self.assertEqual(outer, os.getcwd())
+
+    def test_find_hook_ignores_different_host_but_finds_same_host(self):
+        environment = batou.environment.Environment('test', None)
+
+        host1 = batou.host.Host('host1', environment)
+        environment.hosts['host1'] = host1
+        c = Component()
+        c.hooks['test'] = 'asdf1'
+        c.prepare(None, environment, host1, None)
+        root1 = RootComponent('component', c, None)
+        host1.components = [root1]
+
+        host2 = batou.host.Host('host2', environment)
+        environment.hosts['host2'] = host2
+        c = Component()
+        c.hooks['test'] = 'asdf2'
+        c.prepare(None, environment, host2, None)
+        root2 = RootComponent('component', c, None)
+        host2.components = [root2]
+
+        self.assertEquals(['asdf1', 'asdf2'], c.find_hooks('test'))
+        self.assertEquals(['asdf1'], c.find_hooks('test', host1))
+        self.assertEquals(['asdf2'], c.find_hooks('test', host2))
+
+    def test_root_component_computes_working_dir(self):
+        c = Component()
+        c.service = mock.Mock()
+        c.service.base = 'path-to-service'
+        root = RootComponent('test', c, None)
+        self.assertEquals('path-to-service/work/test', root.compdir)
+
+    def test_root_component_creates_working_dir_runs_component_deploy(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        self.addCleanup(os.chdir, os.getcwd())
+        c = Component()
+        c.deploy = mock.Mock()
+        c.service = mock.Mock()
+        c.service.base = d
+        root = RootComponent('test', c, None)
+        self.assertFalse(os.path.isdir(root.compdir))
+        root.deploy()
+        self.assertTrue(os.path.isdir(root.compdir))
+        self.assertEquals(root.compdir, os.getcwd())
+        self.assertTrue(c.deploy.called)

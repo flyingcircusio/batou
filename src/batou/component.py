@@ -165,10 +165,14 @@ class Component(object):
                 raise batou.UpdateNeeded()
 
     def cmd(self, cmd):
-        return subprocess.check_output([cmd], shell=True)
+        return subprocess.check_output(
+            [cmd], stderr=subprocess.PIPE, shell=True)
 
     def touch(self, filename):
-        open(filename, 'wa').close()
+        if os.path.exists(filename):
+            os.utime(filename, None)
+        else:
+            open(filename, 'w').close()
 
     def expand(self, string):
         engine = batou.template.MakoEngine()
@@ -185,7 +189,7 @@ class Component(object):
         args = dict(
             host=self.host,
             environment=self.environment,
-            service=self.environment.service,
+            service=self.service,
             component=self if component is None else component)
         return args
 
