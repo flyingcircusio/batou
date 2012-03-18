@@ -247,9 +247,11 @@ class RootComponentFactory(object):
         self.factory = factory
         self.defdir = defdir
 
-    def __call__(self, service, environment, host, config):
+    def __call__(self, service, environment, host, features, config):
         component = self.factory(**config)
         root = RootComponent(self.name, component, self.defdir)
+        if features:
+            root.features = features
         component.prepare(service, environment, host, root)
         return root
 
