@@ -262,7 +262,7 @@ class ComponentTests(TestCase):
         c.service = mock.Mock()
         c.service.base = 'path-to-service'
         root = RootComponent('test', c, None)
-        self.assertEquals('path-to-service/work/test', root.compdir)
+        self.assertEquals('path-to-service/work/test', root.workdir)
 
     def test_root_component_creates_working_dir_runs_component_deploy(self):
         d = tempfile.mkdtemp()
@@ -273,8 +273,8 @@ class ComponentTests(TestCase):
         c.service = mock.Mock()
         c.service.base = d
         root = RootComponent('test', c, None)
-        self.assertFalse(os.path.isdir(root.compdir))
+        self.assertFalse(os.path.isdir(root.workdir))
         root.deploy()
-        self.assertTrue(os.path.isdir(root.compdir))
-        self.assertEquals(root.compdir, os.getcwd())
+        self.assertTrue(os.path.isdir(root.workdir))
+        self.assertEquals(root.workdir, os.getcwd())
         self.assertTrue(c.deploy.called)

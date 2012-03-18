@@ -275,14 +275,14 @@ class RootComponent(object):
         self.defdir = defdir
 
     @property
-    def compdir(self):
+    def workdir(self):
         return '%s/work/%s' % (self.component.service.base, self.name)
 
-    def _update_compdir(self):
-        if not os.path.exists(self.compdir):
-            os.makedirs(self.compdir)
+    def _ensure_workdir(self):
+        if not os.path.exists(self.workdir):
+            os.makedirs(self.workdir)
 
     def deploy(self):
-        self._update_compdir()
-        os.chdir(self.compdir)
+        self._ensure_workdir()
+        os.chdir(self.workdir)
         self.component.deploy()
