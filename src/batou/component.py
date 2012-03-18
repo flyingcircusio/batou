@@ -57,8 +57,6 @@ class Component(object):
                 raise ValueError('Namevar %s required' % self.namevar)
             kw[self.namevar] = namevar
         self.__dict__.update(kw)
-        self.hooks = {}
-        self.sub_components = []
 
     # Configuration phase
 
@@ -93,8 +91,9 @@ class Component(object):
     # Deployment phase
 
     def deploy(self):
-        for sub_component in self.sub_components:
-            sub_component.deploy()
+        if hasattr(self, 'sub_components'):
+            for sub_component in self.sub_components:
+                sub_component.deploy()
         try:
             self.verify()
         except batou.UpdateNeeded:
@@ -130,6 +129,8 @@ class Component(object):
         This will also automatically prepare the added component.
 
         """
+        if not hasattr(self, 'sub_components'):
+            self.sub_components = []
         # Allow `None` components to flow right through. This makes the API a
         # bit more convenient in some cases, e.g. with platform handling.
         if component is not None:
@@ -215,6 +216,12 @@ class Component(object):
         return hooks
 
     # internal methods
+
+    @property
+    def hooks(self):
+        if not hasattr(self, '_hooks'):
+            self._hooks = {}
+        return self._hooks
 
     @property
     def _breadcrumbs(self):

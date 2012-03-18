@@ -18,7 +18,8 @@ class ComponentTests(TestCase):
     def test_init_with_no_arguments_creates_plain_component(self):
         component = Component()
         self.assertEquals({}, component.hooks)
-        self.assertEquals([], component.sub_components)
+        # Lazy initialized attribute
+        self.assertFalse(hasattr(component, 'sub_components'))
 
     def test_init_component_with_namevar_uses_first_argument(self):
         class TestComponent(Component):
