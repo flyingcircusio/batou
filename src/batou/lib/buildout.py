@@ -19,7 +19,7 @@ class Bootstrap(Component):
             self.buildout, ['bootstrap.py', self.python])
         buildout = open('bin/buildout', 'r').readlines()[0]
         if not buildout.startswith(
-                '#!{0}/{1}'.format(self.root.compdir, self.python)):
+                '#!{0}/{1}'.format(self.root.workdir, self.python)):
             raise UpdateNeeded()
 
     def update(self):

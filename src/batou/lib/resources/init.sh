@@ -6,8 +6,8 @@
 set -e
 
 PATH="${d}{PATH}:/usr/local/sbin:/usr/sbin:/sbin"
-DAEMON="${component.root.compdir}/${component.executable}"
-PIDFILE="${component.root.compdir}/${component.pidfile}"
+DAEMON="${component.root.workdir}/${component.executable}"
+PIDFILE="${component.root.workdir}/${component.pidfile}"
 
 start() {
     start-stop-daemon --start -p "$PIDFILE" -i -- "$DAEMON"
