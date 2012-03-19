@@ -66,8 +66,9 @@ class FabricTask(fabric.tasks.Task):
         if not self.exists(bouncedir):
             fabric.api.run(u'hg init %s' % bouncedir)
         try:
-            subprocess.check_call(['hg push --new-branch ssh://%s/%s' %
-                                   (fabric.api.env.host, bouncedir)], shell=True)
+            subprocess.check_call(['hg push -f ssh://%s/%s' %
+                                   (fabric.api.env.host, bouncedir)],
+                                  shell=True)
         except subprocess.CalledProcessError, e:
             if e.returncode != 1:
                 # 1 means: nothing to push
