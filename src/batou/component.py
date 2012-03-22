@@ -108,7 +108,9 @@ class Component(object):
 
     def cmd(self, cmd):
         self.log('%s: cmd: %s' % (os.getcwd(), cmd))
-        subprocess.check_call([cmd], shell=True)
+        output = subprocess.check_output([cmd], shell=True)
+        self.log(output)
+        return output
 
     def changed_file(self, filename):
         """Add `filename` to the list of changed files."""
@@ -280,4 +282,9 @@ class Buildout(Component):
 
     @step(4)
     def buildout(self):
-        self.cmd('bin/buildout -t 15')
+        output = self.cmd('bin/buildout -t 15')
+        # Special case for handling mr.developer exits
+        # can be removed once https://bugs.launchpad.net/zc.buildout/+bug/962169
+        # is fixed.
+        if 'mr.developer: There have been errors, see messages' in output:
+            raise RuntimeError('mr.developer encountered an error.')
