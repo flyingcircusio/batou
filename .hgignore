@@ -1,4 +1,7 @@
 syntax: glob
+ID
+TAGS
+tags
 .batou-lock
 .batou-passphrase
 bin
@@ -16,3 +19,4 @@ local
 local.cfg
 parts
 *.pyc
+*.swp
