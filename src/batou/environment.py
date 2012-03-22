@@ -11,7 +11,7 @@ class Environment(object):
     service_user = pwd.getpwuid(os.getuid()).pw_name
     host_domain = None
     branch = u'default'
-    passphrase = None
+    passphrase_file = None
 
     def __init__(self, name, service):
         self.name = name
