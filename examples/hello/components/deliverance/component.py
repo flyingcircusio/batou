@@ -19,7 +19,7 @@ class Deliverance(Component):
         self.upstream = Address(self.expand(self.upstream))
         self.hooks['supervisor'] = (
             '30 deliverance (startsecs=10) {0}/bin/deliverance-proxy '
-            '[{0}/rules.xml] true'.format(self.root.compdir))
+            '[{0}/rules.xml] true'.format(self.root.workdir))
 
         self += buildout.Buildout(python='2.6')
         self += git.Clone('themes',
