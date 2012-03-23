@@ -178,10 +178,24 @@ class Component(object):
                 dirname = os.path.join(working_dirpath, dirname)
                 if not os.path.exists(dirname):
                     os.makedirs(dirname)
+                    self.changed_file(dirname)
             for filename in filenames:
                 source_filename = os.path.join(dirpath, filename)
                 dest_filename = os.path.join(working_dirpath, filename)
+                # Check whether file is up to date at target already.
+                if not os.path.exists(dest_filename):
+                    pass
+                elif (open(source_filename, 'r').read() !=
+                      open(dest_filename, 'r').read()):
+                    pass
+                elif (os.stat(dest_filename).st_mode !=
+                      os.stat(source_filename).st_mode):
+                    pass
+                else:
+                    # The target file is up-to-date.
+                    continue
                 shutil.copy(source_filename, dest_filename)
+                self.changed_file(dest_filename)
 
     def deploy(self):
         """Run all methods annotated with @step(n) in sequence."""
