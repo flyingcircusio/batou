@@ -143,7 +143,7 @@ class Component(object):
         os.chdir(olddir)
 
     def log(self, msg):
-        print msg
+        print msg.strip()
 
     # Template API
 
