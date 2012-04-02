@@ -15,7 +15,7 @@ def project_path(*names):
     return os.path.join(os.path.dirname(__file__), *names)
 
 
-version = '0.2.dev0'
+version = '0.1p1'
 
 setup(
     name='batou',
@@ -39,7 +39,7 @@ setup(
     """,
     author='gocept <mail@gocept.com>',
     author_email='mail@gocept.com',
-    license='BSD',
+    license='ZPL',
     url='https://projects.gocept.com/projects/batou/',
     keywords='deployment',
     classifiers="""\
