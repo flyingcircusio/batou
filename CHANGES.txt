@@ -2,8 +2,8 @@
 Change log for batou
 ====================
 
-0.1p1 (unreleased)
-================
+0.1p1 (2012-04-02)
+==================
 
 - Correct packaging bugs: missing .txt files etc.
 - Unify license to state 'ZPL' consistently in all places. We used to
