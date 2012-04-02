@@ -235,6 +235,7 @@ class Buildout(Component):
 
     def configure(self):
         self.config_attr('profile')
+        self.find_links = ''
 
     @property
     def executable(self):
@@ -284,6 +285,11 @@ class Buildout(Component):
 
     @step(2)
     def generate_config(self):
+        try:
+            secrets = self.find_hooks('secrets').next()
+            self.find_links = secrets.get('buildout', 'find-links')
+        except Exception:
+            print('missing [buildout]find-links in secrets file, ignoring')
         self.template('buildout.cfg.in', target='buildout.cfg')
 
     @step(3)
