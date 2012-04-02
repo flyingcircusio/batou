@@ -2,3 +2,4 @@ include LICENSE.txt
 include README.txt
 include HACKING.txt
 include CHANGES.txt
+recursive-include src/batou/tests/fixture *

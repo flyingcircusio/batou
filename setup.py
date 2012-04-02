@@ -62,4 +62,5 @@ Programming Language :: Python :: 2 :: Only
     include_package_data=True,
     data_files=[('', glob.glob(project_path('*.txt')))],
     zip_safe=False,
+    test_suite='batou.tests',
 )

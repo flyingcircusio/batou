@@ -5,7 +5,8 @@ Change log for batou
 0.2 (unreleased)
 ================
 
-- Nothing changed yet.
+- Packaging fix: include test fixtures to enable running tests on
+  installed eggs.
 
 
 0.1p1 (2012-04-02)
