@@ -2,7 +2,7 @@
 Change log for batou
 ====================
 
-0.1 (unreleased)
+0.1 (2012-04-02)
 ================
 
 initial release
