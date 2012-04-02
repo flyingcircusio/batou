@@ -5,7 +5,8 @@ Change log for batou
 0.2 (unreleased)
 ================
 
-- Nothing changed yet.
+- Add support for global find-links in Buildout. If a secret
+  [buildout]find-links is found, it will be put in component.find_links.
 
 
 0.1p2 (2012-04-02)
