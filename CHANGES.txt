@@ -5,7 +5,8 @@ Change log for batou
 0.1.2 (unreleased)
 ==================
 
-- Nothing changed yet.
+- `self.config_attr('attribute', 'list')` syntax for list-valued types in
+  configuration files.
 
 
 0.1.1 (2012-04-02)

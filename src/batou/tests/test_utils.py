@@ -1,7 +1,8 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
 
-from batou.utils import host_from_uri, resolve, string_list
+from __future__ import print_function, unicode_literals
+from batou.utils import host_from_uri, resolve, string_list, convert_type
 import mock
 import unittest
 
@@ -57,3 +58,24 @@ class StringList(unittest.TestCase):
         self.assertEquals(['a'], string_list('a '))
 
 
+class ConvertTypeTest(unittest.TestCase):
+
+    def test_str(self):
+        self.assertEqual('1', convert_type(1, 'str'))
+
+    def test_int(self):
+        self.assertEqual(2, convert_type('2', 'int'))
+
+    def test_float(self):
+        self.assertEqual(3.6, convert_type('3.6', 'float'))
+
+    def test_bool(self):
+        self.assertEqual(True, convert_type('yes', 'bool'))
+        self.assertEqual(True, convert_type('on', 'bool'))
+        self.assertEqual(False, convert_type('n', 'bool'))
+        self.assertEqual(False, convert_type('no', 'bool'))
+        self.assertEqual(False, convert_type('false', 'bool'))
+        self.assertEqual(False, convert_type('off', 'bool'))
+
+    def test_list(self):
+        self.assertEqual(['one', 'two'], convert_type('one, two', 'list'))
