@@ -7,6 +7,8 @@ Change log for batou
 
 - `self.config_attr('attribute', 'list')` syntax for list-valued types in
   configuration files.
+- Call `setlocale` at batou-local startup to initialize locale settings
+  throughout component execution.
 
 
 0.1.1 (2012-04-02)
