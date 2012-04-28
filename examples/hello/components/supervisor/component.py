@@ -19,8 +19,7 @@ class Supervisor(Component):
         self += Buildout(
                     python='2.7',
                     config=file.Content('buildout.cfg', is_template=True))
-        service = Service('bin/supervisord', pidfile='var/supervisor.pid')
-        self += service
+        self += Service('bin/supervisord', pidfile='var/supervisor.pid')
 
     def verify(self):
         self.assert_file_is_current('var/supervisord.pid',
