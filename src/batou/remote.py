@@ -2,6 +2,7 @@
 # See also LICENSE.txt
 
 from batou.passphrase import PassphraseFile
+import atexit
 import fabric.api
 import fabric.contrib.files
 import fabric.main
@@ -46,9 +47,14 @@ class FabricTask(fabric.tasks.Task):
         return allowed_hosts
 
     def setup_passphrase(self):
+        """Set up passphrase locally."""
+        self._pf = PassphraseFile(u'environment "%s"' % self.environment.name)
+        self.passphrase_file = self._pf.__enter__()
+        atexit.register(self._pf.__exit__)
+
+    def transfer_passphrase(self):
         """Set up passphrase on remote host in .batou-passphrase"""
-        with PassphraseFile(u'environment "%s"' % self.environment.name) as pf:
-            fabric.api.put(pf, u'/tmp/batou-passphrase')
+        fabric.api.put(self.passphrase_file, u'/tmp/batou-passphrase')
         self.cmd(u'install -m0600 /tmp/batou-passphrase %s/.batou-passphrase' %
                  self.remote_base)
         fabric.api.run(u'rm -f /tmp/batou-passphrase')
@@ -78,7 +84,7 @@ class FabricTask(fabric.tasks.Task):
         else:
             with self.cd(self.remote_base):
                 self.cmd(u'hg pull %s' % bouncedir)
-        self.setup_passphrase()
+        self.transfer_passphrase()
         with self.cd(self.remote_base):
             self.cmd(u'hg update -C %s' % self.environment.branch)
             if not self.exists('bin/python2.7'):
@@ -90,9 +96,11 @@ class FabricTask(fabric.tasks.Task):
 
     def run(self):
         """This is fabric's `run`. We would call this 'deploy'."""
+        self.setup_passphrase()
         # Lazy loading of the config to limit this to the environment we
         # actually need.
         self.environment = self.config.service.environments[self.name]
+        self.environment.passphrase_file = self.passphrase_file
         self.name = self.environment.name
         self.remote_base = '~%s/deployment' % self.environment.service_user
         self.config.configure_components(self.environment)

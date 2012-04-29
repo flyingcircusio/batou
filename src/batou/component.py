@@ -108,7 +108,9 @@ class Component(object):
 
     def cmd(self, cmd):
         self.log('%s: cmd: %s' % (os.getcwd(), cmd))
-        subprocess.check_call([cmd], shell=True)
+        output = subprocess.check_output([cmd], shell=True)
+        self.log(output)
+        return output
 
     def changed_file(self, filename):
         """Add `filename` to the list of changed files."""
@@ -141,7 +143,7 @@ class Component(object):
         os.chdir(olddir)
 
     def log(self, msg):
-        print msg
+        print msg.strip()
 
     # Template API
 
@@ -176,10 +178,24 @@ class Component(object):
                 dirname = os.path.join(working_dirpath, dirname)
                 if not os.path.exists(dirname):
                     os.makedirs(dirname)
+                    self.changed_file(dirname)
             for filename in filenames:
                 source_filename = os.path.join(dirpath, filename)
                 dest_filename = os.path.join(working_dirpath, filename)
+                # Check whether file is up to date at target already.
+                if not os.path.exists(dest_filename):
+                    pass
+                elif (open(source_filename, 'r').read() !=
+                      open(dest_filename, 'r').read()):
+                    pass
+                elif (os.stat(dest_filename).st_mode !=
+                      os.stat(source_filename).st_mode):
+                    pass
+                else:
+                    # The target file is up-to-date.
+                    continue
                 shutil.copy(source_filename, dest_filename)
+                self.changed_file(dest_filename)
 
     def deploy(self):
         """Run all methods annotated with @step(n) in sequence."""
@@ -219,6 +235,7 @@ class Buildout(Component):
 
     def configure(self):
         self.config_attr('profile')
+        self.find_links = ''
 
     @property
     def executable(self):
@@ -268,6 +285,11 @@ class Buildout(Component):
 
     @step(2)
     def generate_config(self):
+        try:
+            secrets = self.find_hooks('secrets').next()
+            self.find_links = secrets.get('buildout', 'find-links')
+        except Exception:
+            print('missing [buildout]find-links in secrets file, ignoring')
         self.template('buildout.cfg.in', target='buildout.cfg')
 
     @step(3)
@@ -280,4 +302,9 @@ class Buildout(Component):
 
     @step(4)
     def buildout(self):
-        self.cmd('bin/buildout -t 15')
+        output = self.cmd('bin/buildout -t 15')
+        # Special case for handling mr.developer exits
+        # can be removed once https://bugs.launchpad.net/zc.buildout/+bug/962169
+        # is fixed.
+        if 'mr.developer: There have been errors, see messages' in output:
+            raise RuntimeError('mr.developer encountered an error.')

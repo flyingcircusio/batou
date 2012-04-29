@@ -51,7 +51,6 @@ class Host(object):
             lockfile.truncate()
 
     def deploy(self):
-        os.umask(0o026)
         with self.locked():
             for component in self.components:
                 component.deploy()
