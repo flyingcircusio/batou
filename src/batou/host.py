@@ -8,18 +8,6 @@ import fcntl
 import os
 
 
-def escape(path):
-    """Return a safely escaped version of path.
-
-    Implementation inspired by re.escape.
-    """
-    s = list(path)
-    for i, c in enumerate(path):
-        if c in ('\\', '"', '$'):
-            s[i] = '\\' + c
-    return path[:0].join(['"'] + s + ['"'])
-
-
 class Host(object):
     """Deploy to an individual remote host."""
 
