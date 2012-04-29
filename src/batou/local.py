@@ -3,9 +3,11 @@
 
 from .service import ServiceConfig
 import argparse
+import locale
 
 
 def main():
+    locale.setlocale(locale.LC_ALL, '')
     parser = argparse.ArgumentParser(
         description=u'Execute batou components locally.')
     parser.add_argument(

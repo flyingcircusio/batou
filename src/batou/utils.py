@@ -28,6 +28,8 @@ def convert_type(value, datatype):
         if value.lower() in ('false', 'no', 'n', 'off'):
             return False
         return bool(value)
+    if datatype == 'list':
+        return string_list(value)
     raise ValueError('unknown data type', datatype)
 
 
