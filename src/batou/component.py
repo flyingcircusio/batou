@@ -165,8 +165,22 @@ class Component(object):
                 raise batou.UpdateNeeded()
 
     def cmd(self, cmd):
-        return subprocess.check_output(
-            [cmd], stderr=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(
+            [cmd],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True)
+        stdout, stderr = process.communicate()
+        retcode = process.poll()
+        if retcode:
+            print "STDOUT"
+            print "="*72
+            print stdout
+            print "STDERR"
+            print "="*72
+            print stderr
+            raise RuntimeError("Command %s returned unsuccessfully.")
+        return stdout
 
     def touch(self, filename):
         if os.path.exists(filename):

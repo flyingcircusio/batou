@@ -9,3 +9,5 @@ class Service(Component):
     """
 
     namevar = 'executable'
+
+    pidfile = None # The pidfile written by the service

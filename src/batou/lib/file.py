@@ -22,9 +22,67 @@ def ensure_path_nonexistent(path):
         os.unlink(path)
 
 
+class File(Component):
+
+    namevar = 'path'
+
+    ensure = 'file' # or: directory, symlink
+
+    # Content oriented parameters
+    content = None
+    source = ''
+    is_template = False
+
+    # Unix attributes
+    owner = None
+    group = None
+    mode = None
+
+    # Symlink parameters
+    link_source = ''
+    link_target = ''
+
+    # Leading directory creation
+    leading = False 
+
+    def configure(self):
+        if self.ensure == 'file':
+            self += Presence(self.path, leading=self.leading)
+        elif self.ensure == 'directory':
+            self += Directory(self.path, leading=self.leading)
+        elif self.ensure == 'symlink':
+            self += Symlink(self.path)
+        else:
+            raise ValueError(
+                'Ensure must be one of: presence, directory, '
+                ' symlink not %s' % self.ensure)
+
+        if self.content or self.source or self.is_template:
+            self += Content(self.path,
+                            source=self.source,
+                            is_template=self.is_template,
+                            template_context=self.parent,
+                            content=self.content)
+
+        if self.owner:
+            self += Owner(self.path, owner=self.owner)
+
+        if self.group:
+            self += Group(self.path, group=self.group)
+
+        if self.mode:
+            self += Mode(self.path, mode=self.mode)
+
+
 class Presence(Component):
 
     namevar = 'path'
+    leading = False
+
+    def configure(self):
+        if self.leading:
+            self += Directory(os.path.dirname(self.path),
+                              leading=self.leading)
 
     def verify(self):
         if not os.path.isfile(self.path):
@@ -47,7 +105,10 @@ class Directory(Component):
 
     def update(self):
         ensure_path_nonexistent(self.path)
-        os.makedirs(self.path)
+        if self.leading:
+            os.makedirs(self.path)
+        else:
+            os.mkdir(self.path)
 
 
 class FileComponent(Component):
@@ -63,15 +124,18 @@ class Content(FileComponent):
     content = None
     is_template = False
     source = ''
+    template_context = None
 
     def configure(self):
         super(Content, self).configure()
+        if not self.template_context:
+            self.template_context = self.parent
         if self.content is not None:
             return
         if not self.source.startswith('/'):
             self.source = os.path.join(self.root.defdir, self.path)
         if self.is_template:
-            self.content = self.template(self.source, self.parent)
+            self.content = self.template(self.source, self.template_context)
         else:
             with open(self.source, 'r') as source:
                 self.content = source.read()

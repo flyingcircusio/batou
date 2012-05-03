@@ -1,6 +1,6 @@
 """gocept.net specific platform components."""
 from batou.component import Component, platform
-from batou.lib import file
+from batou.lib.file import File
 import batou
 import batou.lib.haproxy
 import batou.lib.service
@@ -18,8 +18,7 @@ class SSHDir(Component):
 
     def configure(self):
         self.parent.path = self.path
-        self += file.Directory(self.path)
-        self += file.Mode(self.path, mode=0o711)
+        self += File(self.path, ensure='directory', mode=0o711)
 
 
 @platform('gocept.net', batou.lib.service.Service)
@@ -32,9 +31,11 @@ class UserInit(Component):
         target = '/var/spool/init.d/{0}/{1}'.format(self.environment.service_user, self.service)
         init_source = os.path.join(
             os.path.dirname(__file__), 'resources', 'init.sh')
-        self += file.Directory(os.path.dirname(target), leading=True)
-        self += file.Content(target, source=init_source, is_template=True)
-        self += file.Mode(target, mode=0o755)
+        self += File(target,
+                source=init_source,
+                is_template=True,
+                mode=0o755,
+                leading=True)
 
 
 @platform('gocept.net', batou.lib.haproxy.HAProxy)
