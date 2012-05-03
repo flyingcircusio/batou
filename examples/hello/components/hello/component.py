@@ -2,7 +2,7 @@
 # See also LICENSE.txt
 
 from batou.component import Component
-from batou.lib import file
+from batou.lib.file import File
 
 
 class Hello(Component):
@@ -10,8 +10,8 @@ class Hello(Component):
     mode = 0644
 
     def configure(self):
-        self += file.Mode('hello', mode=self.mode)
-        self += file.Content('hello', content='Hello world')
+        self += File('hello', mode=self.mode, content='Hello world')
+        self += File('foo/bar/baz', content='asdf', leading=True)
 
 
 class RestrictedHello(Hello):

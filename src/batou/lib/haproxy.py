@@ -3,7 +3,7 @@
 
 from batou.utils import Address, Hook
 from batou.component import Component
-from batou.lib import file
+from batou.lib.file import File
 
 
 class HAProxy(Component):
@@ -25,4 +25,4 @@ class HAProxy(Component):
     def configure(self):
         self.hooks['frontend'] = self.address = Address(self.expand(self.address))
         self.servers = self.find_hooks(self.backend_hook)
-        self += file.Content('haproxy.cfg', is_template=True)
+        self += File('haproxy.cfg', is_template=True)

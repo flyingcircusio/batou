@@ -3,7 +3,7 @@
 
 from batou.utils import Address
 from batou.component import Component
-from batou.lib import file
+from batou.lib.file import File
 from batou.lib.service import Service
 from batou.lib.buildout import Buildout
 from batou import UpdateNeeded
@@ -18,7 +18,7 @@ class Supervisor(Component):
         self.programs = self.find_hooks('supervisor', self.host)
         self += Buildout(
                     python='2.7',
-                    config=file.Content('buildout.cfg', is_template=True))
+                    config=File('buildout.cfg', is_template=True))
         self += Service('bin/supervisord', pidfile='var/supervisor.pid')
 
     def verify(self):

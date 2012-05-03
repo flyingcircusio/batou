@@ -1,5 +1,6 @@
 from batou.component import Component
-from batou.lib import file, python
+from batou.lib.python import VirtualEnv
+from batou.lib.file import File
 from batou import UpdateNeeded
 import os.path
 
@@ -12,7 +13,7 @@ class Bootstrap(Component):
                              'bootstrap.py')
 
     def configure(self):
-        self += file.Content('bootstrap.py', source=self.bootstrap)
+        self += File('bootstrap.py', source=self.bootstrap)
 
     def verify(self):
         self.assert_file_is_current(
@@ -34,12 +35,12 @@ class Buildout(Component):
 
     def configure(self):
         if self.config is None:
-            self.config = file.Content('buildout.cfg')
+            self.config = File('buildout.cfg')
         if isinstance(self.config, Component):
             self.config = [self.config]
         for component in self.config:
             self += component
-        venv = python.VirtualEnv(self.python)
+        venv = VirtualEnv(self.python)
         self += venv
         self += Bootstrap(python=venv.python)
 
