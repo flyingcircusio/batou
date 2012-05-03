@@ -1,4 +1,4 @@
-"""gocept.net specific platform components.""" 
+"""gocept.net specific platform components."""
 from batou.component import Component, platform
 from batou.lib import file
 import batou
