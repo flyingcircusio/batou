@@ -1,4 +1,145 @@
 
+# Recursive component definition in Python versus top-level components versus
+# infrastructure components and hooks
+
+Top level components
+
+    - are the parts that make up a service. sizing is up to how interactions
+      should be able to be broken up between parts.
+
+
+    - have an associated definition and working directory
+
+    - describes the realization of a part of a service
+
+    - original idea was that a component is build coherently but independently of other components
+
+    - needs to be able to fetch detail information from other service parts.
+
+      e.g. redmine needs to be able to retrieve the database configuration
+
+E.g. see one project, in batou 0.1, which is currently broken up into these components:
+
+cron
+deliverance
+download
+epp
+haproxy
+limesurvey
+mailin
+mailout
+memcached
+mysql
+nginx
+openldap
+piwik
+postgresql
+redmine
+secrets
+solr
+ssh
+supervisor
+varnish
+zeo
+zope
+
+A better way to break up these components and to better trade of coherency and the ability to distribute over multiple machines:
+
+cron
+    infrastructure, just a sub-component that can be invoked and might have
+    an infrastructure layer to either install it into a service-user's crontab or
+    just write  some crontabs for developers and use an additional script to
+    trigger any cron runs
+
+deliverance
+    top-level component, needs to know where to send requests to and some
+    other virtual hosting information
+
+epp
+    top-level component, needs to have a database and some virtual hosting information
+
+haproxy
+    top-level component, needs to assembly a global config from parts
+
+limesurvey
+    top-level component, needs to communicate fcgi configuration to the frontend, needs a database
+
+mailin
+    tlc
+
+mailout
+    tlc
+
+memcached
+    top-level component, needs to communicate config to others
+
+mysql
+    creates mysql databases for other components, could be done as a sub-component if we could make the component assignments for environments smarter
+
+nginx
+    creates vhost entries for other components but that isn't a 1:1 relation. some vhosts are frontends for multiple components, maybe this could be done as sub-components with a smarter API that can assemble
+    the total config and warn in case of inconsistencies. would also require smarter assignments from environments.
+
+openldap
+    like a database
+
+piwik
+    tlc, needs other config, db, vhosting
+
+postgresql
+    like mysql
+
+redmine 
+    like piwik, also needs mail out and mail in config
+
+secrets
+    infrastructure but with a place to store data and a CLI tool to edit the encrypted secrets safely
+
+solr
+    like a database but might be shared from multiple components
+
+ssh
+    infrastructure, component that supports other activities, like downloads, VCS checkouts, etc. needs data from the secrets
+
+supervisor
+    infrastructure, enables components to register programs as services and integrates into the init system
+
+varnish
+    like haproxy, needs to know vhost stuff and maybe even specific rules from multiple components
+
+zeo
+    like a database
+
+zope
+    badly named, should be the name of a specific application, e.g. portal, cms or something
+
+
+
+
+
+
+
+
+
+
+
+Generic components
+
+
+Infrastructure components
+
+    - choice of implementation depends on environment (e.g. postgresql versus mysql)
+    - have specific implementation components that are similar to hooks
+    - some infrastructure components require an association with a  top-level,
+    e.g. to configure the general database server role and associate it with
+    specific files, templates, etc.
+
+Hooks
+
+    - allow components to yield and retrieve information to and from the environment
+    - seem similar to infrastructure components
+    - have specific components that pull them in
+
 
 # Model processor:
 
