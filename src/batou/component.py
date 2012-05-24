@@ -179,7 +179,8 @@ class Component(object):
             print "STDERR"
             print "="*72
             print stderr
-            raise RuntimeError("Command %s returned unsuccessfully.")
+            raise RuntimeError(
+                'Command "{}" returned unsuccessfully.'.format(cmd))
         return stdout
 
     def touch(self, filename):
