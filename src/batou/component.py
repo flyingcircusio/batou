@@ -225,11 +225,16 @@ class Component(object):
             if host is not None and candidate_host != host:
                 continue
             for root in candidate_host.components:
-                components.append(root.component)
+                components.append((candidate_host, root.component, root, None))
         while components:
-            current = components.pop()
-            components.extend(current.sub_components)
+            host, current, root, parent = components.pop()
+            if hasattr(current, 'sub_components'):
+                components.extend((host, current.sub_components, root,
+                    current))
             if expression in current.hooks:
+                if not hasattr(current, 'service'):
+                    current.prepare(self.service, self.environment, host,
+                            root, parent) 
                 hooks.append(current.hooks[expression])
         return hooks
 
@@ -270,7 +275,6 @@ class RootComponentFactory(object):
         root = RootComponent(self.name, component, self.defdir)
         if features:
             root.features = features
-        component.prepare(service, environment, host, root)
         return root
 
 

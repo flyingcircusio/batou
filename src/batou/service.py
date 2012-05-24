@@ -84,9 +84,14 @@ class ServiceConfig(object):
             for name, features in parse_host_components(
                     config.get('hosts', hostname)).items():
                 component_config = {} # XXX extract from environment
-                root = self.service.components[name]
-                root = root(self.service, env, host, features, component_config)
+                # XXX The factory/root/prepare dance is quirky. :/
+                root_factory = self.service.components[name]
+                root = root_factory(self.service, env, host, features, component_config)
                 host.components.append(root)
+        # prepare all loaded components
+        for host in env.hosts.values():
+            for root in host.components:
+                root.component.prepare(self.service, env, host, root)
         self.service.environments[env.name] = env
 
 
