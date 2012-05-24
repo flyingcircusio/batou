@@ -74,6 +74,8 @@ class ServiceConfig(object):
         env_config = {}
         if 'environment' in config.sections():
             env_config.update(dict(config.items('environment')))
+        if self.platform is not None:
+            env_config['platform'] = self.platform
         env.configure(env_config)
         # load hosts
         for hostname in config.options('hosts'):
