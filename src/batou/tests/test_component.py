@@ -278,3 +278,11 @@ class ComponentTests(TestCase):
         self.assertTrue(os.path.isdir(root.workdir))
         self.assertEquals(root.workdir, os.getcwd())
         self.assertTrue(c.deploy.called)
+
+    @mock.patch('sys.stdout')
+    def test_cmd_execution_failed_gives_command_in_exception(self, stdout):
+        try:
+            c = Component()
+            c.cmd('asdf')
+        except RuntimeError, e:
+            self.assertEquals('Command "asdf" returned unsuccessfully.', str(e))
