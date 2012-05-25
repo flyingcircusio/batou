@@ -98,7 +98,7 @@ class Component(object):
         try:
             self.verify()
         except batou.UpdateNeeded:
-            logger.debug('Updating {}'.format(self._breadcrumbs))
+            logger.info('Updating {}'.format(self._breadcrumbs))
             self.update()
 
     def verify(self):
