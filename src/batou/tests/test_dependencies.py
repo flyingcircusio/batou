@@ -1,22 +1,35 @@
 
-import unittest
 from batou.component import Component, RootComponentFactory
-from batou.service import Service
 from batou.environment import Environment, UnusedResource
+from batou.environment import NonConvergingWorkingSet
 from batou.host import Host
+from batou.service import Service
+import mock
+import unittest
 
 
 class Provider(Component):
 
     def configure(self):
         self.provide('the-answer', 42)
-        self.require('the-question')
 
 
 class Consumer(Component):
 
     def configure(self):
         self.the_answer = self.require('the-answer')
+
+
+class AggressiveConsumer(Component):
+
+    def configure(self):
+        self.the_answer = self.require('the-answer')[0]
+
+
+class Broken(Component):
+
+    def configure(self):
+        raise KeyError('foobar')
 
 
 class TestDependencies(unittest.TestCase):
@@ -28,6 +41,10 @@ class TestDependencies(unittest.TestCase):
                 'provider', Provider, '.')
         self.service.components['consumer'] = RootComponentFactory(
                 'consumer', Consumer, '.')
+        self.service.components['aggressiveconsumer'] = RootComponentFactory(
+                'aggressiveconsumer', AggressiveConsumer, '.')
+        self.service.components['broken'] = RootComponentFactory(
+                'broken', Broken, '.')
 
         self.env = Environment('test', self.service)
         self.env.hosts['test'] = self.host = Host('test', self.env)
@@ -54,4 +71,21 @@ class TestDependencies(unittest.TestCase):
         self.assertListEqual([42], list(consumer.the_answer))
 
     def test_consumer_without_provider_raises_error(self):
-        pass
+        self.host.add_component('consumer')
+        with self.assertRaises(NonConvergingWorkingSet) as e:
+            self.env.configure()
+        self.assertEquals(set(self.host.components), e.exception.args[0])
+
+    def test_aggressive_consumer_raises_unsatisfiedrequirement(self):
+        self.host.add_component('aggressiveconsumer')
+        with self.assertRaises(NonConvergingWorkingSet) as e:
+            self.env.configure()
+        self.assertEquals(set(self.host.components), e.exception.args[0])
+
+    @mock.patch('batou.environment.logger.exception')
+    def test_broken_component_logs_real_exception(self, exception_log):
+        self.host.add_component('broken')
+        with self.assertRaises(NonConvergingWorkingSet) as e:
+            self.env.configure()
+        self.assertTrue(exception_log.called)
+        self.assertIsInstance(exception_log.call_args[0][0], KeyError)
