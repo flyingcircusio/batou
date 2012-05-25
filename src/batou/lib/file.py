@@ -132,8 +132,10 @@ class Content(FileComponent):
             self.template_context = self.parent
         if self.content is not None:
             return
+        if not self.source:
+            self.source = self.path
         if not self.source.startswith('/'):
-            self.source = os.path.join(self.root.defdir, self.path)
+            self.source = os.path.join(self.root.defdir, self.source)
         if self.is_template:
             self.content = self.template(self.source, self.template_context)
         else:
