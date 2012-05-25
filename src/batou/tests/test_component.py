@@ -164,7 +164,7 @@ class ComponentTests(TestCase):
 
     def test_cmd_returns_output(self):
         c = Component()
-        self.assertEquals('1\n', c.cmd('echo 1'))
+        self.assertEquals(('1\n', ''), c.cmd('echo 1'))
 
     @mock.patch('sys.stdout')
     def test_cmd_raises_if_error(self, stdout):
