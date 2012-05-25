@@ -193,7 +193,7 @@ class Component(object):
             print stderr
             raise RuntimeError(
                 'Command "{}" returned unsuccessfully.'.format(cmd))
-        return stdout
+        return stdout, stderr
 
     def touch(self, filename):
         if os.path.exists(filename):
