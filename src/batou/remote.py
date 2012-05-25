@@ -60,7 +60,7 @@ class RemoteDeployment(object):
         raise KeyError(key)
 
     def _connect(self):
-        logger.debug('Connecting to {}'.format(self.host.fqdn))
+        logger.info('Connecting to {}'.format(self.host.fqdn))
         self.ssh = SSHClient()
         self.ssh.load_system_host_keys()
         self.ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
@@ -73,8 +73,9 @@ class RemoteDeployment(object):
         self._connect()
         self.bootstrap()
         with self.cd(self.remote_base + self.service_base):
-            self.cmd('%s/bin/batou-local %s %s' %
+            log = self.cmd('%s/bin/batou-local %s %s' %
                      (self.remote_base, self.environment.name, self.host.fqdn))
+            logger.info(log)
 
     def bouncedir_name(self):
         """Pick suitable name for hg repository bounce dir."""
