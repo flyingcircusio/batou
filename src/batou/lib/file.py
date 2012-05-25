@@ -58,11 +58,13 @@ class File(Component):
                 ' symlink not %s' % self.ensure)
 
         if self.content or self.source or self.is_template:
-            self += Content(self.path,
-                            source=self.source,
-                            is_template=self.is_template,
-                            template_context=self.parent,
-                            content=self.content)
+            content = Content(self.path,
+                              source=self.source,
+                              is_template=self.is_template,
+                              template_context=self.parent,
+                              content=self.content)
+            self += content
+            self.content = content.content
 
         if self.owner:
             self += Owner(self.path, owner=self.owner)
