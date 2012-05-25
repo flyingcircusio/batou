@@ -24,9 +24,9 @@ def main():
     args = parser.parse_args()
 
     batou = logging.getLogger('batou')
-    batou.setLevel(-1000)
+    batou.setLevel(logging.INFO)
     handler = logging.StreamHandler()
-    handler.setLevel(-1000)
+    handler.setLevel(logging.INFO)
     batou.addHandler(handler)
 
     config = ServiceConfig('.', [args.environment])
@@ -90,8 +90,8 @@ class RemoteDeployment(object):
         if not self.exists(bouncedir):
             self.cmd(u'hg init %s' % bouncedir, service_user=False)
         try:
-            subprocess.check_call(['hg push --new-branch ssh://%s/%s' %
-                                   (self.host.fqdn, bouncedir)], shell=True)
+            subprocess.check_output(['hg push --new-branch ssh://%s/%s' %
+                                    (self.host.fqdn, bouncedir)], shell=True)
         except subprocess.CalledProcessError, e:
             if e.returncode != 1:
                 # 1 means: nothing to push
