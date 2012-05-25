@@ -51,6 +51,8 @@ class Component(object):
 
     namevar = ''
 
+    changed = False
+
     def __init__(self, namevar=None, **kw):
         if self.namevar:
             if namevar is None:
@@ -95,11 +97,14 @@ class Component(object):
         if hasattr(self, 'sub_components'):
             for sub_component in self.sub_components:
                 sub_component.deploy()
+                if sub_component.changed:
+                    self.changed = True
         try:
             self.verify()
         except batou.UpdateNeeded:
             logger.info('Updating {}'.format(self._breadcrumbs))
             self.update()
+            self.changed = True
 
     def verify(self):
         """Verify whether this component has been deployed correctly or needs
@@ -174,7 +179,9 @@ class Component(object):
                 raise batou.UpdateNeeded()
 
     def assert_no_subcomponent_changes(self):
-        raise batou.UpdateNeeded()
+        for component in self.sub_components:
+            if component.changed:
+                raise batou.UpdateNeeded()
 
     def cmd(self, cmd):
         process = subprocess.Popen(
