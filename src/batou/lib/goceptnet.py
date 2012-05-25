@@ -29,7 +29,8 @@ class UserInit(Component):
         self.executable = self.parent.executable
         self.pidfile = self.parent.pidfile
         target = '/var/spool/init.d/{0}/{1}'.format(
-            self.environment.service_user, str(self.service))
+            self.environment.service_user,
+            os.path.basename(self.parent.executeable))
         init_source = os.path.join(
             os.path.dirname(__file__), 'resources', 'init.sh')
         self += File(target,
