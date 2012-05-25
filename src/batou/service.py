@@ -29,6 +29,8 @@ class ServiceConfig(object):
     of the loading process while integrating with Fabric.
     """
 
+    platform = None     # XXX overridden via CLI
+
     def __init__(self, basedir, environments=[]):
         self.environments = set(environments)
         self.basedir = os.path.abspath(basedir)
@@ -76,24 +78,15 @@ class ServiceConfig(object):
             env_config.update(dict(config.items('environment')))
         if self.platform is not None:
             env_config['platform'] = self.platform
-        env.configure(env_config)
+        env.from_config(env_config)
         # load hosts
         for hostname in config.options('hosts'):
             fqdn = env.normalize_host_name(hostname)
             env.hosts[fqdn] = host = Host(fqdn, env)
             # load components for host
-            components = {}
             for name, features in parse_host_components(
                     config.get('hosts', hostname)).items():
-                component_config = {} # XXX extract from environment
-                # XXX The factory/root/prepare dance is quirky. :/
-                root_factory = self.service.components[name]
-                root = root_factory(self.service, env, host, features, component_config)
-                host.components.append(root)
-        # prepare all loaded components
-        for host in env.hosts.values():
-            for root in host.components:
-                root.component.prepare(self.service, env, host, root)
+                host.add_component(name, features)
         self.service.environments[env.name] = env
 
 
