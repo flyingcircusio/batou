@@ -26,4 +26,5 @@ def main():
     config.platform = args.platform
     config.scan()
     environment = config.service.environments[args.environment]
+    environment.configure()
     environment.get_host(args.hostname).deploy()

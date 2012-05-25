@@ -19,7 +19,6 @@ class ComponentTests(TestCase):
 
     def test_init_with_no_arguments_creates_plain_component(self):
         component = Component()
-        self.assertEquals({}, component.hooks)
         # Lazy initialized attribute
         self.assertFalse(hasattr(component, 'sub_components'))
 
@@ -167,9 +166,10 @@ class ComponentTests(TestCase):
         c = Component()
         self.assertEquals('1\n', c.cmd('echo 1'))
 
-    def test_cmd_raises_if_error(self):
+    @mock.patch('sys.stdout')
+    def test_cmd_raises_if_error(self, stdout):
         c = Component()
-        with self.assertRaises(subprocess.CalledProcessError):
+        with self.assertRaises(RuntimeError):
             c.cmd('non-existing-command')
 
     def test_touch_creates_new_file(self):
@@ -207,21 +207,6 @@ class ComponentTests(TestCase):
         c.prepare(None, None, 'localhost', None)
         self.assertEqual('Hello localhost', c.template(sample))
 
-    def test_secrets_attribute_looks_up_secrets_hook(self):
-        class Secrets(Component):
-            def configure(self):
-                self.hooks['secrets'] = self
-        environment = batou.environment.Environment('test', None)
-        host = batou.host.Host('localhost', environment)
-        environment.hosts['localhost'] = host
-        c = Component()
-        c.prepare(None, environment, host, None)
-        secrets = Secrets()
-        c += secrets
-        root = RootComponent('component', c, None)
-        host.components = [root]
-        self.assertIs(c.secrets, secrets)
-
     def test_chdir_contextmanager_is_stackable(self):
         outer = os.getcwd()
         inner1 = os.path.join(os.path.dirname(__file__), 'fixture')
@@ -233,29 +218,6 @@ class ComponentTests(TestCase):
                 self.assertEqual(inner2, os.getcwd())
             self.assertEqual(inner1, os.getcwd())
         self.assertEqual(outer, os.getcwd())
-
-    def test_find_hook_ignores_different_host_but_finds_same_host(self):
-        environment = batou.environment.Environment('test', None)
-
-        host1 = batou.host.Host('host1', environment)
-        environment.hosts['host1'] = host1
-        c = Component()
-        c.hooks['test'] = 'asdf1'
-        c.prepare(None, environment, host1, None)
-        root1 = RootComponent('component', c, None)
-        host1.components = [root1]
-
-        host2 = batou.host.Host('host2', environment)
-        environment.hosts['host2'] = host2
-        c = Component()
-        c.hooks['test'] = 'asdf2'
-        c.prepare(None, environment, host2, None)
-        root2 = RootComponent('component', c, None)
-        host2.components = [root2]
-
-        self.assertEquals(['asdf1', 'asdf2'], c.find_hooks('test'))
-        self.assertEquals(['asdf1'], c.find_hooks('test', host1))
-        self.assertEquals(['asdf2'], c.find_hooks('test', host2))
 
     def test_root_component_computes_working_dir(self):
         c = Component()

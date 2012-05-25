@@ -20,6 +20,14 @@ class Host(object):
         self.name = self.fqdn.split('.')[0]
         self.components = []
 
+    def add_component(self, name, features=None):
+        """Register a top-level component as defined in the service
+        for this host.
+        """
+        root_factory = self.environment.service.components[name]
+        root = root_factory(self.environment.service, self.environment, self, features, {})
+        self.components.append(root)
+
     @contextlib.contextmanager
     def locked(self):
         with open('.batou-lock', 'a+') as lockfile:

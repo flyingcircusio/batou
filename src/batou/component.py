@@ -66,6 +66,7 @@ class Component(object):
         self.host = host
         self.root = root
         self.parent = parent
+        # logger.debug('Configuring {}'.format(self._breadcrumbs))
         self.configure()
         self += self.get_platform()
 
@@ -154,7 +155,15 @@ class Component(object):
         platforms = self.__class__.__dict__.get('_platforms', {})
         return platforms.get(self.environment.platform, lambda:None)()
 
-    # Component (convenience) API 
+    # Resource provider/user API
+
+    def provide(self, key, value):
+        self.host.environment.provide(self, key, value)
+
+    def require(self, key):
+        return self.host.environment.require(self, key)
+
+    # Component (convenience) API
 
     def assert_file_is_current(self, result, requirements=[]):
         if not os.path.exists(result):
@@ -208,10 +217,6 @@ class Component(object):
             component=self if component is None else component)
         return args
 
-    @property
-    def secrets(self):
-        return self.find_hooks('secrets')[0]
-
     @contextlib.contextmanager
     def chdir(self, path):
         old = os.getcwd()
@@ -219,33 +224,7 @@ class Component(object):
         yield
         os.chdir(old)
 
-    def find_hooks(self, expression, host=None):
-        hooks = []
-        components = []
-        for candidate_host in self.environment.hosts.values():
-            if host is not None and candidate_host != host:
-                continue
-            for root in candidate_host.components:
-                components.append((candidate_host, root.component, root, None))
-        while components:
-            host, current, root, parent = components.pop()
-            if hasattr(current, 'sub_components'):
-                components.extend((host, current.sub_components, root,
-                    current))
-            if expression in current.hooks:
-                if not hasattr(current, 'service'):
-                    current.prepare(self.service, self.environment, host,
-                            root, parent) 
-                hooks.append(current.hooks[expression])
-        return hooks
-
     # internal methods
-
-    @property
-    def hooks(self):
-        if not hasattr(self, '_hooks'):
-            self._hooks = {}
-        return self._hooks
 
     @property
     def _breadcrumbs(self):
