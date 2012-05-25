@@ -138,8 +138,8 @@ class RemoteDeployment(object):
         stderr = chan.makefile_stderr('rb')
         status = chan.recv_exit_status()
         if status != 0:
-            logger.debug(stdout.read())
-            logger.debug(stderr.read())
+            logger.error(stdout.read())
+            logger.error(stderr.read())
             raise RuntimeError(status)
         result = stdout.read()
         logger.debug(result)
