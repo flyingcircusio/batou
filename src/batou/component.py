@@ -173,6 +173,9 @@ class Component(object):
             if current < os.stat(requirement).st_mtime:
                 raise batou.UpdateNeeded()
 
+    def assert_no_subcomponent_changes(self):
+        raise batou.UpdateNeeded()
+
     def cmd(self, cmd):
         process = subprocess.Popen(
             [cmd],
