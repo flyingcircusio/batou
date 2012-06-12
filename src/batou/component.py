@@ -165,8 +165,8 @@ class Component(object):
     def provide(self, key, value):
         self.host.environment.provide(self, key, value)
 
-    def require(self, key):
-        return self.host.environment.require(self, key)
+    def require(self, key, host=None):
+        return self.host.environment.require(self, key, host)
 
     # Component (convenience) API
 
@@ -262,7 +262,7 @@ class RootComponentFactory(object):
 
     def __call__(self, service, environment, host, features, config):
         component = self.factory(**config)
-        root = RootComponent(self.name, component, self.defdir)
+        root = RootComponent(self.name, component, host, self.defdir)
         if features:
             root.features = features
         return root
@@ -277,10 +277,11 @@ class RootComponent(object):
 
     """
 
-    def __init__(self, name, component, defdir):
+    def __init__(self, name, component, host, defdir):
         self.component = component
         self.name = name
         self.defdir = defdir
+        self.host = host
 
     @property
     def workdir(self):

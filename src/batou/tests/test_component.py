@@ -223,7 +223,7 @@ class ComponentTests(TestCase):
         c = Component()
         c.service = mock.Mock()
         c.service.base = 'path-to-service'
-        root = RootComponent('test', c, None)
+        root = RootComponent('test', c, None, None)
         self.assertEquals('path-to-service/work/test', root.workdir)
 
     def test_root_component_creates_working_dir_runs_component_deploy(self):
@@ -234,7 +234,7 @@ class ComponentTests(TestCase):
         c.deploy = mock.Mock()
         c.service = mock.Mock()
         c.service.base = d
-        root = RootComponent('test', c, None)
+        root = RootComponent('test', c, None, None)
         self.assertFalse(os.path.isdir(root.workdir))
         root.deploy()
         self.assertTrue(os.path.isdir(root.workdir))
