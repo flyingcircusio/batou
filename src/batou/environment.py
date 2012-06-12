@@ -61,7 +61,7 @@ class Environment(object):
                 self._reset_component_resources(root)
                 root.component.sub_components = []
                 try:
-                    root.component.prepare(self.service, self, host, root)
+                    root.component.prepare(self.service, self, root.host, root)
                 except Exception:
                     self.dirty.add(root)
 
@@ -75,7 +75,7 @@ class Environment(object):
                     self._reset_component_resources(root)
                     root.component.sub_components = []
                     try:
-                        root.component.prepare(self.service, self, host, root)
+                        root.component.prepare(self.service, self, root.host, root)
                     except Exception, e:
                         logger.exception(e)
 
@@ -107,9 +107,16 @@ class Environment(object):
         if key in self.subscribers:
             self.dirty.update(self.subscribers[key])
 
-    def require(self, component, key):
+    def require(self, component, key, host=None):
         self.subscribers.setdefault(key, set()).add(component.root)
-        return flatten(self.resources.get(key, {}).values())
+        if host is not None:
+            results = []
+            for root, values in self.resources.get(key, {}).items():
+                if root.component.host is host:
+                    results.extend(values)
+        else:
+            results = flatten(self.resources.get(key, {}).values())
+        return results
 
     def _reset_component_resources(self, root):
         for key, resources in self.resources.items():

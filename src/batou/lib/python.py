@@ -5,6 +5,13 @@ class VirtualEnv(Component):
 
     namevar = 'version'
 
+    # XXX unsure whether this factoring is OK.
+    # Depending on the platform and or environment the python executable may
+    # not be in the search path and may not even have a predictable path.
+
+    # Alternatively we could have (Unix) environment variables defined in the
+    # (batou) environment definition. (Sounds like a good idea.)
+
     @property
     def python(self):
         return 'bin/python{}'.format(self.version)

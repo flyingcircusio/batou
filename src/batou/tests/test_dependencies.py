@@ -26,6 +26,12 @@ class AggressiveConsumer(Component):
         self.the_answer = self.require('the-answer')[0]
 
 
+class SameHostConsumer(Component):
+
+    def configure(self):
+        self.the_answer = self.require('the-answer', self.host)
+
+
 class Broken(Component):
 
     def configure(self):
@@ -43,11 +49,14 @@ class TestDependencies(unittest.TestCase):
                 'consumer', Consumer, '.')
         self.service.components['aggressiveconsumer'] = RootComponentFactory(
                 'aggressiveconsumer', AggressiveConsumer, '.')
+        self.service.components['samehostconsumer'] = RootComponentFactory(
+                'somehostconsumer', SameHostConsumer, '.')
         self.service.components['broken'] = RootComponentFactory(
                 'broken', Broken, '.')
 
         self.env = Environment('test', self.service)
         self.env.hosts['test'] = self.host = Host('test', self.env)
+        self.env.hosts['test2'] = self.host2 = Host('test2', self.env)
 
     def test_provider_without_consumer_raises_error(self):
         self.host.add_component('provider')
@@ -89,3 +98,11 @@ class TestDependencies(unittest.TestCase):
             self.env.configure()
         self.assertTrue(exception_log.called)
         self.assertIsInstance(exception_log.call_args[0][0], KeyError)
+
+    def test_consumer_retrieves_value_from_provider_with_same_host(self):
+        self.host.add_component('samehostconsumer')
+        self.host2.add_component('provider')
+        self.env.configure()
+        consumer = self.host.components[0].component
+        self.assertIsInstance(consumer, SameHostConsumer)
+        self.assertListEqual([], list(consumer.the_answer))
