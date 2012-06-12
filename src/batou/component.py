@@ -209,11 +209,11 @@ class Component(object):
             open(filename, 'w').close()
 
     def expand(self, string):
-        engine = batou.template.MakoEngine()
+        engine = batou.template.Jinja2Engine()
         return engine.expand(string, self._template_args())
 
     def template(self, filename, component=None):
-        engine = batou.template.MakoEngine()
+        engine = batou.template.Jinja2Engine()
         return engine.template(
             filename, self._template_args(component=component))
 

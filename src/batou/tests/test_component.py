@@ -196,16 +196,16 @@ class ComponentTests(TestCase):
     def test_expand(self):
         c = Component()
         c.prepare(None, None, 'localhost', None)
-        self.assertEqual('Hello localhost', c.expand('Hello ${host}'))
+        self.assertEqual('Hello localhost', c.expand('Hello {{host}}'))
 
     def test_templates(self):
         sample = tempfile.mktemp()
         with open(sample, 'w') as template:
-            template.write('Hello ${host}')
+            template.write('Hello {{host}}')
             self.addCleanup(os.unlink, sample)
         c = Component()
         c.prepare(None, None, 'localhost', None)
-        self.assertEqual('Hello localhost', c.template(sample))
+        self.assertEqual('Hello localhost\n', c.template(sample))
 
     def test_chdir_contextmanager_is_stackable(self):
         outer = os.getcwd()
