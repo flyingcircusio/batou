@@ -62,7 +62,7 @@ class ComponentTests(TestCase):
     def test_prepare_calls_configure(self):
         component = Component()
         component.configure = mock.Mock()
-        component.prepare(None, None, None, None)
+        component.prepare(None, mock.Mock(), None, None)
         self.assertTrue(component.configure.called)
 
     def test_prepare_configures_applicable_platforms_as_subcomponents(self):
@@ -92,6 +92,7 @@ class ComponentTests(TestCase):
 
     def test_deploy_empty_component_runs_without_error(self):
         component = Component()
+        component.prepare(None, mock.Mock(), None, None)
         component.deploy()
 
     def test_deploy_update_performed_if_needed(self):
@@ -102,7 +103,7 @@ class ComponentTests(TestCase):
             def update(self):
                 self.updated = True
         component = MyComponent()
-        component.prepare(None, None, None, None)
+        component.prepare(None, mock.Mock(), None, None)
         component.deploy()
         self.assertTrue(component.updated)
 
@@ -114,7 +115,7 @@ class ComponentTests(TestCase):
             def update(self):
                 self.updated = True
         component = MyComponent()
-        component.prepare(None, None, None, None)
+        component.prepare(None, mock.Mock(), None, None)
         component.deploy()
         self.assertFalse(component.updated)
 
@@ -128,22 +129,22 @@ class ComponentTests(TestCase):
             def update(self):
                 log.append('{}:update'.format(self.id))
         top = MyComponent('1')
-        top.prepare(None, None, None, None)
+        top.prepare(None, mock.Mock(), None, None)
         top += MyComponent('2')
         top.deploy()
         self.assertEquals(
             [u'2:verify', u'2:update', u'1:verify', u'1:update'], log)
 
-    def test_adding_subcomponents_prepares_them_immediately(self):
+    def test_adding_subcomponents_configures_them_immediately(self):
         class MyComponent(Component):
-            prepared = False
+            configured = False
             def configure(self):
-                self.prepared = True
+                self.configured = True
         component = Component()
-        component.prepare(None, None, None, None)
+        component.prepare(None, mock.Mock(), None, None)
         my = MyComponent()
         component += my
-        self.assertTrue(my.prepared)
+        self.assertTrue(my.configured)
 
     # AFIC = assert file is current
     def test_afic_raises_if_nonexisting_file(self):
@@ -195,7 +196,7 @@ class ComponentTests(TestCase):
 
     def test_expand(self):
         c = Component()
-        c.prepare(None, None, 'localhost', None)
+        c.prepare(None, mock.Mock(), 'localhost', None)
         self.assertEqual('Hello localhost', c.expand('Hello {{host}}'))
 
     def test_templates(self):
@@ -204,7 +205,7 @@ class ComponentTests(TestCase):
             template.write('Hello {{host}}')
             self.addCleanup(os.unlink, sample)
         c = Component()
-        c.prepare(None, None, 'localhost', None)
+        c.prepare(None, mock.Mock(), 'localhost', None)
         self.assertEqual('Hello localhost\n', c.template(sample))
 
     def test_chdir_contextmanager_is_stackable(self):
