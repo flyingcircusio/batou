@@ -8,19 +8,6 @@ import subprocess
 import urlparse
 
 
-def prepend_env(envvar, string):
-    """Put a `string` in front of a PATH-like `envvar`.
-
-    The elements of the `envvar` are assumed to be colon-separated. If the
-    `envvar` does not exist before, it is created just with `string`.
-    """
-    try:
-        if string not in os.environ[envvar]:
-            os.environ[envvar] = '%s:%s' % (string, os.environ[envvar])
-    except KeyError:
-        os.environ[envvar] = string
-
-
 def host_from_uri(uri):
     """Extract host part from URI."""
     host = urlparse.urlsplit(uri).netloc
