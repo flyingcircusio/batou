@@ -8,14 +8,6 @@ import subprocess
 import urlparse
 
 
-def string_list(config_value):
-    """Explode comma-separated config value."""
-    config_value = config_value.strip()
-    if not config_value:
-        return []
-    return [x.strip() for x in config_value.split(',')]
-
-
 def convert_type(value, datatype):
     """Allow str, int, float, and bool values in config files."""
     if datatype == 'str':
