@@ -8,15 +8,6 @@ import subprocess
 import urlparse
 
 
-def host_from_uri(uri):
-    """Extract host part from URI."""
-    host = urlparse.urlsplit(uri).netloc
-    host = host.split(':')[0]
-    if '@' in host:
-        host = host.split('@')[1]
-    return host
-
-
 def resolve(address):
     if ':' in address:
         host, port = address.split(':')

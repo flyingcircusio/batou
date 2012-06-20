@@ -1,28 +1,9 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
 
-from batou.utils import host_from_uri, resolve
+from batou.utils import resolve
 import mock
 import unittest
-
-
-class HostFromUriTests(unittest.TestCase):
-
-    def test_source_host_from_simple_url(self):
-        self.assertEqual(
-            'example.com', host_from_uri('http://example.com'))
-
-    def test_source_host_ignores_port(self):
-        self.assertEqual(
-            'example.com', host_from_uri('http://example.com:80'))
-
-    def test_source_host_ignores_user(self):
-        self.assertEqual(
-            'example.com', host_from_uri('http://user@example.com'))
-
-    def test_source_host_ignores_user_and_port(self):
-        self.assertEqual(
-            'example.com', host_from_uri('http://user@example.com:80'))
 
 
 class ResolveTests(unittest.TestCase):
