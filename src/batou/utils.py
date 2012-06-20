@@ -8,14 +8,6 @@ import subprocess
 import urlparse
 
 
-def check_shared_object(sopath):
-    """Return True is shared object is link-consistent."""
-    if not os.path.exists(sopath):
-        return False
-    deps = subprocess.check_output(['ldd', sopath])
-    return '=> not found' not in deps
-
-
 def prepend_env(envvar, string):
     """Put a `string` in front of a PATH-like `envvar`.
 
