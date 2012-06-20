@@ -51,7 +51,3 @@ class NetLoc(object):
         if self.port:
             result += ':' + self.port
         return result
-
-
-class Hook(object):
-    pass
