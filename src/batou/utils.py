@@ -8,21 +8,6 @@ import subprocess
 import urlparse
 
 
-def convert_type(value, datatype):
-    """Allow str, int, float, and bool values in config files."""
-    if datatype == 'str':
-        return str(value)
-    if datatype == 'int':
-        return int(value)
-    if datatype == 'float':
-        return float(value)
-    if datatype == 'bool':
-        if value.lower() in ('false', 'no', 'n', 'off'):
-            return False
-        return bool(value)
-    raise ValueError('unknown data type', datatype)
-
-
 def check_shared_object(sopath):
     """Return True is shared object is link-consistent."""
     if not os.path.exists(sopath):
