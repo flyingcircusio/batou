@@ -1,11 +1,7 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
 
-from __future__ import print_function, unicode_literals
 import socket
-import os
-import subprocess
-import urlparse
 
 
 def resolve(address):
