@@ -1,0 +1,115 @@
+Introduction
+============
+
+Overview
+--------
+
+batou is a tool that allows its users to define complex service setups and
+automate the process of deploying those services. It was inspired by the
+following ideas:
+
+Single-command
+
+    turns complex deployments into "single button" actions.
+
+Repeatability
+
+    makes deployments repeatable and reliable.
+
+Reliability
+
+    asdf
+
+Expressiveness
+
+    provides an expressive language and library to write service definitions.
+    also: readability
+
+Reusability
+
+    When finding a good way to solve a specific deployment problem (like
+    managing files, services, secrets, ...) we want to make the solution
+    re-usable so that we can benefit from it whenever we meet the same problem
+    again.
+
+    An important point to reusability is to make re-use simple enough that you
+    do not have to prefer short-cuts over doing it right.
+
+Resistance to entropy
+
+    asdf
+
+Platform-independence
+
+    asdf
+
+Performance
+
+    sdf
+
+Simplicity
+
+    Complex service deployments are bad enough as they are - we do not want to
+    make them any more complicated. We especially do not want to break
+    expectations about existing components that people who are experienced
+    with them fail to predict.
+
+
+
+Features
+--------
+
+* Services are defined in Python using a simple, yet flexible object
+  model and a library of basic components.
+
+* batou does not make any assumptions on the nature of your project.
+
+* You can support multiple platforms, e.g. for development, staging, and
+  production, without cluttering your service definition.
+
+* Secrets (like database passwords or certificates) can be stored securely
+  along your service definition.
+
+No additional components
+
+    No additional active components in your service environment are required at
+    runtime.
+
+
+Automatic dependencies
+
+    Dependencies between separate components are determine automatically.
+
+Continuity
+
+    supports initial, incremental, and continuous deployments.
+
+Minimal changes
+
+    minimize changes and handles entropy on long-lived target systems.
+
+Minimal downtimes
+
+    minimizes downtimes during deployments.
+
+
+Components
+----------
+
+:program:`batou-local`
+
+:program:`batou-remote`
+
+:program:`secretsedit`
+
+
+Platform requirements
+---------------------
+
+batou has been tested and is known to run on Linux and Mac OS X.
+
+We do not support deploying to non-UNIX targets. We *may* support running
+:program:`batou-remote` on non-UNIX platforms in the future.
+
+batou works with Python 2.7 but does not require a specific version of Python
+for the components it deploys.

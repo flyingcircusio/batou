@@ -1,3 +1,5 @@
-.. include:: ../HACKING.txt
+Legal information
+=================
+
 .. literalinclude:: ../COPYRIGHT.txt
 .. literalinclude:: ../LICENSE.txt
