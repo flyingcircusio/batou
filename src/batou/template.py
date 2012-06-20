@@ -1,25 +1,18 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
-
 """batou templating support
 
-Currently we support two templating engines with different formats.
-
-Mako::
-    % for server in servers:
-    server ${server.name}
-    % endfor
+Currently we support one templating engine:
 
 Jinja2::
     %% for server in servers
     server {{ server.name }}
     %% endfor
+
 """
 
 from __future__ import print_function, unicode_literals
 import jinja2
-import mako.runtime
-import mako.template
 import StringIO
 
 
@@ -32,8 +25,6 @@ class TemplateEngine(object):
     @classmethod
     def get(cls, enginename):
         """Return TemplateEngine instance for `enginename`."""
-        if enginename.lower() == 'mako':
-            return MakoEngine()
         if enginename.lower() == 'jinja2':
             return Jinja2Engine()
         raise NotImplementedError('template engine not known', enginename)
@@ -50,23 +41,6 @@ class TemplateEngine(object):
     def expand(self, templatestr, args):
         """Expand template in `templatestr` and return it as string."""
         raise NotImplementedError
-
-
-class MakoEngine(TemplateEngine):
-
-    def _render_template_file(self, sourcefile, args):
-        args.setdefault('d', '$')
-        output = StringIO.StringIO()
-        ctx = mako.runtime.Context(output, **args)
-        tmpl = mako.template.Template(filename=sourcefile,
-                                      strict_undefined=True)
-        tmpl.render_context(ctx)
-        return output
-
-    def expand(self, templatestr, args):
-        args.setdefault('d', '$')
-        tmpl = mako.template.Template(templatestr)
-        return tmpl.render(**args)
 
 
 class Jinja2Engine(TemplateEngine):
