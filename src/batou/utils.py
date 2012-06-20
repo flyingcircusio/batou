@@ -25,7 +25,7 @@ def resolve(address):
 class Address(object):
     """An internet service address that can be listened and connected to.
 
-    The expected constructor address is expected to be the address that can be
+    The constructor address is expected to be the address that can be
     connected to. The listen address will be computed automatically.
 
     """
@@ -35,12 +35,12 @@ class Address(object):
             connect, port = connect_address.split(':')
         else:
             connect = connect_address
-        listen = resolve(connect)
-        self.listen = NetLoc(listen, str(port))
         self.connect = NetLoc(connect, str(port))
+        self.listen = NetLoc(resolve(connect), str(port))
 
 
 class NetLoc(object):
+    """A network location specified by host and port."""
 
     def __init__(self, host, port=None):
         self.host = host
