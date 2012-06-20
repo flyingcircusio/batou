@@ -1,7 +1,7 @@
 
+from batou import NonConvergingWorkingSet, UnusedResource
 from batou.component import Component, RootComponentFactory
-from batou.environment import Environment, UnusedResource
-from batou.environment import NonConvergingWorkingSet
+from batou.environment import Environment
 from batou.host import Host
 from batou.service import Service
 import mock

@@ -1,7 +1,12 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
 
+import itertools
 import socket
+
+
+def flatten(listOfLists):
+    return list(itertools.chain.from_iterable(listOfLists))
 
 
 def resolve(address):
