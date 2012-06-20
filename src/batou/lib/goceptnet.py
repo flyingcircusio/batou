@@ -2,7 +2,6 @@
 from batou.component import Component, platform
 from batou.lib.file import File
 import batou
-import batou.lib.haproxy
 import batou.lib.service
 import batou.lib.ssh
 import os.path
@@ -38,22 +37,3 @@ class UserInit(Component):
                 is_template=True,
                 mode=0o755,
                 leading=True)
-
-
-@platform('gocept.net', batou.lib.haproxy.HAProxy)
-class SystemWideHAProxy(Component):
-    """gocep.net-specific component to integrate haproxy.
-    """
-
-    def configure(self):
-        self += file.File('/etc/haproxy.cfg', source='haproxy.cfg')
-
-    def verify(self):
-        self.assert_file_is_current('/var/run/haproxy.pid',
-            ['/etc/haproxy.cfg'])
-
-    def update(self):
-        try:
-            self.cmd('sudo /etc/init.d/haproxy reload')
-        except:
-            self.cmd('sudo /etc/init.d/haproxy restart')
