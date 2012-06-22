@@ -11,7 +11,6 @@ class EnvironmentTest(unittest.TestCase):
     def test_configure_should_use_defaults(self):
         e = Environment(u'name', u'service')
         e.from_config({})
-        self.assertEqual(Environment.service_user, e.service_user)
         self.assertEqual(Environment.host_domain, e.host_domain)
         self.assertEqual(Environment.branch, e.branch)
 

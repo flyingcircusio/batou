@@ -7,10 +7,7 @@ from batou.tests import TestCase
 import collections
 import jinja2
 import mock
-import os
 import os.path
-import shutil
-import tempfile
 
 
 Server = collections.namedtuple('Server', ['name', 'address'])
@@ -29,28 +26,16 @@ class ComponentTemplateTests(TestCase):
         with self.assertRaises(NotImplementedError):
             TemplateEngine.get('foo')
 
-    def test_mako_template_str(self):
-        tmpl = TemplateEngine.get('mako')
-        self.assertEqual('hello world',
-                         tmpl.expand('hello ${hello}', self.__dict__))
-
     def test_jinja2_template_str(self):
         tmpl = TemplateEngine.get('jinja2')
         self.assertEqual('hello world',
                          tmpl.expand('hello {{hello}}', self.__dict__))
-
-    def test_mako_dollar_pseudoescape(self):
-        tmpl = TemplateEngine.get('mako')
-        self.assertEqual('${PATH}', tmpl.expand('${d}{PATH}', {}))
 
     def _template_runner(self, template_format, source):
         tmpl = TemplateEngine.get(template_format)
         result = tmpl.template(source, self.__dict__)
         with open('%s/haproxy.cfg' % self.fixture) as ref:
             self.assertMultiLineEqual(ref.read(), result)
-
-    def test_mako_template_file(self):
-        self._template_runner('mako', '%s/haproxy.cfg.mako' % self.fixture)
 
     def test_jinja2_template_file(self):
         self._template_runner('jinja2', '%s/haproxy.cfg.jinja2' % self.fixture)

@@ -22,7 +22,6 @@ setup(
     install_requires=[
         'distribute',
         'ssh',
-        'Mako',
         'Jinja2',
         'mock',
         ],
