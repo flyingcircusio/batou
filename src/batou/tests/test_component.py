@@ -238,7 +238,12 @@ class ComponentTests(TestCase):
         self.assertFalse(os.path.isdir(root.workdir))
         root.deploy()
         self.assertTrue(os.path.isdir(root.workdir))
-        self.assertEquals(root.workdir, os.getcwd())
+        cwd = os.getcwd()
+        if cwd.startswith('/private/'):
+            # On Mac OS X tmpfiles care created in /var/folders/someting *and*
+            # /var is symlinked to /private/var. @#$(2#$%)!O
+            cwd = cwd.replace('/private/', '/', 1)
+        self.assertEquals(root.workdir, cwd)
         self.assertTrue(c.deploy.called)
 
     @mock.patch('sys.stdout')
