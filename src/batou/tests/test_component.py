@@ -248,3 +248,8 @@ class ComponentTests(TestCase):
             c.cmd('asdf')
         except RuntimeError, e:
             self.assertEquals('Command "asdf" returned unsuccessfully.', str(e))
+
+    def test_cmd_should_not_stop_if_process_expects_input(self):
+        c = Component()
+        stdout, stderr = c.cmd('cat')
+        # The assertion is, that the test doesn't freeze.

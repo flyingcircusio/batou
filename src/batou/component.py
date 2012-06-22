@@ -184,10 +184,12 @@ class Component(object):
                 raise batou.UpdateNeeded()
 
     def cmd(self, cmd):
+        stdin = open('/dev/null')
         process = subprocess.Popen(
             [cmd],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            stdin=stdin,
             shell=True)
         stdout, stderr = process.communicate()
         retcode = process.poll()
@@ -200,6 +202,7 @@ class Component(object):
             print stderr
             raise RuntimeError(
                 'Command "{}" returned unsuccessfully.'.format(cmd))
+        stdin.close()
         return stdout, stderr
 
     def touch(self, filename):
