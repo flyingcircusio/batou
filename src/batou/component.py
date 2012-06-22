@@ -68,7 +68,8 @@ class Component(object):
         self.host = host
         self.root = root
         self.parent = parent
-        # logger.debug('Configuring {}'.format(self._breadcrumbs))
+        self.sub_components = []
+        self.environment.resources.reset_component_resources(root)
         self.configure()
         self += self.get_platform()
 
@@ -94,11 +95,10 @@ class Component(object):
     # Deployment phase
 
     def deploy(self):
-        if hasattr(self, 'sub_components'):
-            for sub_component in self.sub_components:
-                sub_component.deploy()
-                if sub_component.changed:
-                    self.changed = True
+        for sub_component in self.sub_components:
+            sub_component.deploy()
+            if sub_component.changed:
+                self.changed = True
         try:
             self.verify()
         except batou.UpdateNeeded:
@@ -135,8 +135,6 @@ class Component(object):
         This will also automatically prepare the added component.
 
         """
-        if not hasattr(self, 'sub_components'):
-            self.sub_components = []
         # Allow `None` components to flow right through. This makes the API a
         # bit more convenient in some cases, e.g. with platform handling.
         if component is not None:
@@ -163,10 +161,10 @@ class Component(object):
     # Resource provider/user API
 
     def provide(self, key, value):
-        self.host.environment.provide(self, key, value)
+        self.host.environment.resources.provide(self, key, value)
 
     def require(self, key, host=None):
-        return self.host.environment.require(self, key, host)
+        return self.host.environment.resources.require(self, key, host)
 
     # Component (convenience) API
 

@@ -1,11 +1,35 @@
-.. include:: ../README.txt
+batou - a service deployment tool
+=================================
+
+batou is a tool that allows its users to define services and deploy them.
+
+It is inspired by tools like Puppet and zc.buildout.
+
+Narrative documentation
+-----------------------
 
 .. toctree::
     :maxdepth: 2
 
-    api
-    about
-    changes
+    introduction
+    installing
+    model
+    components
+    environments
+    deploying
+    hacking
 
+Reference
+---------
+
+.. toctree::
+    :maxdepth: 1
+
+    changes
+    legal
+
+
+Indices and tables
+------------------
 
 - :ref:`genindex`
