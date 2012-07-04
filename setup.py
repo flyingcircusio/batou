@@ -17,7 +17,7 @@ def project_path(*names):
 
 setup(
     name='batou',
-    version='0.1.dev0',
+    version='0.2.dev0',
 
     install_requires=[
         'distribute',
