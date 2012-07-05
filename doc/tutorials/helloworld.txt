@@ -78,15 +78,8 @@ directory for our hello world component:
 In every component directory we expect a file named ``component.py`` which
 contains the actual component definition. Put the following in a file named ``components/hello/component.py``:
 
-.. code-block:: python
-
-  from batou.component import Component
-  from batou.lib.file import File
-
-  class Hello(Component):
-
-      def configure(self):
-          self += File('hello', content='Hello world')
+.. literalinclude:: ../../examples/tutorial-helloworld/components/hello/component.py
+	:language: python
 
 The remainder of the component directory can be used by you to store any other
 files you need to support your component.
@@ -106,10 +99,8 @@ Environments are stored in a directory called ``environments``:
 Each environment gets a config file that maps the components to the involved
 hosts. For our tutorial deployment, create a file ``environments/tutorial.cfg`` with the following content:
 
-.. code-block:: ini
-
-  [hosts]
-  localhost = hello
+.. literalinclude:: ../../examples/tutorial-helloworld/environments/tutorial.cfg
+	:language: ini
 
 Run deployments
 ---------------
