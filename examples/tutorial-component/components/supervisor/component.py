@@ -1,7 +1,6 @@
 from batou.component import Component
 from batou.lib.buildout import Buildout
 
-
 class Supervisor(Component):
 
     def configure(self):

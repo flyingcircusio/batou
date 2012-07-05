@@ -1,0 +1,85 @@
+Using components
+================
+
+.. contents::
+
+
+This is a tutorial about batou components. You will use batou to deploy a
+simple long-running process as a daemon using supervisor.
+
+To do so, you need to configure multiple components and you will learn about
+the concepts behind components as well as the practical steps to take in order
+to put them into action.
+
+In order to successfully follow the tutorial, you should have installed and
+used the very basics of batou before. Working through the "hello world"
+tutorial would be adequate as a prerequisite.
+
+
+Prepare the deployment
+----------------------
+
+As a starting point, we create a batou deployment similar to the one from the
+"hello world" tutorial, only this time, we deploy a program instead of a
+minimal text file. Start by preparing a directory for your deployment and
+install batou in it. When you're finished, you should have the
+``bin/batou-local`` script available.
+
+
+Deploy the program
+------------------
+
+Next, create a component named "tick" and a simple environment that uses it:
+
+.. code-block:: console
+
+  $ mkdir -p components/tick
+  $ mkdir environments
+
+XXX
+
+The component directory should contain two files: the component definition and
+the program. Let's use a shell script like this for the program:
+
+.. literalinclude:: ../../examples/tutorial-component/components/tick/tick.sh
+        :language: bash
+
+The component which deploys this program is similar to the one you know from
+the "hello world" tutorial:
+
+.. code-block:: python
+
+  from batou.component import Component
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      def configure(self):
+          self += File('hello', source='tick.sh', mode=0755)
+
+However, it differs in two ways: Firstly, since we deal with a multi-line
+program which we store in a separate file, the File component is passed the
+path to that source file instead of its content. Secondly, since the program
+should be executable, we need to specify the mode of the deployed file.
+
+Finally, we are ready to run the deployment:
+
+.. code-block:: console
+
+  $ bin/batou-local tutorial localhost
+  Updating Tick > File(hello) > Presence(hello)
+  Updating Tick > File(hello) > Content(hello)
+  Updating Tick > File(hello) > Mode(hello)
+
+As the output suggests, this created an executable file with the contents of
+our program:
+
+.. code-block:: console
+
+  $ ls -l work/tick/hello
+  -rwxr-xr-x 1 thomas thomas 66 2012-07-05 18:09 work/tick/hello
+
+We can actually run that program now, so in the next step, we can concern
+ourselves with installing supervisor to run our program for us.
+
