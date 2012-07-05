@@ -35,7 +35,7 @@ class Buildout(Component):
 
     def configure(self):
         if self.config is None:
-            self.config = File('buildout.cfg')
+            self.config = File('buildout.cfg', source='buildout.cfg')
         if isinstance(self.config, Component):
             self.config = [self.config]
         for component in self.config:
