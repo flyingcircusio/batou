@@ -168,6 +168,10 @@ class Component(object):
 
     # Component (convenience) API
 
+    @property
+    def workdir(self):
+        return self.root.workdir
+
     def assert_file_is_current(self, result, requirements=[]):
         if not os.path.exists(result):
             raise batou.UpdateNeeded()
