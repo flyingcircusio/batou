@@ -32,6 +32,7 @@ class File(Component):
     content = None
     source = ''
     is_template = False
+    template_context = None
 
     # Unix attributes
     owner = None
@@ -58,10 +59,12 @@ class File(Component):
                 ' symlink not %s' % self.ensure)
 
         if self.content or self.source or self.is_template:
+            if not self.template_context:
+                self.template_context = self.parent
             content = Content(self.path,
                               source=self.source,
                               is_template=self.is_template,
-                              template_context=self.parent,
+                              template_context=self.template_context,
                               content=self.content)
             self += content
             self.content = content.content

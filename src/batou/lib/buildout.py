@@ -37,6 +37,7 @@ class Buildout(Component):
         if self.config is None:
             self.config = File('buildout.cfg',
                                source='buildout.cfg',
+                               template_context=self.parent,
                                is_template=True)
         if isinstance(self.config, Component):
             self.config = [self.config]
