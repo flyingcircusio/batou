@@ -9,13 +9,14 @@ class Supervisor(Component):
 
     def verify(self):
         self.assert_file_is_current(
-            'var/supervisord.pid', ['.batou.buildout.success'])
+            'var/supervisord.pid',
+            ['.batou.buildout.success'] + self.programs)
 
     def update(self):
         out, err = self.cmd('bin/supervisorctl pid')
         try:
             int(out)
-        except TypeError:
+        except ValueError:
             self.cmd('bin/supervisord')
         else:
             self.cmd('bin/supervisorctl reload')
