@@ -5,8 +5,8 @@ batou is a tool that allows its users to define services and deploy them.
 
 It is inspired by tools like Puppet and zc.buildout.
 
-Narrative documentation
------------------------
+Introduction
+------------
 
 .. toctree::
     :maxdepth: 2
@@ -18,6 +18,15 @@ Narrative documentation
     environments
     deploying
     hacking
+
+Tutorials
+---------
+
+.. toctree::
+    :maxdepth: 1
+
+    tutorials/helloworld
+
 
 Reference
 ---------
