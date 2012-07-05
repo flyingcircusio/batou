@@ -1,7 +1,6 @@
 from batou.component import Component
 from batou.lib.file import File
 
-
 class Tick(Component):
 
     def configure(self):
