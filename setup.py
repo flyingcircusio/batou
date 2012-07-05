@@ -15,34 +15,30 @@ def project_path(*names):
     return os.path.join(os.path.dirname(__file__), *names)
 
 
+version = '0.2.dev0'
+
 setup(
     name='batou',
-    version='0.2.dev0',
-
+    version=version,
     install_requires=[
         'distribute',
         'ssh',
         'Jinja2',
         'mock',
-        ],
-
+    ],
     extras_require={
         'test': [
-            ],
-        },
-
+        ],
+    },
     entry_points="""
         [console_scripts]
             batou-remote = batou.remote:main
             batou-local = batou.local:main
-            secretsedit = batou.secrets:edit
     """,
-
     author='gocept <mail@gocept.com>',
     author_email='mail@gocept.com',
     license='BSD',
     url='https://projects.gocept.com/projects/batou/',
-
     keywords='deployment',
     classifiers="""\
 License :: OSI Approved :: Zope Public License
@@ -64,4 +60,5 @@ Programming Language :: Python :: 2 :: Only
     include_package_data=True,
     data_files=[('', glob.glob(project_path('*.txt')))],
     zip_safe=False,
-    )
+    test_suite='batou.tests',
+)
