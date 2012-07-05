@@ -3,7 +3,7 @@
 
 from batou.service import ServiceConfig
 from ssh.client import SSHClient
-from ssh import AutoAddPolicy
+from ssh import AutoAddPolicy, PasswordRequiredException
 import argparse
 import logging
 import os
@@ -64,7 +64,11 @@ class RemoteDeployment(object):
         self.ssh.load_system_host_keys()
         self.ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
         self.ssh.set_missing_host_key_policy(AutoAddPolicy())
-        self.ssh.connect(self.host.fqdn)
+        try:
+            self.ssh.connect(self.host.fqdn)
+        except PasswordRequiredException:
+            password = getpass.getpass('Private key passphrase: ')
+            self.ssh.connect(self.host.fqdn, password=password)
         self.sftp = self.ssh.open_sftp()
         self.cwd = [self.cmd('pwd', service_user=False, ensure_cwd=False).strip()]
 
