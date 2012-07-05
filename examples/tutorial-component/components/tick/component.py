@@ -4,6 +4,9 @@ from batou.lib.file import File
 class Tick(Component):
 
     def configure(self):
-        self += File('tick.sh', source='tick.sh', mode=0755)
+        tick = File('tick.sh',
+                    source='tick.sh',
+                    mode=0755)
+        self += tick
         self.provide('programs',
-                     self.expand('10 tick {{component.workdir}}/tick.sh true'))
+                     tick.fullpath)
