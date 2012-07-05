@@ -2,9 +2,10 @@
 # See also LICENSE.txt
 
 from batou.service import ServiceConfig
-from ssh.client import SSHClient
 from ssh import AutoAddPolicy, PasswordRequiredException
+from ssh.client import SSHClient
 import argparse
+import getpass
 import logging
 import os
 import os.path
