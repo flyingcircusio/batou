@@ -1,7 +1,6 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
 
-from batou.passphrase import PassphraseFile
 from batou.service import ServiceConfig
 from ssh.client import SSHClient
 from ssh import AutoAddPolicy
