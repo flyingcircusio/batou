@@ -4,4 +4,5 @@
 _year_started = 2012
 
 import gocept.package.sphinxconf
+autosummary_generate = True
 gocept.package.sphinxconf.set_defaults()
