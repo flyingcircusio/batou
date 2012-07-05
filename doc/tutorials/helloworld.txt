@@ -27,53 +27,36 @@ To follow this tutorial you will need:
 Create a project directory
 --------------------------
 
-First, a deployment needs a directory to live in::
+First, a deployment needs a directory to live in:
 
-$ mkdir tutorial
-$ cd tutorial
+.. code-block:: console
+
+  $ mkdir tutorial
+  $ cd tutorial
 
 Install batou
 -------------
 
-Now, to install batou we initialize a virtualenv and `buildout <http://pypi.python.org/zc.buildout>`_::
+Now, to install batou we initialize a virtualenv and `buildout <http://pypi.python.org/zc.buildout>`_.
+
+First, create a file ``buildout.cfg`` with the following content:
+
+.. literalinclude:: ../../examples/tutorial-helloworld/buildout.cfg
+	:language: ini
+
+Now, the following steps will install batou:
+
+.. code-block:: console
 
   $ virtualenv --no-site-packages .
   $ curl -o bootstrap.py "http://svn.zope.org/*checkout*/zc.buildout/trunk/bootstrap/bootstrap.py?rev=123006"
-  $ cat > buildout.cfg <<EOF
-  [buildout]
-  parts = batou
-  allow-picked-versions = false
-  versions = versions
-  extensions = mr.developer
-
-  sources = sources
-  always-checkout = force
-  auto-checkout = *
-  sources-dir = dev
-
-  [sources]
-  batou = hg https://bitbucket.org/gocept/batou
-
-  [versions]
-  batou = 
-  Jinja2 = 2.6
-  distribute = 0.6.27
-  mock = 1.0a2
-  mr.developer = 1.21
-  pycrypto = 2.6
-  ssh = 1.7.14
-  zc.buildout = 1.5.2
-  zc.recipe.egg = 1.3.2
-
-  [batou]
-  recipe = zc.recipe.egg
-  eggs = batou
-  EOF
   $ bin/python bootstrap.py -d
   $ bin/buildout
 
 Now, batou has been installed in your project directory and the tool for
-running local deployments is in the ``bin`` directory::
+running local deployments is in the ``bin`` directory:
+
+.. code-block:: console
 
   $ ls -l bin/batou-local
   -rwxr-xr-x 1 user user 672 Jul  4 15:18 bin/batou-local
@@ -86,15 +69,17 @@ Define a component
 
 Components are defined in a directory named ``components``. Every component in
 turn lives in a directory with the name of the component. Let's create a
-directory for our hello world component::
+directory for our hello world component:
+
+.. code-block:: console
 
  $ mkdir -p components/hello
 
 In every component directory we expect a file named ``component.py`` which
-contains the actual component definition. To manage a single file it looks like
-this::
+contains the actual component definition. Put the following in a file named ``components/hello/component.py``:
 
-  $ cat > components/hello/component.py <<EOF
+.. code-block:: python
+
   from batou.component import Component
   from batou.lib.file import File
 
@@ -102,7 +87,6 @@ this::
 
       def configure(self):
           self += File('hello', content='Hello world')
-  EOF
 
 The remainder of the component directory can be used by you to store any other
 files you need to support your component.
@@ -113,38 +97,46 @@ Define an environment
 Before we can perform a deployment we need to define an environment.
 Environments configure how components are mapped to various hosts. 
 
-Environments are stored in a directory called ``environments``::
+Environments are stored in a directory called ``environments``:
+
+.. code-block:: console
 
   $ mkdir environments
 
 Each environment gets a config file that maps the components to the involved
-hosts. For our tutorial deployment it looks like this::
+hosts. For our tutorial deployment, create a file ``environments/tutorial.cfg`` with the following content:
 
-  $ cat > environments/tutorial.cfg <<EOF
+.. code-block:: ini
+
   [hosts]
   localhost = hello
-  EOF
 
 Run deployments
 ---------------
 
 Now, we are all set to run a deployment. To deploy something locally we use the
 ``batou-local`` tool. It is called with two arguments: the environment and the
-host you want to deploy::
+host you want to deploy:
+
+.. code-block:: console
 
   $ bin/batou-local tutorial localhost
   Updating Hello > File(hello) > Presence(hello)
   Updating Hello > File(hello) > Content(hello)
 
 The components will manage their results in the ``work`` directory by default,
-each in its own directory::
+each in its own directory:
+
+.. code-block:: console
 
   $ find work
   work
   work/hello
   work/hello/hello
 
-The file ``hello`` now contains the content we asked it to contain::
+The file ``hello`` now contains the content we asked it to contain:
+
+.. code-block:: console
 
   $ cat work/hello/hello
   Hello world
@@ -153,7 +145,9 @@ We're almost at the end of this tutorial. However, we'd like to quickly show
 you two important features of batou.
 
 If you make any change to the deployment target that contradicts the component
-definition, then the next deployment run will clean it up::
+definition, then the next deployment run will clean it up:
+
+.. code-block:: console
 
   $ echo "asdf" > work/hello/hello 
   $ bin/batou-local tutorial localhost
@@ -163,7 +157,9 @@ definition, then the next deployment run will clean it up::
 
 However, did you notice that compared to the first run batou does not change
 the presence of the file? This is the second feature - if nothing needs to be
-changed then running the ``batou-local`` utility will not make any changes::
+changed then running the ``batou-local`` utility will not make any changes:
+
+.. code-block:: console
 
   $ bin/batou-local tutorial localhost
   $
