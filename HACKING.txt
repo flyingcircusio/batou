@@ -6,7 +6,7 @@ Developing batou
     `gocept <http://gocept.com/>`_ <mail@gocept.com>
 
 :Online documentation:
-    http://docs.gocept.com/batou/
+    http://packages.pypi.org/batou
 
 :PyPI page:
     http://pypi.python.org/pypi/batou/
