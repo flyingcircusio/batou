@@ -2,15 +2,6 @@
 Developing batou
 ================
 
-:Author:
-    `gocept <http://gocept.com/>`_ <mail@gocept.com>
-
-:Online documentation:
-    http://packages.pypi.org/batou
-
-:PyPI page:
-    http://pypi.python.org/pypi/batou/
-
 :Issue tracker:
     https://projects.gocept.com/projects/batou/
 

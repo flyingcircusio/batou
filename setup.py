@@ -35,8 +35,8 @@ setup(
             batou-remote = batou.remote:main
             batou-local = batou.local:main
     """,
-    author='gocept <mail@gocept.com>',
-    author_email='mail@gocept.com',
+    author='Christian Theune <ct@gocept.com>',
+    author_email='ct@gocept.com',
     license='BSD',
     url='https://projects.gocept.com/projects/batou/',
     keywords='deployment',
@@ -44,15 +44,14 @@ setup(
 License :: OSI Approved :: Zope Public License
 Programming Language :: Python
 Programming Language :: Python :: 2
-Programming Language :: Python :: 2.6
 Programming Language :: Python :: 2.7
 Programming Language :: Python :: 2 :: Only
 """[:-1].split('\n'),
     description=__doc__.strip(),
     long_description='\n\n'.join(open(project_path(name)).read() for name in (
             'README.txt',
-            'HACKING.txt',
             'CHANGES.txt',
+            'HACKING.txt',
             )),
 
     packages=find_packages('src'),

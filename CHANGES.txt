@@ -2,45 +2,9 @@
 Changelog
 =========
 
-0.1.3 (unreleased)
-==================
-
-- Leave umask alone. If it must be set for service deployment, we'd better
-  resort to .bashrc or similar.
-
-
-0.1.2 (2012-04-12)
-==================
-
-- `self.config_attr('attribute', 'list')` syntax for list-valued types in
-  configuration files.
-- Call `setlocale` at batou-local startup to initialize locale settings
-  throughout component execution.
-
-
-0.1.1 (2012-04-02)
-==================
-
-- Add support for global find-links in Buildout. If a secret
-  [buildout]find-links is found, it will be put in component.find_links.
-
-
-0.1p2 (2012-04-02)
-==================
-
-- Packaging fix: include test fixtures to enable running tests on
-  installed eggs.
-
-
-0.1p1 (2012-04-02)
-==================
-
-- Correct packaging bugs: missing .txt files etc.
-- Unify license to state 'ZPL' consistently in all places. We used to
-  have a mix of ZPL/BSD license statements.
-
-
-0.1 (2012-04-02)
+0.2 (unreleased)
 ================
 
-initial release
+- Introduce new component modelling approach.
+
+- Start writing documentation.
