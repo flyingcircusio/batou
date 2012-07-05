@@ -1,21 +1,25 @@
 syntax: glob
 
-examples/*/.batou-lock
+*.egg-info
+*.pyc
+*.swo
+*.swp
 .installed.cfg
+.mr.developer.cfg
+ID
+TAGS
 bin
 build
 develop-eggs
 dist
 doc/_api
 eggs
+examples/*/.batou-lock
+examples/*/local
+examples/*/work
+include
+lib
+local
 local.cfg
 parts
-*.egg-info
-*.pyc
-*.swp
-*.swo
-examples/*/work
-ID
-TAGS
 tags
-.mr.developer.cfg
