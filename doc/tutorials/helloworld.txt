@@ -52,7 +52,7 @@ Now, to install batou we initialize a virtualenv and `buildout <http://pypi.pyth
   sources-dir = dev
 
   [sources]
-  batou = hg https://bitbucket.org/gocept/batou branch=0.2
+  batou = hg https://bitbucket.org/gocept/batou
 
   [versions]
   batou = 
