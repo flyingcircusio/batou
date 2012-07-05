@@ -1,8 +1,11 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
 
+from __future__ import print_function, unicode_literals
+from batou.service import Service, ServiceConfig
+import batou.tests
+import os.path
 import unittest
-from batou.service import Service
 
 
 class ServiceTests(unittest.TestCase):

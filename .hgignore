@@ -2,8 +2,11 @@ syntax: glob
 
 *.egg-info
 *.pyc
+*.pyc
 *.swo
 *.swp
+.batou-lock
+.batou-passphrase
 .installed.cfg
 .mr.developer.cfg
 ID
@@ -17,8 +20,9 @@ eggs
 examples/*/.batou-lock
 examples/*/local
 examples/*/work
-include
-lib
+include/python2.*
+lib/python2.*
+lib64
 local
 local.cfg
 parts
