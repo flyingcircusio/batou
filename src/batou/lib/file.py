@@ -48,7 +48,7 @@ class File(Component):
 
     def configure(self):
         self.path = os.path.join(self.workdir, self.path)
-        self.path = os.path.normpath(path)
+        self.path = os.path.normpath(self.path)
         if self.ensure == 'file':
             self += Presence(self.path, leading=self.leading)
         elif self.ensure == 'directory':
