@@ -36,10 +36,16 @@ Next, create a component named "tick" and a simple environment that uses it:
   $ mkdir -p components/tick
   $ mkdir environments
 
-XXX
+The environment is very simple and straightforward, add a file
+``environments/tutorial.cfg`` with the following content:
 
-The component directory should contain two files: the component definition and
-the program. Let's use a shell script like this for the program:
+.. code-block:: ini
+
+  [hosts]
+  localhost = tick
+
+The component directory needs to contain two files: the component definition
+and the program. Let's use a shell script like this for the program:
 
 .. literalinclude:: ../../examples/tutorial-component/components/tick/tick.sh
         :language: bash
@@ -77,8 +83,8 @@ our program:
 
 .. code-block:: console
 
-  $ ls -l work/tick/hello
-  -rwxr-xr-x 1 thomas thomas 66 2012-07-05 18:09 work/tick/hello
+  $ ls -l work/tick/tick.sh
+  -rwxr-xr-x 1 thomas thomas 66 2012-07-05 18:09 work/tick/tick.sh
 
 We can actually run that program now, so in the next step, we can concern
 ourselves with installing supervisor to run our program for us.
