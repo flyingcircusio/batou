@@ -15,7 +15,4 @@ Developing batou
     https://projects.gocept.com/projects/batou/
 
 :Source code:
-    https://code.gocept.com/hg/public/batou/
-
-:Current change log:
-    https://code.gocept.com/hg/public/batou/raw-file/tip/CHANGES.txt
+    https://bitbucket.org/gocept/batou/
