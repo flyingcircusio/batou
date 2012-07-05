@@ -1,7 +1,11 @@
+"""Components to manage Python environments."""
+
 from batou.component import Component
 
 
 class VirtualEnv(Component):
+    """Manage a virtualenv installation.
+    """
 
     namevar = 'version'
 
@@ -14,6 +18,7 @@ class VirtualEnv(Component):
 
     @property
     def python(self):
+        """Path to the generated python executable."""
         return 'bin/python{}'.format(self.version)
 
     def verify(self):
