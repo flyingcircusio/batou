@@ -27,7 +27,7 @@ def main():
 
     handler = logging.StreamHandler()
     handler.setLevel(logging.INFO)
-    for log in ['batou', 'ssh']:
+    for log in ['batou']:
         log = logging.getLogger(log)
         log.setLevel(logging.INFO)
         log.addHandler(handler)
@@ -64,7 +64,6 @@ class RemoteDeployment(object):
         raise KeyError(key)
 
     def _connect(self):
-        logger.info('Connecting to {}'.format(self.host.fqdn))
         self.ssh = SSHClient()
         self.ssh.load_system_host_keys()
         self.ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
@@ -74,8 +73,11 @@ class RemoteDeployment(object):
         self.cwd = [self.cmd('pwd', service_user=False, ensure_cwd=False).strip()]
 
     def __call__(self):
+        logger.info('Connecting to {}'.format(self.host.fqdn))
         self._connect()
+        logger.info('Bootstrapping {}'.format(self.host.fqdn))
         self.bootstrap()
+        logger.info('Deploying {}'.format(self.host.fqdn))
         with self.cd(self.remote_base + self.service_base):
             log = self.cmd('%s/bin/batou-local %s %s' %
                      (self.remote_base, self.environment.name, self.host.fqdn))
