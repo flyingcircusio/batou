@@ -36,8 +36,8 @@ Next, create a component named "tick" and a simple environment that uses it:
   $ mkdir -p components/tick
   $ mkdir environments
 
-The environment is very simple and straightforward, add a file
-``environments/tutorial.cfg`` with the following content:
+Configure the environment first as it is very simple and straightforward. Add
+a file ``environments/tutorial.cfg`` with the following content:
 
 .. code-block:: ini
 
@@ -62,7 +62,7 @@ the "hello world" tutorial:
   class Tick(Component):
 
       def configure(self):
-          self += File('hello', source='tick.sh', mode=0755)
+          self += File('tick.sh', source='tick.sh', mode=0755)
 
 However, it differs in two ways: Firstly, since we deal with a multi-line
 program which we store in a separate file, the File component is passed the
@@ -86,6 +86,16 @@ our program:
   $ ls -l work/tick/tick.sh
   -rwxr-xr-x 1 thomas thomas 66 2012-07-05 18:09 work/tick/tick.sh
 
-We can actually run that program now, so in the next step, we can concern
-ourselves with installing supervisor to run our program for us.
+We can actually run that program now:
+
+.. code-block:: console
+
+  $ work/tick/tick.sh
+  Fr 6. Jul 14:27:15 CEST 2012
+  Fr 6. Jul 14:27:16 CEST 2012
+  Fr 6. Jul 14:27:17 CEST 2012
+  ^C
+
+In the next step, we will concern ourselves with installing supervisor to run
+our program for us.
 
