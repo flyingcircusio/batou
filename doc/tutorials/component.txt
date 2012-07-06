@@ -99,3 +99,67 @@ We can actually run that program now:
 In the next step, we will concern ourselves with installing supervisor to run
 our program for us.
 
+
+Deploy the supervisor software
+------------------------------
+
+As a second component, deploy now a supervisor instance that will daemonise
+the program from the previous step as a long-running process, and control that
+daemon.
+
+Create a directory for the ``supervisor`` component:
+
+.. code-block:: console
+
+  $ mkdir -p components/supervisor
+
+We want to make use of zc.buildout for installing supervisor. This is done by
+employing the ``Buildout`` component from batou's standard component library
+and providing a ``buildout.cfg`` file. Create a file
+``components/supervisor/components.py`` with the following content:
+
+.. code-block:: python
+
+  from batou.component import Component
+  from batou.lib.buildout import Buildout
+
+  class Supervisor(Component):
+
+      def configure(self):
+          self += Buildout('supervisor', python='2.7')
+
+By default, the buildout configuration is expected to sit next to the
+component definition. Create a file ``components/supervisor/buildout.cfg``
+with this content:
+
+.. code-block:: ini
+
+  [buildout]
+  parts = supervisor
+  versions = versions
+  allow-picked-versions = false
+
+  [supervisor]
+  recipe = collective.recipe.supervisor
+  programs = 10 tick ./work/tick/tick.sh true   # XXX
+
+  [versions]
+  collective.recipe.supervisor = 0.17
+  meld3 = 0.6.8
+  setuptools = 0.6c12dev_r88846
+  distribute = 0.6.27
+  supervisor = 3.0a12
+  zc.buildout = 1.5.2
+  zc.recipe.egg = 1.3.2
+
+The syntax of the programs lines passed to the supervisor buildout recipe is
+specific to that recipe; for the time being, we simply hard-code the path to
+our program.
+
+Run batou next:
+
+.. code-block:: console
+
+  $ bin/batou-local tutorial localhost
+  Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
+  Updating Supervisor > Buildout
