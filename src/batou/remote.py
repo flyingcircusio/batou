@@ -2,7 +2,7 @@
 # See also LICENSE.txt
 
 from batou.service import ServiceConfig
-from ssh import AutoAddPolicy, PasswordRequiredException
+from ssh import AutoAddPolicy
 from ssh.client import SSHClient
 import argparse
 import getpass
@@ -21,28 +21,32 @@ def main():
     parser.add_argument(
         'environment', help='Environment to deploy.',
         type=lambda x:x.replace('.cfg', ''))
+    parser.add_argument(
+        '--ssh-user', help='User to connect to via SSH', default=None)
     args = parser.parse_args()
 
-    batou = logging.getLogger('batou')
-    batou.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     handler.setLevel(logging.INFO)
-    batou.addHandler(handler)
+    for log in ['batou', 'ssh']:
+        log = logging.getLogger(log)
+        log.setLevel(logging.INFO)
+        log.addHandler(handler)
 
     config = ServiceConfig('.', [args.environment])
     config.scan()
     environment = config.service.environments[args.environment]
 
     for host in environment.hosts.values():
-        deployment = RemoteDeployment(host, environment)
+        deployment = RemoteDeployment(host, environment, args.ssh_user)
         deployment()
 
 
 class RemoteDeployment(object):
 
-    def __init__(self, host, environment):
+    def __init__(self, host, environment, ssh_user):
         self.host = host
         self.environment = environment
+        self.ssh_user = ssh_user
         # It may be that the service definition isn't in the root of the
         # repository. As we expect `batou-remote` to be called with a working
         # directory that is the root, we simply make this relative to the
@@ -65,11 +69,7 @@ class RemoteDeployment(object):
         self.ssh.load_system_host_keys()
         self.ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
         self.ssh.set_missing_host_key_policy(AutoAddPolicy())
-        try:
-            self.ssh.connect(self.host.fqdn)
-        except PasswordRequiredException:
-            password = getpass.getpass('Private key passphrase: ')
-            self.ssh.connect(self.host.fqdn, password=password)
+        self.ssh.connect(self.host.fqdn, username=self.ssh_user)
         self.sftp = self.ssh.open_sftp()
         self.cwd = [self.cmd('pwd', service_user=False, ensure_cwd=False).strip()]
 
@@ -117,7 +117,7 @@ class RemoteDeployment(object):
             if not self.exists('bin/buildout'):
                 # XXX We tend to have upgrade issues with setuptools. We used
                 # to always bootstrap but it's becoming a pain.
-                self.cmd('bin/python2.7 bootstrap.py')
+                self.cmd('bin/python2.7 bootstrap.py -d')
             self.cmd('bin/buildout -t 15')
 
     # Fabric convenience
