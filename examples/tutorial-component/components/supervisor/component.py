@@ -4,7 +4,7 @@ from batou.lib.buildout import Buildout
 class Supervisor(Component):
 
     def configure(self):
-        self.programs = self.require('programs')
+        self.programs = self.require('programs', self.host)
         self += Buildout('supervisor', python='2.7')
 
     def verify(self):
