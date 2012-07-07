@@ -7,13 +7,16 @@ from ssh.client import SSHClient
 import argparse
 import getpass
 import logging
+import multiprocessing.pool
 import os
 import os.path
 import re
 import subprocess
 import sys
 
+
 logger = logging.getLogger('batou.remote')
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -73,12 +76,12 @@ class RemoteDeployment(object):
 
     def __call__(self):
         remotes = {}
-        # XXX parallelization, locking
+        # XXX locking
         for host in self.environment.hosts.values():
             remote = RemoteHost(host, self)
-            remote.connect()
-            remote.bootstrap()
             remotes[host] = remote
+        pool = multiprocessing.pool.ThreadPool(10)
+        pool.map(lambda x:x.connect(), remotes.values())
 
         for component in self.environment.ordered_components:
             remote = remotes[component.host]
@@ -100,9 +103,10 @@ class RemoteHost(object):
         self.ssh.connect(self.host.fqdn, username=self.deployment.ssh_user)
         self.sftp = self.ssh.open_sftp()
         self.cwd = [self.cmd('pwd', service_user=False, ensure_cwd=False).strip()]
+        self._bootstrap()
 
-    def bootstrap(self):
-        """Ensure that the batou code base is current."""
+    def _bootstrap(self):
+        """Ensure that the batou and project code base is current."""
         logger.info('{}: bootstrapping'.format(self.host.fqdn))
         bouncedir = self.cmd(u'echo -n ~/%s' % self.bouncedir_name(),
                              service_user=False)
