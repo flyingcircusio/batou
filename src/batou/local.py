@@ -13,13 +13,14 @@ def auto_mode(environment, host):
             continue
         component.deploy()
 
+def input(prompt):
+    print prompt
+    return raw_input()
 
 def batch_mode(environment, host):
     while True:
         try:
-            print "asdf"
-            sys.stdout.flush()
-            component = raw_input('> ')
+            component = input('> ')
         except EOFError:
             break
         if not component:
