@@ -34,7 +34,7 @@ class TemplateEngine(object):
         """
         return self._render_template_file(sourcefile, args).getvalue()
 
-    def _render_template_file(sourcefile, args):
+    def _render_template_file(self, sourcefile, args):
         """Expand template found in `sourcefile` and return it as StringIO."""
         raise NotImplementedError
 
