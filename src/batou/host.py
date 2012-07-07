@@ -27,3 +27,9 @@ class Host(object):
                             self, features, {})
         self.components.append(root)
         return root
+
+    def __getitem__(self, name):
+        """Return a top-level component by name."""
+        for component in self.components:
+            if component.name == name:
+                return component
