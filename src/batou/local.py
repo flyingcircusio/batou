@@ -7,9 +7,32 @@ import sys
 import logging
 
 
+def auto_mode(environment, host):
+    for component in environment.ordered_components:
+        if component.host is not host:
+            continue
+        component.deploy()
+
+
+def batch_mode(environment, host):
+    while True:
+        try:
+            component = raw_input('> ')
+        except EOFError:
+            break
+        if not component:
+            continue
+        try:
+            host[component].deploy()
+        except Exception:
+            print "ERROR"
+        else:
+            print "OK"
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description=u'Execute batou components locally.')
+        description=u'Deploy components locally.')
     parser.add_argument(
         'environment', help='Environment to deploy.',
         type=lambda x:x.replace('.cfg', ''))
@@ -18,6 +41,9 @@ def main():
     parser.add_argument(
         '--platform', default=None,
         help='Alternative platform to choose. Empty for no platform.')
+    parser.add_argument(
+        '-b', '--batch', action='store_true',
+        help='Batch mode - read component names to deploy from STDIN.')
     args = parser.parse_args()
 
     logging.basicConfig(stream=sys.stdout, level=-1000, format='%(message)s')
@@ -28,7 +54,7 @@ def main():
     environment = config.service.environments[args.environment]
     environment.configure()
     host = environment.get_host(args.hostname)
-    for component in environment.ordered_components:
-        if component.host is not host:
-            continue
-        component.deploy()
+    if args.batch:
+        batch_mode(environment, host)
+    else:
+        auto_mode(environment, host)
