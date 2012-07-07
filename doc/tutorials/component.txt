@@ -141,7 +141,7 @@ with this content:
 
   [supervisor]
   recipe = collective.recipe.supervisor
-  programs = 10 tick ./work/tick/tick.sh true   # XXX
+  programs = 10 tick ../tick/tick.sh true
 
   [versions]
   collective.recipe.supervisor = 0.17
@@ -163,3 +163,24 @@ Run batou next:
   $ bin/batou-local tutorial localhost
   Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
   Updating Supervisor > Buildout
+
+Now you can use supervisor to run the "tick" program for you (you'll have to
+change into supervisor's working directory to make the hard-coded relative
+path to ``tick.sh`` work):
+
+.. code-block:: console
+
+  $ cd work/supervisor/
+  $ bin/supervisord
+  $ bin/supervisorctl
+  tick                             RUNNING    pid 23576, uptime 0:00:01
+  supervisor> tail tick
+  Sa 7. Jul 11:09:43 CEST 2012
+  Sa 7. Jul 11:09:44 CEST 2012
+  Sa 7. Jul 11:09:45 CEST 2012
+
+  supervisor> shutdown
+  Really shut the remote supervisord process down y/N? y
+  Shut down
+  supervisor> quit
+  $ cd ../../
