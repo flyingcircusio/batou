@@ -15,6 +15,7 @@ def auto_mode(environment, host):
 
 def input(prompt):
     print prompt
+    sys.stdout.flush()
     return raw_input()
 
 def batch_mode(environment, host):
