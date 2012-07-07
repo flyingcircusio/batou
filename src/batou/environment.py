@@ -166,7 +166,11 @@ class Environment(object):
         if not self.host_domain:
             return hostname
         domain = self.host_domain
-        return '%s.%s' % (hostname.rstrip(domain), domain)
+
+        if hostname.endswith(domain):
+            hostname = hostname.rsplit('.' + domain)[0]
+
+        return '%s.%s' % (hostname, domain)
 
     def get_host(self, hostname):
         return self.hosts[self.normalize_host_name(hostname)]
