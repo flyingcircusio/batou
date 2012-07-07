@@ -3,10 +3,18 @@
 
 import itertools
 import socket
+import subprocess
 
 
 def flatten(listOfLists):
     return list(itertools.chain.from_iterable(listOfLists))
+
+
+def notify(title, description):
+    try:
+        subprocess.check_call(['notify-send', title, description])
+    except OSError:
+        pass
 
 
 def resolve(address):

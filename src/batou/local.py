@@ -2,6 +2,7 @@
 # See also LICENSE.txt
 
 from .service import ServiceConfig
+from .utils import notify
 import argparse
 import sys
 import logging
@@ -13,10 +14,12 @@ def auto_mode(environment, host):
             continue
         component.deploy()
 
+
 def input(prompt):
     print prompt
     sys.stdout.flush()
     return raw_input()
+
 
 def batch_mode(environment, host):
     while True:
@@ -62,3 +65,6 @@ def main():
         batch_mode(environment, host)
     else:
         auto_mode(environment, host)
+        notify('Deployment finished',
+               '{}:{} was deployed successfully.'.format(
+                   environment.name, host.name))
