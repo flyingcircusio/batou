@@ -114,5 +114,9 @@ class TestDependencies(unittest.TestCase):
         consumer1 = self.host.add_component('consumer')
         consumer2 = self.host2.add_component('consumer')
         self.env.configure()
-        self.assertEquals([provider1, provider2, consumer2, consumer1],
-                self.env.ordered_components)
+        self.assertEquals(
+            set([provider1, provider2]),
+            set(self.env.ordered_components[:2]))
+        self.assertEquals(
+            set([consumer1, consumer2]),
+            set(self.env.ordered_components[2:]))
