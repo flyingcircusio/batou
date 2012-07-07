@@ -22,6 +22,7 @@ To follow this tutorial you will need:
 * Python 2.7
 * Mercurial
 * virtualenv
+* enough header files to compile dependencies
 * an Internet connection
 
 
