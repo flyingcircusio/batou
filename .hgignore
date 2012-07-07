@@ -13,6 +13,8 @@ ID
 TAGS
 bin
 build
+coverage
+dev
 develop-eggs
 dist
 doc/_api
