@@ -136,19 +136,18 @@ class RemoteHost(object):
 
     def _wait_for_remote_ready(self):
         # Wait for the command to complete.
-        import pdb; pdb.set_trace() 
         lastline = None
         line = ''
         while True:
             char = self.batou[2].read(1)
-            print char
+            sys.stdout.write(char)
             line += char
             if line == '> ':
                 return lastline.strip()
             if char == '\n':
                 logger.info(line)
                 lastline = line
-                line = line, ''
+                line = ''
 
     def deploy_component(self, component):
         logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
