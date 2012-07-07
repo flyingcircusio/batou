@@ -97,8 +97,11 @@ class RemoteDeployment(object):
         if not self.exists(bouncedir):
             self.cmd(u'hg init %s' % bouncedir, service_user=False)
         try:
+            netloc = self.host.fqdn
+            if self.ssh_user:
+                netloc = '%s@%s' % (self.ssh_user, netloc)
             subprocess.check_output(['hg push --new-branch ssh://%s/%s' %
-                                    (self.host.fqdn, bouncedir)], shell=True)
+                                    (netloc, bouncedir)], shell=True)
         except subprocess.CalledProcessError, e:
             if e.returncode != 1:
                 # 1 means: nothing to push
