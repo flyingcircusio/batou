@@ -1,7 +1,8 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
 
-from batou.service import ServiceConfig
+from .utils import notify
+from .service import ServiceConfig
 from ssh import AutoAddPolicy
 from ssh.client import SSHClient
 import argparse
@@ -51,6 +52,8 @@ def main():
 
     deployment = RemoteDeployment(environment, args.ssh_user)
     deployment()
+    notify('Deployment finished',
+           '{} was deployed successfully.'.format(environment.name))
 
 
 class RemoteDeployment(object):
