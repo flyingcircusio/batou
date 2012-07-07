@@ -49,11 +49,11 @@ class Jinja2Engine(TemplateEngine):
         super(Jinja2Engine, self).__init__(*args, **kwargs)
         self.env = jinja2.Environment(
             line_statement_prefix='@@',
-            undefined=jinja2.StrictUndefined,
-            loader=jinja2.FileSystemLoader(['.', '/']))
+            undefined=jinja2.StrictUndefined)
 
     def _render_template_file(self, sourcefile, args):
-        tmpl = self.env.get_template(sourcefile)
+        tmpl = open(sourcefile).read()
+        tmpl = self.env.from_string(tmpl)
         output = StringIO.StringIO()
         print(tmpl.render(args), file=output)
         return output
