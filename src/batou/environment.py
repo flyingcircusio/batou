@@ -105,6 +105,9 @@ class Environment(object):
         to a stable order.
 
         """
+        # This keeps track of the order which we used to successfully
+        # configure all components.
+        self.ordered_components = []
         # Seed the working set with all components from all hosts
         working_set = set()
         for host in self.hosts.values():
@@ -122,6 +125,12 @@ class Environment(object):
                 except Exception, e:
                     exceptions.append(e)
                     retry.add(root)
+                # We prepared/configured this component successfully and take
+                # note of the order. However: if it was run successfully
+                # before then we prefer running it later.
+                if root in self.ordered_components:
+                    self.ordered_components.remove(root)
+                self.ordered_components.append(root)
 
             retry.update(self.resources.pending_dependencies)
             retry.update(self.resources.unsatisfied_components)

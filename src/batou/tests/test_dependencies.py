@@ -64,20 +64,22 @@ class TestDependencies(unittest.TestCase):
             self.env.configure()
 
     def test_consumer_retrieves_value_from_provider_order1(self):
-        self.host.add_component('provider')
-        self.host.add_component('consumer')
+        provider = self.host.add_component('provider')
+        consumer = self.host.add_component('consumer')
         self.env.configure()
-        consumer = self.host.components[1].component
-        self.assertIsInstance(consumer, Consumer)
-        self.assertListEqual([42], list(consumer.the_answer))
+        self.assertListEqual([42], list(consumer.component.the_answer))
+        self.assertListEqual(
+                [provider, consumer],
+                self.env.ordered_components)
 
     def test_consumer_retrieves_value_from_provider_order2(self):
-        self.host.add_component('consumer')
-        self.host.add_component('provider')
+        consumer = self.host.add_component('consumer')
+        provider = self.host.add_component('provider')
         self.env.configure()
-        consumer = self.host.components[0].component
-        self.assertIsInstance(consumer, Consumer)
-        self.assertListEqual([42], list(consumer.the_answer))
+        self.assertListEqual([42], list(consumer.component.the_answer))
+        self.assertListEqual(
+                [provider, consumer],
+                self.env.ordered_components)
 
     def test_consumer_without_provider_raises_error(self):
         self.host.add_component('consumer')
@@ -100,9 +102,17 @@ class TestDependencies(unittest.TestCase):
         self.assertIsInstance(exception_log.call_args[0][0], KeyError)
 
     def test_consumer_retrieves_value_from_provider_with_same_host(self):
-        self.host.add_component('samehostconsumer')
-        self.host2.add_component('provider')
+        consumer = self.host.add_component('samehostconsumer')
+        provider = self.host2.add_component('provider')
         self.env.configure()
-        consumer = self.host.components[0].component
-        self.assertIsInstance(consumer, SameHostConsumer)
-        self.assertListEqual([], list(consumer.the_answer))
+        self.assertListEqual([], list(consumer.component.the_answer))
+        self.assertEquals([provider, consumer], self.env.ordered_components)
+
+    def test_components_are_ordered_over_multiple_hosts(self):
+        provider1 = self.host.add_component('provider')
+        provider2 = self.host2.add_component('provider')
+        consumer1 = self.host.add_component('consumer')
+        consumer2 = self.host2.add_component('consumer')
+        self.env.configure()
+        self.assertEquals([provider1, provider2, consumer2, consumer1],
+                self.env.ordered_components)
