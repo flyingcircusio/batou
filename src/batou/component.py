@@ -153,8 +153,6 @@ class Component(object):
 
     def get_platform(self):
         """Return the platform component for this component if one exists."""
-        if not hasattr(self.environment, 'platform'):
-            return
         platforms = self.__class__.__dict__.get('_platforms', {})
         return platforms.get(self.environment.platform, lambda:None)()
 
