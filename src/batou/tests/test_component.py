@@ -89,7 +89,6 @@ class ComponentTests(TestCase):
         other_component.prepare(None, environment, None, None)
         self.assertEquals(0, len(other_component.sub_components))
 
-
     def test_deploy_empty_component_runs_without_error(self):
         component = Component()
         component.prepare(None, mock.Mock(), None, None)
@@ -162,6 +161,24 @@ class ComponentTests(TestCase):
         component = Component()
         with self.assertRaises(batou.UpdateNeeded):
             component.assert_file_is_current(__file__, [reference])
+
+    # ANSC = assert no subcomponent changes
+    def test_ansc_raises_if_subcomponent_changed(self):
+        c = Component()
+        c.prepare(None, mock.Mock(), 'localhost', None)
+        c2 = Component()
+        c += c2
+        c2.changed = True
+        with self.assertRaises(batou.UpdateNeeded):
+            c.assert_no_subcomponent_changes()
+
+    def test_ansc_does_not_raise_if_no_subcomponent_changed(self):
+        c = Component()
+        c.prepare(None, mock.Mock(), 'localhost', None)
+        c2 = Component()
+        c += c2
+        c2.changed = False
+        c.assert_no_subcomponent_changes()
 
     def test_cmd_returns_output(self):
         c = Component()
