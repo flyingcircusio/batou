@@ -97,6 +97,8 @@ class Environment(object):
                 setattr(self, key, config[key])
         if self.service_user is None:
             self.service_user = pwd.getpwuid(os.getuid()).pw_name
+        if self.platform is None and self.host_domain:
+            self.platform = self.host_domain
 
     def configure(self):
         """Configure all top-level components from all hosts.
