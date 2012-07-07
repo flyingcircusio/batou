@@ -26,6 +26,13 @@ class ComponentTemplateTests(TestCase):
         with self.assertRaises(NotImplementedError):
             TemplateEngine.get('foo')
 
+    def test_abstract_engine(self):
+        engine = TemplateEngine()
+        with self.assertRaises(NotImplementedError):
+            engine._render_template_file("asdf", {})
+        with self.assertRaises(NotImplementedError):
+            engine.expand("asdf", {})
+
     def test_jinja2_template_str(self):
         tmpl = TemplateEngine.get('jinja2')
         self.assertEqual('hello world',
