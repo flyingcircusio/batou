@@ -184,3 +184,74 @@ path to ``tick.sh`` work):
   Shut down
   supervisor> quit
   $ cd ../../
+
+
+Have batou configure supervisor's programs
+------------------------------------------
+
+Rather than having to hard-code the program(s) supervisor should control
+within its buildout configuration, you can use batou to do that for you. Batou
+has a concept of pieces of information being provided by some components and
+required by others.
+
+Firstly, you need to let the "tick" component provide some details such as the
+file-system path to the program. This information will be kept in a key-value
+store, so you need to choose the name of a key, such as "programs".
+
+Add a line to the file ``components/tick/component.py`` so that it ends up
+with the following content:
+
+.. literalinclude:: ../../examples/tutorial-component/components/tick/component.py
+  :language: python
+
+Secondly, the supervisor component needs to make use of the provided
+information. This means that the supervisor component must be configured after
+any other component that provides a value for the "programs" key and actually
+use all the values provided by other components when writing the supervisor
+configuration file. The former is achieved by declaring the requirement for
+the "programs" key within the configuration code and retrieving the values,
+the latter by treating the ``buildout.cfg`` file as a template and iterating
+over the "program" values.
+
+Add a line to the file ``components/supervisor/component.py`` so that it looks
+like this:
+
+.. code-block:: python
+
+  from batou.component import Component
+  from batou.lib.buildout import Buildout
+
+  class Supervisor(Component):
+
+      def configure(self):
+          self.programs = self.require('programs', self.host)
+          self += Buildout('supervisor', python='2.7')
+
+Change the file ``components/supervisor/buildout.cfg`` to replace the
+hard-coded program line for "tick" with a loop (in the Jinja templating
+language):
+
+.. literalinclude:: ../../examples/tutorial-component/components/supervisor/buildout.cfg
+  :language: ini
+
+After updating your local deployment, you can now run supervisor as before to
+control the "tick" program but you no longer need to be concerned about your
+working directory:
+
+.. code-block:: console
+
+  $ bin/batou-local tutorial localhost
+  Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
+  Updating Supervisor > Buildout
+  $ work/supervisor/bin/supervisord
+  $ work/supervisor/bin/supervisorctl
+  tick                             RUNNING    pid 24186, uptime 0:00:02
+  supervisor> tail tick
+  Sa 7. Jul 11:53:58 CEST 2012
+  Sa 7. Jul 11:53:59 CEST 2012
+  Sa 7. Jul 11:54:00 CEST 2012
+
+  supervisor> shutdown
+  Really shut the remote supervisord process down y/N? y
+  Shut down
+  supervisor> quit

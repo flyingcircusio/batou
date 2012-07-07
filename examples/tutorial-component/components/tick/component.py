@@ -9,4 +9,6 @@ class Tick(Component):
                     mode=0755)
         self += tick
         self.provide('programs',
-                     tick.fullpath)
+                     dict(name='tick',
+                          path=tick.fullpath,
+                          priority=10))
