@@ -35,16 +35,15 @@ def main():
     config = ServiceConfig('.', [args.environment])
     config.scan()
     environment = config.service.environments[args.environment]
+    environment.configure()
 
-    for host in environment.hosts.values():
-        deployment = RemoteDeployment(host, environment, args.ssh_user)
-        deployment()
+    deployment = RemoteDeployment(environment, args.ssh_user)
+    deployment()
 
 
 class RemoteDeployment(object):
 
-    def __init__(self, host, environment, ssh_user):
-        self.host = host
+    def __init__(self, environment, ssh_user):
         self.environment = environment
         self.ssh_user = ssh_user
         # It may be that the service definition isn't in the root of the
@@ -63,51 +62,55 @@ class RemoteDeployment(object):
                 return v
         raise KeyError(key)
 
-    def _connect(self):
+    def __call__(self):
+        remotes = {}
+        # XXX parallelization, locking
+        for host in self.environment.hosts.values():
+            remote = RemoteHost(host, self)
+            remote.connect()
+            remote.bootstrap()
+            remotes[host] = remote
+
+        for component in self.environment.ordered_components:
+            remote = remotes[component.host]
+            remote.deploy_component(component)
+
+
+class RemoteHost(object):
+
+    def __init__(self, host, deployment):
+        self.host = host
+        self.deployment = deployment
+
+    def connect(self):
+        logger.info('{}: connecting'.format(self.host.fqdn))
         self.ssh = SSHClient()
         self.ssh.load_system_host_keys()
         self.ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
         self.ssh.set_missing_host_key_policy(AutoAddPolicy())
-        self.ssh.connect(self.host.fqdn, username=self.ssh_user)
+        self.ssh.connect(self.host.fqdn, username=self.deployment.ssh_user)
         self.sftp = self.ssh.open_sftp()
         self.cwd = [self.cmd('pwd', service_user=False, ensure_cwd=False).strip()]
 
-    def __call__(self):
-        logger.info('Connecting to {}'.format(self.host.fqdn))
-        self._connect()
-        logger.info('Bootstrapping {}'.format(self.host.fqdn))
-        self.bootstrap()
-        logger.info('Deploying {}'.format(self.host.fqdn))
-        with self.cd(self.remote_base + self.service_base):
-            log = self.cmd('%s/bin/batou-local %s %s' %
-                     (self.remote_base, self.environment.name, self.host.fqdn))
-            logger.info(log)
-
-    def bouncedir_name(self):
-        """Pick suitable name for hg repository bounce dir."""
-        raw_name = u'bounce-%s-%s-%s' % (
-            os.path.dirname(__file__).rsplit(u'/')[-1], self.environment.name,
-            self.environment.branch)
-        return re.sub(r'[^a-zA-Z0-9_.-]', u'_', raw_name)
-
     def bootstrap(self):
         """Ensure that the batou code base is current."""
+        logger.info('{}: bootstrapping'.format(self.host.fqdn))
         bouncedir = self.cmd(u'echo -n ~/%s' % self.bouncedir_name(),
                              service_user=False)
         if not self.exists(bouncedir):
             self.cmd(u'hg init %s' % bouncedir, service_user=False)
         try:
             netloc = self.host.fqdn
-            if self.ssh_user:
-                netloc = '%s@%s' % (self.ssh_user, netloc)
+            if self.deployment.ssh_user:
+                netloc = '%s@%s' % (self.deployment.ssh_user, netloc)
             subprocess.check_output(['hg push --new-branch ssh://%s/%s' %
                                     (netloc, bouncedir)], shell=True)
         except subprocess.CalledProcessError, e:
             if e.returncode != 1:
-                # 1 means: nothing to push
+                # Urks: 1 means: nothing to push
                 raise
         self.remote_base = self.cmd(
-            'echo ~{}/deployment'.format(self.environment.service_user))
+            'echo ~{}/deployment'.format(self.deployment.environment.service_user))
         self.remote_base = self.remote_base.strip()
         if not self.exists(self.remote_base):
             self.cmd(u'hg clone %s %s' % (bouncedir, self.remote_base))
@@ -116,7 +119,7 @@ class RemoteDeployment(object):
                 self.cmd(u'hg pull %s' % bouncedir)
         # XXX self.setup_passphrase()
         with self.cd(self.remote_base):
-            self.cmd(u'hg update -C %s' % self.environment.branch)
+            self.cmd(u'hg update -C %s' % self.deployment.environment.branch)
             if not self.exists('bin/python2.7'):
                 self.cmd('virtualenv --no-site-packages --python python2.7 .')
             if not self.exists('bin/buildout'):
@@ -125,26 +128,69 @@ class RemoteDeployment(object):
                 self.cmd('bin/python2.7 bootstrap.py -d')
             self.cmd('bin/buildout -t 15')
 
+        with self.cd(self.remote_base + self.deployment.service_base):
+            self.batou = self.cmd('{}/bin/batou-local --batch {} {}'
+                    .format(self.remote_base, self.deployment.environment.name,
+                            self.host.fqdn), interactive=True)
+            self._wait_for_remote_ready()
+
+    def _wait_for_remote_ready(self):
+        # Wait for the command to complete.
+        lastline = None
+        line = ''
+        while True:
+            char = self.batou[2].read(1)
+            print char
+            line += char
+            if line == '> ':
+                return lastline.strip()
+            if char == '\n':
+                logger.info(line)
+                lastline = line
+                line = line, ''
+
+    def deploy_component(self, component):
+        logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
+        self.batou[1].write(component.name + '\n')
+        self.batou[1].flush()
+        result = self._wait_for_remote_ready()
+        if result != 'OK':
+            raise RuntimeError(result)
+
+    def bouncedir_name(self):
+        """Pick suitable name for hg repository bounce dir."""
+        raw_name = u'bounce-%s-%s-%s' % (
+            os.path.dirname(__file__).rsplit(u'/')[-1],
+            self.deployment.environment.name,
+            self.deployment.environment.branch)
+        return re.sub(r'[^a-zA-Z0-9_.-]', u'_', raw_name)
+
     # Fabric convenience
 
-    def cmd(self, cmd, service_user=True, ensure_cwd=True):
+    def cmd(self, cmd, service_user=True, ensure_cwd=True, interactive=False):
         """Execute `cmd` in the remote service user's context."""
         real_cmd = '{}'
         if service_user:
             real_cmd = 'sudo -u {0} -i bash -c "{{}}"'.format(
-                self.environment.service_user)
+                self.deployment.environment.service_user)
         if ensure_cwd:
             real_cmd = real_cmd.format('cd {} && {{}}'.format(self.cwd[-1]))
         cmd = real_cmd.format(cmd)
         logger.debug(cmd)
-        return self._cmd(cmd)
+        return self._cmd(cmd, interactive)
 
-    def _cmd(self, cmd):
+    def _cmd(self, cmd, interactive=False):
         chan = self.ssh._transport.open_session()
-        chan.exec_command(cmd)
         stdin = chan.makefile('wb')
         stdout = chan.makefile('rb')
         stderr = chan.makefile_stderr('rb')
+        if interactive:
+            import pdb; pdb.set_trace() 
+            chan.invoke_shell()
+            chan.sendall(cmd+'\n')
+            return chan, stdin, stdout, stderr
+        else:
+            chan.exec_command(cmd)
         status = chan.recv_exit_status()
         if status != 0:
             logger.error(stdout.read())
@@ -171,6 +217,7 @@ class RemoteDeployment(object):
         if path[0] in ['/', '~']:
             return path
         return '{0}/{1}'.format(self.cwd[-1], path)
+
 
 class WorkingDirContextManager(object):
 
