@@ -1,23 +1,8 @@
 """Platform components specific to gocept.net."""
 from batou.component import Component, platform
 from batou.lib.file import File
-import batou
 import batou.lib.service
-import batou.lib.ssh
 import os.path
-
-
-@platform('gocept.net', batou.lib.ssh.SSHDir)
-class SSHDir(Component):
-    """Sets the SSH dir to the one of the (current) service user
-    and ensures a mode accepted by OpenSSH.
-    """
-
-    path = os.path.expanduser(u'~/.ssh')
-
-    def configure(self):
-        self.parent.path = self.path
-        self += File(self.path, ensure='directory', mode=0o711)
 
 
 @platform('gocept.net', batou.lib.service.Service)
