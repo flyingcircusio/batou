@@ -27,4 +27,8 @@ def main():
     config.scan()
     environment = config.service.environments[args.environment]
     environment.configure()
-    environment.get_host(args.hostname).deploy()
+    host = environment.get_host(args.hostname)
+    for component in environment.ordered_components:
+        if component.host is not host:
+            continue
+        component.deploy()

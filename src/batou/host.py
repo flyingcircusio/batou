@@ -23,12 +23,7 @@ class Host(object):
         for this host.
         """
         root_factory = self.environment.service.components[name]
-        root = root_factory(self.environment.service, self.environment, self, features, {})
+        root = root_factory(self.environment.service, self.environment,
+                            self, features, {})
         self.components.append(root)
-
-    # XXX This will probably go away once the external loop gets tighter control
-    # about the ordering of which component gets deployed at what time.
-    def deploy(self):
-        """Deploy all components that belong to this host."""
-        for component in self.components:
-            component.deploy()
+        return root
