@@ -17,6 +17,10 @@ def auto_mode(environment, host):
 def batch_mode(environment, host):
     while True:
         try:
+            print "asdf"*10000
+            print "asdf"*10000
+            print "asdf"*10000
+            sys.stdout.flush()
             component = raw_input('> ')
         except EOFError:
             break

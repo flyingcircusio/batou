@@ -26,10 +26,10 @@ def main():
     args = parser.parse_args()
 
     handler = logging.StreamHandler()
-    handler.setLevel(logging.INFO)
-    for log in ['batou']:
+    handler.setLevel(logging.DEBUG)
+    for log in ['batou', 'ssh']:
         log = logging.getLogger(log)
-        log.setLevel(logging.INFO)
+        log.setLevel(logging.DEBUG)
         log.addHandler(handler)
 
     config = ServiceConfig('.', [args.environment])
@@ -118,7 +118,8 @@ class RemoteHost(object):
             with self.cd(self.remote_base):
                 self.cmd(u'hg pull %s' % bouncedir)
         # XXX self.setup_passphrase()
-        with self.cd(self.remote_base):
+        base = self.remote_base + self.deployment.service_base
+        with self.cd(base):
             self.cmd(u'hg update -C %s' % self.deployment.environment.branch)
             if not self.exists('bin/python2.7'):
                 self.cmd('virtualenv --no-site-packages --python python2.7 .')
@@ -128,14 +129,14 @@ class RemoteHost(object):
                 self.cmd('bin/python2.7 bootstrap.py -d')
             self.cmd('bin/buildout -t 15')
 
-        with self.cd(self.remote_base + self.deployment.service_base):
-            self.batou = self.cmd('{}/bin/batou-local --batch {} {}'
-                    .format(self.remote_base, self.deployment.environment.name,
-                            self.host.fqdn), interactive=True)
+            self.batou = self.cmd('bin/batou-local --batch {} {}'
+                    .format(self.deployment.environment.name,
+                        self.host.fqdn), interactive=True)
             self._wait_for_remote_ready()
 
     def _wait_for_remote_ready(self):
         # Wait for the command to complete.
+        import pdb; pdb.set_trace() 
         lastline = None
         line = ''
         while True:
@@ -184,13 +185,9 @@ class RemoteHost(object):
         stdin = chan.makefile('wb')
         stdout = chan.makefile('rb')
         stderr = chan.makefile_stderr('rb')
+        chan.exec_command(cmd)
         if interactive:
-            import pdb; pdb.set_trace() 
-            chan.invoke_shell()
-            chan.sendall(cmd+'\n')
             return chan, stdin, stdout, stderr
-        else:
-            chan.exec_command(cmd)
         status = chan.recv_exit_status()
         if status != 0:
             logger.error(stdout.read())
