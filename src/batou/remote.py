@@ -22,14 +22,23 @@ def main():
         'environment', help='Environment to deploy.',
         type=lambda x:x.replace('.cfg', ''))
     parser.add_argument(
+        '-d', '--debug', action='store_true', help='Enable debug mode.')
+    parser.add_argument(
         '--ssh-user', help='User to connect to via SSH', default=None)
     args = parser.parse_args()
 
+    if args.debug:
+        loggers = ['batou', 'ssh']
+        log_level = logging.DEBUG
+    else:
+        loggers = ['batou']
+        log_level = logging.INFO
+
     handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    for log in ['batou', 'ssh']:
+    handler.setLevel(log_level)
+    for log in loggers:
         log = logging.getLogger(log)
-        log.setLevel(logging.DEBUG)
+        log.setLevel(log_level)
         log.addHandler(handler)
 
     config = ServiceConfig('.', [args.environment])
@@ -136,18 +145,19 @@ class RemoteHost(object):
 
     def _wait_for_remote_ready(self):
         # Wait for the command to complete.
-        lastline = None
+        lastline = 'OK'
         line = ''
         while True:
             char = self.batou[2].read(1)
-            sys.stdout.write(char)
             line += char
             if line == '> ':
                 return lastline.strip()
             if char == '\n':
-                logger.info(line)
-                lastline = line
-                line = ''
+                line = line.strip()
+                if line:
+                    logger.info(line)
+                    lastline = line
+                    line = ''
 
     def deploy_component(self, component):
         logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
