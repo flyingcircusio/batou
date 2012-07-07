@@ -20,6 +20,7 @@ with administrating it.
 To follow this tutorial you will need:
 
 * Python 2.7
+* Mercurial
 * virtualenv
 * an Internet connection
 
