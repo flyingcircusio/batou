@@ -33,10 +33,10 @@ class Secrets(Component):
 
     def remote_bootstrap(self, remote_host):
         with use_passphrase(self.environment, self.service.base) as passphrase:
+            passphrase = open(passphrase, 'r').read().strip()
             remote_host.set(self.root.name, 'passphrase', passphrase)
 
     def configure(self):
-        print repr(self.passphrase)
         encrypted_file = u'{}/{}.cfg.aes'.format(
                 self.root.defdir, self.environment.name)
         config = ConfigParser.SafeConfigParser()
