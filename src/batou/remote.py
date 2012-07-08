@@ -170,6 +170,28 @@ class RemoteHost(object):
                     .format(self.deployment.environment.name,
                         self.host.fqdn), interactive=True)
             self._wait_for_remote_ready()
+            self.remote_command('configure')
+
+    def deploy_component(self, component):
+        logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
+        self.remote_cmd('deploy {}'.format(component.name))
+
+    def bouncedir_name(self):
+        """Pick suitable name for hg repository bounce dir."""
+        raw_name = u'bounce-%s-%s-%s' % (
+            os.path.dirname(__file__).rsplit(u'/')[-1],
+            self.deployment.environment.name,
+            self.deployment.environment.branch)
+        return re.sub(r'[^a-zA-Z0-9_.-]', u'_', raw_name)
+
+    # Internal API
+
+    def remote_cmd(self, cmd):
+        self.batou[1].write(cmd+'\n')
+        self.batou[1].flush()
+        result = self._wait_for_remote_ready()
+        if result != 'OK':
+            raise RuntimeError(result)
 
     def _wait_for_remote_ready(self):
         # Wait for the command to complete.
@@ -186,22 +208,6 @@ class RemoteHost(object):
                     logger.info(line)
                     lastline = line
                     line = ''
-
-    def deploy_component(self, component):
-        logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
-        self.batou[1].write(component.name + '\n')
-        self.batou[1].flush()
-        result = self._wait_for_remote_ready()
-        if result != 'OK':
-            raise RuntimeError(result)
-
-    def bouncedir_name(self):
-        """Pick suitable name for hg repository bounce dir."""
-        raw_name = u'bounce-%s-%s-%s' % (
-            os.path.dirname(__file__).rsplit(u'/')[-1],
-            self.deployment.environment.name,
-            self.deployment.environment.branch)
-        return re.sub(r'[^a-zA-Z0-9_.-]', u'_', raw_name)
 
     # Fabric convenience
 

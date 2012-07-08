@@ -5,7 +5,9 @@ import sys
 import logging
 
 
-def auto_mode(environment, host):
+def auto_mode(environment, hostname):
+    environment.configure()
+    host = environment.get_host(hostname)
     for component in environment.ordered_components:
         if component.host is not host:
             continue
@@ -18,20 +20,39 @@ def input(prompt):
     return raw_input()
 
 
-def batch_mode(environment, host):
-    while True:
-        try:
-            component = input('> ')
-        except EOFError:
-            break
-        if not component:
-            continue
-        try:
-            host[component].deploy()
-        except Exception:
-            print "ERROR"
-        else:
-            print "OK"
+class Batchmode(object):
+
+    def __call__(self, environment, hostname):
+        self.environment = environment
+        self.hostname = hostname
+        while True:
+            try:
+                command = input('> ')
+            except EOFError:
+                break
+            if not command:
+                continue
+            command = command.split(' ', 1)
+            command, args = command[0], command[1:]
+            cmd = getattr(self, 'cmd_{}'.format(command), None)
+            if cmd is None:
+                continue
+            try:
+                cmd(*args)
+            except Exception:
+                print "ERROR"
+            else:
+                print "OK"
+
+    def cmd_set(self):
+        pass
+
+    def cmd_configure(self):
+        self.environment.configure()
+        self.host = self.environment.get_host(self.hostname)
+
+    def cmd_deploy(self, component):
+        self.host[component].deploy()
 
 
 def main():
@@ -49,7 +70,7 @@ def main():
         '-b', '--batch', action='store_true',
         help='Batch mode - read component names to deploy from STDIN.')
     args = parser.parse_args()
-    deploy = batch_mode if args.batch else auto_mode
+    deploy = Batchmode() if args.batch else auto_mode
 
     logging.basicConfig(stream=sys.stdout, level=-1000, format='%(message)s')
 
@@ -63,9 +84,7 @@ def main():
             known = ', '.join(sorted(config.existing_environments))
             parser.error('environment "{}" unknown.\nKnown environments: {}'
                          .format(args.environment, known))
-        environment.configure()
-        host = environment.get_host(args.hostname)
-        deploy(environment, host)
+        deploy(environment, args.hostname)
         notify('Deployment finished',
                '{}:{} was deployed successfully.'.format(
-                   environment.name, host.name))
+                   environment.name, args.hostname))
