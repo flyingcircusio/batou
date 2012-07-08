@@ -1,6 +1,3 @@
-# Copyright (c) 2012 gocept gmbh & co. kg
-# See also LICENSE.txt
-
 from __future__ import print_function, unicode_literals
 from batou.template import TemplateEngine
 from batou.tests import TestCase

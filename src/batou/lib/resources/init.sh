@@ -1,8 +1,5 @@
 #!/bin/bash
 # generic user-init script
-#
-# Copyright (c) 2012 gocept gmbh & co. kg
-# See also LICENSE.txt
 set -e
 
 PATH="${d}{PATH}:/usr/local/sbin:/usr/sbin:/sbin"

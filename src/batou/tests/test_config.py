@@ -1,6 +1,3 @@
-# Copyright (c) 2012 gocept gmbh & co. kg
-# See also LICENSE.txt
-
 from batou.component import Component
 from batou.service import ServiceConfig
 import os
