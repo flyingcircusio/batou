@@ -21,7 +21,7 @@ class MultiFile(object):
 
     def write(self, value):
         for file in self.files:
-            file.write('-> '+value)
+            file.write(value)
 
     def flush(self):
         for file in self.files:
@@ -30,7 +30,7 @@ class MultiFile(object):
     def read(self, count=None):
         value = self.files[0].read()
         for file in self.files[1:]:
-            file.write('<- '+value)
+            file.write(value)
         return value
 
 
