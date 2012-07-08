@@ -229,7 +229,7 @@ class Component(object):
             host=self.host,
             environment=self.environment,
             service=self.service,
-            component=self if component is None else component)
+            component=component)
         return args
 
     @contextlib.contextmanager
