@@ -1,7 +1,7 @@
 """Component to handle secure distribution of secrets"""
 
 from .encryption import EncryptedConfigFile
-from .passphrase import PassphraseFile
+from .passphrase import use_passphrase
 from batou.component import Component
 import contextlib
 import ConfigParser
@@ -13,26 +13,7 @@ class SecretNotFoundError(KeyError):
     pass
 
 
-passphrase_files = {}
 
-
-@contextlib.contextmanager
-def passphrase_file(environment, base):
-    """Runs the associated block with a passphrase file.
-
-    The file name of the file containing the passphrase (terminated with
-    newline) is passed as a single argument.
-    """
-    global passphrase_files
-    if environment in passphrase_files:
-        yield passphrase_files[environment]
-        return
-    pf = u'%s/.batou-passphrase' % base
-    if os.path.exists(pf):
-        yield pf
-        return
-    with PassphraseFile('environment "%s"' % environment.name) as pf:
-        yield pf
 
 
 class Secrets(Component):
@@ -51,12 +32,18 @@ class Secrets(Component):
         aespipe -P passphrase_file <cleartext.cfg >secret.cfg.aes
     """
 
+    passphrase = None
+
+    def remote_bootstrap(self, remote_host):
+        with passphrase_file(self.environment, self.service.base) as passphrase:
+            remote_host.set(self.root.name, 'passphrase', passphrase)
+
     def configure(self):
         encrypted_file = u'{}/{}.cfg.aes'.format(
                 self.root.defdir, self.environment.name)
         config = ConfigParser.SafeConfigParser()
-        with passphrase_file(self.environment, self.service.base) as passphrase:
-            self.remote_options = [passphrase]
+        with use_passphrase(self.environment, self.service.base,
+                self.passphrase) as passphrase:
             with EncryptedConfigFile(encrypted_file, passphrase) as secrets:
                 config.readfp(
                     StringIO.StringIO(secrets.read()), encrypted_file)

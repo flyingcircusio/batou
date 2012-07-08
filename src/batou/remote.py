@@ -169,7 +169,8 @@ class RemoteHost(object):
             self.batou = self.cmd('bin/batou-local --batch {} {}'
                     .format(self.deployment.environment.name,
                         self.host.fqdn), interactive=True)
-            import pdb; pdb.set_trace() 
+            for component in self.host.components:
+                component.remote_bootstrap(self)
             self._wait_for_remote_ready()
             self.remote_cmd('configure')
 

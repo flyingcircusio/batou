@@ -1,6 +1,7 @@
 """Query passphrase from user and put it into a temporary file"""
 
 from __future__ import print_function, unicode_literals
+import contextlib
 import getpass
 import os
 import tempfile
@@ -16,7 +17,7 @@ class PassphraseFile(object):
     passphrase_file = None
     passphrase_cache = {}
 
-    def __init__(self, for_what, double_entry=False):
+    def __init__(self, for_what, double_entry=False, passphrase=None):
         """Setup passphrase file wrapper. `for_what` describes the object that
         is protected via this passphrase (presented to the user during
         passphrase entry). If `double_entry` is True, the passphrase must be
@@ -24,6 +25,8 @@ class PassphraseFile(object):
         """
         self.for_what = for_what
         self.double_entry = double_entry
+        if passphrase is not None:
+            self.passphrase_cache[self.for_what] = passphrase
 
     def __enter__(self):
         self.passphrase_file = tempfile.NamedTemporaryFile(
@@ -59,3 +62,25 @@ class PassphraseFile(object):
     def __exit__(self, *_exc_args):
         os.unlink(self.passphrase_file.name)
 
+
+passphrase_files = {}
+
+
+@contextlib.contextmanager
+def use_passphrase(environment, base, passphrase=None):
+    """Runs the associated block with a passphrase file.
+
+    The file name of the file containing the passphrase (terminated with
+    newline) is passed as a single argument.
+    """
+    global passphrase_files
+    if environment in passphrase_files:
+        yield passphrase_files[environment]
+        return
+    pf = u'%s/.batou-passphrase' % base
+    if os.path.exists(pf):
+        yield pf
+        return
+    with PassphraseFile('environment "%s"' % environment.name,
+                passphrase=passphrase) as pf:
+        yield pf

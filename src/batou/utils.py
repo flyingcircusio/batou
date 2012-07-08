@@ -5,6 +5,27 @@ import itertools
 import os
 import socket
 import subprocess
+import sys
+
+
+def input(prompt):
+    print(prompt)
+    sys.stdout.flush()
+    return raw_input()
+
+
+class MultiFile(object):
+
+    def __init__(self, files):
+        self.files = files
+
+    def write(self, value):
+        for file in self.files:
+            file.write(value)
+
+    def flush(self):
+        for file in self.files:
+            file.flush()
 
 
 @contextlib.contextmanager

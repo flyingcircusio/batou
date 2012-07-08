@@ -86,6 +86,9 @@ class Environment(object):
         self.service = service
         self.hosts = {}
         self.resources = Resources()
+        # A mapping of overriding values that can be set on the root
+        # components.
+        self.overrides = {}
 
     def from_config(self, config):
         """Pull options that come from cfg file out of `config` dict."""
@@ -120,6 +123,8 @@ class Environment(object):
 
             for root in working_set:
                 try:
+                    if root.name in self.overrides:
+                        root.component.__dict__.update(self.overrides[root.name])
                     root.component.prepare(self.service, self, root.host, root)
                 except Exception, e:
                     exceptions.append(e)
