@@ -64,7 +64,9 @@ def main():
     try:
         environment = config.service.environments[args.environment]
     except KeyError:
-        logger.error('Environment "{}" unknown.'.format(args.environment))
+        known = ', '.join(sorted(config.existing_environments))
+        logger.error('Environment "{}" unknown.\nKnown environments: {}'
+                     .format(args.environment, known))
         sys.exit(1)
 
     environment.configure()

@@ -57,7 +57,12 @@ def main():
         config = ServiceConfig('.', [args.environment])
         config.platform = args.platform
         config.scan()
-        environment = config.service.environments[args.environment]
+        try:
+            environment = config.service.environments[args.environment]
+        except KeyError:
+            known = ', '.join(sorted(config.existing_environments))
+            parser.error('environment "{}" unknown.\nKnown environments: {}'
+                         .format(args.environment, known))
         environment.configure()
         host = environment.get_host(args.hostname)
         deploy(environment, host)
