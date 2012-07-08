@@ -1,5 +1,5 @@
 from .service import ServiceConfig
-from .utils import notify
+from .utils import notify, locked
 import argparse
 import sys
 import logging
@@ -49,19 +49,18 @@ def main():
         '-b', '--batch', action='store_true',
         help='Batch mode - read component names to deploy from STDIN.')
     args = parser.parse_args()
+    deploy = batch_mode if args.batch else auto_mode
 
     logging.basicConfig(stream=sys.stdout, level=-1000, format='%(message)s')
 
-    config = ServiceConfig('.', [args.environment])
-    config.platform = args.platform
-    config.scan()
-    environment = config.service.environments[args.environment]
-    environment.configure()
-    host = environment.get_host(args.hostname)
-    if args.batch:
-        batch_mode(environment, host)
-    else:
-        auto_mode(environment, host)
+    with locked('.batou-lock'):
+        config = ServiceConfig('.', [args.environment])
+        config.platform = args.platform
+        config.scan()
+        environment = config.service.environments[args.environment]
+        environment.configure()
+        host = environment.get_host(args.hostname)
+        deploy(environment, host)
         notify('Deployment finished',
                '{}:{} was deployed successfully.'.format(
                    environment.name, host.name))
