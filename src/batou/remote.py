@@ -61,7 +61,12 @@ def main():
 
     config = ServiceConfig('.', [args.environment])
     config.scan()
-    environment = config.service.environments[args.environment]
+    try:
+        environment = config.service.environments[args.environment]
+    except KeyError:
+        logger.error('Environment "{}" unknown.'.format(args.environment))
+        sys.exit(1)
+
     environment.configure()
 
     deployment = RemoteDeployment(environment, args.ssh_user)
