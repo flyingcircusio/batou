@@ -36,6 +36,7 @@ class Secrets(Component):
             remote_host.set(self.root.name, 'passphrase', passphrase)
 
     def configure(self):
+        print repr(self.passphrase)
         encrypted_file = u'{}/{}.cfg.aes'.format(
                 self.root.defdir, self.environment.name)
         config = ConfigParser.SafeConfigParser()
