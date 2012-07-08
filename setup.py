@@ -34,11 +34,11 @@ setup(
     """,
     author='Christian Theune <ct@gocept.com>',
     author_email='ct@gocept.com',
-    license='BSD',
+    license='BSD (2-clause)',
     url='https://projects.gocept.com/projects/batou/',
     keywords='deployment',
     classifiers="""\
-License :: OSI Approved :: Zope Public License
+License :: OSI Approved :: BSD License
 Programming Language :: Python
 Programming Language :: Python :: 2
 Programming Language :: Python :: 2.7
