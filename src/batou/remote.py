@@ -42,6 +42,18 @@ def main():
         log.setLevel(log_level)
         log.addHandler(handler)
 
+    # Verify that we have a repository and no uncommitted files sitting around
+    # when running remote deployments. This may lead to inconsistent runs.
+    try:
+        repository_status = subprocess.check_output(['hg', 'stat'])
+    except OSError:
+        raise
+    else:
+        if repository_status.strip():
+            logger.error('Can not deploy remotely with a dirty working copy:\n')
+            logger.error(repository_status)
+            sys.exit(1)
+
     config = ServiceConfig('.', [args.environment])
     config.scan()
     environment = config.service.environments[args.environment]
