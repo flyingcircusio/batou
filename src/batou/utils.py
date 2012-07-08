@@ -1,6 +1,29 @@
+from __future__ import print_function
+import contextlib
+import fcntl
 import itertools
+import os
 import socket
 import subprocess
+
+
+@contextlib.contextmanager
+def locked(filename):
+    with open(filename, 'a+') as lockfile:
+        try:
+            fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except IOError:
+            raise RuntimeError(
+                'cannot create lock "%s": more than one instance running '
+                'concurrently?' % lockfile, lockfile)
+        # publishing the process id comes handy for debugging
+        lockfile.seek(0)
+        lockfile.truncate()
+        print(os.getpid(), file=lockfile)
+        lockfile.flush()
+        yield
+        lockfile.seek(0)
+        lockfile.truncate()
 
 
 def flatten(listOfLists):
