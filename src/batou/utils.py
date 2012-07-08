@@ -9,7 +9,7 @@ import sys
 
 
 def input(prompt):
-    print(prompt)
+    sys.stdout.write(prompt)
     sys.stdout.flush()
     return raw_input()
 
