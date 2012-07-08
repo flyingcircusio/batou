@@ -1,13 +1,11 @@
-# Copyright (c) 2012 gocept gmbh & co. kg
-# See also LICENSE.txt
 """batou templating support
 
 Currently we support one templating engine:
 
 Jinja2::
-    %% for server in servers
+    {% for server in servers %}
     server {{ server.name }}
-    %% endfor
+    {% endfor %}
 
 """
 

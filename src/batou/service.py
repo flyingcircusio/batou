@@ -1,6 +1,3 @@
-# Copyright (c) 2012 gocept gmbh & co. kg
-# See also LICENSE.txt
-
 from .component import load_components_from_file
 from .host import Host
 from .environment import Environment

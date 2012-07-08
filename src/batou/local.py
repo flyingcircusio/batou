@@ -1,6 +1,3 @@
-# Copyright (c) 2012 gocept gmbh & co. kg
-# See also LICENSE.txt
-
 from .service import ServiceConfig
 from .utils import notify
 import argparse
