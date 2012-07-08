@@ -5,6 +5,17 @@ import sys
 import logging
 
 
+
+class MultiFile(object):
+
+    def __init__(self, files):
+        self.files = files
+
+    def write(self, value):
+        for file in self.files:
+            file.write(value)
+
+
 def auto_mode(environment, hostname):
     environment.configure()
     host = environment.get_host(hostname)
@@ -73,6 +84,10 @@ def main():
     deploy = Batchmode() if args.batch else auto_mode
 
     logging.basicConfig(stream=sys.stdout, level=-1000, format='%(message)s')
+
+
+    log = open('/tmp/batou-ssh-log', 'a+')
+    sys.stdout = MultiFile([sys.stdout, log,])
 
     with locked('.batou-lock'):
         config = ServiceConfig('.', [args.environment])
