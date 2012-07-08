@@ -47,7 +47,6 @@ def load_components_from_file(filename):
 class Component(object):
 
     namevar = ''
-    remote_options = ()
 
     changed = False
 
@@ -88,6 +87,11 @@ class Component(object):
         building the model so that this can be used to ensure some level of
         internal consistency before invoking the remote control layer.
         """
+        pass
+
+    # Support remote bootstrapping
+
+    def remote_bootstrap(self, remote_host):
         pass
 
     # Deployment phase

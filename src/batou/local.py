@@ -1,19 +1,8 @@
 from .service import ServiceConfig
-from .utils import notify, locked
+from .utils import notify, locked, MultiFile, input
 import argparse
 import sys
 import logging
-
-
-
-class MultiFile(object):
-
-    def __init__(self, files):
-        self.files = files
-
-    def write(self, value):
-        for file in self.files:
-            file.write(value)
 
 
 def auto_mode(environment, hostname):
@@ -23,12 +12,6 @@ def auto_mode(environment, hostname):
         if component.host is not host:
             continue
         component.deploy()
-
-
-def input(prompt):
-    print prompt
-    sys.stdout.flush()
-    return raw_input()
 
 
 class Batchmode(object):
@@ -55,8 +38,13 @@ class Batchmode(object):
             else:
                 print "OK"
 
-    def cmd_set(self):
-        pass
+    def cmd_set(self, args):
+        component, attribute, expression = args.split(' ', 2)
+        overrides = self.environment.overrides
+        overrides = overrides.setdefault(component, {})
+        # Make this an expression (e.g. evaluated using Jinja2)
+        # so we can get real types over the wire.
+        overrides[attribute] = expression
 
     def cmd_configure(self):
         self.environment.configure()
