@@ -165,14 +165,10 @@ class Environment(object):
 
     def normalize_host_name(self, hostname):
         """Ensure the given host name is an FQDN for this environment."""
-        if not self.host_domain:
+        if not self.host_domain or hostname.endswith(self.host_domain):
             return hostname
-        domain = self.host_domain
-
-        if hostname.endswith(domain):
-            hostname = hostname.rsplit('.' + domain)[0]
-
-        return '%s.%s' % (hostname, domain)
+        else:
+            return '%s.%s' % (hostname, self.host_domain)
 
     def get_host(self, hostname):
         return self.hosts[self.normalize_host_name(hostname)]

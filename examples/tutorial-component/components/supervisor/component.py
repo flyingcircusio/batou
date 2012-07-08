@@ -13,7 +13,7 @@ class Supervisor(Component):
     def verify(self):
         self.assert_file_is_current(
             'var/supervisord.pid',
-            ['.batou.buildout.success'] + self.programs)
+            ['.batou.buildout.success'] + [d['path'] for d in self.programs])
 
     def update(self):
         out, err = self.cmd('bin/supervisorctl pid')
