@@ -56,8 +56,8 @@ class Secrets(Component):
                 self.root.defdir, self.environment.name)
         config = ConfigParser.SafeConfigParser()
         with passphrase_file(self.environment, self.service.base) as passphrase:
+            self.remote_options = [passphrase]
             with EncryptedConfigFile(encrypted_file, passphrase) as secrets:
                 config.readfp(
                     StringIO.StringIO(secrets.read()), encrypted_file)
         self.provide('secrets', config)
-

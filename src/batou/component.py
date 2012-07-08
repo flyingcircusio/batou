@@ -47,6 +47,7 @@ def load_components_from_file(filename):
 class Component(object):
 
     namevar = ''
+    remote_options = ()
 
     changed = False
 
