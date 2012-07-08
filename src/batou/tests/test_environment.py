@@ -43,3 +43,10 @@ class EnvironmentTest(unittest.TestCase):
         e.hosts['eee.example.com'] = host = Mock()
         e.host_domain = 'example.com'
         self.assertEquals(host, e.get_host('eee'))
+
+    def test_get_host_without_subdomain_also_works(self):
+        e = Environment(u'name', 'service')
+        e.hosts['example.com'] = host = Mock()
+        e.host_domain = 'example.com'
+        self.assertEquals(host, e.get_host('example.com'))
+
