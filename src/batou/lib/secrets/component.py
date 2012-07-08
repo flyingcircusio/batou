@@ -13,9 +13,6 @@ class SecretNotFoundError(KeyError):
     pass
 
 
-
-
-
 class Secrets(Component):
     """Secrets registry.
 
@@ -35,7 +32,7 @@ class Secrets(Component):
     passphrase = None
 
     def remote_bootstrap(self, remote_host):
-        with passphrase_file(self.environment, self.service.base) as passphrase:
+        with use_passphrase(self.environment, self.service.base) as passphrase:
             remote_host.set(self.root.name, 'passphrase', passphrase)
 
     def configure(self):
