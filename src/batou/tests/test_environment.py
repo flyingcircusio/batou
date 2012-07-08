@@ -36,3 +36,13 @@ class EnvironmentTest(unittest.TestCase):
         e.host_domain = 'example.com'
         self.assertEquals(host, e.get_host('asdf'))
         self.assertEquals(host, e.get_host('asdf.example.com'))
+
+    def test_normalize_hostname_regression_11156(self):
+        # The issue here was that we used "rstrip" which works on characters,
+        # not substrings. Having the domain (example.com) start with an eee
+        # causes the hostname to get stripped of it's "eee"s ending in an
+        # empty hostname accidentally.
+        e = Environment(u'name', 'service')
+        e.hosts['eee.example.com'] = host = Mock()
+        e.host_domain = 'example.com'
+        self.assertEquals(host, e.get_host('eee'))
