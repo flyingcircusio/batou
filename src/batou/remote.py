@@ -25,6 +25,8 @@ def main():
     parser.add_argument(
         '-d', '--debug', action='store_true', help='Enable debug mode.')
     parser.add_argument(
+        '-D', '--dirty', action='store_true', help='Allow deploying dirty working copies.')
+    parser.add_argument(
         '--ssh-user', help='User to connect to via SSH', default=None)
     args = parser.parse_args()
 
@@ -50,9 +52,12 @@ def main():
         raise
     else:
         if repository_status.strip():
-            logger.error('Can not deploy remotely with a dirty working copy:\n')
-            logger.error(repository_status)
-            sys.exit(1)
+            if args.dirty:
+                logger.warning('Deploying dirty working copy due to --dirty.')
+            else:
+                logger.error('Can not deploy remotely with a dirty working copy:\n')
+                logger.error(repository_status)
+                sys.exit(1)
 
     config = ServiceConfig('.', [args.environment])
     config.scan()
