@@ -68,14 +68,17 @@ def main():
     parser.add_argument(
         '-b', '--batch', action='store_true',
         help='Batch mode - read component names to deploy from STDIN.')
+    parser.add_argument(
+        '-d', '--debug', action='store_true',
+        help='Enable debug mode. Logs stdout to `batou-debug-log`.')
     args = parser.parse_args()
     deploy = Batchmode() if args.batch else auto_mode
 
     logging.basicConfig(stream=sys.stdout, level=-1000, format='%(message)s')
 
-
-    log = open('/tmp/batou-ssh-log', 'a+')
-    sys.stdout = MultiFile([sys.stdout, log])
+    if args.debug:
+        log = open('batou-debug-log', 'a+')
+        sys.stdout = MultiFile([sys.stdout, log])
 
     with locked('.batou-lock'):
         config = ServiceConfig('.', [args.environment])
