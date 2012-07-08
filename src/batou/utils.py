@@ -27,12 +27,6 @@ class MultiFile(object):
         for file in self.files:
             file.flush()
 
-    def read(self, count=None):
-        value = self.files[0].read()
-        for file in self.files[1:]:
-            file.write(value)
-        return value
-
 
 @contextlib.contextmanager
 def locked(filename):
