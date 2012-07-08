@@ -169,8 +169,8 @@ class RemoteHost(object):
             self.batou = self.cmd('bin/batou-local --batch {} {}'
                     .format(self.deployment.environment.name,
                         self.host.fqdn), interactive=True)
-            for component in self.host.components:
-                component.remote_bootstrap(self)
+            for root in self.host.components:
+                root.component.remote_bootstrap(self)
             self._wait_for_remote_ready()
             self.remote_cmd('configure')
 
@@ -194,6 +194,9 @@ class RemoteHost(object):
         result = self._wait_for_remote_ready()
         if result != 'OK':
             raise RuntimeError(result)
+
+    def set(self, component, attribute, value):
+        self.remote_cmd('set {} {} {}'.format(component, attribute, value))
 
     def _wait_for_remote_ready(self):
         # Wait for the command to complete.

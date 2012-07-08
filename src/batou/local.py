@@ -75,7 +75,8 @@ def main():
 
 
     log = open('/tmp/batou-ssh-log', 'a+')
-    sys.stdout = MultiFile([sys.stdout, log,])
+    sys.stdout = MultiFile([sys.stdout, log])
+    sys.stdin = MultiFile([sys.stdin, log])
 
     with locked('.batou-lock'):
         config = ServiceConfig('.', [args.environment])
