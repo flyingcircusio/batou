@@ -11,7 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 def ensure_path_nonexistent(path):
-    if not os.path.exists(path):
+    try:
+        # cannot use os.path.exists(), since we also want to remove broken
+        # symlinks
+        os.lstat(path)
+    except OSError:
         return
     if os.path.isdir(path):
         shutil.rmtree(path)
@@ -37,8 +41,7 @@ class File(Component):
     mode = None
 
     # Symlink parameters
-    link_source = ''
-    link_target = ''
+    link_to = ''
 
     # Leading directory creation
     leading = False 
@@ -51,10 +54,10 @@ class File(Component):
         elif self.ensure == 'directory':
             self += Directory(self.path, leading=self.leading)
         elif self.ensure == 'symlink':
-            self += Symlink(self.path)
+            self += Symlink(self.path, source=self.link_to)
         else:
             raise ValueError(
-                'Ensure must be one of: presence, directory, '
+                'Ensure must be one of: file, directory, '
                 ' symlink not %s' % self.ensure)
 
         if self.content or self.source or self.is_template:
@@ -210,13 +213,12 @@ class Symlink(Component):
     namevar = 'target'
 
     def configure(self):
-        if not self.source.startswith('/'):
-            self.source = os.path.join(self.root.defdir, self.source)
+        self.source = os.path.join(self.workdir, self.source)
 
     def verify(self):
         if not os.path.islink(self.target):
             raise batou.UpdateNeeded()
-        if os.path.realpath(self.target) != self.source:
+        if os.readlink(self.target) != self.source:
             raise batou.UpdateNeeded()
 
     def update(self):
