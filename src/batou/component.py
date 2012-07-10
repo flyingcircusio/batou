@@ -21,13 +21,12 @@ def platform(name, component):
 
 def load_components_from_file(filename):
     g = l = {}
-    g.update(globals())
     oldcwd = os.getcwd()
     defdir = os.path.dirname(filename)
     os.chdir(defdir)
     execfile(filename, g, l)
     for candidate in l.values():
-        if candidate in globals().values():
+        if candidate in [Component]:
             # Ignore anything we pushed into the globals before execution
             continue
         if (isinstance(candidate, type) and
