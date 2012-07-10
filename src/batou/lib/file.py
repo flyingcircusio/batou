@@ -1,11 +1,9 @@
 from batou.component import Component
 import batou
-import grp
 import logging
 import os.path
 import pwd
 import shutil
-import stat
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +25,7 @@ class File(Component):
 
     namevar = 'path'
 
-    ensure = 'file' # or: directory, symlink
+    ensure = 'file'  # or: directory, symlink
 
     # Content oriented parameters
     content = None
@@ -44,7 +42,7 @@ class File(Component):
     link_to = ''
 
     # Leading directory creation
-    leading = False 
+    leading = False
 
     def configure(self):
         self.fullpath = os.path.normpath(

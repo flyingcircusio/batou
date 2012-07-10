@@ -19,7 +19,7 @@ class Resources(object):
     Components can retrieve all resources for a key by `requiring` the key.
     Optionally components can limit the values returned to a specific host.
 
-    The registry keeps track of which component depends on what 
+    The registry keeps track of which component depends on what
     resources.
     """
 
@@ -124,7 +124,8 @@ class Environment(object):
             for root in working_set:
                 try:
                     if root.name in self.overrides:
-                        root.component.__dict__.update(self.overrides[root.name])
+                        root.component.__dict__.update(
+                            self.overrides[root.name])
                     root.component.prepare(self.service, self, root.host, root)
                 except Exception, e:
                     exceptions.append(e)

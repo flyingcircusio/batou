@@ -1,3 +1,4 @@
+# flake8: noqa
 ##############################################################################
 #
 # Copyright (c) 2006 Zope Foundation and Contributors.

@@ -1,7 +1,4 @@
-from __future__ import print_function, unicode_literals
-from batou.service import Service, ServiceConfig
-import batou.tests
-import os.path
+from batou.service import Service
 import unittest
 
 

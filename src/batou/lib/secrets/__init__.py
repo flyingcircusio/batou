@@ -22,4 +22,5 @@ and encrypts it afterwards. If the secrets file did not exist before, a
 new one is created.
 """
 
-from .component import Secrets
+# Reexport for API
+from .component import Secrets  # noqa

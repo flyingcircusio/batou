@@ -1,7 +1,6 @@
 from .component import load_components_from_file
 from .host import Host
 from .environment import Environment
-import batou.utils
 import ConfigParser
 import glob
 import os

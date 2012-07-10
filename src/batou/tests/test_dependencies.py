@@ -96,7 +96,7 @@ class TestDependencies(unittest.TestCase):
     @mock.patch('batou.environment.logger.exception')
     def test_broken_component_logs_real_exception(self, exception_log):
         self.host.add_component('broken')
-        with self.assertRaises(NonConvergingWorkingSet) as e:
+        with self.assertRaises(NonConvergingWorkingSet):
             self.env.configure()
         self.assertTrue(exception_log.called)
         self.assertIsInstance(exception_log.call_args[0][0], KeyError)

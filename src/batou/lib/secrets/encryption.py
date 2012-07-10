@@ -1,13 +1,9 @@
 from __future__ import print_function, unicode_literals
-from .passphrase import PassphraseFile
-import argparse
-import contextlib
 import fcntl
 import hashlib
 import os
 import subprocess
 import sys
-import tempfile
 
 
 class EncryptedConfigFile(object):
@@ -106,5 +102,3 @@ class EncryptedConfigFile(object):
                 ['aespipe', '-P', self.passphrase_file], stdin=subprocess.PIPE,
                 stdout=enc)
             pipe.communicate(cleartext)
-
-
