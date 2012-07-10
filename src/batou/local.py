@@ -59,7 +59,7 @@ def main():
         description=u'Deploy components locally.')
     parser.add_argument(
         'environment', help='Environment to deploy.',
-        type=lambda x:x.replace('.cfg', ''))
+        type=lambda x: x.replace('.cfg', ''))
     parser.add_argument(
         'hostname', help='Host to deploy.')
     parser.add_argument(

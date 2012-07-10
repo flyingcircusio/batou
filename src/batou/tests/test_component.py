@@ -6,8 +6,6 @@ from mock import Mock, patch
 import os
 import os.path
 import shutil
-import subprocess
-import sysconfig
 import tempfile
 import time
 
@@ -35,7 +33,7 @@ class ComponentTests(TestCase):
         class TestComponent(Component):
             namevar = 'asdf'
         with self.assertRaises(ValueError):
-            component = TestComponent()
+            TestComponent()
 
     def test_init_keyword_args_update_dict(self):
         component = Component(foobar=1)
@@ -72,14 +70,18 @@ class ComponentTests(TestCase):
     def test_prepare_configures_applicable_platforms_as_subcomponents(self):
         class MyComponent(Component):
             pass
+
         class MyOtherComponent(MyComponent):
             pass
+
         @platform('testplatform', MyComponent)
         class MyPlatform(Component):
             pass
+
         @platform('otherplatform', MyComponent)
         class MyOtherPlatform(Component):
             pass
+
         environment = Mock()
         environment.platform = 'testplatform'
         component = MyComponent()
@@ -101,8 +103,10 @@ class ComponentTests(TestCase):
     def test_deploy_update_performed_if_needed(self):
         class MyComponent(Component):
             updated = False
+
             def verify(self):
                 raise batou.UpdateNeeded()
+
             def update(self):
                 self.updated = True
         component = MyComponent()
@@ -113,8 +117,10 @@ class ComponentTests(TestCase):
     def test_deploy_update_not_performed_if_not_needed(self):
         class MyComponent(Component):
             updated = False
+
             def verify(self):
                 pass
+
             def update(self):
                 self.updated = True
         component = MyComponent()
@@ -124,11 +130,14 @@ class ComponentTests(TestCase):
 
     def test_sub_components_are_deployed_first(self):
         log = []
+
         class MyComponent(Component):
             namevar = 'id'
+
             def verify(self):
                 log.append('{}:verify'.format(self.id))
                 raise batou.UpdateNeeded()
+
             def update(self):
                 log.append('{}:update'.format(self.id))
         top = MyComponent('1')
@@ -141,6 +150,7 @@ class ComponentTests(TestCase):
     def test_adding_subcomponents_configures_them_immediately(self):
         class MyComponent(Component):
             configured = False
+
             def configure(self):
                 self.configured = True
         component = Component()
@@ -276,7 +286,9 @@ class ComponentTests(TestCase):
             c = Component()
             c.cmd('asdf')
         except RuntimeError, e:
-            self.assertEquals('Command "asdf" returned unsuccessfully.', str(e))
+            self.assertEquals(
+                'Command "asdf" returned unsuccessfully.',
+                str(e))
 
     def test_cmd_should_not_stop_if_process_expects_input(self):
         c = Component()

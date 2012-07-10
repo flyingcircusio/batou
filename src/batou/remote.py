@@ -3,7 +3,6 @@ from .service import ServiceConfig
 from ssh import AutoAddPolicy
 from ssh.client import SSHClient
 import argparse
-import getpass
 import logging
 import multiprocessing.pool
 import os
@@ -21,13 +20,16 @@ def main():
         description=u'Deploy a batou environment remotely.')
     parser.add_argument(
         'environment', help='Environment to deploy.',
-        type=lambda x:x.replace('.cfg', ''))
+        type=lambda x: x.replace('.cfg', ''))
     parser.add_argument(
-        '-d', '--debug', action='store_true', help='Enable debug mode.')
+        '-d', '--debug', action='store_true',
+        help='Enable debug mode.')
     parser.add_argument(
-        '-D', '--dirty', action='store_true', help='Allow deploying dirty working copies.')
+        '-D', '--dirty', action='store_true',
+        help='Allow deploying dirty working copies.')
     parser.add_argument(
-        '--ssh-user', help='User to connect to via SSH', default=None)
+        '--ssh-user', default=None,
+        help='User to connect to via SSH')
     args = parser.parse_args()
 
     if args.debug:
@@ -55,7 +57,8 @@ def main():
             if args.dirty:
                 logger.warning('Deploying dirty working copy due to --dirty.')
             else:
-                logger.error('Can not deploy remotely with a dirty working copy:\n')
+                logger.error('Can not deploy remotely with'
+                             'a dirty working copy:\n')
                 logger.error(repository_status)
                 sys.exit(1)
 
@@ -100,7 +103,7 @@ class RemoteDeployment(object):
             remote = RemoteHost(host, self)
             remotes[host] = remote
         pool = multiprocessing.pool.ThreadPool(10)
-        pool.map(lambda x:x.connect(), remotes.values())
+        pool.map(lambda x: x.connect(), remotes.values())
 
         for component in self.environment.ordered_components:
             remote = remotes[component.host]
@@ -121,7 +124,9 @@ class RemoteHost(object):
         self.ssh.set_missing_host_key_policy(AutoAddPolicy())
         self.ssh.connect(self.host.fqdn, username=self.deployment.ssh_user)
         self.sftp = self.ssh.open_sftp()
-        self.cwd = [self.cmd('pwd', service_user=False, ensure_cwd=False).strip()]
+        self.cwd = []
+        self.cwd.append(
+            self.cmd('pwd', service_user=False, ensure_cwd=False).strip())
         self._bootstrap()
 
     def _bootstrap(self):
@@ -141,8 +146,8 @@ class RemoteHost(object):
             if e.returncode != 1:
                 # Urks: 1 means: nothing to push
                 raise
-        self.remote_base = self.cmd(
-            'echo ~{}/deployment'.format(self.deployment.environment.service_user))
+        service_user = self.deployment.environment.service_user
+        self.remote_base = self.cmd('echo ~{}/deployment'.format(service_user))
         self.remote_base = self.remote_base.strip()
         if not self.exists(self.remote_base):
             self.cmd(u'hg clone %s %s' % (bouncedir, self.remote_base))
@@ -184,7 +189,7 @@ class RemoteHost(object):
     # Internal API
 
     def remote_cmd(self, cmd):
-        self.batou[1].write(cmd+'\n')
+        self.batou[1].write(cmd + '\n')
         self.batou[1].flush()
         result = self._wait_for_remote_ready()
         if result != 'OK':
@@ -246,10 +251,10 @@ class RemoteHost(object):
 
     def exists(self, path):
         path = self.ensure_working_dir(path)
-        logger.debug('exists? '+ repr(path))
+        logger.debug('exists? ' + repr(path))
         try:
             self.sftp.stat(path)
-        except Exception, e:
+        except Exception:
             return False
         return True
 

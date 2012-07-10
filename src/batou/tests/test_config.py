@@ -65,7 +65,7 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         self.assertEqual('localhost', localhost.name)
         self.assertEqual('localhost', localhost.fqdn)
         components = list(localhost.components)
-        components.sort(key=lambda x:x.name)
+        components.sort(key=lambda x: x.name)
         self.assertEqual(['zeo', 'zope'], [x.name for x in components])
         zeo = components[0]
         self.assertIsInstance(zeo.component, Component)

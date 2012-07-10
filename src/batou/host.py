@@ -1,10 +1,5 @@
 """Manage service components for individual hosts."""
 
-from __future__ import print_function, unicode_literals
-import contextlib
-import fcntl
-import os
-
 
 class Host(object):
     """Description of service components for a host."""

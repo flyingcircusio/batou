@@ -10,4 +10,4 @@ class Service(Component):
 
     namevar = 'executable'
 
-    pidfile = None # The pidfile written by the service
+    pidfile = None  # The pidfile as written by the services' executable.

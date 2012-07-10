@@ -1,13 +1,9 @@
-from batou.template import TemplateEngine
 import batou
 import batou.utils
 import contextlib
-import filecmp
 import logging
 import os
 import os.path
-import re
-import shutil
 import subprocess
 
 logger = logging.getLogger(__name__)
@@ -156,7 +152,7 @@ class Component(object):
     def get_platform(self):
         """Return the platform component for this component if one exists."""
         platforms = self.__class__.__dict__.get('_platforms', {})
-        return platforms.get(self.environment.platform, lambda:None)()
+        return platforms.get(self.environment.platform, lambda: None)()
 
     # Resource provider/user API
 
@@ -197,10 +193,10 @@ class Component(object):
         retcode = process.poll()
         if retcode:
             print "STDOUT"
-            print "="*72
+            print "=" * 72
             print stdout
             print "STDERR"
-            print "="*72
+            print "=" * 72
             print stderr
             raise RuntimeError(
                 'Command "{}" returned unsuccessfully.'.format(cmd))

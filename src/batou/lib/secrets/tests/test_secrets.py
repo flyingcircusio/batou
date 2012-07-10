@@ -32,7 +32,9 @@ class EncryptedConfigFileTests(TestCase):
             print('wrong passphrase wrong passphrase', file=pf)
             pf.flush()
         with self.assertRaises(RuntimeError):
-            with EncryptedConfigFile(self.encrypted, self.passphrase) as secrets:
+            encrypted_file = EncryptedConfigFile(
+                self.encrypted, self.passphrase)
+            with encrypted_file as secrets:
                 print(secrets.read())
 
     def test_write_should_fail_unless_write_locked(self):
@@ -47,16 +49,20 @@ class EncryptedConfigFileTests(TestCase):
     def test_open_nonexistent_file_for_write_should_create_empty_file(self):
         tf = tempfile.NamedTemporaryFile(prefix='new_encrypted.')
         tf.close()  # deletes file
-        with EncryptedConfigFile(tf.name, self.passphrase, write_lock=True) as sf:
-            self.assertEqual('', sf.read())
-            self.assertFileExists(sf.encrypted_file)
+        encrypted_file = EncryptedConfigFile(
+            tf.name, self.passphrase, write_lock=True)
+        with encrypted_file as ef:
+            self.assertEqual('', ef.read())
+            self.assertFileExists(ef.encrypted_file)
         os.unlink(tf.name)
 
     def test_write(self):
         with tempfile.NamedTemporaryFile(prefix='new_encrypted.') as tf:
             shutil.copy(self.encrypted, tf.name)
-            with EncryptedConfigFile(tf.name, self.passphrase, write_lock=True) as sf:
-                sf.write('some new file contents\n')
+            encrypt_file = EncryptedConfigFile(tf.name, self.passphrase,
+                                               write_lock=True)
+            with encrypt_file as ef:
+                ef.write('some new file contents\n')
             with open(self.encrypted, 'rb') as old:
                 with open(tf.name, 'rb') as new:
                     self.assertNotEqual(old.read(), new.read())

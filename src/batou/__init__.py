@@ -1,6 +1,10 @@
 # Ensure platform components have a chance to register.
+
 # XXX make more flexible. E.g. by using entry points.
-import batou.lib.goceptnet
+import batou.lib.goceptnet  # noqa
+
+# API re-exports
+from .component import Component  # noqa
 
 
 class UpdateNeeded(Exception):

@@ -3,9 +3,7 @@
 from .encryption import EncryptedConfigFile
 from .passphrase import use_passphrase
 from batou.component import Component
-import contextlib
 import ConfigParser
-import os
 import StringIO
 
 

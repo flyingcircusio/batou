@@ -49,4 +49,3 @@ class EnvironmentTest(unittest.TestCase):
         e.hosts['example.com'] = host = Mock()
         e.host_domain = 'example.com'
         self.assertEquals(host, e.get_host('example.com'))
-
