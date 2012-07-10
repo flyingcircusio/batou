@@ -2,7 +2,7 @@ from __future__ import print_function, unicode_literals
 from batou.component import Component, RootComponent, platform
 from batou.tests import TestCase
 import batou
-import mock
+from mock import Mock, patch
 import os
 import os.path
 import shutil
@@ -45,15 +45,15 @@ class ComponentTests(TestCase):
         # The default remote bootstrap doesn't do anything: just exercise that
         # it's there.  This could go away once we start testing the remoting
         # code.
-        component = Component(mock.Mock())
-        component.remote_bootstrap(mock.Mock())
+        component = Component(Mock())
+        component.remote_bootstrap(Mock())
 
     def test_prepare_sets_up_vars(self):
-        service = mock.Mock()
-        environment = mock.Mock()
-        host = mock.Mock()
-        root = mock.Mock()
-        parent = mock.Mock()
+        service = Mock()
+        environment = Mock()
+        host = Mock()
+        root = Mock()
+        parent = Mock()
         component = Component()
         component.prepare(
             service, environment, host, root, parent)
@@ -65,8 +65,8 @@ class ComponentTests(TestCase):
 
     def test_prepare_calls_configure(self):
         component = Component()
-        component.configure = mock.Mock()
-        component.prepare(None, mock.Mock(), None, None)
+        component.configure = Mock()
+        component.prepare(None, Mock(), None, None)
         self.assertTrue(component.configure.called)
 
     def test_prepare_configures_applicable_platforms_as_subcomponents(self):
@@ -80,7 +80,7 @@ class ComponentTests(TestCase):
         @platform('otherplatform', MyComponent)
         class MyOtherPlatform(Component):
             pass
-        environment = mock.Mock()
+        environment = Mock()
         environment.platform = 'testplatform'
         component = MyComponent()
         component.prepare(None, environment, None, None)
@@ -95,7 +95,7 @@ class ComponentTests(TestCase):
 
     def test_deploy_empty_component_runs_without_error(self):
         component = Component()
-        component.prepare(None, mock.Mock(), None, None)
+        component.prepare(None, Mock(), None, None)
         component.deploy()
 
     def test_deploy_update_performed_if_needed(self):
@@ -106,7 +106,7 @@ class ComponentTests(TestCase):
             def update(self):
                 self.updated = True
         component = MyComponent()
-        component.prepare(None, mock.Mock(), None, None)
+        component.prepare(None, Mock(), None, None)
         component.deploy()
         self.assertTrue(component.updated)
 
@@ -118,7 +118,7 @@ class ComponentTests(TestCase):
             def update(self):
                 self.updated = True
         component = MyComponent()
-        component.prepare(None, mock.Mock(), None, None)
+        component.prepare(None, Mock(), None, None)
         component.deploy()
         self.assertFalse(component.updated)
 
@@ -132,7 +132,7 @@ class ComponentTests(TestCase):
             def update(self):
                 log.append('{}:update'.format(self.id))
         top = MyComponent('1')
-        top.prepare(None, mock.Mock(), None, None)
+        top.prepare(None, Mock(), None, None)
         top += MyComponent('2')
         top.deploy()
         self.assertEquals(
@@ -144,7 +144,7 @@ class ComponentTests(TestCase):
             def configure(self):
                 self.configured = True
         component = Component()
-        component.prepare(None, mock.Mock(), None, None)
+        component.prepare(None, Mock(), None, None)
         my = MyComponent()
         component += my
         self.assertTrue(my.configured)
@@ -169,7 +169,7 @@ class ComponentTests(TestCase):
     # ANSC = assert no subcomponent changes
     def test_ansc_raises_if_subcomponent_changed(self):
         c = Component()
-        c.prepare(None, mock.Mock(), 'localhost', None)
+        c.prepare(None, Mock(), 'localhost', None)
         c2 = Component()
         c += c2
         c2.changed = True
@@ -178,7 +178,7 @@ class ComponentTests(TestCase):
 
     def test_ansc_does_not_raise_if_no_subcomponent_changed(self):
         c = Component()
-        c.prepare(None, mock.Mock(), 'localhost', None)
+        c.prepare(None, Mock(), 'localhost', None)
         c2 = Component()
         c += c2
         c2.changed = False
@@ -188,7 +188,7 @@ class ComponentTests(TestCase):
         c = Component()
         self.assertEquals(('1\n', ''), c.cmd('echo 1'))
 
-    @mock.patch('sys.stdout')
+    @patch('sys.stdout')
     def test_cmd_raises_if_error(self, stdout):
         c = Component()
         with self.assertRaises(RuntimeError):
@@ -217,7 +217,7 @@ class ComponentTests(TestCase):
 
     def test_expand(self):
         c = Component()
-        c.prepare(None, mock.Mock(), 'localhost', None)
+        c.prepare(None, Mock(), 'localhost', None)
         self.assertEqual('Hello localhost', c.expand('Hello {{host}}'))
 
     def test_templates(self):
@@ -226,7 +226,7 @@ class ComponentTests(TestCase):
             template.write('Hello {{host}}')
             self.addCleanup(os.unlink, sample)
         c = Component()
-        c.prepare(None, mock.Mock(), 'localhost', None)
+        c.prepare(None, Mock(), 'localhost', None)
         self.assertEqual('Hello localhost\n', c.template(sample))
 
     def test_chdir_contextmanager_is_stackable(self):
@@ -243,7 +243,7 @@ class ComponentTests(TestCase):
 
     def test_root_component_computes_working_dir(self):
         c = Component()
-        c.service = mock.Mock()
+        c.service = Mock()
         c.service.base = 'path-to-service'
         root = RootComponent('test', c, None, None)
         c.root = root
@@ -255,8 +255,8 @@ class ComponentTests(TestCase):
         self.addCleanup(shutil.rmtree, d)
         self.addCleanup(os.chdir, os.getcwd())
         c = Component()
-        c.deploy = mock.Mock()
-        c.service = mock.Mock()
+        c.deploy = Mock()
+        c.service = Mock()
         c.service.base = d
         root = RootComponent('test', c, None, None)
         self.assertFalse(os.path.isdir(root.workdir))
@@ -270,7 +270,7 @@ class ComponentTests(TestCase):
         self.assertEquals(root.workdir, cwd)
         self.assertTrue(c.deploy.called)
 
-    @mock.patch('sys.stdout')
+    @patch('sys.stdout')
     def test_cmd_execution_failed_gives_command_in_exception(self, stdout):
         try:
             c = Component()
