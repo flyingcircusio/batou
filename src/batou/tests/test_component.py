@@ -246,9 +246,9 @@ class ComponentTests(TestCase):
         c.service = mock.Mock()
         c.service.base = 'path-to-service'
         root = RootComponent('test', c, None, None)
-	c.root = root
+        c.root = root
         self.assertEquals('path-to-service/work/test', root.workdir)
-	self.assertEquals('path-to-service/work/test', c.workdir)
+        self.assertEquals('path-to-service/work/test', c.workdir)
 
     def test_root_component_creates_working_dir_runs_component_deploy(self):
         d = tempfile.mkdtemp()
