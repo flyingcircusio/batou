@@ -2,6 +2,7 @@ from batou.component import Component
 from batou.lib.buildout import Buildout
 from batou.lib.service import Service
 
+
 class Supervisor(Component):
 
     def configure(self):
