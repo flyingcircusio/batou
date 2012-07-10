@@ -41,6 +41,13 @@ class ComponentTests(TestCase):
         component = Component(foobar=1)
         self.assertEquals(1, component.foobar)
 
+    def test_remote_bootstrap(self):
+        # The default remote bootstrap doesn't do anything: just exercise that
+        # it's there.  This could go away once we start testing the remoting
+        # code.
+        component = Component(mock.Mock())
+        component.remote_bootstrap(mock.Mock())
+
     def test_prepare_sets_up_vars(self):
         service = mock.Mock()
         environment = mock.Mock()
