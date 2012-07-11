@@ -25,10 +25,15 @@ class AutoMode(LocalDeploymentMode):
 
 class BatchMode(LocalDeploymentMode):
 
+    output = sys.stdout
+
+    def input(self):
+        return input('> ')
+
     def __call__(self):
         while True:
             try:
-                command = input('> ')
+                command = self.input()
             except EOFError:
                 break
             if not command:
@@ -41,9 +46,11 @@ class BatchMode(LocalDeploymentMode):
             try:
                 cmd(*args)
             except Exception:
-                print "ERROR"
+                self.output.write('ERROR\n')
+                self.output.flush()
             else:
-                print "OK"
+                self.output.write('OK\n')
+                self.output.flush()
 
     def cmd_set(self, args):
         component, attribute, expression = args.split(' ', 2)
