@@ -1,5 +1,5 @@
 from StringIO import StringIO
-from batou.utils import resolve, input
+from batou.utils import resolve, input, MultiFile
 import mock
 import sys
 import unittest
@@ -26,3 +26,15 @@ class InputTests(unittest.TestCase):
         out = StringIO()
         self.assertEquals('asdf', input('foo', out))
         self.assertEquals('foo', out.getvalue())
+
+
+class MultiFileTests(unittest.TestCase):
+
+    def test_write_and_flush_propation(self):
+        file1 = StringIO()
+        file2 = StringIO()
+        multi = MultiFile([file1, file2])
+        multi.write('asdf')
+        multi.flush()
+        self.assertEquals('asdf', file1.getvalue())
+        self.assertEquals('asdf', file2.getvalue())
