@@ -1,4 +1,5 @@
 import batou
+import batou.template
 import batou.utils
 import contextlib
 import logging
