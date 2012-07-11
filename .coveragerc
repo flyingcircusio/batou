@@ -1,0 +1,13 @@
+[run]
+branch = True
+source = batou
+
+[report]
+precision = 2
+omit = */interfaces.py
+       */interfaces
+       */tests/*
+       */tests.py
+
+[html]
+directory = coverage-report
