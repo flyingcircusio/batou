@@ -27,7 +27,7 @@ class ServiceConfig(object):
 
     platform = None     # XXX overridden via CLI
 
-    def __init__(self, basedir, environments=[]):
+    def __init__(self, basedir, environments):
         self.environments = set(environments)
         self.basedir = os.path.abspath(basedir)
         if not os.path.exists(self.basedir):
@@ -56,10 +56,6 @@ class ServiceConfig(object):
                                            existing_environments)
         self.existing_environments = set(existing_environments)
 
-        if self.environments:
-            self.environments = self.existing_environments & self.environments
-        else:
-            self.environments = self.existing_environments
         for environment in self.environments:
             self.load_environment(environment)
 
