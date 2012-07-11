@@ -19,7 +19,13 @@ The script accepts buildout command-line options, so you can
 use the -c option to specify an alternate configuration file.
 """
 
-import os, shutil, sys, tempfile, urllib, urllib2, subprocess
+import os
+import shutil
+import sys
+import tempfile
+import urllib
+import urllib2
+import subprocess
 from optparse import OptionParser
 
 if sys.platform == 'win32':
