@@ -95,13 +95,8 @@ class LockfileContextManagerTests(unittest.TestCase):
     def test_lock_cant_lock_twice(self, lockf):
         lockfile = self.tempfile()
         with locked(lockfile):
-            try:
-                with locked(lockfile):
-                    pass
-            except Exception:
-                pass
-            else:
-                self.fail('Locking twice did not raise exception')
+            locked2 = locked(lockfile)
+            self.assertRaises(Exception, locked2.__enter__)
 
 
 class NotifyTests(unittest.TestCase):
