@@ -75,3 +75,8 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         dev = self.service.environments['dev']
         self.assertEquals(['test'],
                           dev.hosts['localhost'].components[1].features)
+
+    def test_load_environment_with_specific_platform(self):
+        self.config.platform = 'foobar'
+        self.config.scan()
+        self.assertEquals('foobar', self.service.environments['dev'].platform)
