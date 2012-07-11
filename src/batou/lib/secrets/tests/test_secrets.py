@@ -34,8 +34,7 @@ class EncryptedConfigFileTests(TestCase):
         with self.assertRaises(RuntimeError):
             encrypted_file = EncryptedConfigFile(
                 self.encrypted, self.passphrase)
-            with encrypted_file as secrets:
-                print(secrets.read())
+            encrypted_file.__enter__()
 
     def test_write_should_fail_unless_write_locked(self):
         with EncryptedConfigFile(self.encrypted, self.passphrase) as secrets:
@@ -43,8 +42,7 @@ class EncryptedConfigFileTests(TestCase):
 
     def test_open_nonexistent_file_for_read_should_fail(self):
         with self.assertRaises(IOError):
-            with EncryptedConfigFile('/no/such/file', self.passphrase):
-                pass
+            EncryptedConfigFile('/no/such/file', self.passphrase).__enter__()
 
     def test_open_nonexistent_file_for_write_should_create_empty_file(self):
         tf = tempfile.NamedTemporaryFile(prefix='new_encrypted.')
