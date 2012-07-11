@@ -5,20 +5,27 @@ import sys
 import logging
 
 
-def auto_mode(environment, hostname):
-    environment.configure()
-    host = environment.get_host(hostname)
-    for component in environment.ordered_components:
-        if component.host is not host:
-            continue
-        component.deploy()
+class LocalDeploymentMode(object):
 
-
-class Batchmode(object):
-
-    def __call__(self, environment, hostname):
+    def __init__(self, environment, hostname):
         self.environment = environment
         self.hostname = hostname
+
+
+class AutoMode(LocalDeploymentMode):
+
+    def __call__(self):
+        self.environment.configure()
+        host = self.environment.get_host(self.hostname)
+        for component in self.environment.ordered_components:
+            if component.host is not host:
+                continue
+            component.deploy()
+
+
+class BatchMode(LocalDeploymentMode):
+
+    def __call__(self):
         while True:
             try:
                 command = input('> ')
@@ -72,7 +79,7 @@ def main():
         '-d', '--debug', action='store_true',
         help='Enable debug mode. Logs stdout to `batou-debug-log`.')
     args = parser.parse_args()
-    deploy = Batchmode() if args.batch else auto_mode
+    mode = BatchMode if args.batch else AutoMode
 
     logging.basicConfig(stream=sys.stdout, level=-1000, format='%(message)s')
 
@@ -90,7 +97,7 @@ def main():
             known = ', '.join(sorted(config.existing_environments))
             parser.error('environment "{}" unknown.\nKnown environments: {}'
                          .format(args.environment, known))
-        deploy(environment, args.hostname)
+        mode(environment, args.hostname)()
         notify('Deployment finished',
                '{}:{} was deployed successfully.'.format(
                    environment.name, args.hostname))
