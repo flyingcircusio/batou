@@ -10,6 +10,18 @@ import tempfile
 import time
 
 
+class TestComponent(Component):
+    updated = False
+    needs_update = True
+
+    def verify(self):
+        if self.needs_update:
+            raise batou.UpdateNeeded()
+
+    def update(self):
+        self.updated = True
+
+
 class ComponentTests(TestCase):
 
     def test_init_with_no_arguments_creates_plain_component(self):
@@ -101,29 +113,13 @@ class ComponentTests(TestCase):
         component.deploy()
 
     def test_deploy_update_performed_if_needed(self):
-        class MyComponent(Component):
-            updated = False
-
-            def verify(self):
-                raise batou.UpdateNeeded()
-
-            def update(self):
-                self.updated = True
-        component = MyComponent()
+        component = TestComponent(needs_update=True)
         component.prepare(None, Mock(), None, None)
         component.deploy()
         self.assertTrue(component.updated)
 
     def test_deploy_update_not_performed_if_not_needed(self):
-        class MyComponent(Component):
-            updated = False
-
-            def verify(self):
-                pass
-
-            def update(self):
-                self.updated = True
-        component = MyComponent()
+        component = TestComponent(needs_update=False)
         component.prepare(None, Mock(), None, None)
         component.deploy()
         self.assertFalse(component.updated)
