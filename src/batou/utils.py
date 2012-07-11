@@ -88,6 +88,8 @@ class Address(object):
             connect, port = connect_address.split(':')
         else:
             connect = connect_address
+        if port is None:
+            raise ValueError('Need port for service address.')
         self.connect = NetLoc(connect, str(port))
         self.listen = NetLoc(resolve(connect), str(port))
 
