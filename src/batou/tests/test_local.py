@@ -81,7 +81,7 @@ class BatchModeTests(unittest.TestCase):
         mode = BatchMode(environment, 'localhost')
         mode.output = StringIO()
 
-        def input_mock(prompt):
+        def input_mock():
             try:
                 value = input_script.pop(0)
             except IndexError:
