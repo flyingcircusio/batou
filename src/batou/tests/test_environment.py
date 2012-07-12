@@ -1,6 +1,21 @@
 from batou.environment import Environment
 from mock import Mock
+import mock
 import unittest
+
+
+class TestResources(unittest.TestCase):
+
+    def test_reset_should_clean_provided_but_not_required_resources(self):
+        from batou.environment import Resources
+        res = Resources()
+        component = mock.Mock()
+        component.root = mock.sentinel.root
+        res.provide(component,
+                    mock.sentinel.key,
+                    mock.sentinel.value)
+        # XXX raises KeyError(sentinel.key)
+        res.reset_component_resources(mock.sentinel.root)
 
 
 class EnvironmentTest(unittest.TestCase):
