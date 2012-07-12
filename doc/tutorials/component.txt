@@ -255,3 +255,16 @@ working directory:
   Really shut the remote supervisord process down y/N? y
   Shut down
   supervisor> quit
+
+A quick look at the generated buildout configuration shows that batou created
+the same supervisor configuration that you had before, only automatically:
+
+.. code-block:: console
+
+  $ cat work/supervisor/buildout.cfg
+  …
+  [supervisor]
+  recipe = collective.recipe.supervisor
+  programs =
+      10 tick …/work/tick/tick.sh true
+  …
