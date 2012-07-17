@@ -6,7 +6,7 @@ import unittest
 
 class TestResources(unittest.TestCase):
 
-    def test_reset_should_clean_provided_but_not_required_resources(self):
+    def test_regression_reset_works_if_provided_but_not_required(self):
         from batou.environment import Resources
         res = Resources()
         component = mock.Mock()

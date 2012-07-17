@@ -51,8 +51,10 @@ class Resources(object):
         # allow us to converge on circular dependencies if we do
         # establish an equilibrium at some point.
         for key, resources in self.resources.items():
-            if root in resources:
-                del resources[root]
+            if root not in resources:
+                continue
+            del resources[root]
+            if key in self.subscribers:
                 self.pending_dependencies.update(self.subscribers[key])
 
     @property
