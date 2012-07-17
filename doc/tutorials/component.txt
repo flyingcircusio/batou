@@ -123,6 +123,7 @@ and providing a ``buildout.cfg`` file. Create a file
   from batou.component import Component
   from batou.lib.buildout import Buildout
 
+
   class Supervisor(Component):
 
       def configure(self):
@@ -221,6 +222,7 @@ like this:
   from batou.component import Component
   from batou.lib.buildout import Buildout
 
+
   class Supervisor(Component):
 
       def configure(self):
@@ -255,3 +257,85 @@ working directory:
   Really shut the remote supervisord process down y/N? y
   Shut down
   supervisor> quit
+
+A quick look at the generated buildout configuration shows that batou created
+the same supervisor configuration that you had before, only automatically:
+
+.. code-block:: console
+
+  $ cat work/supervisor/buildout.cfg
+  …
+  [supervisor]
+  recipe = collective.recipe.supervisor
+  programs =
+      10 tick …/work/tick/tick.sh true
+  …
+
+Have batou manage the supervisor service
+----------------------------------------
+
+So far, you are using batou to install and configure the components of your
+deployment, the tick program and supervisor to run it for you. However, you
+still need to manually start or restart ``supervisord`` after doing a
+deployment. In order not to disrupt the service unnecessarily, you have to
+think about whether there have been any recent changes to either software or
+configuration that require a restart.
+
+However, you can use batou also for managing running services for you. As you
+saw, batou makes sure to update components either if their deployed artifacts
+are different from what they should be, or because of changes in their
+dependencies (such as running buildout again after the desired content of
+``buildout.cfg`` has changed). Similarly, batou can start or stop services
+that should or should not be running according to the deployment's
+configuration, and it can restart services that need to be restarted because
+of updates to their software or configuration.
+
+Add a service sub-component to your supervisor component, and add code that
+makes sure the running process is newer (by its pid file) than both the last
+successful run of the supervisor buildout and any programs supervisor is to
+control. Also, add instructions for starting or restarting ``supervisord``.
+Update the file ``components/supervisor/component.py`` to read:
+
+.. literalinclude:: ../../examples/tutorial-component/components/supervisor/component.py
+  :language: python
+
+To see how batou manages the supervisor service, first make sure that
+supervisord is not currently running:
+
+.. code-block:: console
+
+  $ work/supervisor/bin/supervisorctl
+  http://127.0.0.1:9001 refused connection
+  supervisor> quit
+
+Next, run the deployment and see how both the supervisord process and the
+controlled tick program are running immediately afterwards:
+
+.. code-block:: console
+
+  $ bin/batou-local tutorial localhost
+  Updating Supervisor
+  $ work/supervisor/bin/supervisorctl
+  tick                             RUNNING    pid 6021, uptime 0:00:17
+  supervisor> pid
+  6019
+  supervisor> quit
+
+Observe now how supervisor is made to reload its configuration when it
+changes. Change, say, the priority of the tick program by editing
+``components/tick/component.py``, run batou and look at the process ids again:
+
+.. code-block:: console
+
+  $ bin/batou-local tutorial localhost
+  Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
+  Updating Supervisor > Buildout
+  Updating Supervisor
+  $ work/supervisor/bin/supervisorctl
+  tick                             RUNNING    pid 6242, uptime 0:00:07
+  supervisor> pid
+  6019
+  supervisor> quit
+
+As you see, the supervisord process is still running without having been
+interrupted, but the tick program has been restarted.
