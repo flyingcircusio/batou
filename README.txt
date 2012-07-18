@@ -8,3 +8,9 @@ locally and remotely. Models are written as Python code.
 
 See the `batou documentation <http://packages.python.org/batou>`_ for details
 on how to use it.
+
+We're hiring!
+=============
+
+gocept is looking for talented DevOps people to supplement our operations
+team: http://gocept.com/das-unternehmen/karriere
