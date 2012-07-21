@@ -33,8 +33,8 @@ class Resources(object):
         values[component.root].append(value)
         self.pending_dependencies.update(self.subscribers.get(key, ()))
 
-    def require(self, component, key, host=None):
-        self.subscribers.setdefault(key, set()).add(component.root)
+    def get(self, key, host=None):
+        """Return resource values without recording a dependency."""
         if host is not None:
             results = []
             for root, values in self.resources.get(key, {}).items():
@@ -43,6 +43,11 @@ class Resources(object):
         else:
             results = flatten(self.resources.get(key, {}).values())
         return results
+
+    def require(self, component, key, host=None):
+        """Return resource values and record component dependency."""
+        self.subscribers.setdefault(key, set()).add(component.root)
+        return self.get(key, host)
 
     def reset_component_resources(self, root):
         # XXX I smell a potential optimization/blocker here: if we
@@ -128,6 +133,7 @@ class Environment(object):
                     if root.name in self.overrides:
                         root.component.__dict__.update(
                             self.overrides[root.name])
+                    self.resources.reset_component_resources(root)
                     root.component.prepare(self.service, self, root.host, root)
                 except Exception, e:
                     exceptions.append(e)

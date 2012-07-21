@@ -62,7 +62,6 @@ class Component(object):
         self.root = root
         self.parent = parent
         self.sub_components = []
-        self.environment.resources.reset_component_resources(root)
         self.configure()
         self += self.get_platform()
 
