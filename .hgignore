@@ -5,6 +5,7 @@ syntax: glob
 *.pyc
 *.swo
 *.swp
+.Python
 .batou-lock
 .batou-passphrase
 .installed.cfg
