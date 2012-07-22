@@ -206,12 +206,25 @@ class Group(FileComponent):
 class Mode(FileComponent):
 
     def verify(self):
-        current = os.lstat(self.path).st_mode
+        try:
+            self._select_stat_implementation()
+        except AttributeError:
+            # Happens on systems without lstat/lchmod implementation (like
+            # Linux) Not sure whether ignoring it is really the right thing.
+            return
+        current = self._stat(self.path).st_mode
         if stat.S_IMODE(current) != self.mode:
             raise batou.UpdateNeeded()
 
     def update(self):
-        os.lchmod(self.path, self.mode)
+        self._chmod(self.path, self.mode)
+
+    def _select_stat_implementation(self):
+        self._stat = os.stat
+        self._chmod = os.chmod
+        if os.path.islink(self.path):
+            self._stat = os.lstat
+            self._chmod = os.lchmod
 
 
 class Symlink(Component):

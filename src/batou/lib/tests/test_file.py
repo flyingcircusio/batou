@@ -273,7 +273,10 @@ class FileTests(FileTestBase, unittest.TestCase):
         self.deploy(mode)
         self.assertFalse(mode.changed)
 
+    @unittest.skipUnless(hasattr(os, 'lchmod'),
+                         'Only supported on platforms with lchmod')
     def test_mode_ensures_mode_for_symlinks(self):
+        # This test is only relevant
         path = self.filename()
         link_to = self.filename('link_to')
         open(link_to, 'w').close()
@@ -289,6 +292,19 @@ class FileTests(FileTestBase, unittest.TestCase):
 
         self.deploy(mode)
         self.assertFalse(mode.changed)
+
+    @unittest.skipIf(not hasattr(os, 'lchmod'),
+                     'Only supported on platforms without lchmod')
+    def test_mode_does_not_break_on_platforms_without_lchmod(self):
+        # This test is only relevant on platforms without lchmod. We basically
+        # ensure that deploying the component doesn't break but it's a noop
+        # anyway.
+        path = self.filename()
+        link_to = self.filename('link_to')
+        open(link_to, 'w').close()
+        os.symlink(link_to, path)
+        mode = Mode(path, mode=0o000)
+        self.deploy(mode)
 
     def test_symlink_creates_new_link(self):
         link = self.filename()
