@@ -23,15 +23,21 @@ class Resources(object):
     resources.
     """
 
+    # Maps keys to root components that depend on the key.
+    subscribers = None
+    # Keeps track of root components that have not seen changes to a key they
+    # have subscribed to when they were configured earlier..
+    dirty_dependencies = None
+
     def __init__(self):
         self.resources = {}
         self.subscribers = {}
-        self.pending_dependencies = set()
+        self.dirty_dependencies = set()
 
     def provide(self, component, key, value):
         values = self.resources.setdefault(key, collections.defaultdict(list))
         values[component.root].append(value)
-        self.pending_dependencies.update(self.subscribers.get(key, ()))
+        self.dirty_dependencies.update(self.subscribers.get(key, ()))
 
     def get(self, key, host=None):
         """Return resource values without recording a dependency."""
@@ -50,6 +56,7 @@ class Resources(object):
         return self.get(key, host)
 
     def reset_component_resources(self, root):
+        """Remove all resources that were provided by this root component."""
         # XXX I smell a potential optimization/blocker here: if we
         # reset the same resources that are provided again then we
         # don't have to retry the dependent components. This would
@@ -59,8 +66,11 @@ class Resources(object):
             if root not in resources:
                 continue
             del resources[root]
+            # Removing this resource requires invalidating components that
+            # depend on this resource and have already been configured so we
+            # need to mark them as dirty.
             if key in self.subscribers:
-                self.pending_dependencies.update(self.subscribers[key])
+                self.dirty_dependencies.update(self.subscribers[key])
 
     @property
     def unused(self):
@@ -126,7 +136,7 @@ class Environment(object):
             last_working_set = working_set.copy()
             retry = set()
             exceptions = []
-            self.resources.pending_dependencies.clear()
+            self.resources.dirty_dependencies.clear()
 
             for root in working_set:
                 try:
@@ -145,7 +155,7 @@ class Environment(object):
                     self.ordered_components.remove(root)
                 self.ordered_components.append(root)
 
-            retry.update(self.resources.pending_dependencies)
+            retry.update(self.resources.dirty_dependencies)
             retry.update(self.resources.unsatisfied_components)
 
             if retry == last_working_set:
