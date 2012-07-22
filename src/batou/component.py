@@ -92,6 +92,8 @@ class Component(object):
     # Deployment phase
 
     def deploy(self):
+        # Reset changed flag here to support triggering deploy() multiple times.
+        self.changed = False
         for sub_component in self.sub_components:
             sub_component.deploy()
             if sub_component.changed:
@@ -208,9 +210,9 @@ class Component(object):
         else:
             open(filename, 'w').close()
 
-    def expand(self, string):
+    def expand(self, string, component=None):
         engine = batou.template.Jinja2Engine()
-        return engine.expand(string, self._template_args())
+        return engine.expand(string, self._template_args(component=component))
 
     def template(self, filename, component=None):
         engine = batou.template.Jinja2Engine()
