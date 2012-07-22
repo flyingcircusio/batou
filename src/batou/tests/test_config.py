@@ -80,3 +80,10 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         self.config.platform = 'foobar'
         self.config.scan()
         self.assertEquals('foobar', self.service.environments['dev'].platform)
+
+    def test_load_environment_with_overrides(self):
+        dev = self.service.environments['dev']
+        dev.overrides['zeo'] = {'port': '9002'}
+        dev.configure()
+        zeo = dev.hosts['localhost']['zeo'].component
+        self.assertEquals('9002', zeo.port)
