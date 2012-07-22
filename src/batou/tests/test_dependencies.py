@@ -107,7 +107,8 @@ class TestDependencies(unittest.TestCase):
         provider2 = self.host2.add_component('provider')
         self.env.configure()
         self.assertListEqual([42], list(consumer.component.the_answer))
-        self.assertEquals([provider2, provider], self.env.ordered_components[:2])
+        self.assertEquals([provider2, provider],
+            self.env.ordered_components[:2])
         self.assertEquals([consumer], self.env.ordered_components[2:])
 
     def test_components_are_ordered_over_multiple_hosts(self):
