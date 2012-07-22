@@ -92,7 +92,8 @@ class Component(object):
     # Deployment phase
 
     def deploy(self):
-        # Reset changed flag here to support triggering deploy() multiple times.
+        # Reset changed flag here to support triggering deploy() multiple
+        # times.
         self.changed = False
         for sub_component in self.sub_components:
             sub_component.deploy()
