@@ -49,7 +49,7 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         self.assertEqual('host1', host1.name)
         self.assertEqual('host1.example.com', host1.fqdn)
         self.assertEqual(1, len(host1.components))
-        zope = host1.components[0]
+        zope = host1['zope']
         self.assertIsInstance(zope.component, Component)
         self.assertEqual('zope', zope.name)
 
@@ -64,17 +64,18 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         localhost = dev.hosts['localhost']
         self.assertEqual('localhost', localhost.name)
         self.assertEqual('localhost', localhost.fqdn)
-        components = list(localhost.components)
-        components.sort(key=lambda x: x.name)
-        self.assertEqual(['zeo', 'zope'], [x.name for x in components])
-        zeo = components[0]
+        self.assertEqual(
+            set(['zeo', 'zope']),
+            set(x.name for x in localhost.components))
+        zeo = localhost['zeo']
         self.assertIsInstance(zeo.component, Component)
         self.assertEqual('zeo', zeo.name)
 
     def test_component_has_features_set(self):
         dev = self.service.environments['dev']
-        self.assertEquals(['test'],
-                          dev.hosts['localhost'].components[1].features)
+        localhost = dev.hosts['localhost']
+        zeo = localhost['zeo']
+        self.assertEquals(['test'], zeo.features)
 
     def test_load_environment_with_specific_platform(self):
         self.config.platform = 'foobar'
