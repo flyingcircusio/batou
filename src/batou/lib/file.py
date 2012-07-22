@@ -4,6 +4,7 @@ import logging
 import os.path
 import pwd
 import shutil
+import stat
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class File(Component):
         else:
             raise ValueError(
                 'Ensure must be one of: file, directory, '
-                ' symlink not %s' % self.ensure)
+                'symlink not %s' % self.ensure)
 
         if self.content or self.source or self.is_template:
             if not self.template_context:
@@ -103,6 +104,7 @@ class Presence(Component):
 class Directory(Component):
 
     namevar = 'path'
+    leading = False
 
     def verify(self):
         if not os.path.isdir(self.path):
@@ -119,9 +121,10 @@ class Directory(Component):
 class FileComponent(Component):
 
     namevar = 'path'
+    leading = False
 
     def configure(self):
-        self += Presence(self.path)
+        self += Presence(self.path, leading=self.leading)
 
 
 class Content(FileComponent):
@@ -133,19 +136,28 @@ class Content(FileComponent):
 
     def configure(self):
         super(Content, self).configure()
+
+        # Step 1: Determine content attribute:
+        # - it might be given directly (content='...'),
+        # - we might have been passed a filename (source='...'), or
+        # - we might fall back using the path attribute (namevar)
+        if self.source and self.content:
+            raise ValueError(
+                'Only one of either "content" or "source" are allowed.')
+        if not self.content:
+            if not self.source:
+                self.source = self.path
+            if not self.source.startswith('/'):
+                self.source = os.path.join(self.root.defdir, self.source)
+            with open(self.source, 'r') as f:
+                self.content = f.read()
+
+        # Step 2: If our content is a template then render it.
+        if not self.is_template:
+            return
         if not self.template_context:
             self.template_context = self.parent
-        if self.content is not None:
-            return
-        if not self.source:
-            self.source = self.path
-        if not self.source.startswith('/'):
-            self.source = os.path.join(self.root.defdir, self.source)
-        if self.is_template:
-            self.content = self.template(self.source, self.template_context)
-        else:
-            with open(self.source, 'r') as source:
-                self.content = source.read()
+        self.content = self.expand(self.content, self.template_context)
 
     def verify(self):
         with open(self.path, 'r') as target:
@@ -193,17 +205,13 @@ class Group(FileComponent):
 
 class Mode(FileComponent):
 
-    def configure(self):
-        super(Mode, self).configure()
-        self.mode = 0o100000 | self.mode
-
     def verify(self):
-        current = os.stat(self.path).st_mode
-        if current != self.mode:
+        current = os.lstat(self.path).st_mode
+        if stat.S_IMODE(current) != self.mode:
             raise batou.UpdateNeeded()
 
     def update(self):
-        os.chmod(self.path, self.mode)
+        os.lchmod(self.path, self.mode)
 
 
 class Symlink(Component):
