@@ -2,4 +2,5 @@ from batou import Component
 
 
 class ZEO(Component):
-    pass
+
+    port = '9001'
