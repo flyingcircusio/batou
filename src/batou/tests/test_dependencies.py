@@ -103,10 +103,12 @@ class TestDependencies(unittest.TestCase):
 
     def test_consumer_retrieves_value_from_provider_with_same_host(self):
         consumer = self.host.add_component('samehostconsumer')
-        provider = self.host2.add_component('provider')
+        provider = self.host.add_component('provider')
+        provider2 = self.host2.add_component('provider')
         self.env.configure()
-        self.assertListEqual([], list(consumer.component.the_answer))
-        self.assertEquals([provider, consumer], self.env.ordered_components)
+        self.assertListEqual([42], list(consumer.component.the_answer))
+        self.assertEquals(
+            [provider2, provider, consumer], self.env.ordered_components)
 
     def test_components_are_ordered_over_multiple_hosts(self):
         provider1 = self.host.add_component('provider')
