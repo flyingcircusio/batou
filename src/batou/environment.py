@@ -140,11 +140,7 @@ class Environment(object):
 
             for root in working_set:
                 try:
-                    if root.name in self.overrides:
-                        root.component.__dict__.update(
-                            self.overrides[root.name])
-                    self.resources.reset_component_resources(root)
-                    root.component.prepare(self.service, self, root.host, root)
+                    root.prepare()
                 except Exception, e:
                     exceptions.append(e)
                     retry.add(root)
