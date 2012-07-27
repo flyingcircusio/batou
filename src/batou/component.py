@@ -164,6 +164,12 @@ class Component(object):
     def require(self, key, host=None):
         return self.host.environment.resources.require(self, key, host)
 
+    def require_one(self, key, host=None):
+        resources = self.host.environment.resources.require(self, key, host)
+        if len(resources) != 1:
+            raise KeyError(key, host)
+        return resources[0]
+
     # Component (convenience) API
 
     @property
