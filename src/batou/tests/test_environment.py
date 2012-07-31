@@ -18,13 +18,13 @@ class TestResources(unittest.TestCase):
     def test_regression_reset_works_if_provided_but_not_required(self):
         component = self.component()
         self.resources.provide(
-            component, mock.sentinel.key, mock.sentinel.value)
+            component, mock.sentinel.key, 'asdf')
         self.resources.reset_component_resources(component.root)
 
     def test_reset_marks_depending_components_as_dirty(self):
         component = self.component()
         self.resources.provide(
-            component, mock.sentinel.key, mock.sentinel.value)
+            component, mock.sentinel.key, 'asdf')
         self.resources.require(
             component, mock.sentinel.key)
         self.assertEquals(set(), self.resources.dirty_dependencies)
