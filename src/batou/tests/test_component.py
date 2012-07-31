@@ -249,9 +249,9 @@ class ComponentTests(TestCase):
 
     def test_root_component_computes_working_dir(self):
         c = Component()
-        c.service = Mock()
-        c.service.base = 'path-to-service'
-        root = RootComponent('test', c, None, None)
+        host = Mock()
+        host.environment.service.base = 'path-to-service'
+        root = RootComponent('test', c, host, None)
         c.root = root
         self.assertEquals('path-to-service/work/test', root.workdir)
         self.assertEquals('path-to-service/work/test', c.workdir)
@@ -260,12 +260,16 @@ class ComponentTests(TestCase):
         d = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, d)
         self.addCleanup(os.chdir, os.getcwd())
-        c = Component()
+        class MyComponent(Component):
+            pass
+        c = MyComponent
         c.deploy = Mock()
-        c.service = Mock()
-        c.service.base = d
-        root = RootComponent('test', c, None, None)
+        host = Mock()
+        host.environment.service.base = d
+        host.environment.overrides = {}
+        root = RootComponent('test', c, host, None)
         self.assertFalse(os.path.isdir(root.workdir))
+        root.prepare()
         root.deploy()
         self.assertTrue(os.path.isdir(root.workdir))
         cwd = os.getcwd()

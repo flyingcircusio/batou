@@ -50,7 +50,7 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         self.assertEqual('host1.example.com', host1.fqdn)
         self.assertEqual(1, len(host1.components))
         zope = host1['zope']
-        self.assertIsInstance(zope.component, Component)
+        self.assertIsInstance(zope.factory(), Component)
         self.assertEqual('zope', zope.name)
 
     def test_dev_environment_is_loaded(self):
@@ -68,7 +68,7 @@ class ConfigTestsBasicScenario(unittest.TestCase):
             set(['zeo', 'zope']),
             set(x.name for x in localhost.components))
         zeo = localhost['zeo']
-        self.assertIsInstance(zeo.component, Component)
+        self.assertIsInstance(zeo.factory(), Component)
         self.assertEqual('zeo', zeo.name)
 
     def test_component_has_features_set(self):

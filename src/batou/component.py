@@ -270,8 +270,8 @@ class RootComponentFactory(object):
         self.defdir = defdir
 
     def __call__(self, service, environment, host, features, config):
-        component = self.factory(**config)
-        root = RootComponent(self.name, component, host, self.defdir)
+        factory = lambda: self.factory(**config)
+        root = RootComponent(self.name, factory, host, self.defdir)
         if features:
             root.features = features
         return root
@@ -286,19 +286,30 @@ class RootComponent(object):
 
     """
 
-    def __init__(self, name, component, host, defdir):
-        self.component = component
+    def __init__(self, name, factory, host, defdir):
+        self.factory = factory
         self.name = name
         self.defdir = defdir
         self.host = host
+        self.service = self.host.environment.service
 
     @property
     def workdir(self):
-        return '%s/work/%s' % (self.component.service.base, self.name)
+        return '%s/work/%s' % (self.service.base, self.name)
 
     def _ensure_workdir(self):
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
+
+    def prepare(self):
+        environment = self.host.environment
+        environment.resources.reset_component_resources(self)
+        self.component = self.factory()
+        if self.name in environment.overrides:
+            self.component.__dict__.update(
+                environment.overrides[self.name])
+        self.component.prepare(
+            self.service, environment, self.host, self)
 
     def deploy(self):
         self._ensure_workdir()
