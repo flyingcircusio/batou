@@ -11,4 +11,4 @@ class Program(Component):
     workdir = None  # XXX or default compdir?
     priority = 0
 
-    restart = False # ... if parent component changed
+    restart = False  # ... if parent component changed
