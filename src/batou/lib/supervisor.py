@@ -12,3 +12,6 @@ class Program(Component):
     priority = 0
 
     restart = False # ... if parent component changed
+
+    def configure(self):
+        self.provide('batou.lib.supervisor:Program', self)
