@@ -260,6 +260,7 @@ class ComponentTests(TestCase):
         d = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, d)
         self.addCleanup(os.chdir, os.getcwd())
+
         class MyComponent(Component):
             pass
         c = MyComponent

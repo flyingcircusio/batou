@@ -34,14 +34,13 @@ class Resources(object):
         self.subscribers = {}
         self.dirty_dependencies = set()
 
-    def provide(self, component, key, value):
+    def provide(self, root, key, value):
         try:
             json.dumps(value)
         except TypeError:
             raise TypeError('Resource values must be "simple" types.')
         values = self.resources.setdefault(key, collections.defaultdict(list))
-        values[component.root].append(value)
-        self.dirty_dependencies.update(self.subscribers.get(key, ()))
+        values[root].append(value)
 
     def get(self, key, host=None):
         """Return resource values without recording a dependency."""
@@ -54,27 +53,45 @@ class Resources(object):
             results = flatten(self.resources.get(key, {}).values())
         return results
 
-    def require(self, component, key, host=None):
+    def require(self, root, key, host=None):
         """Return resource values and record component dependency."""
-        self.subscribers.setdefault(key, set()).add(component.root)
+        self.subscribers.setdefault(key, set()).add(root)
         return self.get(key, host)
 
     def reset_component_resources(self, root):
-        """Remove all resources that were provided by this root component."""
-        # XXX I smell a potential optimization/blocker here: if we
-        # reset the same resources that are provided again then we
-        # don't have to retry the dependent components. This would
-        # allow us to converge on circular dependencies if we do
-        # establish an equilibrium at some point.
+        """Move all resources aside that were provided by this component."""
         for key, resources in self.resources.items():
             if root not in resources:
                 continue
             del resources[root]
-            # Removing this resource requires invalidating components that
-            # depend on this resource and have already been configured so we
-            # need to mark them as dirty.
-            if key in self.subscribers:
-                self.dirty_dependencies.update(self.subscribers[key])
+
+    def snapshot(self):
+        """Take a snapshot of the current state of the resources.
+
+        Returns a snapshot object. Snapshot objects can be tested for equality.
+
+        """
+        return json.dumps(self.flat_resources)
+
+    @property
+    def flat_resources(self):
+        flat = {}
+        for key in self.resources:
+            flat[key] = self.get(key)
+        return flat
+
+    def dependent_components(self, root):
+        # find all keys provided by this component
+        keys = set()
+        for key, resources in self.resources.items():
+            if root in resources:
+                keys.add(key)
+
+        subscribers = set()
+        for key in keys:
+            subscribers.update(self.subscribers.get(key, []))
+
+        return subscribers
 
     @property
     def unused(self):
@@ -142,12 +159,23 @@ class Environment(object):
             exceptions = []
             self.resources.dirty_dependencies.clear()
 
+            resources_before_workingset = self.resources.snapshot()
+
             for root in working_set:
+                resources_before = self.resources.snapshot()
+                subscribers = self.resources.dependent_components(root)
                 try:
                     root.prepare()
                 except Exception, e:
                     exceptions.append(e)
                     retry.add(root)
+                    continue
+
+                resources_after = self.resources.snapshot()
+                if resources_before != resources_after:
+                    retry.update(subscribers)
+                    retry.update(self.resources.dependent_components(root))
+
                 # We prepared/configured this component successfully and take
                 # note of the order. However: if it was run successfully
                 # before then we prefer running it later.
@@ -158,7 +186,10 @@ class Environment(object):
             retry.update(self.resources.dirty_dependencies)
             retry.update(self.resources.unsatisfied_components)
 
-            if retry == last_working_set:
+            resources_after_workingset = self.resources.snapshot()
+
+            if (retry == last_working_set and
+                resources_after_workingset == resources_before_workingset):
                 # We did not manage to improve on our last working set, so we
                 # give up.
 
@@ -171,7 +202,6 @@ class Environment(object):
                 if self.resources.unsatisfied:
                     logger.error('Unsatisfied resources: %s' %
                         ', '.join(self.resources.unsatisfied))
-
                 raise NonConvergingWorkingSet(retry)
 
             working_set = retry
