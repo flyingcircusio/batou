@@ -293,6 +293,9 @@ class RootComponent(object):
         self.host = host
         self.service = self.host.environment.service
 
+    def __repr__(self):
+        return '<%s "%s" object at %s>' % (self.__class__.__name__, self.name, id(self))
+
     @property
     def workdir(self):
         return '%s/work/%s' % (self.service.base, self.name)
