@@ -1,10 +1,10 @@
+from batou import NonConvergingWorkingSet, UnusedResource
+from batou.utils import flatten
 import collections
+import json
 import logging
 import os
 import pwd
-from batou.utils import flatten
-from batou import NonConvergingWorkingSet, UnusedResource
-
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,10 @@ class Resources(object):
         self.dirty_dependencies = set()
 
     def provide(self, component, key, value):
+        try:
+            json.dumps(value)
+        except TypeError:
+            raise TypeError('Resource values must be "simple" types.')
         values = self.resources.setdefault(key, collections.defaultdict(list))
         values[component.root].append(value)
         self.dirty_dependencies.update(self.subscribers.get(key, ()))
