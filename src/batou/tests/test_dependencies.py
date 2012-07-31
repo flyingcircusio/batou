@@ -38,6 +38,20 @@ class Broken(Component):
         raise KeyError('foobar')
 
 
+class CircularDependency1(Component):
+
+    def configure(self):
+        self.asdf = self.require('asdf')
+        self.provide('bsdf', 'b')
+
+
+class CircularDependency2(Component):
+
+    def configure(self):
+        self.bsdf = self.require('bsdf')
+        self.provide('asdf', 'a')
+
+
 class TestDependencies(unittest.TestCase):
 
     def setUp(self):
@@ -53,6 +67,10 @@ class TestDependencies(unittest.TestCase):
                 'somehostconsumer', SameHostConsumer, '.')
         self.service.components['broken'] = RootComponentFactory(
                 'broken', Broken, '.')
+        self.service.components['circular1'] = RootComponentFactory(
+                'circular1', CircularDependency1, '.')
+        self.service.components['circular2'] = RootComponentFactory(
+                'circular2', CircularDependency2, '.')
 
         self.env = Environment('test', self.service)
         self.env.hosts['test'] = self.host = Host('test', self.env)
@@ -123,3 +141,12 @@ class TestDependencies(unittest.TestCase):
         self.assertEquals(
             set([consumer1, consumer2]),
             set(self.env.ordered_components[2:]))
+
+    def test_circular_depending_component(self):
+        self.host.add_component('circular1')
+        self.host.add_component('circular2')
+        self.env.configure()
+        components = list(sorted(self.env.ordered_components,
+                                 key=lambda x: x.name))
+        self.assertEquals(['a'], components[0].component.asdf)
+        self.assertEquals(['b'], components[1].component.bsdf)
