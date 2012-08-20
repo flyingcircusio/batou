@@ -1,10 +1,11 @@
 from batou import NonConvergingWorkingSet, UnusedResource
-from batou.utils import flatten
-import collections
-import json
+from batou.component import RootComponent
+from batou.utils import flatten, revert_graph, topological_sort
+from collections import defaultdict
 import logging
 import os
 import pwd
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +36,10 @@ class Resources(object):
         self.dirty_dependencies = set()
 
     def provide(self, root, key, value):
-        try:
-            json.dumps(value)
-        except TypeError:
-            raise TypeError('Resource values must be "simple" types.')
-        values = self.resources.setdefault(key, collections.defaultdict(list))
+        assert isinstance(root, RootComponent)
+        values = self.resources.setdefault(key, defaultdict(list))
         values[root].append(value)
+        self.dirty_dependencies.update(self.subscribers.get(key, ()))
 
     def get(self, key, host=None):
         """Return resource values without recording a dependency."""
@@ -54,6 +53,7 @@ class Resources(object):
         return results
 
     def require(self, root, key, host=None):
+        assert isinstance(root, RootComponent)
         """Return resource values and record component dependency."""
         self.subscribers.setdefault(key, set()).add(root)
         return self.get(key, host)
@@ -64,34 +64,11 @@ class Resources(object):
             if root not in resources:
                 continue
             del resources[root]
-
-    def snapshot(self):
-        """Take a snapshot of the current state of the resources.
-
-        Returns a snapshot object. Snapshot objects can be tested for equality.
-
-        """
-        return json.dumps(self.flat_resources)
-
-    @property
-    def flat_resources(self):
-        flat = {}
-        for key in self.resources:
-            flat[key] = self.get(key)
-        return flat
-
-    def dependent_components(self, root):
-        # find all keys provided by this component
-        keys = set()
-        for key, resources in self.resources.items():
-            if root in resources:
-                keys.add(key)
-
-        subscribers = set()
-        for key in keys:
-            subscribers.update(self.subscribers.get(key, []))
-
-        return subscribers
+            # Removing this resource requires invalidating components that
+            # depend on this resource and have already been configured so we
+            # need to mark them as dirty.
+            if key in self.subscribers:
+                self.dirty_dependencies.update(self.subscribers[key])
 
     @property
     def unused(self):
@@ -107,6 +84,19 @@ class Resources(object):
         for resource in self.unsatisfied:
             components.update(self.subscribers[resource])
         return components
+
+    def get_dependency_graph(self):
+        """Return a dependency graph as a dict of lists:
+
+        {component: [dependency1, dependency2],
+         ...}
+
+        """
+        graph = defaultdict(set)
+        for key, providers in self.resources.items():
+            for subscriber in self.subscribers.get(key, ()):
+                graph[subscriber].update(providers)
+        return graph
 
 
 class Environment(object):
@@ -145,9 +135,6 @@ class Environment(object):
         to a stable order.
 
         """
-        # This keeps track of the order which we used to successfully
-        # configure all components.
-        self.ordered_components = []
         # Seed the working set with all components from all hosts
         working_set = set()
         for host in self.hosts.values():
@@ -159,11 +146,7 @@ class Environment(object):
             exceptions = []
             self.resources.dirty_dependencies.clear()
 
-            resources_before_workingset = self.resources.snapshot()
-
             for root in working_set:
-                resources_before = self.resources.snapshot()
-                subscribers = self.resources.dependent_components(root)
                 try:
                     root.prepare()
                 except Exception, e:
@@ -171,25 +154,15 @@ class Environment(object):
                     retry.add(root)
                     continue
 
-                resources_after = self.resources.snapshot()
-                if resources_before != resources_after:
-                    retry.update(subscribers)
-                    retry.update(self.resources.dependent_components(root))
-
-                # We prepared/configured this component successfully and take
-                # note of the order. However: if it was run successfully
-                # before then we prefer running it later.
-                if root in self.ordered_components:
-                    self.ordered_components.remove(root)
-                self.ordered_components.append(root)
-
             retry.update(self.resources.dirty_dependencies)
             retry.update(self.resources.unsatisfied_components)
 
-            resources_after_workingset = self.resources.snapshot()
+            # Try to find a valid order of the components. If we can't then we
+            # have detected a dependency cycle and need to stop.
 
-            if (retry == last_working_set and
-                resources_after_workingset == resources_before_workingset):
+            self.get_sorted_components()
+
+            if (retry == last_working_set):
                 # We did not manage to improve on our last working set, so we
                 # give up.
 
@@ -211,6 +184,21 @@ class Environment(object):
         # an error.
         if self.resources.unused:
             raise UnusedResource(self.resources.unused)
+
+    def get_sorted_components(self):
+        """Return a list of components sorted by their resource dependencies.
+
+        Raises ValueError if component dependencies have cycles.
+
+        """
+        dependencies = self.resources.get_dependency_graph()
+        # Complete the graph with components that do not have any dependencies
+        # (yet)
+        for host in self.hosts.values():
+            for root in host.components:
+                if root not in dependencies:
+                    dependencies[root] = set()
+        return list(topological_sort(revert_graph(dependencies)))
 
     def normalize_host_name(self, hostname):
         """Ensure the given host name is an FQDN for this environment."""

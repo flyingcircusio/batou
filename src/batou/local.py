@@ -1,5 +1,6 @@
 from .service import ServiceConfig
-from .utils import notify, locked, MultiFile, input
+from .utils import notify, locked, MultiFile, input, CycleError
+import pprint
 import argparse
 import sys
 import logging
@@ -15,7 +16,12 @@ class LocalDeploymentMode(object):
 class AutoMode(LocalDeploymentMode):
 
     def __call__(self):
-        self.environment.configure()
+        try:
+            self.environment.configure()
+        except CycleError, e:
+            print 'Detected cycle:'
+            pprint.pprint(e.args[0])
+            raise
         host = self.environment.get_host(self.hostname)
         for component in self.environment.ordered_components:
             if component.host is not host:
@@ -104,7 +110,13 @@ def main():
             known = ', '.join(sorted(config.existing_environments))
             parser.error('environment "{}" unknown.\nKnown environments: {}'
                          .format(args.environment, known))
-        mode(environment, args.hostname)()
-        notify('Deployment finished',
-               '{}:{} was deployed successfully.'.format(
-                   environment.name, args.hostname))
+        try:
+            mode(environment, args.hostname)()
+        except:
+            notify('Deployment failed',
+                   '{}:{} encountered an error.'.format(
+                       environment.name, args.hostname))
+        else:
+            notify('Deployment finished',
+                   '{}:{} was deployed successfully.'.format(
+                       environment.name, args.hostname))

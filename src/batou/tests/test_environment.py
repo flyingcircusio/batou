@@ -1,4 +1,5 @@
-from batou.environment import Environment
+from batou.environment import Environment, Resources
+from batou.component import RootComponent
 from mock import Mock
 import mock
 import unittest
@@ -7,19 +8,26 @@ import unittest
 class TestResources(unittest.TestCase):
 
     def setUp(self):
-        from batou.environment import Resources
         self.resources = Resources()
 
-    def component(self):
-        component = mock.Mock()
-        component.root = mock.sentinel.root
-        return component
+    def root_component(self):
+        return RootComponent('test', None, Mock(), None)
 
     def test_regression_reset_works_if_provided_but_not_required(self):
-        component = self.component()
+        root = self.root_component()
+        self.resources.provide(root, mock.sentinel.key, 'asdf')
+        self.resources.reset_component_resources(root)
+
+    def test_reset_marks_depending_components_as_dirty(self):
+        root = self.root_component()
         self.resources.provide(
-            component, mock.sentinel.key, 'asdf')
-        self.resources.reset_component_resources(component.root)
+            root, mock.sentinel.key, 'asdf')
+        self.resources.require(
+            root, mock.sentinel.key)
+        self.assertEquals(set(), self.resources.dirty_dependencies)
+        self.resources.reset_component_resources(root)
+        self.assertEquals(
+            set([root]), self.resources.dirty_dependencies)
 
 
 class EnvironmentTest(unittest.TestCase):
