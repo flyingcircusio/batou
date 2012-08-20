@@ -18,10 +18,10 @@ setup(
     name='batou',
     version=version,
     install_requires=[
-        'distribute',
-        'ssh',
         'Jinja2',
+        'distribute',
         'mock',
+        'ssh',
     ],
     extras_require={
         'test': [
