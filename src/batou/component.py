@@ -165,7 +165,7 @@ class Component(object):
         return self.host.environment.resources.require(self.root, key, host)
 
     def require_one(self, key, host=None):
-        resources = self.host.environment.resources.require(self, key, host)
+        resources = self.require(key, host)
         if len(resources) != 1:
             raise KeyError(key, host)
         return resources[0]
@@ -291,10 +291,12 @@ class RootComponent(object):
         self.name = name
         self.defdir = defdir
         self.host = host
+        # XXX law of demeter.
         self.service = self.host.environment.service
 
     def __repr__(self):
-        return '<%s "%s" object at %s>' % (self.__class__.__name__, self.name, id(self))
+        return '<%s "%s" object at %s>' % (
+            self.__class__.__name__, self.name, id(self))
 
     @property
     def workdir(self):

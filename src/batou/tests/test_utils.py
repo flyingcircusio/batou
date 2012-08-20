@@ -1,5 +1,6 @@
 from StringIO import StringIO
 from batou.utils import resolve, input, MultiFile, locked, notify, Address
+from batou.utils import revert_graph, topological_sort
 import mock
 import os
 import socket
@@ -129,3 +130,23 @@ class AddressNetLocTests(unittest.TestCase):
         self.assertEquals('8080', address.listen.port)
         self.assertEquals('localhost', address.connect.host)
         self.assertEquals('8080', address.connect.port)
+
+
+class GraphTests(unittest.TestCase):
+
+    def test_revert_graph_no_edges_is_identical(self):
+        graph = {1: set(), 2: set()}
+        self.assertEquals(graph, dict(revert_graph(graph)))
+
+    def test_revert_graph_one_edge_reverses(self):
+        graph = {1: set([2])}
+        self.assertEquals({2: set([1]), 1: set()}, dict(revert_graph(graph)))
+
+    def test_topological_sort_simple_chain(self):
+        graph = {1: set([2]), 2: set([3]), 3: set([4])}
+        self.assertEquals([1, 2, 3, 4], topological_sort(graph))
+
+    def test_topological_sort_raises_on_loop(self):
+        graph = {1: set([2]), 2: set([3]), 3: set([1])}
+        with self.assertRaises(ValueError):
+            topological_sort(graph)

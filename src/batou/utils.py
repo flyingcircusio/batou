@@ -1,4 +1,5 @@
 from __future__ import print_function
+from collections import defaultdict
 import contextlib
 import fcntl
 import itertools
@@ -106,3 +107,63 @@ class NetLoc(object):
         if self.port:
             result += ':' + self.port
         return result
+
+
+def revert_graph(graph):
+    graph = ensure_graph_data(graph)
+    reverse_graph = defaultdict(set)
+    for node, dependencies in graph.items():
+        # Ensure all nodes will exist
+        reverse_graph[node]
+        for dependency in dependencies:
+            reverse_graph[dependency].add(node)
+    return reverse_graph
+
+
+def ensure_graph_data(graph):
+    # Ensure that all nodes exist as keys even if they don't have outgoing
+    # relations.
+    for node, relations in list(graph.items()):
+        for relation in relations:
+            if relation not in graph:
+                graph[relation] = set()
+    return graph
+
+
+class CycleError(ValueError):
+    """Graph contains at least one cycle."""
+
+
+def remove_nodes_without_outgoing_edges(graph):
+    for node, dependencies in list(graph.items()):
+        if not dependencies:
+            del graph[node]
+
+
+def topological_sort(graph):
+    """Take a directed graph and provide a topological sort of all nodes.
+
+    The graph is given as
+
+    {node: [dependency, dependency], ...}
+
+    If the graph has cycles a ValueError will be raised.
+    """
+    graph = ensure_graph_data(graph)
+    sorted = []
+    reverse_graph = revert_graph(graph)
+    roots = [node for node, incoming in reverse_graph.items()
+             if not incoming]
+    while roots:
+        root = roots.pop()
+        sorted.append(root)
+        for node in list(graph[root]):
+            graph[root].remove(node)
+            reverse_graph[node].remove(root)
+            if not reverse_graph[node]:
+                roots.append(node)
+    if any(graph.values()):
+        # Simplify the graph a bit to make it easier to spot the cycle.
+        remove_nodes_without_outgoing_edges(graph)
+        raise CycleError(dict(graph))
+    return sorted

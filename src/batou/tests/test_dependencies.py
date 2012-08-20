@@ -1,9 +1,9 @@
-
 from batou import NonConvergingWorkingSet, UnusedResource
 from batou.component import Component, RootComponentFactory
 from batou.environment import Environment
 from batou.host import Host
 from batou.service import Service
+from batou.utils import CycleError
 import mock
 import unittest
 
@@ -42,14 +42,14 @@ class CircularDependency1(Component):
 
     def configure(self):
         self.asdf = self.require('asdf')
-        self.provide('bsdf', 'b')
+        self.provide('bsdf', self)
 
 
 class CircularDependency2(Component):
 
     def configure(self):
         self.bsdf = self.require('bsdf')
-        self.provide('asdf', 'a')
+        self.provide('asdf', self)
 
 
 class TestDependencies(unittest.TestCase):
@@ -88,7 +88,7 @@ class TestDependencies(unittest.TestCase):
         self.assertListEqual([42], list(consumer.component.the_answer))
         self.assertListEqual(
                 [provider, consumer],
-                self.env.ordered_components)
+                self.env.get_sorted_components())
 
     def test_consumer_retrieves_value_from_provider_order2(self):
         consumer = self.host.add_component('consumer')
@@ -97,7 +97,7 @@ class TestDependencies(unittest.TestCase):
         self.assertListEqual([42], list(consumer.component.the_answer))
         self.assertListEqual(
                 [provider, consumer],
-                self.env.ordered_components)
+                self.env.get_sorted_components())
 
     def test_consumer_without_provider_raises_error(self):
         self.host.add_component('consumer')
@@ -125,9 +125,9 @@ class TestDependencies(unittest.TestCase):
         provider2 = self.host2.add_component('provider')
         self.env.configure()
         self.assertListEqual([42], list(consumer.component.the_answer))
-        self.assertEquals(set([provider2, provider]),
-            set(self.env.ordered_components[:2]))
-        self.assertEquals([consumer], self.env.ordered_components[2:])
+        components = self.env.get_sorted_components()
+        self.assertEquals(set([provider2, provider]), set(components[:2]))
+        self.assertEquals([consumer], components[2:])
 
     def test_components_are_ordered_over_multiple_hosts(self):
         provider1 = self.host.add_component('provider')
@@ -135,18 +135,14 @@ class TestDependencies(unittest.TestCase):
         consumer1 = self.host.add_component('consumer')
         consumer2 = self.host2.add_component('consumer')
         self.env.configure()
+        components = self.env.get_sorted_components()
         self.assertEquals(
-            set([provider1, provider2]),
-            set(self.env.ordered_components[:2]))
+            set([provider1, provider2]), set(components[:2]))
         self.assertEquals(
-            set([consumer1, consumer2]),
-            set(self.env.ordered_components[2:]))
+            set([consumer1, consumer2]), set(components[2:]))
 
     def test_circular_depending_component(self):
         self.host.add_component('circular1')
         self.host.add_component('circular2')
-        self.env.configure()
-        components = list(sorted(self.env.ordered_components,
-                                 key=lambda x: x.name))
-        self.assertEquals(['a'], components[0].component.asdf)
-        self.assertEquals(['b'], components[1].component.bsdf)
+        with self.assertRaises(CycleError):
+            self.env.configure()
