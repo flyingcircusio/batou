@@ -23,19 +23,24 @@ class Program(HookComponent):
     key = 'batou.lib.supervisor:Program'
 
     command = None
+    command_absolute = True
     options = {}
     args = ''
     priority = 10
+    directory = None
 
     restart = False  # ... if parent component changed
 
     program_template = ('{priority} {name} ({options}) {command} '
-                        '{args} {workdir} true')
+                        '{args} {directory} true')
 
     def configure(self):
         super(Program, self).configure()
-        self.command = os.path.normpath(
-           os.path.join(self.workdir, self.command))
+        if not self.directory:
+            self.directory = self.workdir
+        if self.command_absolute:
+            self.command = os.path.normpath(
+               os.path.join(self.workdir, self.command))
 
     def format(self, supervisor):
         if not 'startsecs' in self.options:
@@ -57,7 +62,7 @@ class Program(HookComponent):
                 name=self.name,
                 options=options,
                 command=self.command,
-                workdir=self.workdir,
+                directory=self.directory,
                 args=args)
 
 
