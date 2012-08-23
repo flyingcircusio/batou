@@ -1,7 +1,8 @@
-from batou.component import Component
-from batou.lib.python import VirtualEnv
-from batou.lib.file import File
 from batou import UpdateNeeded
+from batou.component import Component
+from batou.lib.file import File
+from batou.lib.python import VirtualEnv
+import contextlib
 import os.path
 
 
@@ -30,8 +31,11 @@ class Bootstrap(Component):
 class Buildout(Component):
 
     timeout = 3
-    extends = ()    # Extends need to be aspects that have a path
+    extends = ()   # Extends need to be aspects that have a path
     config = None
+    additional_config = ()
+
+    build_env = {}  # XXX not frozen. :/
 
     def configure(self):
         if self.config is None:
@@ -41,6 +45,7 @@ class Buildout(Component):
                                is_template=True)
         if isinstance(self.config, Component):
             self.config = [self.config]
+        self.config.extend(self.additional_config)
         for component in self.config:
             self += component
         venv = VirtualEnv(self.python)
@@ -49,11 +54,28 @@ class Buildout(Component):
 
     def verify(self):
         config_paths = [x.path for x in self.config]
+        # XXX we can't be sure that all config objects are files!
         self.assert_file_is_current(
             '.installed.cfg', ['bin/buildout'] + config_paths)
         self.assert_file_is_current(
             '.batou.buildout.success', ['.installed.cfg'])
 
     def update(self):
-        self.cmd('bin/buildout -t {}'.format(self.timeout))
-        self.touch('.batou.buildout.success')
+        with safe_environment(self.build_env):
+            self.cmd('bin/buildout -t {} bootstrap'.format(self.timeout))
+            self.cmd('bin/buildout -t {}'.format(self.timeout))
+            self.touch('.batou.buildout.success')
+
+
+@contextlib.contextmanager
+def safe_environment(environment):
+    old_env = os.environ.copy()
+    for key, value in environment.items():
+        old_env.setdefault(key, '')
+        environment[key] = value.format(**old_env)
+    try:
+        os.environ.update(environment)
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)

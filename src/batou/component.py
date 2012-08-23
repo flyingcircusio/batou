@@ -161,11 +161,12 @@ class Component(object):
     def provide(self, key, value):
         self.host.environment.resources.provide(self.root, key, value)
 
-    def require(self, key, host=None):
-        return self.host.environment.resources.require(self.root, key, host)
+    def require(self, key, host=None, strict=True):
+        return self.host.environment.resources.require(
+            self.root, key, host, strict)
 
-    def require_one(self, key, host=None):
-        resources = self.require(key, host)
+    def require_one(self, key, host=None, strict=True):
+        resources = self.require(key, host, strict)
         if len(resources) != 1:
             raise KeyError(key, host)
         return resources[0]
@@ -176,12 +177,13 @@ class Component(object):
     def workdir(self):
         return self.root.workdir
 
-    def assert_file_is_current(self, result, requirements=[]):
+    def assert_file_is_current(self, result, requirements=[],
+                               attribute='st_mtime'):
         if not os.path.exists(result):
             raise batou.UpdateNeeded()
-        current = os.stat(result).st_mtime
+        current = getattr(os.stat(result), attribute)
         for requirement in requirements:
-            if current < os.stat(requirement).st_mtime:
+            if current < getattr(os.stat(requirement), attribute):
                 raise batou.UpdateNeeded()
 
     def assert_no_subcomponent_changes(self):
@@ -189,7 +191,12 @@ class Component(object):
             if component.changed:
                 raise batou.UpdateNeeded()
 
-    def cmd(self, cmd):
+    def assert_no_changes(self):
+        if self.changed:
+            raise batou.UpdateNeeded()
+        self.assert_no_subcomponent_changes()
+
+    def cmd(self, cmd, silent=False):
         stdin = open('/dev/null')
         process = subprocess.Popen(
             [cmd],
@@ -200,12 +207,13 @@ class Component(object):
         stdout, stderr = process.communicate()
         retcode = process.poll()
         if retcode:
-            print "STDOUT"
-            print "=" * 72
-            print stdout
-            print "STDERR"
-            print "=" * 72
-            print stderr
+            if not silent:
+                print "STDOUT"
+                print "=" * 72
+                print stdout
+                print "STDERR"
+                print "=" * 72
+                print stderr
             raise RuntimeError(
                 'Command "{}" returned unsuccessfully.'.format(cmd))
         stdin.close()
@@ -239,9 +247,12 @@ class Component(object):
     @contextlib.contextmanager
     def chdir(self, path):
         old = os.getcwd()
-        os.chdir(path)
-        yield
-        os.chdir(old)
+        try:
+            os.chdir(path)
+            yield
+        finally:
+            # XXX missing test
+            os.chdir(old)
 
     # internal methods
 
@@ -260,6 +271,13 @@ class Component(object):
         if name:
             result += '({})'.format(name)
         return result
+
+
+class HookComponent(Component):
+    """A component that provides itself as a resource."""
+
+    def configure(self):
+        self.provide(self.key, self)
 
 
 class RootComponentFactory(object):

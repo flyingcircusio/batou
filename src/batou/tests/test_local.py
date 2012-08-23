@@ -27,7 +27,7 @@ class AutoModeTests(unittest.TestCase):
 
     def test_no_components_no_cry(self):
         environment = Mock()
-        environment.ordered_components = []
+        environment.get_sorted_components.return_value = []
         mode = AutoMode(environment, 'asdf')
         mode()
 
@@ -36,7 +36,7 @@ class AutoModeTests(unittest.TestCase):
         host = Mock()
         environment.get_host.return_value = host
         log = []
-        environment.ordered_components = components = [
+        environment.get_sorted_components.return_value = components = [
                 TestComponent(log, host),
                 TestComponent(log, Mock()),
                 TestComponent(log, host)]
