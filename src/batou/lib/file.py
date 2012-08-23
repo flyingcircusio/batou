@@ -51,7 +51,9 @@ class File(Component):
         if self.ensure == 'file':
             self += Presence(self.path, leading=self.leading)
         elif self.ensure == 'directory':
-            self += Directory(self.path, leading=self.leading)
+            self += Directory(self.path,
+                              leading=self.leading,
+                              source=self.source)
         elif self.ensure == 'symlink':
             self += Symlink(self.path, source=self.link_to)
         else:
@@ -105,10 +107,23 @@ class Directory(Component):
 
     namevar = 'path'
     leading = False
+    source = None
+
+    def configure(self):
+        self.fullpath = os.path.normpath(
+                os.path.join(self.workdir, self.path))
+        if self.source:
+            self.source = os.path.normpath(
+                os.path.join(self.root.defdir, self.source))
 
     def verify(self):
         if not os.path.isdir(self.path):
             raise batou.UpdateNeeded()
+        if self.source:
+            stdout, stderr = self.cmd('rsync -anv {}/ {}'.format(
+                self.source, self.fullpath))
+            if len(stdout.splitlines()) - 4 > 0:
+                raise batou.UpdateNeeded()
 
     def update(self):
         ensure_path_nonexistent(self.path)
@@ -116,6 +131,8 @@ class Directory(Component):
             os.makedirs(self.path)
         else:
             os.mkdir(self.path)
+        if self.source:
+            self.cmd('rsync -a {}/ {}'.format(self.source, self.fullpath))
 
 
 class FileComponent(Component):

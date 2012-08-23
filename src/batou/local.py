@@ -23,7 +23,7 @@ class AutoMode(LocalDeploymentMode):
             pprint.pprint(e.args[0])
             raise
         host = self.environment.get_host(self.hostname)
-        for component in self.environment.ordered_components:
+        for component in self.environment.get_sorted_components():
             if component.host is not host:
                 continue
             component.deploy()
@@ -116,6 +116,7 @@ def main():
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
                        environment.name, args.hostname))
+            raise
         else:
             notify('Deployment finished',
                    '{}:{} was deployed successfully.'.format(
