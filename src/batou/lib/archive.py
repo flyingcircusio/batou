@@ -16,6 +16,8 @@ class Extract(Component):
     target = None
     strip = 0
 
+    exclude = ('._*')
+
     def configure(self):
         if self.target is None:
             self.target = archive_base_name(self.archive)
@@ -24,17 +26,18 @@ class Extract(Component):
                 "Target not given and not derivable from archive name ({}).".
                     format(self.archive))
         self += Directory(self.target, leading=True)
+        self.exclude = ' '.join("--exclude='{}'".format(x) for x in self.exclude)
 
     def verify(self):
         # If the target directory has just been created, then we need to
-        # extract again. XXX Maybe this needs to use "ctime" instead of
-        # "mtime".
+        # extract again.
         self.assert_file_is_current(
             self.target, [self.archive], attribute='st_ctime')
         # Check that all files in the directory are newer than the archive.
         # XXX Might also have a problem regarding archive attribute
         # preservation?
-        stdout, stderr = self.cmd(self.expand('tar tf {{component.archive}}'))
+        stdout, stderr = self.cmd(self.expand(
+            'tar tf {{component.archive}} {{component.exclude}}'))
         for filename in stdout.splitlines():
             filename = os.path.join(*filename.split(os.path.sep)[self.strip:])
             self.assert_file_is_current(
