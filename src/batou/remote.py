@@ -90,7 +90,7 @@ class RemoteDeployment(object):
         # directory that is the root, we simply make this relative to the
         # repository.
         self.service_base = os.getcwd()
-        repository_base = self._repository_root()
+        repository_base = self._repository_root().strip()
         self.service_base = self.service_base.replace(repository_base, '')
 
     def _repository_root(self):
@@ -154,7 +154,6 @@ class RemoteHost(object):
         else:
             with self.cd(self.remote_base):
                 self.cmd(u'hg pull %s' % bouncedir)
-        # XXX self.setup_passphrase()
         base = self.remote_base + self.deployment.service_base
         with self.cd(base):
             self.cmd(u'hg update -C %s' % self.deployment.environment.branch)
