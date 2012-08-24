@@ -123,9 +123,11 @@ class Supervisor(Component):
 
     def configure(self):
         self.address = Address(self.address)
-        self.programs = self.require(Program.key, self.host)
-        self.eventlisteners = self.require(
-            Eventlistener.key, self.host, strict=False)
+        self.programs = list(self.require(Program.key, self.host))
+        self.programs.sort(key=lambda x:x.name)
+        self.eventlisteners = list(self.require(
+            Eventlistener.key, self.host, strict=False))
+        self.eventlisteners.sort(key=lambda x:x.name)
 
         buildout_cfg = File('buildout.cfg',
             source=self.buildout_cfg,
