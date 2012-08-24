@@ -79,6 +79,14 @@ class ServiceConfig(object):
             for name, features in parse_host_components(
                     config.get('hosts', hostname)).items():
                 host.add_component(name, features)
+        # load overrides
+        for section in config.sections():
+            if not section.startswith('component:'):
+                continue
+            root_name = section.replace('component:', '')
+            env.overrides.setdefault(root_name, {})
+            for option in config.options(section):
+                env.overrides[root_name][option] = config.get(section, option)
         self.service.environments[env.name] = env
 
 
