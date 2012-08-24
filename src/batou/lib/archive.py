@@ -16,7 +16,7 @@ class Extract(Component):
     target = None
     strip = 0
 
-    exclude = ('._*')
+    exclude = ('._*',)
 
     def configure(self):
         if self.target is None:
