@@ -105,7 +105,7 @@ class RemoteDeployment(object):
         pool = multiprocessing.pool.ThreadPool(10)
         pool.map(lambda x: x.connect(), remotes.values())
 
-        for component in self.environment.ordered_components:
+        for component in self.environment.get_sorted_components():
             remote = remotes[component.host]
             remote.deploy_component(component)
 
