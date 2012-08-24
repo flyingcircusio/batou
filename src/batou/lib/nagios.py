@@ -1,7 +1,7 @@
 from batou.component import Component, HookComponent
 
 
-class Check(HookComponent):
+class Check(Component):
 
     namevar = 'description'
     key = 'batou.lib.nagios:Check'
