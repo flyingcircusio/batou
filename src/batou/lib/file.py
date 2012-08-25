@@ -115,13 +115,13 @@ class SyncDirectory(Component):
             os.path.join(self.root.defdir, self.source))
 
     def verify(self):
-        stdout, stderr = self.cmd('rsync -anv {}/ {}'.format(
+        stdout, stderr = self.cmd('rsync -rnv {}/ {}'.format(
             self.source, self.fullpath))
         if len(stdout.splitlines()) - 4 > 0:
             raise batou.UpdateNeeded()
 
     def update(self):
-        self.cmd('rsync -a {}/ {}'.format(self.source, self.fullpath))
+        self.cmd('rsync --inplace -r {}/ {}'.format(self.source, self.fullpath))
 
 
 class Directory(Component):
