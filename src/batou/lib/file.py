@@ -134,6 +134,7 @@ class Directory(Component):
         self.fullpath = os.path.normpath(
                 os.path.join(self.workdir, self.path))
         if self.source:
+            # XXX The ordering is wrong. SyncDirectory should run *after*.
             self += SyncDirectory(self.fullpath, source=self.source)
 
     def verify(self):
