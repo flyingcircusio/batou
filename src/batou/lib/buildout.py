@@ -10,11 +10,13 @@ class Bootstrap(Component):
 
     python = None
     buildout = 'bin/buildout'
+    custom_bootstrap = False
     bootstrap = os.path.join(os.path.dirname(__file__), 'resources',
                              'bootstrap.py')
 
     def configure(self):
-        self += File('bootstrap.py', source=self.bootstrap)
+        if not self.custom_bootstrap:
+            self += File('bootstrap.py', source=self.bootstrap)
 
     def verify(self):
         self.assert_file_is_current(
@@ -32,25 +34,29 @@ class Buildout(Component):
 
     timeout = 3
     extends = ()   # Extends need to be aspects that have a path
+    use_default = True
     config = None
     additional_config = ()
+    custom_bootstrap = False
 
     build_env = {}  # XXX not frozen. :/
 
     def configure(self):
-        if self.config is None:
+        if not self.config and self.use_default:
             self.config = File('buildout.cfg',
                                source='buildout.cfg',
                                template_context=self.parent,
                                is_template=True)
         if isinstance(self.config, Component):
             self.config = [self.config]
+        if not self.config:
+            self.config = []
         self.config.extend(self.additional_config)
         for component in self.config:
             self += component
         venv = VirtualEnv(self.python)
         self += venv
-        self += Bootstrap(python=venv.python)
+        self += Bootstrap(python=venv.python, custom_bootstrap=self.custom_bootstrap)
 
     def verify(self):
         config_paths = [x.path for x in self.config]
