@@ -103,6 +103,27 @@ class Presence(Component):
             pass
 
 
+class SyncDirectory(Component):
+
+    namevar = 'path'
+    source = None
+
+    def configure(self):
+        self.fullpath = os.path.normpath(
+                os.path.join(self.workdir, self.path))
+        self.source = os.path.normpath(
+            os.path.join(self.root.defdir, self.source))
+
+    def verify(self):
+        stdout, stderr = self.cmd('rsync -anv {}/ {}'.format(
+            self.source, self.fullpath))
+        if len(stdout.splitlines()) - 4 > 0:
+            raise batou.UpdateNeeded()
+
+    def update(self):
+        self.cmd('rsync -a {}/ {}'.format(self.source, self.fullpath))
+
+
 class Directory(Component):
 
     namevar = 'path'
@@ -113,17 +134,11 @@ class Directory(Component):
         self.fullpath = os.path.normpath(
                 os.path.join(self.workdir, self.path))
         if self.source:
-            self.source = os.path.normpath(
-                os.path.join(self.root.defdir, self.source))
+            self += SyncDirectory(self.fullpath, source=self.source)
 
     def verify(self):
         if not os.path.isdir(self.path):
             raise batou.UpdateNeeded()
-        if self.source:
-            stdout, stderr = self.cmd('rsync -anv {}/ {}'.format(
-                self.source, self.fullpath))
-            if len(stdout.splitlines()) - 4 > 0:
-                raise batou.UpdateNeeded()
 
     def update(self):
         ensure_path_nonexistent(self.path)
@@ -131,8 +146,6 @@ class Directory(Component):
             os.makedirs(self.path)
         else:
             os.mkdir(self.path)
-        if self.source:
-            self.cmd('rsync -a {}/ {}'.format(self.source, self.fullpath))
 
 
 class FileComponent(Component):
