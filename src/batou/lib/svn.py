@@ -8,12 +8,18 @@ class Subversion(Component):
 
     namevar = 'url'
     target = '.'
+    revision = ''
 
     def configure(self):
         self += Directory(self.target)
 
     def verify(self):
-        raise UpdateNeeded()
+        if not os.path.exists('.svn'):
+            raise UpdateNeeded()
+        stdout, stderr = self.cmd('svn info | grep Revision:')
+        current_revision = stdout.replace('Revision:', '').strip()
+        if current_revision != self.revision:
+            raise UpdateNeeded()
 
     def update(self):
         with self.chdir(self.target):
