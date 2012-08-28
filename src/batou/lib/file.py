@@ -122,13 +122,13 @@ class SyncDirectory(Component):
             os.path.join(self.root.defdir, self.source))
 
     def verify(self):
-        stdout, stderr = self.cmd('rsync -rtlnv {}/ {}'.format(
+        stdout, stderr = self.cmd('rsync -rclnv {}/ {}'.format(
             self.source, self.path))
         if len(stdout.strip().splitlines()) - 4 > 0:
             raise batou.UpdateNeeded()
 
     def update(self):
-        self.cmd('rsync --inplace -ltr {}/ {}'.format(self.source, self.path))
+        self.cmd('rsync --inplace -lr {}/ {}'.format(self.source, self.path))
 
     @property
     def namevar_for_breadcrumb(self):
