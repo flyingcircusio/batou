@@ -66,6 +66,7 @@ class FileTests(FileTestBase, unittest.TestCase):
 
     def deploy(self, component, root=None):
         root = Mock() if root is None else root
+        root.workdir = 'work/'
         environment = Mock()
         environment.map.side_effect = lambda x:x
         component.prepare(Mock(), environment, Mock(), root)
