@@ -119,6 +119,7 @@ class Environment(object):
     host_domain = None
     branch = u'default'
     platform = None
+    vfs_sandbox = None
 
     def __init__(self, name, service):
         self.name = name
@@ -220,3 +221,12 @@ class Environment(object):
 
     def get_host(self, hostname):
         return self.hosts[self.normalize_host_name(hostname)]
+
+    def map(self, path):
+        if self.vfs_sandbox:
+            return self.vfs_sandbox.map(path)
+        return path
+
+    @property
+    def workdir_base(self):
+        return '%s/work' % self.service.base

@@ -46,8 +46,7 @@ class File(Component):
     leading = False
 
     def configure(self):
-        self.fullpath = os.path.normpath(
-                os.path.join(self.workdir, self.path))
+        self.path = self.map(self.path)
         if self.ensure == 'file':
             self += Presence(self.path, leading=self.leading)
         elif self.ensure == 'directory':
@@ -81,6 +80,10 @@ class File(Component):
         if self.mode:
             self += Mode(self.path, mode=self.mode)
 
+    @property
+    def namevar_for_breadcrumb(self):
+        return os.path.relpath(self.path, self.workdir)
+
 
 class Presence(Component):
 
@@ -88,6 +91,7 @@ class Presence(Component):
     leading = False
 
     def configure(self):
+        self.path = self.map(self.path)
         if self.leading:
             self += Directory(os.path.dirname(self.path),
                               leading=self.leading)
@@ -102,6 +106,10 @@ class Presence(Component):
             # We're just touching it.
             pass
 
+    @property
+    def namevar_for_breadcrumb(self):
+        return os.path.relpath(self.path, self.workdir)
+
 
 class SyncDirectory(Component):
 
@@ -109,19 +117,22 @@ class SyncDirectory(Component):
     source = None
 
     def configure(self):
-        self.fullpath = os.path.normpath(
-                os.path.join(self.workdir, self.path))
+        self.path = self.map(self.path)
         self.source = os.path.normpath(
             os.path.join(self.root.defdir, self.source))
 
     def verify(self):
-        stdout, stderr = self.cmd('rsync -rnv {}/ {}'.format(
-            self.source, self.fullpath))
-        if len(stdout.splitlines()) - 4 > 0:
+        stdout, stderr = self.cmd('rsync -rtlnv {}/ {}'.format(
+            self.source, self.path))
+        if len(stdout.strip().splitlines()) - 4 > 0:
             raise batou.UpdateNeeded()
 
     def update(self):
-        self.cmd('rsync --inplace -r {}/ {}'.format(self.source, self.fullpath))
+        self.cmd('rsync --inplace -ltr {}/ {}'.format(self.source, self.path))
+
+    @property
+    def namevar_for_breadcrumb(self):
+        return os.path.relpath(self.path, self.workdir)
 
 
 class Directory(Component):
@@ -131,11 +142,10 @@ class Directory(Component):
     source = None
 
     def configure(self):
-        self.fullpath = os.path.normpath(
-                os.path.join(self.workdir, self.path))
+        self.path = self.map(self.path)
         if self.source:
             # XXX The ordering is wrong. SyncDirectory should run *after*.
-            self += SyncDirectory(self.fullpath, source=self.source)
+            self += SyncDirectory(self.path, source=self.source)
 
     def verify(self):
         if not os.path.isdir(self.path):
@@ -148,6 +158,10 @@ class Directory(Component):
         else:
             os.mkdir(self.path)
 
+    @property
+    def namevar_for_breadcrumb(self):
+        return os.path.relpath(self.path, self.workdir)
+
 
 class FileComponent(Component):
 
@@ -155,7 +169,12 @@ class FileComponent(Component):
     leading = False
 
     def configure(self):
+        self.path = self.map(self.path)
         self += Presence(self.path, leading=self.leading)
+
+    @property
+    def namevar_for_breadcrumb(self):
+        return os.path.relpath(self.path, self.workdir)
 
 
 class Content(FileComponent):
@@ -263,7 +282,8 @@ class Symlink(Component):
     namevar = 'target'
 
     def configure(self):
-        self.source = os.path.join(self.workdir, self.source)
+        self.target = self.map(self.target)
+        self.source = self.map(self.source)
 
     def verify(self):
         if not os.path.islink(self.target):
