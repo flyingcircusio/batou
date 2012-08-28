@@ -1,7 +1,8 @@
 from .component import load_components_from_file
-from .host import Host
 from .environment import Environment
-import ConfigParser
+from .host import Host
+import batou.vfs
+import configobj
 import glob
 import os
 import os.path
@@ -61,32 +62,37 @@ class ServiceConfig(object):
 
     def load_environment(self, environment):
         """Instantiate environment object structure from config."""
-        config = ConfigParser.SafeConfigParser()
-        config.read('%s/environments/%s.cfg' % (
+        # XXX The environment loading could be modularized.
+        config = configobj.ConfigObj('%s/environments/%s.cfg' % (
             self.service.base, environment))
         env = Environment(environment, self.service)
         env_config = {}
-        if 'environment' in config.sections():
-            env_config.update(dict(config.items('environment')))
+        if 'environment' in config:
+            env_config.update(config['environment'])
         if self.platform is not None:
             env_config['platform'] = self.platform
         env.from_config(env_config)
+        # set vfs mapping
+        if 'vfs' in config:
+            sandbox = config['vfs']['sandbox']
+            sandbox = getattr(batou.vfs, sandbox)(env, config['vfs'])
+            env.vfs_sandbox = sandbox
+
         # load hosts
-        for hostname in config.options('hosts'):
+        for hostname in config['hosts']:
             fqdn = env.normalize_host_name(hostname)
             env.hosts[fqdn] = host = Host(fqdn, env)
             # load components for host
             for name, features in parse_host_components(
-                    config.get('hosts', hostname)).items():
+                    config['hosts'].as_list(hostname)).items():
                 host.add_component(name, features)
         # load overrides
-        for section in config.sections():
+        for section in config:
             if not section.startswith('component:'):
                 continue
             root_name = section.replace('component:', '')
             env.overrides.setdefault(root_name, {})
-            for option in config.options(section):
-                env.overrides[root_name][option] = config.get(section, option)
+            env.overrides[root_name].update(config[section])
         self.service.environments[env.name] = env
 
 
@@ -100,7 +106,7 @@ def parse_host_components(components):
 
     """
     result = {}
-    for name in components.split(','):
+    for name in components:
         name = name.strip()
         if ':' in name:
             name, feature = name.split(':', 1)

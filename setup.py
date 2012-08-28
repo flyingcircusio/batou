@@ -22,6 +22,7 @@ setup(
         'distribute',
         'mock',
         'ssh',
+        'configobj',
     ],
     extras_require={
         'test': [

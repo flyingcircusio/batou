@@ -8,7 +8,7 @@ class Subversion(Component):
 
     namevar = 'url'
     target = '.'
-    revision = ''
+    revision = None
 
     def configure(self):
         self += Directory(self.target)
@@ -25,8 +25,8 @@ class Subversion(Component):
         with self.chdir(self.target):
             if not os.path.exists('.svn'):
                 self.cmd(self.expand(
-                    'svn co {{component.url}} .'))
+                    'svn co {{component.url}} . -r {{component.revision}}'))
             else:
                 self.cmd(self.expand('svn revert -R .'))
                 self.cmd(self.expand('svn switch {{component.url}}'))
-                self.cmd(self.expand('svn up'))
+                self.cmd(self.expand('svn up -r {{component.revision}}'))

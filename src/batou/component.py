@@ -221,6 +221,11 @@ class Component(object):
         stdin.close()
         return stdout, stderr
 
+    def map(self, path):
+        if not path.startswith('/'):
+            return os.path.normpath(os.path.join(self.workdir, path))
+        return self.environment.map(path)
+
     def touch(self, filename):
         if os.path.exists(filename):
             os.utime(filename, None)
@@ -269,10 +274,14 @@ class Component(object):
     @property
     def _breadcrumb(self):
         result = self.__class__.__name__
-        name = getattr(self, self.namevar, None)
+        name = self.namevar_for_breadcrumb
         if name:
             result += '({})'.format(name)
         return result
+
+    @property
+    def namevar_for_breadcrumb(self):
+        return getattr(self, self.namevar, None)
 
 
 class HookComponent(Component):
@@ -313,6 +322,7 @@ class RootComponent(object):
         self.host = host
         # XXX law of demeter.
         self.service = self.host.environment.service
+        self.environment = self.host.environment
 
     def __repr__(self):
         return '<%s "%s" object at %s>' % (
@@ -320,7 +330,7 @@ class RootComponent(object):
 
     @property
     def workdir(self):
-        return '%s/work/%s' % (self.service.base, self.name)
+        return '%s/%s' % (self.environment.workdir_base, self.name)
 
     def _ensure_workdir(self):
         if not os.path.exists(self.workdir):
