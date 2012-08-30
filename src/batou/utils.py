@@ -4,6 +4,7 @@ import contextlib
 import fcntl
 import itertools
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -167,3 +168,60 @@ def topological_sort(graph):
         remove_nodes_without_outgoing_edges(graph)
         raise CycleError(dict(graph))
     return sorted
+
+
+def cmd(cmd, silent=False):
+    stdin = open('/dev/null')
+    process = subprocess.Popen(
+        [cmd],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        stdin=stdin,
+        shell=True)
+    stdout, stderr = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        if not silent:
+            print("STDOUT")
+            print("=" * 72)
+            print(stdout)
+            print("STDERR")
+            print("=" * 72)
+            print(stderr)
+        raise RuntimeError(
+            'Command "{}" returned unsuccessfully.'.format(cmd))
+    stdin.close()
+    return stdout, stderr
+
+
+def _coreutils_md5sum(path):
+    stdout, stderr = cmd('md5sum {}'.format(path))
+    lines = stdout.splitlines()
+    assert len(lines) == 1
+    md5, sep, filename = lines[0].partition(' ')
+    assert filename.strip() == path
+
+
+def _osx_md5(path):
+    stdout, stderr = cmd('md5 {}'.format(path))
+    lines = stdout.splitlines()
+    assert len(lines) == 1
+    result = re.match(r'^MD5 \((?P<path>.*)\) = (?P<md5>[a-f0-9]+)$', lines[0])
+    if result is None:
+        return None
+    result = result.groupdict()
+    assert result['path'] == path
+    return result['md5']
+
+
+def md5sum(path):
+    try:
+        cmd('which md5sum', silent=True)
+        md5 = _coreutils_md5sum
+    except RuntimeError:
+        try:
+            cmd('which md5')
+            md5 = _osx_md5
+        except RuntimeError:
+            raise RuntimeError("No compatible md5 implementation found: missing md5 or md5sum")
+    return md5(path)

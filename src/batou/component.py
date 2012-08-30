@@ -199,27 +199,7 @@ class Component(object):
         self.assert_no_subcomponent_changes()
 
     def cmd(self, cmd, silent=False):
-        stdin = open('/dev/null')
-        process = subprocess.Popen(
-            [cmd],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            stdin=stdin,
-            shell=True)
-        stdout, stderr = process.communicate()
-        retcode = process.poll()
-        if retcode:
-            if not silent:
-                print "STDOUT"
-                print "=" * 72
-                print stdout
-                print "STDERR"
-                print "=" * 72
-                print stderr
-            raise RuntimeError(
-                'Command "{}" returned unsuccessfully.'.format(cmd))
-        stdin.close()
-        return stdout, stderr
+        return batou.utils.cmd(cmd, silent)
 
     def map(self, path):
         if not path.startswith('/'):
