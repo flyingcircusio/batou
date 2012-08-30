@@ -1,4 +1,5 @@
 from batou.component import Component
+from batou.utils import md5sum
 import batou
 import os.path
 import urlparse
@@ -20,21 +21,13 @@ class Download(Component):
         if not self.md5sum:
             raise KeyError('No MD5 sum for download given.')
 
-    def verify_md5(self):
-        stdout, stderr = self.cmd('md5sum {}'.format(self.target))
-        lines = stdout.splitlines()
-        assert len(lines) == 1
-        md5, sep, filename = lines[0].partition(' ')
-        assert filename.strip() == self.target
-        return md5 == self.md5sum
-
     def verify(self):
         if not os.path.exists(self.target):
             raise batou.UpdateNeeded()
-        if not self.verify_md5():
+        if self.md5sum != md5sum(self.target):
             raise batou.UpdateNeeded()
 
     def update(self):
         self.cmd('wget -q -O {target} {uri}'.format(
                     target=self.target, uri=self.uri))
-        assert self.verify_md5()
+        assert self.md5sum == md5sum(self.target)
