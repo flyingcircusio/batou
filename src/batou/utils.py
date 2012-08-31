@@ -200,6 +200,7 @@ def _coreutils_md5sum(path):
     assert len(lines) == 1
     md5, sep, filename = lines[0].partition(' ')
     assert filename.strip() == path
+    return md5
 
 
 def _osx_md5(path):
