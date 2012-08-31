@@ -14,12 +14,13 @@ class Subversion(Component):
         self += Directory(self.target)
 
     def verify(self):
-        if not os.path.exists('.svn'):
-            raise UpdateNeeded()
-        stdout, stderr = self.cmd('svn info | grep Revision:')
-        current_revision = stdout.replace('Revision:', '').strip()
-        if current_revision != self.revision:
-            raise UpdateNeeded()
+        with self.chdir(self.target):
+            if not os.path.exists('.svn'):
+                raise UpdateNeeded()
+            stdout, stderr = self.cmd('svn info | grep Revision:')
+            current_revision = stdout.replace('Revision:', '').strip()
+            if current_revision != self.revision:
+                raise UpdateNeeded()
 
     def update(self):
         with self.chdir(self.target):
