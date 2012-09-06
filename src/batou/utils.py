@@ -224,5 +224,6 @@ def md5sum(path):
             cmd('which md5')
             md5 = _osx_md5
         except RuntimeError:
-            raise RuntimeError("No compatible md5 implementation found: missing md5 or md5sum")
+            raise RuntimeError("No compatible md5 implementation found: "
+                               "missing md5 or md5sum")
     return md5(path)

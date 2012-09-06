@@ -24,7 +24,7 @@ class Map(object):
             if not key.startswith('/'):
                 continue
             self.map.append((key, value))
-        self.map.sort(key=lambda x:len(x[0]), reverse=True)
+        self.map.sort(key=lambda x: len(x[0]), reverse=True)
 
     def map(self, path):
         for prefix, replacement in self.map:

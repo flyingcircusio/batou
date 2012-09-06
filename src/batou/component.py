@@ -5,7 +5,6 @@ import contextlib
 import logging
 import os
 import os.path
-import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -212,16 +211,17 @@ class Component(object):
         else:
             open(filename, 'w').close()
 
-    def expand(self, string, component=None):
+    def expand(self, string, component=None, **kw):
         engine = batou.template.Jinja2Engine()
-        return engine.expand(string, self._template_args(component=component))
+        args = self._template_args(component=component, **kw)
+        return engine.expand(string, args)
 
     def template(self, filename, component=None):
         engine = batou.template.Jinja2Engine()
         return engine.template(
             filename, self._template_args(component=component))
 
-    def _template_args(self, component=None):
+    def _template_args(self, component=None, **kw):
         if component is None:
             component = self
         args = dict(
@@ -229,6 +229,7 @@ class Component(object):
             environment=self.environment,
             service=self.service,
             component=component)
+        args.update(kw)
         return args
 
     @contextlib.contextmanager

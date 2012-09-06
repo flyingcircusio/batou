@@ -266,7 +266,7 @@ class ComponentTests(TestCase):
         c = MyComponent
         c.deploy = Mock()
         host = Mock()
-        host.environment.workdir_base = d+'/work'
+        host.environment.workdir_base = d + '/work'
         host.environment.overrides = {}
         root = RootComponent('test', c, host, None)
         self.assertFalse(os.path.isdir(root.workdir))
