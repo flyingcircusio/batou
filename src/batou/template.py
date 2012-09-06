@@ -56,6 +56,7 @@ class Jinja2Engine(TemplateEngine):
         print(tmpl.render(args), file=output)
         return output
 
-    def expand(self, templatestr, args):
+    def expand(self, templatestr, args, identifier='<template>'):
         tmpl = self.env.from_string(templatestr)
+        tmpl.filename = identifier
         return tmpl.render(**args)
