@@ -214,7 +214,7 @@ class Component(object):
     def expand(self, string, component=None, **kw):
         engine = batou.template.Jinja2Engine()
         args = self._template_args(component=component, **kw)
-        return engine.expand(string, args)
+        return engine.expand(string, args, self._breadcrumbs)
 
     def template(self, filename, component=None):
         engine = batou.template.Jinja2Engine()
