@@ -56,7 +56,9 @@ class Program(HookComponent):
         self.options['stderr_logfile_backups'] = 0
         options = '{}'.format(' '.join(
             '%s=%s' % (k, v) for k, v in sorted(self.options.items())))
-        args = '[{}]'.format(self.args)
+        args = self.args
+        if args:
+            args = '[{}]'.format(args)
         return self.program_template.format(
                 priority=self.priority,
                 name=self.name,
@@ -124,10 +126,10 @@ class Supervisor(Component):
     def configure(self):
         self.address = Address(self.address)
         self.programs = list(self.require(Program.key, self.host))
-        self.programs.sort(key=lambda x:x.name)
+        self.programs.sort(key=lambda x: x.name)
         self.eventlisteners = list(self.require(
             Eventlistener.key, self.host, strict=False))
-        self.eventlisteners.sort(key=lambda x:x.name)
+        self.eventlisteners.sort(key=lambda x: x.name)
 
         buildout_cfg = File('buildout.cfg',
             source=self.buildout_cfg,

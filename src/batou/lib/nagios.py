@@ -1,4 +1,6 @@
-from batou.component import Component, HookComponent
+from batou.component import Component
+from batou.lib.file import File
+import urlparse
 
 
 class Check(Component):
@@ -29,13 +31,12 @@ class HTTPCheck(Check):
         if not self.description:
             self.description = self.url
 
-        url = urlparse.urlparse(check.url)
+        url = urlparse.urlparse(self.url)
         self.ssl = dict(
             http='',
             https='-S')[url.scheme]
         self.httphost = url.netloc
         self.urlpath = url.path
-
 
 
 class NagiosServer(Component):

@@ -56,7 +56,8 @@ class Buildout(Component):
             self += component
         venv = VirtualEnv(self.python)
         self += venv
-        self += Bootstrap(python=venv.python, custom_bootstrap=self.custom_bootstrap)
+        self += Bootstrap(python=venv.python,
+                          custom_bootstrap=self.custom_bootstrap)
 
     def verify(self):
         config_paths = [x.path for x in self.config]

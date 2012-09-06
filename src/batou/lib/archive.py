@@ -23,7 +23,8 @@ class Extract(Component):
                 self += extractor
                 break
         else:
-            raise ValueError("No handler found for archive '{}'.".format(self.archive))
+            raise ValueError("No handler found for archive '{}'."
+                             .format(self.archive))
         self.target = extractor.target
 
 
@@ -51,8 +52,8 @@ class Extractor(Component):
                 self.target = self.extract_base_name(self.archive)
             if not self.target:
                 raise AttributeError(
-                    "Target not given and not derivable from archive name ({}).".
-                        format(self.archive))
+                    "Target not given and not derivable from archive name "
+                    "({}).".format(self.archive))
             self += Directory(self.target, leading=True)
         else:
             self.target = '.'
@@ -98,7 +99,8 @@ class Untar(Extractor):
 
     def configure(self):
         super(Untar, self).configure()
-        self.exclude = ' '.join("--exclude='{}'".format(x) for x in self.exclude)
+        self.exclude = ' '.join("--exclude='{}'".format(x)
+                                for x in self.exclude)
 
     def get_names_from_archive(self):
         stdout, stderr = self.cmd(self.expand(
