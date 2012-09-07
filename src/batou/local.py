@@ -94,11 +94,16 @@ def main():
     args = parser.parse_args()
     mode = BatchMode if args.batch else AutoMode
 
-    logging.basicConfig(stream=sys.stdout, level=-1000, format='%(message)s')
+
+    level = logging.INFO
 
     if args.debug:
         log = open('batou-debug-log', 'a+')
         sys.stdout = MultiFile([sys.stdout, log])
+        level = logging.DEBUG
+
+    logging.basicConfig(stream=sys.stdout, level=level, format='%(message)s')
+
 
     with locked('.batou-lock'):
         config = ServiceConfig('.', [args.environment])
