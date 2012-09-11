@@ -166,9 +166,13 @@ class Component(object):
 
     def require_one(self, key, host=None, strict=True):
         resources = self.require(key, host, strict)
-        if len(resources) != 1:
+        if len(resources) > 1:
             raise KeyError(
                 "Expected only one result, got multiple for (key={}, host={})".
+                    format(key, host))
+        elif len(resources) == 0:
+            raise KeyError(
+                "Expected one result, got none for (key={}, host={})".
                     format(key, host))
         return resources[0]
 

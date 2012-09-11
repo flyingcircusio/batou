@@ -1,7 +1,7 @@
 from batou.component import Component, HookComponent
 from batou.lib.buildout import Buildout
 from batou.lib.file import File, Directory
-from batou.lib.nagios import Check
+from batou.lib.nagios import NRPEService
 from batou.lib.service import Service
 from batou.utils import Address
 import os
@@ -140,8 +140,7 @@ class Supervisor(Component):
             config=buildout_cfg,
             python='2.7')
 
-        self += Check('Supervisor programs',
-            host=self.host,
+        self += NRPEService('Supervisors programs',
             command='check_supervisor')
 
         self += Directory('var/log', leading=True)
