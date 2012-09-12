@@ -186,6 +186,8 @@ class Content(FileComponent):
     source = ''
     template_context = None
 
+    _delayed = False
+
     def configure(self):
         super(Content, self).configure()
 
@@ -201,10 +203,20 @@ class Content(FileComponent):
                 self.source = self.path
             if not self.source.startswith('/'):
                 self.source = os.path.join(self.root.defdir, self.source)
-            with open(self.source, 'r') as f:
-                self.content = f.read()
+
+            if os.path.exists(self.source):
+                with open(self.source, 'r') as f:
+                    self.content = f.read()
+            else:
+                # Delay reading to the verification phase as we might be on the
+                # local side of the remoting utility.
+                self._delayed = True
 
         # Step 2: If our content is a template then render it.
+        if not self._delayed:
+            self._render()
+
+    def _render(self):
         if not self.is_template:
             return
         if not self.template_context:
@@ -212,6 +224,11 @@ class Content(FileComponent):
         self.content = self.expand(self.content, self.template_context)
 
     def verify(self):
+        if self._delayed:
+            with open(self.source, 'r') as f:
+                self.content = f.read()
+            self._render()
+
         with open(self.path, 'r') as target:
             current = target.read()
             if current != self.content:
