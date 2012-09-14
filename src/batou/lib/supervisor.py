@@ -4,6 +4,8 @@ from batou.lib.file import File, Directory
 from batou.lib.nagios import NRPEService
 from batou.lib.service import Service
 from batou.utils import Address
+from batou import UpdateNeeded
+import ast
 import os
 import os.path
 
@@ -123,6 +125,9 @@ class Supervisor(Component):
     buildout_cfg = os.path.join(os.path.dirname(__file__), 'resources',
                              'supervisor.buildout.cfg')
 
+    enable = 'True'  # Allows turning "everything off" via environment configuration
+
+
     def configure(self):
         self.address = Address(self.address)
         self.programs = list(self.require(Program.key, self.host))
@@ -147,12 +152,29 @@ class Supervisor(Component):
 
         self += Service('bin/supervisord', pidfile='var/supervisord.pid')
 
+        self.enable = ast.literal_eval(self.enable)
+        if self.enable:
+            self += RunningSupervisor()
+        else:
+            self += StoppedSupervisor()
+
+    def install_checks(self):
+        # XXX transform to 0.2 version
+        self.template('check_supervisor.py.in', 'check_supervisor')
+        os.chmod('check_supervisor', 0o755)
+        # relax permissions to allow nagios to execute the check
+        self.cmd('chmod -R a+rX "%s/eggs" "%s"' % (
+            self.service.base, self.compdir))
+
+
+class RunningSupervisor(Component):
+
     def verify(self):
         self.assert_file_is_current(
             'var/supervisord.pid',
             ['.batou.buildout.success'])
         # XXX make assertions on files of programs?
-        depending_components = self.programs + self.eventlisteners
+        depending_components = self.aprent.programs + self.parent.eventlisteners
         for component in depending_components:
             component.parent.assert_no_changes()
 
@@ -166,10 +188,16 @@ class Supervisor(Component):
             self.cmd('bin/supervisorctl reload')
         # XXX re-build selective restart
 
-    def install_checks(self):
-        # XXX transform to 0.2 version
-        self.template('check_supervisor.py.in', 'check_supervisor')
-        os.chmod('check_supervisor', 0o755)
-        # relax permissions to allow nagios to execute the check
-        self.cmd('chmod -R a+rX "%s/eggs" "%s"' % (
-            self.service.base, self.compdir))
+
+class StoppedSupervisor(Component):
+
+    def verify(self):
+        out, err = self.cmd('bin/supervisorctl pid')
+        try:
+            int(out)
+        except ValueError:
+            return
+        raise UpdateNeeded()
+
+    def update(self):
+        self.cmd('bin/supervisorctl shutdown')
