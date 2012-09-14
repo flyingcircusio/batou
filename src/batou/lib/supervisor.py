@@ -174,7 +174,7 @@ class RunningSupervisor(Component):
             'var/supervisord.pid',
             ['.batou.buildout.success'])
         # XXX make assertions on files of programs?
-        depending_components = self.aprent.programs + self.parent.eventlisteners
+        depending_components = self.parent.programs + self.parent.eventlisteners
         for component in depending_components:
             component.parent.assert_no_changes()
 
