@@ -86,6 +86,11 @@ class File(Component):
     def namevar_for_breadcrumb(self):
         return os.path.relpath(self.path, self.workdir)
 
+    def last_updated(self, key='st_mtime'):
+        if not os.path.exists(self.path):
+            return None
+        return getattr(os.stat(self.path), key)
+
 
 class Presence(Component):
 
@@ -159,6 +164,15 @@ class Directory(Component):
             os.makedirs(self.path)
         else:
             os.mkdir(self.path)
+
+    def last_updated(self, key='st_mtime'):
+        newest = None
+        for dirpath, dirnames, filenames in os.walk(self.path):
+            for filename in filenames:
+                time = getattr(os.stat(os.path.join(dirpath, filename)), key)
+                if time > newest:
+                    newest = time
+        return newest
 
     @property
     def namevar_for_breadcrumb(self):

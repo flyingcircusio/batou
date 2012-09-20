@@ -126,6 +126,14 @@ class Component(object):
         """
         pass
 
+    def last_updated(self):
+        """An optional helper to indicate to other components a timestamp how new any changes
+        in the target system related to this component are.
+
+        Can be used to determine file ages, etc.
+        """
+        raise NotImplementedError
+
     # Sub-component mechanics
 
     def __add__(self, component):
@@ -182,13 +190,18 @@ class Component(object):
     def workdir(self):
         return self.root.workdir
 
-    def assert_file_is_current(self, result, requirements=[],
-                               attribute='st_mtime'):
-        if not os.path.exists(result):
+    # XXX backwards-compatibility. :/
+    def assert_file_is_current(self, reference, requirements=[], **kw):
+        from batou.lib.file import File
+        self.assert_component_is_current(
+            File(reference), [File(r) for r in requirements], **kw)
+
+    def assert_component_is_current(self, component, requirements=[], **kw):
+        reference = component.last_updated(**kw)
+        if reference is None:
             raise batou.UpdateNeeded()
-        current = getattr(os.stat(result), attribute)
         for requirement in requirements:
-            if current < getattr(os.stat(requirement), attribute):
+            if reference < requirement.last_updated(**kw):
                 raise batou.UpdateNeeded()
 
     def assert_no_subcomponent_changes(self):

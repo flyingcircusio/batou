@@ -60,10 +60,9 @@ class Buildout(Component):
                           custom_bootstrap=self.custom_bootstrap)
 
     def verify(self):
-        config_paths = [x.path for x in self.config]
         # XXX we can't be sure that all config objects are files!
-        self.assert_file_is_current(
-            '.installed.cfg', ['bin/buildout'] + config_paths)
+        self.assert_component_is_current(
+            File('.installed.cfg'), [File('bin/buildout')] + self.config)
         self.assert_file_is_current(
             '.batou.buildout.success', ['.installed.cfg'])
 
