@@ -10,6 +10,7 @@ import os.path
 import re
 import subprocess
 import sys
+import time
 
 
 logger = logging.getLogger('batou.remote')
@@ -102,8 +103,12 @@ class RemoteDeployment(object):
         for host in self.environment.hosts.values():
             remote = RemoteHost(host, self)
             remotes[host] = remote
+
+        # XXX optional
         pool = multiprocessing.pool.ThreadPool(10)
         pool.map(lambda x: x.connect(), remotes.values())
+        #for x in remotes.values():
+        #    x.connect()
 
         for component in self.environment.get_sorted_components():
             remote = remotes[component.host]
@@ -188,6 +193,7 @@ class RemoteHost(object):
     # Internal API
 
     def remote_cmd(self, cmd):
+        logger.debug('Sending command to {}: {}'.format(self.host.name, cmd))
         self.batou[1].write(cmd + '\n')
         self.batou[1].flush()
         result = self._wait_for_remote_ready()
@@ -199,10 +205,14 @@ class RemoteHost(object):
 
     def _wait_for_remote_ready(self):
         # Wait for the command to complete.
+        logger.debug('starting to wait for remote {}'.format(self.host.name))
         lastline = 'OK'
         line = ''
         while True:
             char = self.batou[2].read(1)
+            logger.debug('waiting for remote {} - got: {}'.format(self.host.name, repr(char)))
+            if not char:
+                raise RuntimeError('Empty response from server.')
             line += char
             if line == '> ':
                 return lastline.strip()
@@ -229,9 +239,9 @@ class RemoteHost(object):
 
     def _cmd(self, cmd, interactive=False):
         chan = self.ssh._transport.open_session()
-        stdin = chan.makefile('wb')
-        stdout = chan.makefile('rb')
-        stderr = chan.makefile_stderr('rb')
+        stdin = chan.makefile('wb', 0)
+        stdout = chan.makefile('rb', 0)
+        stderr = chan.makefile_stderr('rb', 0)
         chan.exec_command(cmd)
         if interactive:
             return chan, stdin, stdout, stderr
