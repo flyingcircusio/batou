@@ -62,7 +62,7 @@ class Extractor(Component):
         # If the target directory has just been created, then we need to
         # extract again.
         self.assert_file_is_current(
-            self.target, [self.archive], attribute='st_ctime')
+            self.target, [self.archive], key='st_ctime')
         # Check that all files in the directory are newer than the archive.
         # XXX Might also have a problem regarding archive attribute
         # preservation?
@@ -70,7 +70,7 @@ class Extractor(Component):
             filename = os.path.join(*filename.split(os.path.sep)[self.strip:])
             self.assert_file_is_current(
                 os.path.join(self.target, filename),
-                [self.archive], attribute='st_ctime')
+                [self.archive], key='st_ctime')
 
 
 class Unzip(Extractor):
