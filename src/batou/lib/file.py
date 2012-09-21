@@ -1,6 +1,7 @@
 from batou.component import Component
 import batou
 import difflib
+import glob
 import logging
 import os.path
 import pwd
@@ -331,3 +332,20 @@ class Symlink(Component):
     def update(self):
         ensure_path_nonexistent(self.target)
         os.symlink(self.source, self.target)
+
+
+class Purge(Component):
+    """Ensure that a set of files (given as a glob) does not exist."""
+
+    namevar = 'pattern'
+
+    def configure(self):
+        self.pattern = self.map(self.pattern)
+
+    def verify(self):
+        if glob.glob(self.pattern):
+            raise batou.UpdateNeeded()
+
+    def update(self):
+        for filename in glob.glob(self.pattern):
+            os.unlink(filename)

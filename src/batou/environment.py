@@ -2,6 +2,7 @@ from batou import NonConvergingWorkingSet, UnusedResource
 from batou.component import RootComponent
 from batou.utils import flatten, revert_graph, topological_sort
 from collections import defaultdict
+import copy
 import logging
 import os
 import pwd
@@ -27,31 +28,35 @@ class Resources(object):
     # Maps keys to root components that depend on the key. A "strict"
     # dependency means that it's not OK to have this dependency unsatisfied and
     # requires at least one value.
-    # {key: [(root, strict), (root, strict), ...]}
+    # {key: [(root, strict, host), (root, strict, host), ...]}
     subscribers = None
     # Keeps track of root components that have not seen changes to a key they
     # have subscribed to when they were configured earlier..
     dirty_dependencies = None
+
+    # {key: {host: [values]}}
+    resources = None
 
     def __init__(self):
         self.resources = {}
         self.subscribers = {}
         self.dirty_dependencies = set()
 
-    def _subscribers(self, key):
-        return [root for root, strict in self.subscribers.get(key, ())]
+    def _subscribers(self, key, host):
+        return [root for root, strict, host_ in self.subscribers.get(key, ())
+                    if host_ is None or host is None or host_ is host]
 
     @property
     def strict_subscribers(self):
         for key, subscribers in self.subscribers.items():
-            if any(strict for root, strict in subscribers):
+            if any(strict for root, strict, host in subscribers):
                 yield key
 
     def provide(self, root, key, value):
         assert isinstance(root, RootComponent)
         values = self.resources.setdefault(key, defaultdict(list))
         values[root].append(value)
-        self.dirty_dependencies.update(self._subscribers(key))
+        self.dirty_dependencies.update(self._subscribers(key, root.host))
 
     def get(self, key, host=None):
         """Return resource values without recording a dependency."""
@@ -67,7 +72,7 @@ class Resources(object):
     def require(self, root, key, host=None, strict=True):
         assert isinstance(root, RootComponent)
         """Return resource values and record component dependency."""
-        self.subscribers.setdefault(key, set()).add((root, strict))
+        self.subscribers.setdefault(key, set()).add((root, strict, host))
         return self.get(key, host)
 
     def reset_component_resources(self, root):
@@ -79,11 +84,38 @@ class Resources(object):
             # Removing this resource requires invalidating components that
             # depend on this resource and have already been configured so we
             # need to mark them as dirty.
-            self.dirty_dependencies.update(self._subscribers(key))
+            self.dirty_dependencies.update(self._subscribers(key, root.host))
+
+    def copy_resources(self):
+        # A "one level deep" copy of the resources dict to be used by the
+        # `unused` property.
+        resources =  {}
+        for key, providers in self.resources.items():
+            resources[key] = dict(providers)
+        return resources
 
     @property
     def unused(self):
-        return set(self.resources) - set(self.subscribers)
+        # XXX. Gah. This makes my head explode: we need to take the 'host'
+        # filter into account whether some of the values provided where never
+        # used.
+        resources = self.copy_resources()
+        for key, subscribers in self.subscribers.items():
+            if key not in resources:
+                continue
+            for root, strict, host in subscribers:
+                if host is None:
+                    del resources[key]
+                    break
+                for resource_root in list(resources[key]):
+                    if resource_root.host is host:
+                        del resources[key][resource_root]
+                        if not resources[key]:
+                            del resources[key]
+                            break
+                if not key in resources:
+                    break
+        return resources
 
     @property
     def unsatisfied(self):
@@ -93,7 +125,7 @@ class Resources(object):
     def unsatisfied_components(self):
         components = set()
         for resource in self.unsatisfied:
-            components.update(self._subscribers(resource))
+            components.update(self._subscribers(resource, None))
         return components
 
     def get_dependency_graph(self):
@@ -105,7 +137,7 @@ class Resources(object):
         """
         graph = defaultdict(set)
         for key, providers in self.resources.items():
-            for subscriber in self._subscribers(key):
+            for subscriber in self._subscribers(key, None):
                 graph[subscriber].update(providers)
         return graph
 
