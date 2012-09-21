@@ -64,7 +64,7 @@ class TestDependencies(unittest.TestCase):
         self.service.components['aggressiveconsumer'] = RootComponentFactory(
                 'aggressiveconsumer', AggressiveConsumer, '.')
         self.service.components['samehostconsumer'] = RootComponentFactory(
-                'somehostconsumer', SameHostConsumer, '.')
+                'samehostconsumer', SameHostConsumer, '.')
         self.service.components['broken'] = RootComponentFactory(
                 'broken', Broken, '.')
         self.service.components['circular1'] = RootComponentFactory(
@@ -89,6 +89,12 @@ class TestDependencies(unittest.TestCase):
         self.assertListEqual(
                 [provider, consumer],
                 self.env.get_sorted_components())
+
+    def test_provider_with_consumer_limited_by_host_raises_error(self):
+        provider = self.host.add_component('provider')
+        consumer = self.host2.add_component('samehostconsumer')
+        with self.assertRaises(UnusedResource):
+            self.env.configure()
 
     def test_consumer_retrieves_value_from_provider_order2(self):
         consumer = self.host.add_component('consumer')
@@ -122,12 +128,14 @@ class TestDependencies(unittest.TestCase):
     def test_consumer_retrieves_value_from_provider_with_same_host(self):
         consumer = self.host.add_component('samehostconsumer')
         provider = self.host.add_component('provider')
+        consumer2 = self.host2.add_component('samehostconsumer')
         provider2 = self.host2.add_component('provider')
         self.env.configure()
         self.assertListEqual([42], list(consumer.component.the_answer))
+        self.assertListEqual([42], list(consumer2.component.the_answer))
         components = self.env.get_sorted_components()
         self.assertEquals(set([provider2, provider]), set(components[:2]))
-        self.assertEquals([consumer], components[2:])
+        self.assertEquals(set([consumer, consumer2]), set(components[2:]))
 
     def test_components_are_ordered_over_multiple_hosts(self):
         provider1 = self.host.add_component('provider')

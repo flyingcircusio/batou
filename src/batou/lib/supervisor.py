@@ -127,7 +127,6 @@ class Supervisor(Component):
 
     enable = 'True'  # Allows turning "everything off" via environment configuration
 
-
     def configure(self):
         self.address = Address(self.address)
         self.programs = list(self.require(Program.key, self.host))
