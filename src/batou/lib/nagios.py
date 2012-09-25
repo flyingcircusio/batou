@@ -4,6 +4,13 @@ import os.path
 import urlparse
 
 
+
+def ServiceCheck(name, **kw):
+    if kw.get('nrpe', False):
+        return NRPEService(name, **kw)
+    return Service(name, **kw)
+
+
 class Service(HookComponent):
 
     namevar = 'description'
@@ -31,6 +38,7 @@ class NRPEService(Service):
     servicegroups = 'nrpe'
 
     def configure(self):
+        super(NRPEService, self).configure()
         if not self.name:
             self.name = self.description.lower().replace(' ', '_')
 
