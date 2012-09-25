@@ -142,9 +142,9 @@ class Component(object):
         This will also automatically prepare the added component.
 
         """
-        # Allow `None` components to flow right through. This makes the API a
-        # bit more convenient in some cases, e.g. with platform handling.
         if component is not None:
+            # Allow `None` components to flow right through. This makes the API a
+            # bit more convenient in some cases, e.g. with platform handling.
             self.sub_components.append(component)
             component.prepare(self.service, self.environment,
                               self.host, self.root, self)
@@ -334,13 +334,21 @@ class RootComponent(object):
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
 
+    def setup_overrides(self):
+        environment = self.host.environment
+        if self.name not in environment.overrides:
+            return
+        for key, value in environment.overrides[self.name].items():
+            if not hasattr(self.component, key):
+                raise KeyError('Invalid override attribute "{}" for component {}'.format(
+                    key, self.component))
+            setattr(self.component, key, value)
+
     def prepare(self):
         environment = self.host.environment
         environment.resources.reset_component_resources(self)
         self.component = self.factory()
-        if self.name in environment.overrides:
-            self.component.__dict__.update(
-                environment.overrides[self.name])
+        self.setup_overrides()
         self.component.prepare(
             self.service, environment, self.host, self)
 
