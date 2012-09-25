@@ -48,7 +48,7 @@ class NRPEService(Service):
 
     @property
     def nrpe_command(self):
-        return super(NRPEService, self).check_command
+        return '{} {}'.format(self.command, self.args)
 
 
 class NagiosServer(Component):
