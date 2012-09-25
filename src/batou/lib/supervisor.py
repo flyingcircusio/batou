@@ -144,7 +144,7 @@ class Supervisor(Component):
             config=buildout_cfg,
             python='2.7')
 
-        self += NRPEService('Supervisors programs',
+        self += NRPEService('Supervisor programs',
             command='check_supervisor')
 
         self += Directory('var/log', leading=True)
@@ -186,6 +186,9 @@ class RunningSupervisor(Component):
         else:
             self.cmd('bin/supervisorctl reload')
         # XXX re-build selective restart
+        # XXX build restarts based on generic (external) comparison key: a
+        # previous run may have changed something but failed later and we
+        # didn't get the signal based on assert_no_changes
 
 
 class StoppedSupervisor(Component):
