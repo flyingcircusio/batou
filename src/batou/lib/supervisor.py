@@ -1,7 +1,7 @@
 from batou.component import Component, HookComponent
 from batou.lib.buildout import Buildout
 from batou.lib.file import File, Directory
-from batou.lib.nagios import NRPEService
+from batou.lib.nagios import ServiceCheck
 from batou.lib.service import Service
 from batou.utils import Address
 from batou import UpdateNeeded
@@ -144,9 +144,6 @@ class Supervisor(Component):
             config=buildout_cfg,
             python='2.7')
 
-        self += NRPEService('Supervisor programs',
-            command='check_supervisor')
-
         self += Directory('var/log', leading=True)
 
         self += Service('bin/supervisord', pidfile='var/supervisord.pid')
@@ -157,13 +154,17 @@ class Supervisor(Component):
         else:
             self += StoppedSupervisor()
 
-    def install_checks(self):
-        # XXX transform to 0.2 version
-        self.template('check_supervisor.py.in', 'check_supervisor')
-        os.chmod('check_supervisor', 0o755)
-        # relax permissions to allow nagios to execute the check
-        self.cmd('chmod -R a+rX "%s/eggs" "%s"' % (
-            self.service.base, self.compdir))
+        # Nagios check
+        self += File('check_supervisor',
+                mode=0o755,
+                source=os.path.join(
+                    os.path.dirname(__file__), 'resources',
+                    'check_supervisor.py.in'),
+                is_template=True)
+
+        self += ServiceCheck('Supervisor programs',
+            nrpe=True,
+            command=self.expand('{{component.workdir}}/check_supervisor'))
 
 
 class RunningSupervisor(Component):
