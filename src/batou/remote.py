@@ -105,10 +105,10 @@ class RemoteDeployment(object):
             remotes[host] = remote
 
         # XXX optional
-        pool = multiprocessing.pool.ThreadPool(10)
+        pool = multiprocessing.pool.ThreadPool(20)
         pool.map(lambda x: x.connect(), remotes.values())
         #for x in remotes.values():
-        #    x.connect()
+        #   x.connect()
 
         for component in self.environment.get_sorted_components():
             remote = remotes[component.host]
@@ -212,9 +212,10 @@ class RemoteHost(object):
             char = self.batou[2].read(1)
             logger.debug('waiting for remote {} - got: {}'.format(self.host.name, repr(char)))
             if not char:
-                raise RuntimeError('Empty response from server.')
+                raise RuntimeError('Empty response from server {}.'.format(self.host.name))
             line += char
             if line == '> ':
+                logger.debug('done waiting for {}'.format(self.host.name))
                 return lastline.strip()
             if char == '\n':
                 line = line.strip()
@@ -239,6 +240,7 @@ class RemoteHost(object):
 
     def _cmd(self, cmd, interactive=False):
         chan = self.ssh._transport.open_session()
+        #chan.get_pty()
         stdin = chan.makefile('wb', 0)
         stdout = chan.makefile('rb', 0)
         stderr = chan.makefile_stderr('rb', 0)
