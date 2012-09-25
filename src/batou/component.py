@@ -150,6 +150,13 @@ class Component(object):
                               self.host, self.root, self)
         return self
 
+    @property
+    def recursive_sub_components(self):
+        for sub in self.sub_components:
+            yield sub
+            for rec_sub in sub.recursive_sub_components:
+                yield rec_sub
+
     # Platform mechanics
 
     @classmethod
