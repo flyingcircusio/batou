@@ -66,10 +66,11 @@ class FileTests(FileTestBase, unittest.TestCase):
 
     def deploy(self, component, root=None):
         root = Mock() if root is None else root
-        root.workdir = 'work/'
+        service = Mock()
+        service.base = ''
         environment = Mock()
         environment.map.side_effect = lambda x: x
-        component.prepare(Mock(), environment, Mock(), root)
+        component.prepare(service, environment, Mock(), root)
         component.deploy()
 
     def test_presence_creates_nonexisting_file(self):

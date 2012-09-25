@@ -85,7 +85,7 @@ class File(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.workdir)
+        return os.path.relpath(self.path, self.service.base)
 
     def last_updated(self, key='st_mtime'):
         if not os.path.exists(self.path):
@@ -116,7 +116,7 @@ class Presence(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.workdir)
+        return os.path.relpath(self.path, self.service.base)
 
 
 class SyncDirectory(Component):
@@ -140,7 +140,7 @@ class SyncDirectory(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.workdir)
+        return os.path.relpath(self.path, self.service.base)
 
 
 class Directory(Component):
@@ -177,7 +177,7 @@ class Directory(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.workdir)
+        return os.path.relpath(self.path, self.service.base)
 
 
 class FileComponent(Component):
@@ -191,7 +191,7 @@ class FileComponent(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.workdir)
+        return os.path.relpath(self.path, self.service.base)
 
 
 class Content(FileComponent):
