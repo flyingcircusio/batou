@@ -1,13 +1,14 @@
+from batou import UpdateNeeded
 from batou.component import Component, HookComponent
 from batou.lib.buildout import Buildout
 from batou.lib.file import File, Directory
 from batou.lib.nagios import ServiceCheck
 from batou.lib.service import Service
 from batou.utils import Address
-from batou import UpdateNeeded
 import ast
 import os
 import os.path
+import time
 
 
 class Program(HookComponent):
@@ -186,6 +187,10 @@ class RunningSupervisor(Component):
             self.cmd('bin/supervisord')
         else:
             self.cmd('bin/supervisorctl reload')
+            # Reload is asynchronous and doesn't wait for supervisor to become
+            # fully running again. We actually could monitor supervisorctl,
+            # though.
+            time.sleep(30)
         # XXX re-build selective restart
         # XXX build restarts based on generic (external) comparison key: a
         # previous run may have changed something but failed later and we
