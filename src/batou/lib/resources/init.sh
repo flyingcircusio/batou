@@ -2,9 +2,9 @@
 # generic user-init script
 set -e
 
-PATH="${d}{PATH}:/usr/local/sbin:/usr/sbin:/sbin"
-DAEMON="${component.root.workdir}/${component.executable}"
-PIDFILE="${component.root.workdir}/${component.pidfile}"
+PATH="${PATH}:/usr/local/sbin:/usr/sbin:/sbin"
+DAEMON="{{component.root.workdir}}/{{component.executable}}"
+PIDFILE="{{component.root.workdir}}/{{component.pidfile}}"
 
 start() {
     start-stop-daemon --start -p "$PIDFILE" -i -- "$DAEMON"
