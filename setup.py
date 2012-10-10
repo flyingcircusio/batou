@@ -21,7 +21,7 @@ setup(
         'Jinja2',
         'distribute',
         'mock',
-        'ssh',
+        'paramiko>=1.8',
         'configobj',
     ],
     extras_require={

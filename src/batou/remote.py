@@ -1,7 +1,7 @@
 from .utils import notify
 from .service import ServiceConfig
-from ssh import AutoAddPolicy
-from ssh.client import SSHClient
+from paramiko import AutoAddPolicy
+from paramiko.client import SSHClient
 import argparse
 import logging
 import multiprocessing.pool
