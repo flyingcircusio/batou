@@ -11,5 +11,5 @@ class Tick(Component):
         self += tick
         self.provide('programs',
                      dict(name='tick',
-                          path=tick.fullpath,
+                          path=tick.path,
                           priority=10))
