@@ -50,9 +50,11 @@ def main():
     # Verify that we have a repository and no uncommitted files sitting around
     # when running remote deployments. This may lead to inconsistent runs.
     try:
-        repository_status = subprocess.check_output(['hg', 'stat'])
-    except OSError:
-        raise
+        repository_status = subprocess.check_output(
+            ['hg', 'stat'], stderr=subprocess.STDOUT)
+    except (OSError, subprocess.CalledProcessError):
+        logger.error("Unable to check repository status. Is there an HG repository here?")
+        sys.exit(1)
     else:
         if repository_status.strip():
             if args.dirty:
