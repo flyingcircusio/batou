@@ -7,6 +7,8 @@ Change log for batou
 
 - Leave umask alone. If it must be set for service deployment, we'd better
   resort to .bashrc or similar.
+- Improve EXEC_PREFIX detection code to work with both Python 2 and Python 3
+  target versions.
 
 
 0.1.2 (2012-04-12)
