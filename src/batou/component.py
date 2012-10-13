@@ -260,7 +260,7 @@ class Buildout(Component):
         """Create symlink to correct python-config in virtualenv."""
         script_path = subprocess.check_output([
             "%s -c 'from distutils import sysconfig; "
-            "print sysconfig.EXEC_PREFIX'" % self.python], shell=True).strip()
+            "print(sysconfig.EXEC_PREFIX)'" % self.python], shell=True).strip()
         for candidate in self._python_config_candidates():
             candidate = os.path.join(script_path, 'bin', candidate)
             if not os.path.exists(candidate):
