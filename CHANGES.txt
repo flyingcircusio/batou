@@ -2,7 +2,7 @@
 Change log for batou
 ====================
 
-0.1.3 (unreleased)
+0.1.3 (2012-10-15)
 ==================
 
 - Leave umask alone. If it must be set for service deployment, we'd better
