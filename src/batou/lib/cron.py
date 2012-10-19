@@ -48,7 +48,7 @@ class GoceptNetCrontab(Component):
 
     def verify(self):
         try:
-            current, _ = self.cmd('crontab -l')
+            current, _ = self.cmd('crontab -l', silent=True)
         except:
             current = ''
         current = ignore_comments(current)
