@@ -1,6 +1,7 @@
 syntax: glob
 
 *.egg-info
+.DS_Store
 *.pyc
 *.pyc
 *.swo
