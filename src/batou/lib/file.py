@@ -36,6 +36,7 @@ class File(Component):
     source = ''
     is_template = False
     template_context = None
+    template_args = None  # dict, actually
 
     # Unix attributes
     owner = None
@@ -64,12 +65,15 @@ class File(Component):
                 'symlink not %s' % self.ensure)
 
         if self.content or self.source or self.is_template:
+            if self.template_args is None:
+                self.template_args = dict()
             if not self.template_context:
                 self.template_context = self.parent
             content = Content(self.path,
                               source=self.source,
                               is_template=self.is_template,
                               template_context=self.template_context,
+                              template_args=self.template_args,
                               content=self.content)
             self += content
             self.content = content.content
@@ -200,6 +204,7 @@ class Content(FileComponent):
     is_template = False
     source = ''
     template_context = None
+    template_args = None  # dict, actually
 
     _delayed = False
 
@@ -234,9 +239,12 @@ class Content(FileComponent):
     def _render(self):
         if not self.is_template:
             return
+        if self.template_args is None:
+            self.template_args = dict()
         if not self.template_context:
             self.template_context = self.parent
-        self.content = self.expand(self.content, self.template_context)
+        self.content = self.expand(
+            self.content, self.template_context, args=self.template_args)
 
     def verify(self):
         if self._delayed:
