@@ -1,71 +1,46 @@
-batou
-=====
+batou - a service deployment tool
+=================================
 
-batou is a tool to automate service deployment.
+batou is a tool that allows its users to define services and deploy them.
 
-It builds on the ideas of Fabric, Puppet, zc.buildout and others.
+It is inspired by tools like Puppet and zc.buildout.
 
-First steps
------------
+Introduction
+------------
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     introduction
-    tutorials/helloworld
+    installing
+    model
+    components
+    environments
+    deploying
+    hacking
 
-Defining your service components
---------------------------------
-
-* Writing a component: Concept | API | Resources | Platforms | VFS mapping
-* Standard components: archive |  zc.buildout | configure/make/make install | download | files and directories | git | nagios | virtualenv | supervisor | svn
-* 
-Address objects
-root components
-hookcomponents
-templating
-    jinja syntax
-secrets
-resource exports and subscriptions
-
-VFS mapping
-Platform components
-component dependencies
-workdir
-
-
-Defining your environments
---------------------------
-
-environment settings
-assigning components to hosts
-environment config
-overrides
-
-Deploying services
-------------------
-
-Locally
-
-Remotely
-
-remote runner
-    ssh
-    debugging
-    dirty protection
-    parallel, automatic bootstrapping
-local runner
-    choosing platform
-    batch mode
-    debugging
-    locking
-
-
-Everything else
-----------------
+Tutorials
+---------
 
 .. toctree::
     :maxdepth: 1
 
+    tutorials/helloworld
+    tutorials/component
+
+
+Reference
+---------
+
+.. toctree::
+    :maxdepth: 1
+
+    api
     changes
     legal
+
+
+Indices and tables
+------------------
+
+- :ref:`genindex`
