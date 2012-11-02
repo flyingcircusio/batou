@@ -1,0 +1,55 @@
+Components
+==========
+
+
+Component API
+--------------
+
+
+
+
+Component parameters
+---------------------
+
+constructor, class attributes, environment overrides
+
+
+VFS mapping
+-----------
+
+
+Features
+--------
+
+
+Platforms
+---------
+
+
+Resources and dependencies
+--------------------------
+
+
+Templating
+----------
+
+
+Network addresses
+-----------------
+
+Hook components
+---------------
+
+
+Remote component bootstrapping
+------------------------------
+
+Assertions
+----------
+
+``verify()``/``update()`` utilities
+-----------------------------------
+
+
+Component design tips
+---------------------

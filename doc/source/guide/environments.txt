@@ -1,0 +1,20 @@
+Environments
+============
+
+host domain
+-----------
+
+service user
+------------
+
+platform
+--------
+
+component overrides
+-------------------
+
+host component mapping
+----------------------
+
+feature selection
+-----------------

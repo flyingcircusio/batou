@@ -42,9 +42,11 @@ Documentation
 
 .. toctree::
     :maxdepth: 2
+    :glob:
 
     introduction
     tutorials/index
+    guide/index
     changes
     legal
 
