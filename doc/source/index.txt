@@ -43,6 +43,7 @@ Documentation
 .. toctree::
     :maxdepth: 2
 
+    introduction
     tutorials/index
     changes
     legal
