@@ -8,6 +8,8 @@ batou
       <img src="https://bitbucket.org/zgramana/bitbucket-ribbons/raw/988dffc5fbeb/png/bitbucket-ribbon-dark-gray.png" />
     </a>
 
+.. rubric:: multi-(component | host | environment | platform) deployment
+
 batou is a tool that makes it easy to define automated service deployments for
 complex (web) applications. It is written by the guys at `gocept
 <http://gocept.com>`_ and licensed under the BSD license.
@@ -20,13 +22,13 @@ Here is the smallest component and environment definition you can make:
 .. literalinclude:: ../../examples/tutorial-helloworld/environments/tutorial.cfg
     :language: ini
 
-batou has been conceived after multiple refactorings of complex projects using
-Fabric to deploy Python web applications and has been inspired by our previous
-experience with Puppet. It specifically aims to make it easy for your
-deployments to become idempotent and convergent, two very useful properties for
-this kind of work.
+batou was created by extracting our experience with automated deployments for
+complex projects. We have used Fabric previously and are happy users of Puppet
+for system configuration.  We want to make it easy for you to have deployment
+automation that is idempotent and convergent -- two very useful properties
+for this kind of work.
 
-This project is still young and being developed very actively - so please be
+This project is still young and being developed very actively -- so please be
 aware that things may change a lot.  However: all of the code is being used for
 our own projects on a daily basis.
 
@@ -43,7 +45,8 @@ Documentation
 Contributing
 ------------
 
-We'd love if you want to contribute: whether by reporting bugs, sending us your ideas or by hacking on batou. Here's the tools we use to develop batou:
+We'd love if you want to contribute: whether by reporting bugs, sending us your
+ideas, or by hacking on batou. Here are the tools we use to develop batou:
 
 * `batou redmine project <http://projects.gocept.com/projects/batou>`_
 * `bitbucket repository <http://bitbucket.org/gocept/batou>`_ (pull requests welcome!)
