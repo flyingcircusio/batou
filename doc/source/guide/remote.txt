@@ -1,0 +1,19 @@
+batou-remote
+============
+
+Locking
+-------
+
+Branches
+--------
+
+Dirty working copy protection
+-----------------------------
+
+SSH user
+--------
+
+Debug mode
+----------
+
+careful: can show passwords
