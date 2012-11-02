@@ -11,8 +11,8 @@ batou
 .. rubric:: multi-(component | host | environment | platform) deployment
 
 batou is a tool that makes it easy to define automated service deployments for
-complex (web) applications. It is written by the guys at `gocept
-<http://gocept.com>`_ and licensed under the BSD license.
+complex (web) applications. It is developed at `gocept
+<http://gocept.com>`_ and made available under the BSD license.
 
 Here is the smallest component and environment definition you can make:
 
