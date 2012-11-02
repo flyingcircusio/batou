@@ -1,9 +1,144 @@
 Design and architecture
 =======================
 
+.. contents::
+    :local:
 
-We consider batou to be "feature complete" in the sense that it does achieve
-all of our initial goals:
+Motivation
+----------
+
+The operations team at gocept looks runs web applications. Service deployment
+(read: installing and updating those applicationa)s is a major task for us that
+we think a lot about. 
+
+Nowadays we consider service deployments to target a "platform" instead of
+"servers": provisioning and system configuration are solved well by other
+tools. Also, developers should not have to think about "buying that server"
+when coming up with their requirements for the target runtime environment.
+
+A platform, for us, means that we can rely on (virtual) machines being
+available and the operating system and basic infrastructure (like networking,
+monitoring, etc.) to be already available.
+
+There is a grey area on where one draws the border between provisioning, system
+configuration, and service deployment. That's why a deployment tool should have
+some flexibility to adapt depending on the platform that a project uses.
+
+When thinking about deployment for a project we consider the application itself
+as only one of many components that make up the runtime environment. A typical
+project that we find might look like this:
+
+.. image:: production-architecture.png
+    :width: 400px
+
+This "environment" consists of 27 virtual machines running a good amount of
+runtime components that need to be configured. The actual application (in this
+case a Plone site running in a Zope server) is only one moving part of many.
+
+Also, something that isn't shown here are components that are not directly
+relevant for the application runtime: maintenance jobs, secrets, process
+management, log rotation, monitoring, ...
+
+Each of those components need hard-earned knowledge to configure them properly
+- which is why we want to re-use this knowledge as often as possible. For one,
+we rely on the knowledge of system administrators by pre-installing e.g.
+PostgreSQL and taking care of its maintenance so that we only want to create a
+new database for our service. For nginx we also want to benefit from a
+system-installed package but need to add our own virtual host definitions and
+need to be able to reload the process.
+
+When running a service like this, you typically want to run a copy of this
+environment for testing purposes. The testing environment will be structurally
+similar but should use less resources to minimze cost:
+
+.. image:: staging-architecture.png
+    :width: 400px
+
+Going further we see that there are more circumstances where we would consider
+new environments: developers.
+
+.. image:: dev-architecture.png
+    :width: 400px
+
+In addition to those environments we need to ponder that:
+
+* we need more development environments when new developers arrive
+* we need to merge changes to the config through all the environments
+* we need to consider initial installation and sub-sequent updates
+
+Those are the basic requirements that led us to developing batou.
+
+History
+-------
+
+Looking back we see that there's a long history of automating deployments:
+
+* FTPing PHP scripts from a developer machine to a server (1999)
+* Running shell scripts to automate Zope instance configuration (2001)
+* Using Zope's built-in instance configuration mechanism and more shell scripts (2003)
+* Using zc.buildout to automate Python environment configuration (2006)
+* Using Fabric to automate zc.buildout deployment (2010)
+
+Around 2008 we started making operations a major part of our business. In 2010
+we got a big customer for whom we needed all the setup that is shown in the
+diagrams above and started thinking harder about automating this deployment.
+
+On the system configuration level we were already using puppet - however, as
+argued before, system configuration and service deployment are two different
+beasts: with puppet we manage many machines that are similar (system
+configuration) whereas the service deployment wants to individualize some of
+those machines for a specific service.
+
+Comparison with other tools
+---------------------------
+
+**Puppet** is a system configuration tool and thus is designed around
+assumptions that are detrimental to the goals of service deployment: no
+orchestration, pull principle, root access. Also: check out Puppet Labs' `Fully
+automated provisioning
+<http://www.puppetlabs.com/wp-content/uploads/2010/03/FullyAutomatedProvisioning_Whitepaper7.pdf>`
+whitepaper which explicitly points to tools like Fabric, Capistrano,
+ControlTier and others.
+
+**Fabric + zc.buildout** was our basis when we started automating complex setups. We used it to check out a Mercurial repository that contains a buildout definition, start that buildout, and some additional shell stuff around it. Give that a list of hosts and you're good.
+We encountered two substantial problems with this approach: we ended up with a single large buildout and pretty complex Fabric code, both of which became unmaintainable after a while. However, in general we did have a "single command" deployment that worked very well - most of the time.
+
+What we were missing was the declarative modelling that we enjoyed with Puppet on the system configuration level. Also, we wanted to be able to deploy more fine-grained and not be limited to a "per host" command execution order.
+
+**Salt** seems to try solving the same problem as Fabric and MCollective: a scalable approach to Remote Command Execution. We have not looked deeply at Salt and it might be an interesting alternative to SSH. However, it does require additional runtime components in the target environment which is not as widely available as SSH. 
+
+
+Architecture
+------------
+
+Batou consists of:
+
+* a model to describe services in terms "components" and "environments"
+* a utility to realize a specific configuration locally (``batou-local``)
+* a utility to deploy a whole environment remotely (``batou-remote``)
+* a library of re-usable components
+
+Components are Python objects with an API to a) construct a component hierarchy
+(making the model recursive) and b) to perform actions on the target system in
+a manner that makes it easy to achieve convergency and idempotency.
+
+Environments represent different installations of a service: staging,
+production, development, …. For each environment you specify which hosts belong
+to it, how the services shall be distributed on those hosts and possibly
+customize the component configuration per environment.
+
+The ``batou-local`` utility executes a given configuration (for a given host
+and environment) locally.
+
+The ``batou-remote`` utility executes a given configuration for a complete
+environment by connecting to all hosts by SSH and running the ``batou-local``
+utility in a specific batch mode. It is able to run configuration interleaved
+between different hosts depending on the required order of the model.
+
+Features
+--------
+
+We have achieved most of our initial goals with batou already:
 
 * Make initial installation and continuous updates "single command"
 * Local and remote deployments
@@ -15,117 +150,12 @@ all of our initial goals:
 * Re-usable deployment code
 * Managed secrets (SSL certificates, database passwords, ...)
 
-However, we did make some choice that are not necessarily architectural
-decisions but open for review at a later point:
+One exception remains currently unsolved:
 
-* Using Mercurial for version control and pushing updates to remote machines
-* Using SSH for synchronous remote management
-* Using buildout for bootstrapping batou itself
-* Using AES for secret encryption
-Overview
---------
+* automatically perform parallel rolling deployments
 
-batou is a tool that allows its users to define complex service setups and
-automate the process of deploying those services. It was inspired by the
-following ideas:
-
-Single-command
-
-    turns complex deployments into "single button" actions.
-
-Repeatability
-
-    makes deployments repeatable and reliable.
-
-Reliability
-
-    asdf
-
-Expressiveness
-
-    provides an expressive language and library to write service definitions.
-    also: readability
-
-Reusability
-
-    When finding a good way to solve a specific deployment problem (like
-    managing files, services, secrets, ...) we want to make the solution
-    re-usable so that we can benefit from it whenever we meet the same problem
-    again.
-
-    An important point to reusability is to make re-use simple enough that you
-    do not have to prefer short-cuts over doing it right.
-
-Resistance to entropy
-
-    asdf
-
-Platform-independence
-
-    asdf
-
-Performance
-
-    sdf
-
-Simplicity
-
-    Complex service deployments are bad enough as they are - we do not want to
-    make them any more complicated. We especially do not want to break
-    expectations about existing components that people who are experienced
-    with them fail to predict.
-
-
-
-Features
---------
-
-* Services are defined in Python using a simple, yet flexible object
-  model and a library of basic components.
-
-* batou does not make any assumptions on the nature of your project.
-
-* You can support multiple platforms, e.g. for development, staging, and
-  production, without cluttering your service definition.
-
-* Secrets (like database passwords or certificates) can be stored securely
-  along your service definition.
-
-No additional components
-
-    No additional active components in your service environment are required at
-    runtime.
-
-
-Automatic dependencies
-
-    Dependencies between separate components are determine automatically.
-
-Continuity
-
-    supports initial, incremental, and continuous deployments.
-
-Minimal changes
-
-    minimize changes and handles entropy on long-lived target systems.
-
-Minimal downtimes
-
-    minimizes downtimes during deployments.
-
-
-Components
-----------
-
-:program:`batou-local`
-
-:program:`batou-remote`
-
-:program:`secretsedit`
-
-
-Platform requirements
----------------------
+Requirements
+------------
 
 batou has been tested and is known to run on Linux and Mac OS X.
 
@@ -134,3 +164,82 @@ We do not support deploying to non-UNIX targets. We *may* support running
 
 batou works with Python 2.7 but does not require a specific version of Python
 for the components it deploys.
+
+We also currently require using:
+
+* Mercurial for version control
+* SSH for remoting
+* buildout and virtualenv for bootstrapping the Python environment for batou itself
+
+These requirements are not set in stone for the future but open for change.
+
+Values and guiding principles
+-----------------------------
+
+Single-command deployment
+    A deployment should *always* only consist of running a single, simple command.
+
+Repeatability, reliability
+    If a deployment worked yesterday then it should also work today. And it
+    should result in the same setup.
+
+Expressiveness, readability
+    Make service definitions readable: avoid having large blocks of mechanical code that does not communicate its intention.
+
+Reusability
+    When finding a good way to solve a specific deployment problem (like
+    managing files, services, secrets, ...) we want to make the solution
+    re-usable so that we can benefit from it whenever we meet the same problem
+    again.
+
+    An important point to reusability is to make re-use simple enough that you
+    do not have to prefer short-cuts over doing it right.
+
+Resistance to entropy, automatic repairs
+    The target machine will likely accumulate entropy over time. Do not expect
+    a perfect environment but make reasonable adjustments to achieve the
+    deployment goal.
+
+Platform-independence
+    A service description should use a very broad model where the mechanics of
+    the model do not depend on the specifics of any single platform: be it
+    Unix, Windows or anything else.
+
+    In our case the component model is completely agnostic to any platform.
+    Only specific component implementations become tied to a platform, e.g. the
+    Symlink component being specific to POSIX platforms.
+
+    Also, make it possible to make platform-specific parts of the model
+    explicit. Allow specifying multiple platform targets for a single service.
+
+    We do rely on Python being available, though.
+
+    Deployments should be fast. They should be especially fast if nothing needs
+    to be changed.
+
+Simplicity
+    Complex service deployments are bad enough as they are - we do not want to
+    make them any more complicated. We especially do not want to break
+    expectations about existing components that people who are experienced
+    with them fail to predict.
+
+Domain-agnostic
+    Batou should not make any assumption about your service: we do mostly
+    deploy web application stacks but honestly the abstract model doesn't have
+    to and should not know about it. The same is valid for any other property
+    of your service: it should be possible to be any software that you, as an
+    administrator, can install on a system. 
+
+No additional components
+    No additional active components in your service environment are required at
+    runtime or needed in your application. See also: "Domain-agnostic".
+
+Automatic dependencies
+    Dependencies between separate components shall be determined automatically.
+
+Continuity
+    The same service model and tools should be useable for initial and
+    incremental deployments.
+
+Minimal downtimes
+    Avoid unnecessarily taking components down. Ideally we can run deployments "in-flight".
