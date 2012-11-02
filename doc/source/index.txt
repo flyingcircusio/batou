@@ -1,11 +1,11 @@
-batou
-=====
-
 .. raw:: html
 
-    <a href="https://bitbucket.org/gocept/batou" style="position:absolute;z-index:10000;top:0;right:0;">
+    <a href="https://bitbucket.org/gocept/batou" style="float:right">
       <img src="https://bitbucket.org/zgramana/bitbucket-ribbons/raw/988dffc5fbeb/png/bitbucket-ribbon-dark-gray.png" />
     </a>
+
+batou
+=====
 
 
 batou is a tool that makes it easy to define excellent automated service
@@ -26,9 +26,9 @@ with Puppet. It specifically aims to make it easy for your deployments to
 become idempotent and convergent, two very useful properties for this kind of
 work.
 
-batou is still being developed very actively and things may change a lot.
-However, all of the code is being used for our own projects on a daily basis.
-
+batou is still young and being developed very actively - so please be aware
+that things may change a lot.  However: all of the code is being used for our
+own projects on a daily basis.
 
 .. toctree::
     :maxdepth: 2
