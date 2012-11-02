@@ -1,5 +1,0 @@
-Legal information
-=================
-
-.. literalinclude:: ../COPYRIGHT.txt
-.. literalinclude:: ../LICENSE.txt

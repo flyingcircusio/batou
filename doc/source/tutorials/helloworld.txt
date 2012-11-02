@@ -43,8 +43,8 @@ Now, to install batou we initialize a virtualenv and `buildout <http://pypi.pyth
 
 First, create a file ``buildout.cfg`` with the following content:
 
-.. literalinclude:: ../../examples/tutorial-helloworld/buildout.cfg
-	:language: ini
+.. literalinclude:: ../../../examples/tutorial-helloworld/buildout.cfg
+    :language: ini
 
 Now, the following steps will install batou:
 
@@ -80,8 +80,8 @@ directory for our hello world component:
 In every component directory we expect a file named ``component.py`` which
 contains the actual component definition. Put the following in a file named ``components/hello/component.py``:
 
-.. literalinclude:: ../../examples/tutorial-helloworld/components/hello/component.py
-	:language: python
+.. literalinclude:: ../../../examples/tutorial-helloworld/components/hello/component.py
+    :language: python
 
 The remainder of the component directory can be used by you to store any other
 files you need to support your component.
@@ -101,8 +101,8 @@ Environments are stored in a directory called ``environments``:
 Each environment gets a config file that maps the components to the involved
 hosts. For our tutorial deployment, create a file ``environments/tutorial.cfg`` with the following content:
 
-.. literalinclude:: ../../examples/tutorial-helloworld/environments/tutorial.cfg
-	:language: ini
+.. literalinclude:: ../../../examples/tutorial-helloworld/environments/tutorial.cfg
+    :language: ini
 
 Run deployments
 ---------------
