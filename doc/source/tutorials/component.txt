@@ -1,8 +1,9 @@
 Using components
 ================
 
-.. contents::
-
+.. warning:: This tutorial is not complete and needs some love. It is likely
+    that it won't work as is written here. However, it should give you a better
+    idea about practical features that go beyond the hello world tutorial.
 
 This is a tutorial about batou components. You will use batou to deploy a
 simple long-running process as a daemon using supervisor.
@@ -14,6 +15,9 @@ to put them into action.
 In order to successfully follow the tutorial, you should have installed and
 used the very basics of batou before. Working through the "hello world"
 tutorial would be adequate as a prerequisite.
+
+.. contents::
+    :local:
 
 
 Prepare the deployment
