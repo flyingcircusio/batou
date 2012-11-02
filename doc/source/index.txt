@@ -22,6 +22,12 @@ Here is the smallest component and environment definition you can make:
 .. literalinclude:: ../../examples/tutorial-helloworld/environments/tutorial.cfg
     :language: ini
 
+.. code-block:: bash
+
+    $ bin/batou-local dev localhost
+    Updating Hello > File(hello) > Presence(hello)
+    Updating Hello > File(hello) > Content(hello)
+
 batou was created by extracting our experience with automated deployments for
 complex projects. We have used Fabric previously and are happy users of Puppet
 for system configuration.  We want to make it easy for you to have deployment
