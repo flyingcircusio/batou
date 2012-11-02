@@ -1,0 +1,26 @@
+batou
+=====
+
+batou is a tool to automate service deployment.
+
+It builds on the ideas of Fabric, Puppet, zc.buildout and others.
+
+First steps
+-----------
+
+.. toctree::
+    :maxdepth: 1
+
+    introduction
+    tutorials/helloworld
+    tutorials/component
+
+
+Everything else
+---------------
+
+.. toctree::
+    :maxdepth: 1
+
+    changes
+    legal
