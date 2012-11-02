@@ -6,11 +6,5 @@ batou is a multi-(component|host|environment|...) deployment utility.
 Deployments are described in a model using "components" and can be deployed
 locally and remotely. Models are written as Python code.
 
-See the `batou documentation <http://packages.python.org/batou>`_ for details
+See the `batou documentation <http://batou.readthedocs.org>`_ for details
 on how to use it.
-
-We're hiring!
-=============
-
-gocept is looking for talented DevOps people to supplement our operations
-team: http://gocept.com/das-unternehmen/karriere
