@@ -1,9 +1,6 @@
 Hello world
 =========== 
 
-.. contents::
-
-
 This tutorial is intendend to give you a working setup of a "Hello world"
 project with batou. It will not do anything useful but you will get in touch
 with core concepts and the tool to perform deployments locally.
@@ -16,6 +13,9 @@ deployment: managing a file with some given content locally.
 We assume that you are a developer and are comfortable working in Python. We
 also expect that you are working in a Unix environment and have some experience
 with administrating it.
+
+.. contents::
+    :local:
 
 To follow this tutorial you will need:
 
