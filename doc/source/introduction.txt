@@ -1,6 +1,27 @@
-Introduction
-============
+Design and architecture
+=======================
 
+
+We consider batou to be "feature complete" in the sense that it does achieve
+all of our initial goals:
+
+* Make initial installation and continuous updates "single command"
+* Local and remote deployments
+* Versioning
+* Different platforms
+* Different environments (dev, staging, production)
+* Relationships between components
+* Declarative component and environment model
+* Re-usable deployment code
+* Managed secrets (SSL certificates, database passwords, ...)
+
+However, we did make some choice that are not necessarily architectural
+decisions but open for review at a later point:
+
+* Using Mercurial for version control and pushing updates to remote machines
+* Using SSH for synchronous remote management
+* Using buildout for bootstrapping batou itself
+* Using AES for secret encryption
 Overview
 --------
 

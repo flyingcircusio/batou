@@ -1,26 +1,46 @@
 batou
 =====
 
-batou is a tool to automate service deployment.
+.. raw:: html
 
-It builds on the ideas of Fabric, Puppet, zc.buildout and others.
+    <a href="https://bitbucket.org/gocept/batou" style="position:absolute;z-index:10000;top:0;right:0;">
+      <img src="https://bitbucket.org/zgramana/bitbucket-ribbons/raw/988dffc5fbeb/png/bitbucket-ribbon-dark-gray.png" />
+    </a>
 
-First steps
------------
+
+batou is a tool that makes it easy to define excellent automated service
+deployments for your applications. It is written by the guys at `gocept
+<http://gocept.com>`_ and licensed under the BSD license.
+
+Here is the smallest component and environment definition you can make:
+
+.. literalinclude:: ../../examples/tutorial-helloworld/components/hello/component.py
+    :language: python
+
+.. literalinclude:: ../../examples/tutorial-helloworld/environments/tutorial.cfg
+    :language: ini
+
+batou has been conceived after multiple refactorings of projects using Fabric to
+deploy Python web applications and has been inspired by our previous experience
+with Puppet. It specifically aims to make it easy for your deployments to
+become idempotent and convergent, two very useful properties for this kind of
+work.
+
+batou is still being developed very actively and things may change a lot.
+However, all of the code is being used for our own projects on a daily basis.
+
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
-    introduction
-    tutorials/helloworld
-    tutorials/component
-
-
-Everything else
----------------
-
-.. toctree::
-    :maxdepth: 1
-
+    tutorials/index
     changes
     legal
+
+You can find more ideas in our `bug tracker
+<http://projects.gocept.com/projects/batou>`_ where you are also welcome to
+file any bugs you find.
+
+You can find the `code on bitbucket <http://bitbucket.org/gocept/batou>`_ --
+feel free to hack on the code and send us a pull request.
+
