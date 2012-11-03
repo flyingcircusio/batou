@@ -1,9 +1,11 @@
 Using components
 ================
 
-.. warning:: This tutorial is not complete and needs some love. It is likely
-    that it won't work as is written here. However, it should give you a better
-    idea about practical features that go beyond the hello world tutorial.
+.. note::
+
+    batou has a pre-built supervisor component that you can just use. This
+    tutorial demonstrates what mechanics batou provides to build such a
+    component.
 
 This is a tutorial about batou components. You will use batou to deploy a
 simple long-running process as a daemon using supervisor.
@@ -160,6 +162,14 @@ with this content:
 The syntax of the programs lines passed to the supervisor buildout recipe is
 specific to that recipe; for the time being, we simply hard-code the path to
 our program.
+
+For the next batou run to include the supervisor component, we add it to the
+same host as our tick component in ``environments/tutorial.cfg``:
+
+.. code-block:: ini
+
+  [hosts]
+  localhost = tick, supervisor
 
 Run batou next:
 
