@@ -1,6 +1,7 @@
 from StringIO import StringIO
 from batou.utils import resolve, input, MultiFile, locked, notify, Address
 from batou.utils import revert_graph, topological_sort
+from batou.utils import md5sum
 import mock
 import os
 import socket
@@ -150,3 +151,13 @@ class GraphTests(unittest.TestCase):
         graph = {1: set([2]), 2: set([3]), 3: set([1])}
         with self.assertRaises(ValueError):
             topological_sort(graph)
+
+
+class Checksum(unittest.TestCase):
+
+    fixture = os.path.join(
+        os.path.dirname(__file__), 'fixture', 'component', 'haproxy.cfg')
+
+    def test_md5(self):
+        self.assertEquals('ce0324fa445475e76182c0d114615c7b',
+                          md5sum(self.fixture))
