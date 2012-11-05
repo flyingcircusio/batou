@@ -7,8 +7,8 @@ Design and architecture
 Motivation
 ----------
 
-The operations team at gocept looks runs web applications. Service deployment
-(read: installing and updating those applicationa)s is a major task for us that
+The operations team at gocept runs web applications. Service deployment
+(read: installing and updating those applications) is a major task for us that
 we think a lot about. 
 
 Nowadays we consider service deployments to target a "platform" instead of
@@ -24,28 +24,28 @@ There is a grey area on where one draws the border between provisioning, system
 configuration, and service deployment. That's why a deployment tool should have
 some flexibility to adapt depending on the platform that a project uses.
 
-When thinking about deployment for a project we consider the application itself
-as only one of many components that make up the runtime environment. A typical
-project that we find might look like this:
+A typical (web) project consists of many components that make up the runtime
+environment, the application itself being only one of them. An example of a
+project that we deal with might look like this:
 
 .. image:: production-architecture.png
     :width: 400px
 
-This "environment" consists of 27 virtual machines running a good amount of
+This "environment" consists of 27 virtual machines running a good number of
 runtime components that need to be configured. The actual application (in this
 case a Plone site running in a Zope server) is only one moving part of many.
 
-Also, something that isn't shown here are components that are not directly
-relevant for the application runtime: maintenance jobs, secrets, process
-management, log rotation, monitoring, ...
+Also not shown here are components that are not directly relevant to the
+application runtime: maintenance jobs, secrets, process management, log
+rotation, monitoring, etc.
 
-Each of those components need hard-earned knowledge to configure them properly
-- which is why we want to re-use this knowledge as often as possible. For one,
-we rely on the knowledge of system administrators by pre-installing e.g.
-PostgreSQL and taking care of its maintenance so that we only want to create a
-new database for our service. For nginx we also want to benefit from a
+All of those components need hard-earned knowledge to configure them properly
+– which is why we want to re-use this knowledge as much as possible. For one,
+we rely on the knowledge of system administrators by letting them pre-install,
+e.g., PostgreSQL and take care of its maintenance so that we only need to
+create a new database for our service. For nginx we also want to benefit from a
 system-installed package but need to add our own virtual host definitions and
-need to be able to reload the process.
+need to be able to reload the process with user privileges.
 
 When running a service like this, you typically want to run a copy of this
 environment for testing purposes. The testing environment will be structurally
@@ -54,19 +54,20 @@ similar but should use less resources to minimze cost:
 .. image:: staging-architecture.png
     :width: 400px
 
-Going further we see that there are more circumstances where we would consider
-new environments: developers.
+We further see that there are even more circumstances that need their own
+environments, such as developers running the application (or some part of it)
+on their own machine.
 
 .. image:: dev-architecture.png
     :width: 400px
 
-In addition to those environments we need to ponder that:
+In addition to these environments we need to ponder that:
 
-* we need more development environments when new developers arrive
-* we need to merge changes to the config through all the environments
-* we need to consider initial installation and sub-sequent updates
+* we need more development environments when new developers arrive,
+* we need to merge changes to the config to all of the environments,
+* we need to consider both initial installation and sub-sequent updates.
 
-Those are the basic requirements that led us to developing batou.
+These are the basic requirements that led us to developing batou.
 
 History
 -------
@@ -83,7 +84,7 @@ Around 2008 we started making operations a major part of our business. In 2010
 we got a big customer for whom we needed all the setup that is shown in the
 diagrams above and started thinking harder about automating this deployment.
 
-On the system configuration level we were already using puppet - however, as
+On the system configuration level we were already using puppet – however, as
 argued before, system configuration and service deployment are two different
 beasts: with puppet we manage many machines that are similar (system
 configuration) whereas the service deployment wants to individualize some of
@@ -96,16 +97,29 @@ Comparison with other tools
 assumptions that are detrimental to the goals of service deployment: no
 orchestration, pull principle, root access. Also: check out Puppet Labs' `Fully
 automated provisioning
-<http://www.puppetlabs.com/wp-content/uploads/2010/03/FullyAutomatedProvisioning_Whitepaper7.pdf>`
+<http://www.puppetlabs.com/wp-content/uploads/2010/03/FullyAutomatedProvisioning_Whitepaper7.pdf>`_
 whitepaper which explicitly points to tools like Fabric, Capistrano,
 ControlTier and others.
 
-**Fabric + zc.buildout** was our basis when we started automating complex setups. We used it to check out a Mercurial repository that contains a buildout definition, start that buildout, and some additional shell stuff around it. Give that a list of hosts and you're good.
-We encountered two substantial problems with this approach: we ended up with a single large buildout and pretty complex Fabric code, both of which became unmaintainable after a while. However, in general we did have a "single command" deployment that worked very well - most of the time.
+**Fabric + zc.buildout** was our basis when we started automating complex
+setups. We used it to check out a Mercurial repository that contains a
+buildout definition, run buildout on it, and do some additional shell stuff
+around it. Give that to a list of hosts and you're good. We encountered two
+substantial problems with this approach, though: we ended up with a single
+large buildout and pretty complex Fabric code, both of which became
+unmaintainable after a while. However, in general we did have a "single
+command" deployment that worked very well – most of the time.
 
-What we were missing was the declarative modelling that we enjoyed with Puppet on the system configuration level. Also, we wanted to be able to deploy more fine-grained and not be limited to a "per host" command execution order.
+What we were missing was the declarative modelling that we enjoyed with Puppet
+on the system configuration level. Also, we wanted to be able to do more
+fine-grained deployment and not be limited to a "per host" command execution
+order.
 
-**Salt** seems to try solving the same problem as Fabric and MCollective: a scalable approach to Remote Command Execution. We have not looked deeply at Salt and it might be an interesting alternative to SSH. However, it does require additional runtime components in the target environment which is not as widely available as SSH. 
+**Salt** seems to try solving the same problem as Fabric and MCollective: a
+scalable approach to Remote Command Execution. We have not looked deeply at
+Salt and it might be an interesting alternative to SSH. However, it does
+require additional runtime components in the target environment which are not
+as widely available as SSH.
 
 
 Architecture
