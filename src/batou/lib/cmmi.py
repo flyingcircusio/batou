@@ -45,12 +45,12 @@ class Build(Component):
     """
 
     namevar = 'uri'
-    md5sum = None
+    checksum = None
     source = None
 
     def configure(self):
         download = Download(
-            self.uri, md5sum=self.md5sum)
+            self.uri, checksum=self.checksum)
         self += download
 
         extract = Extract(download.target, strip=1)
