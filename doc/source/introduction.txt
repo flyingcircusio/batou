@@ -127,46 +127,46 @@ Architecture
 
 Batou consists of:
 
-* a model to describe services in terms "components" and "environments"
+* a model to describe services in terms of "components" and "environments"
 * a utility to realize a specific configuration locally (``batou-local``)
 * a utility to deploy a whole environment remotely (``batou-remote``)
 * a library of re-usable components
 
-Components are Python objects with an API to a) construct a component hierarchy
-(making the model recursive) and b) to perform actions on the target system in
+Components are Python objects with an API to construct a component hierarchy
+(making the model recursive) as well as to perform actions on the target system in
 a manner that makes it easy to achieve convergency and idempotency.
 
 Environments represent different installations of a service: staging,
-production, development, …. For each environment you specify which hosts belong
-to it, how the services shall be distributed on those hosts and possibly
-customize the component configuration per environment.
+production, development, etc. For each environment you specify which hosts belong
+to it, how the services shall be distributed to those hosts, and possibly some
+customization of how components are configured in that environment.
 
 The ``batou-local`` utility executes a given configuration (for a given host
 and environment) locally.
 
 The ``batou-remote`` utility executes a given configuration for a complete
-environment by connecting to all hosts by SSH and running the ``batou-local``
-utility in a specific batch mode. It is able to run configuration interleaved
-between different hosts depending on the required order of the model.
+environment by connecting to all hosts by SSH and running ``batou-local`` on
+each host in a specific batch mode. It is able to coordinate the running order
+of configuration tasks between different hosts as required by the model.
 
 Features
 --------
 
-We have achieved most of our initial goals with batou already:
+We have already achieved most of our initial goals with batou:
 
-* Make initial installation and continuous updates "single command"
+* Perform initial installation and continuous updates by a "single command"
 * Local and remote deployments
-* Versioning
-* Different platforms
-* Different environments (dev, staging, production)
-* Relationships between components
+* Version-control the configuration as a whole
+* Support different platforms
+* Handle different environments (dev, staging, production)
+* Express relationships between components
 * Declarative component and environment model
 * Re-usable deployment code
-* Managed secrets (SSL certificates, database passwords, ...)
+* Managed secrets (SSL certificates, database passwords, etc)
 
 One exception remains currently unsolved:
 
-* automatically perform parallel rolling deployments
+* Automatically perform parallel rolling deployments
 
 Requirements
 ------------
@@ -176,13 +176,14 @@ batou has been tested and is known to run on Linux and Mac OS X.
 We do not support deploying to non-UNIX targets. We *may* support running
 :program:`batou-remote` on non-UNIX platforms in the future.
 
-batou works with Python 2.7 but does not require a specific version of Python
-for the components it deploys.
+The batou software works with Python 2.7 but it can be used to deploy
+components that may or may not use any version of Python (or any other
+programming language, framework or general software package).
 
 We also currently require using:
 
 * Mercurial for version control
-* SSH for remoting
+* SSH for performing remote tasks
 * buildout and virtualenv for bootstrapping the Python environment for batou itself
 
 These requirements are not set in stone for the future but open for change.
