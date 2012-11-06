@@ -68,7 +68,10 @@ the download (and re-downloads if necessary) based on an MD5 checksum.
     from batou.lib.download import Download
 
     Download(‘http://example.com/foobar.tar.gz’,
-             md5sum=’ac033ac2b8e619d42ec6df844b8c5737')
+             checksum=’md5:ac033ac2b8e619d42ec6df844b8c5737')
+
+The checksum parameter supports all hash functions provided by Python's
+`hashlib` module.
 
 supervisor
 ----------

@@ -1,7 +1,7 @@
 from StringIO import StringIO
 from batou.utils import resolve, input, MultiFile, locked, notify, Address
 from batou.utils import revert_graph, topological_sort
-from batou.utils import md5sum
+from batou.utils import hash
 import mock
 import os
 import socket
@@ -158,6 +158,10 @@ class Checksum(unittest.TestCase):
     fixture = os.path.join(
         os.path.dirname(__file__), 'fixture', 'component', 'haproxy.cfg')
 
-    def test_md5(self):
+    def test_hash_md5(self):
         self.assertEquals('ce0324fa445475e76182c0d114615c7b',
-                          md5sum(self.fixture))
+                          hash(self.fixture, 'md5'))
+
+    def test_hash_sha1(self):
+        self.assertEquals('164d8815aa839cca339e38054622b58ca80124a1',
+                          hash(self.fixture, 'sha1'))

@@ -2,6 +2,7 @@ from __future__ import print_function
 from collections import defaultdict
 import contextlib
 import fcntl
+import hashlib
 import itertools
 import os
 import re
@@ -194,36 +195,8 @@ def cmd(cmd, silent=False):
     return stdout, stderr
 
 
-def _coreutils_md5sum(path):
-    stdout, stderr = cmd('md5sum {}'.format(path))
-    lines = stdout.splitlines()
-    assert len(lines) == 1
-    md5, sep, filename = lines[0].partition(' ')
-    assert filename.strip() == path
-    return md5
-
-
-def _osx_md5(path):
-    stdout, stderr = cmd('md5 {}'.format(path))
-    lines = stdout.splitlines()
-    assert len(lines) == 1
-    result = re.match(r'^MD5 \((?P<path>.*)\) = (?P<md5>[a-f0-9]+)$', lines[0])
-    if result is None:
-        return None
-    result = result.groupdict()
-    assert result['path'] == path
-    return result['md5']
-
-
-def md5sum(path):
-    try:
-        cmd('which md5sum', silent=True)
-        md5 = _coreutils_md5sum
-    except RuntimeError:
-        try:
-            cmd('which md5')
-            md5 = _osx_md5
-        except RuntimeError:
-            raise RuntimeError("No compatible md5 implementation found: "
-                               "missing md5 or md5sum")
-    return md5(path)
+def hash(path, function='md5'):
+    h = getattr(hashlib, function)()
+    for line in open(path):
+        h.update(line)
+    return h.hexdigest()
