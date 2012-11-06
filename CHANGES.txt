@@ -5,6 +5,9 @@ Changelog
 0.2 (unreleased)
 ================
 
+- Internalize download hash handling using hashlib. Allow selection of hash
+  function. (Thanks to Christine Koppelt.)
+
 - Introduce new component modelling approach.
 
 - Start writing documentation.
