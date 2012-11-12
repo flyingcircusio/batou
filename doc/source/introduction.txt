@@ -229,20 +229,17 @@ Platform-independence
 
     We do rely on Python being available, though.
 
-    Deployments should be fast. They should be especially fast if nothing needs
-    to be changed.
-
 Simplicity
-    Complex service deployments are bad enough as they are - we do not want to
+    Complex service deployments are bad enough as they are – we do not want to
     make them any more complicated. We especially do not want to break
-    expectations about existing components that people who are experienced
-    with them fail to predict.
+    expectations about existing components; people who are experienced
+    with them ought to be able to predict their behaviour.
 
 Domain-agnostic
     Batou should not make any assumption about your service: we do mostly
-    deploy web application stacks but honestly the abstract model doesn't have
-    to and should not know about it. The same is valid for any other property
-    of your service: it should be possible to be any software that you, as an
+    deploy web application stacks but honestly, the abstract model doesn't have
+    to and should not know about that. The same is true of any other aspect
+    of your service: it should be possible to deploy any software that you, as an
     administrator, can install on a system. 
 
 No additional components
@@ -258,3 +255,6 @@ Continuity
 
 Minimal downtimes
     Avoid unnecessarily taking components down. Ideally we can run deployments "in-flight".
+
+    Also, deployments should be fast. They should be especially fast if
+    nothing needs to be changed.
