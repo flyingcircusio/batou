@@ -136,6 +136,15 @@ class Supervisor(Component):
             Eventlistener.key, self.host, strict=False))
         self.eventlisteners.sort(key=lambda x: x.name)
 
+        for event in self.eventlisteners:
+            # Not sure what's right. We only use eventlisteners with superlance
+            # which lives in the supervisor's workdir. However, the
+            # EventListener component gets instanciated as a sub-component of
+            # the actual component using it - which doesn't know about the path
+            # to the superlance plugins. :/
+            event.command = os.path.normpath(
+               os.path.join(self.workdir, event.command))
+
         buildout_cfg = File('buildout.cfg',
             source=self.buildout_cfg,
             template_context=self,
