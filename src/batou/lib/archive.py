@@ -59,10 +59,6 @@ class Extractor(Component):
             self.target = '.'
 
     def verify(self):
-        # If the target directory has just been created, then we need to
-        # extract again.
-        self.assert_file_is_current(
-            self.target, [self.archive], key='st_ctime')
         # Check that all files in the directory are newer than the archive.
         # XXX Might also have a problem regarding archive attribute
         # preservation?
