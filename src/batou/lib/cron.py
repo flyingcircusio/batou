@@ -6,8 +6,8 @@ import os
 
 class CronJob(HookComponent):
 
-    namevar = "command"
-    key = "batou.lib.cron:CronJob"
+    namevar = 'command'
+    key = 'batou.lib.cron:CronJob'
 
     args = ''
     timing = None
@@ -34,6 +34,7 @@ class CronTab(Component):
 
     def configure(self):
         self.jobs = self.require(CronJob.key, host=self.host)
+        self.jobs.sort(key=lambda job:job.command + ' ' + job.args)
         self.crontab = File('crontab',
             source=self.crontab_template,
             is_template=True)
