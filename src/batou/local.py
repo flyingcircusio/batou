@@ -7,7 +7,7 @@ import locale
 
 
 def main():
-    locale.setlocale(locale.LC_ALL, '')
+    locale.setlocale(locale.LC_ALL, 'en_US.utf8')
     parser = argparse.ArgumentParser(
         description=u'Execute batou components locally.')
     parser.add_argument(
