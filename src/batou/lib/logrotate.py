@@ -1,7 +1,5 @@
 import os
-import inspect
-from batou.component import HookComponent
-from batou.component import Component
+from batou.component import HookComponent, Component, platform
 from batou.lib.file import File
 
 
@@ -27,6 +25,18 @@ class Logrotate(Component):
     def configure(self):
         self.logfiles = self.require(RotatedLogfile.key, host=self.host)
 
-        self += File('logrotate.conf',
+        self.logrotate_conf = File('logrotate.conf',
             source=self.logrotate_template,
             is_template=True)
+        self += self.logrotate_conf
+
+
+@platform('gocept.net', Logrotate)
+class GoceptNetRotatedLogrotate(Component):
+
+    def configure(self):
+        user = self.environment.service_user
+        user_logrotate_conf = os.path.join('/var/spool/logrotate/', user)
+        self += File(user_logrotate_conf,
+                ensure='symlink',
+                link_to=self.parent.logrotate_conf.path)
