@@ -6,7 +6,7 @@ from batou.lib.file import File
 class RotatedLogfile(HookComponent):
 
     namevar = 'path'
-    key = 'batou.lib.logrotate:RotatedLogfile'
+    key = 'osha.lib.logrotate:RotatedLogfile'
 
     args = ''
 
