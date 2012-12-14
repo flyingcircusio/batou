@@ -9,6 +9,8 @@ class RotatedLogfile(HookComponent):
     key = 'batou.lib.logrotate:RotatedLogfile'
 
     args = ''
+    prerotate = None
+    postrotate = None
 
     def configure(self):
         super(RotatedLogfile, self).configure()
