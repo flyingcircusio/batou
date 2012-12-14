@@ -13,7 +13,7 @@ class RotatedLogfile(HookComponent):
     def configure(self):
         super(RotatedLogfile, self).configure()
         self.path = os.path.join(self.workdir, self.path)
-        self.path = self.map(self.path)
+        self.path = self.map(path)
         self.args = map(str.strip, self.args.split(','))
 
 
