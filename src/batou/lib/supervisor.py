@@ -126,6 +126,7 @@ class Supervisor(Component):
     buildout_cfg = os.path.join(os.path.dirname(__file__), 'resources',
                              'supervisor.buildout.cfg')
 
+    loglevel = 'info'
     enable = 'True'  # Allows turning "everything off" via environment configuration
 
     def configure(self):
