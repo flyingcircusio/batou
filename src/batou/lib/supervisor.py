@@ -157,7 +157,6 @@ class Supervisor(Component):
             python='2.7')
 
         self += Directory('var/log', leading=True)
-        self += RotatedLogfile('var/log/*.log')
 
         postrotate = self.expand('kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)')
         self += RotatedLogfile('var/log/*.log', postrotate=postrotate)
