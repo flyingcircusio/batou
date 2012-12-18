@@ -3,7 +3,6 @@ from batou.component import Component, HookComponent
 from batou.lib.buildout import Buildout
 from batou.lib.file import File, Directory
 from batou.lib.nagios import ServiceCheck
-from batou.lib.logrotate import RotatedLogfile
 from batou.lib.service import Service
 from batou.utils import Address
 import ast
@@ -127,6 +126,7 @@ class Supervisor(Component):
     buildout_cfg = os.path.join(os.path.dirname(__file__), 'resources',
                              'supervisor.buildout.cfg')
 
+    loglevel = 'info'
     enable = 'True'  # Allows turning "everything off" via environment configuration
 
     def configure(self):
