@@ -3,6 +3,7 @@ from batou.component import Component, HookComponent
 from batou.lib.buildout import Buildout
 from batou.lib.file import File, Directory
 from batou.lib.nagios import ServiceCheck
+from batou.lib.logrotate import RotatedLogfile
 from batou.lib.service import Service
 from batou.utils import Address
 import ast
@@ -156,6 +157,7 @@ class Supervisor(Component):
             python='2.7')
 
         self += Directory('var/log', leading=True)
+        self += RotatedLogfile('var/log/*.log')
 
         postrotate = self.expand('kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)')
         self += RotatedLogfile('var/log/*.log', postrotate=postrotate)
