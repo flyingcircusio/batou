@@ -182,6 +182,7 @@ programming language, framework or general software package).
 
 We also currently require using:
 
+* Python 2.7 on both the local and the remote machines
 * Mercurial for version control
 * SSH for performing remote tasks
 * buildout and virtualenv for bootstrapping the Python environment for batou itself
