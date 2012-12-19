@@ -60,8 +60,8 @@ def main():
             if args.dirty:
                 logger.warning('Deploying dirty working copy due to --dirty.')
             else:
-                logger.error('Can not deploy remotely with'
-                             'a dirty working copy:\n')
+                logger.error(
+                    'Can not deploy remotely with a dirty working copy:\n')
                 logger.error(repository_status)
                 sys.exit(1)
 
