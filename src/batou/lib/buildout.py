@@ -38,6 +38,7 @@ class Buildout(Component):
     config = None
     additional_config = ()
     custom_bootstrap = False
+    config_file_name = 'buildout.cfg'
 
     build_env = {}  # XXX not frozen. :/
 
@@ -47,6 +48,8 @@ class Buildout(Component):
                                source='buildout.cfg',
                                template_context=self.parent,
                                is_template=True)
+        if isinstance(self.config, File):
+            self.config_file_name = self.config.path
         if isinstance(self.config, Component):
             self.config = [self.config]
         if not self.config:
@@ -68,8 +71,10 @@ class Buildout(Component):
 
     def update(self):
         with safe_environment(self.build_env):
-            self.cmd('bin/buildout -t {} bootstrap'.format(self.timeout))
-            self.cmd('bin/buildout -t {}'.format(self.timeout))
+            self.cmd('bin/buildout -t {} -c "{}" bootstrap'.format(
+                self.timeout, self.config_file_name))
+            self.cmd('bin/buildout -t {} -c "{}"'.format(
+                self.timeout, self.config_file_name))
             self.touch('.batou.buildout.success')
 
 
