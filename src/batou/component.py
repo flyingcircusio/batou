@@ -1,10 +1,11 @@
-# Copyright (c) 2012 gocept gmbh & co. kg
+# Copyright (c) gocept gmbh & co. kg
 # See also LICENSE.txt
 
 from batou.template import TemplateEngine
 import batou.utils
 import contextlib
 import filecmp
+import glob
 import os
 import os.path
 import re
@@ -292,13 +293,21 @@ class Buildout(Component):
             print('missing [buildout]find-links in secrets file, ignoring')
         self.template('buildout.cfg.in', target='buildout.cfg')
 
+    def _bootstrap_required(self):
+        """Returns True if we must run buildout."""
+        if not os.path.exists('bin/buildout'):
+            return True
+        buildout_mtime = os.stat('bin/buildout').st_mtime
+        if (buildout_mtime > (os.stat(self.executable).st_mtime) and
+            buildout_mtime > batou.utils.max_mtime(
+                glob.glob('buildout.cfg') + glob.glob('profiles/*'))):
+            return False
+        return True
+
     @step(3)
     def bootstrap(self):
-        if os.path.exists('bin/buildout') and (
-                os.stat(self.executable).st_mtime <
-                os.stat('bin/buildout').st_mtime):
-            return
-        self.cmd('%s bootstrap.py' % self.executable)
+        if self._bootstrap_required():
+            self.cmd('%s bootstrap.py' % self.executable)
 
     @step(4)
     def buildout(self):

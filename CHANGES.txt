@@ -7,6 +7,8 @@ Change log for batou
 
 - Always use a fixed locale of en_US.utf8 so that output from external commands
   remains predictable (RT 86245).
+- (Re-)run bootstrap if buildout.cfg or any file in versions is newer than
+  bin/buildout. This helps to keep buildout up-to-date.
 
 
 0.1.3 (2012-10-15)

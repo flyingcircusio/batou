@@ -1,4 +1,4 @@
-# Copyright (c) 2012 gocept gmbh & co. kg
+# Copyright (c) gocept gmbh & co. kg
 # See also LICENSE.txt
 
 from __future__ import print_function, unicode_literals
@@ -75,6 +75,11 @@ def resolve(address):
     if port:
         address += ':%s' % port
     return address
+
+
+def max_mtime(files):
+    """Returns the latest mtime for a list of files"""
+    return max(os.stat(f).st_mtime for f in files)
 
 
 class Address(object):
