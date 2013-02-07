@@ -2,7 +2,7 @@
 Change log for batou
 ====================
 
-0.1.4 (unreleased)
+0.1.4 (2013-02-07)
 ==================
 
 - Always use a fixed locale of en_US.utf8 so that output from external commands
