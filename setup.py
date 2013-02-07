@@ -15,7 +15,7 @@ def project_path(*names):
     return os.path.join(os.path.dirname(__file__), *names)
 
 
-version = '0.1.4'
+version = '0.1.5.dev0'
 
 setup(
     name='batou',
