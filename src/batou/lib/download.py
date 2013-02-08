@@ -26,7 +26,8 @@ class Download(Component):
     def verify(self):
         if not os.path.exists(self.target):
             raise batou.UpdateNeeded()
-        if self.checksum != batou.utils.hash(self.target):
+        if self.checksum != batou.utils.hash(self.target,
+                                             self.checksum_function):
             raise batou.UpdateNeeded()
 
     def update(self):
