@@ -1,6 +1,6 @@
 from batou.component import Component
-from batou.utils import hash
 import batou
+import batou.utils
 import os.path
 import urlparse
 
@@ -26,10 +26,11 @@ class Download(Component):
     def verify(self):
         if not os.path.exists(self.target):
             raise batou.UpdateNeeded()
-        if self.checksum != hash(self.target):
+        if self.checksum != batou.utils.hash(self.target):
             raise batou.UpdateNeeded()
 
     def update(self):
         self.cmd('wget -q -O {target} {uri}'.format(
                     target=self.target, uri=self.uri))
-        assert self.checksum == hash(self.target, self.checksum_function)
+        assert self.checksum == batou.utils.hash(
+            self.target, self.checksum_function)
