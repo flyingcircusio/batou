@@ -27,7 +27,7 @@ class Bootstrap(Component):
             raise UpdateNeeded()
 
     def update(self):
-        self.cmd('%s bootstrap.py -d' % self.python)
+        self.cmd('%s bootstrap.py --distribute' % self.python)
 
 
 class Buildout(Component):
