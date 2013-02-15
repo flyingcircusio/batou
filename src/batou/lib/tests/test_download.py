@@ -17,3 +17,10 @@ class DownloadTest(unittest.TestCase):
             except batou.UpdateNeeded:
                 pass
         buh.assert_called_with(mock.ANY, 'foobar')
+
+    def test_configure_should_raise_valueerror_if_no_checksum_given(self):
+        from ..download import Download
+        download = Download('url')
+        with self.assertRaises(ValueError) as exc:
+            download.configure()
+        self.assertEqual('No checksum given.', exc.exception.args[0])
