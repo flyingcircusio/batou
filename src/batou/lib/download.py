@@ -21,6 +21,8 @@ class Download(Component):
                            'deriving a filename.')
         if self.md5sum:
             raise ValueError('md5sum is deprecated. Use checksum="md5:..."')
+        if not self.checksum:
+            raise ValueError('No checksum given.')
         self.checksum_function, self.checksum = self.checksum.split(':')
 
     def verify(self):
