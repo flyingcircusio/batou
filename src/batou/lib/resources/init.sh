@@ -7,6 +7,9 @@ DAEMON="{{component.root.workdir}}/{{component.executable}}"
 PIDFILE="{{component.root.workdir}}/{{component.pidfile}}"
 
 start() {
+    if ! pgrep -u {{environment.service_user}} -f {{component.executable}} >/dev/null; then
+        rm -f "$PIDFILE"
+    fi
     start-stop-daemon --start -p "$PIDFILE" -i -- "$DAEMON"
 }
 
