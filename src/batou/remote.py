@@ -26,6 +26,10 @@ def main():
         '-d', '--debug', action='store_true',
         help='Enable debug mode.')
     parser.add_argument(
+        '--reset', action='store_true',
+        help='Reset the batou environment on all remote hosts by '
+             'deleting the generated runtime environment. Leaves work/ intact.')
+    parser.add_argument(
         '-D', '--dirty', action='store_true',
         help='Allow deploying dirty working copies.')
     parser.add_argument(
@@ -77,7 +81,7 @@ def main():
 
     environment.configure()
 
-    deployment = RemoteDeployment(environment, args.ssh_user)
+    deployment = RemoteDeployment(environment, args.ssh_user, args.reset)
     deployment()
     notify('Deployment finished',
            '{} was deployed successfully.'.format(environment.name))
@@ -85,9 +89,10 @@ def main():
 
 class RemoteDeployment(object):
 
-    def __init__(self, environment, ssh_user):
+    def __init__(self, environment, ssh_user, reset):
         self.environment = environment
         self.ssh_user = ssh_user
+        self.reset = reset
         # It may be that the service definition isn't in the root of the
         # repository. As we expect `batou-remote` to be called with a working
         # directory that is the root, we simply make this relative to the
@@ -136,6 +141,17 @@ class RemoteHost(object):
             self.cmd('pwd', service_user=False, ensure_cwd=False).strip())
         self._bootstrap()
 
+    def _reset_before_bootstrap(self):
+        # Remove virtualenv traces
+        self.cmd('rm -rf bin/ include/ lib/')
+        # Remove buildout traces
+        self.cmd('rm -rf .installed.cfg develop-eggs/ eggs/ parts/')
+        # if src/ isn't checked in, then this is likely a mr.developer
+        # directory and we remove it as well
+        log = self.cmd('hg log src -l 1').strip()
+        if not log:
+            self.cmd('rm -rf src/')
+
     def _bootstrap(self):
         """Ensure that the batou and project code base is current."""
         logger.info('{}: bootstrapping'.format(self.host.fqdn))
@@ -163,6 +179,8 @@ class RemoteHost(object):
                 self.cmd(u'hg pull %s' % bouncedir)
         base = self.remote_base + self.deployment.service_base
         with self.cd(base):
+            if self.deployment.reset:
+                self._reset_before_bootstrap()
             self.cmd(u'hg update -C %s' % self.deployment.environment.branch)
             if not self.exists('bin/python2.7'):
                 self.cmd('virtualenv --no-site-packages --python python2.7 .')
