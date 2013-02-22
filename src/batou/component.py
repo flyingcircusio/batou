@@ -298,7 +298,7 @@ class Buildout(Component):
         if not os.path.exists('bin/buildout'):
             return True
         buildout_mtime = os.stat('bin/buildout').st_mtime
-        if (buildout_mtime > (os.stat(self.executable).st_mtime) and
+        if (buildout_mtime > os.stat(self.executable).st_mtime and
             buildout_mtime > batou.utils.max_mtime(
                 glob.glob('buildout.cfg') + glob.glob('profiles/*'))):
             return False
@@ -308,6 +308,7 @@ class Buildout(Component):
     def bootstrap(self):
         if self._bootstrap_required():
             self.cmd('%s bootstrap.py' % self.executable)
+            os.utime('bin/buildout', None)
 
     @step(4)
     def buildout(self):
