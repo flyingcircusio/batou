@@ -13,6 +13,7 @@ class Bootstrap(Component):
     custom_bootstrap = False
     bootstrap = os.path.join(os.path.dirname(__file__), 'resources',
                              'bootstrap.py')
+    config_file_name = 'buildout.cfg'
 
     def configure(self):
         if not self.custom_bootstrap:
@@ -60,7 +61,8 @@ class Buildout(Component):
         venv = VirtualEnv(self.python)
         self += venv
         self += Bootstrap(python=venv.python,
-                          custom_bootstrap=self.custom_bootstrap)
+                          custom_bootstrap=self.custom_bootstrap,
+                          config_file_name=self.config_file_name)
 
     def verify(self):
         # XXX we can't be sure that all config objects are files!
