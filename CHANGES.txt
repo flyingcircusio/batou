@@ -5,7 +5,8 @@ Changelog
 0.2 (unreleased)
 ================
 
-- Buildout component: Allow custom buildout.cfg names.
+- Buildout component: Allow custom buildout.cfg names and pass the name to
+  bootstrap.
 
 - Use python version specific virtualenv, if availble. This helps with ancient
   Python 2.4 components.
