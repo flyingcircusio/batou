@@ -8,7 +8,8 @@ Changelog
 - Buildout component: Allow custom buildout.cfg names.
 
 - Use python version specific virtualenv, if availble. This helps with ancient
-  Python 2.4 components.
+  Python 2.4 components. For specific virtualenv versions no explicit python
+  executable is passed.
 
 - Internalize download hash handling using hashlib. Allow selection of hash
   function. (Thanks to Christine Koppelt.)

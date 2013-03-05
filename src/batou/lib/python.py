@@ -27,9 +27,11 @@ class VirtualEnv(Component):
     def _detect_virtualenv(self):
         # Prefer the virtualenv of the target version. There are some
         # incompatibilities between Python and virtualenv versions.
-        possible_executables = ['virtualenv-{}'.format(self.version),
-                                'virtualenv']
-        for executable in possible_executables:
+        possible_executables = [
+            ('virtualenv-{}'.format(self.version), '--no-site-packages'),
+            ('virtualenv', '--no-site-packages --python python{}'.format(
+                self.version))]
+        for executable, arguments in possible_executables:
             try:
                 self.cmd('type {}'.format(executable))
             except RuntimeError:
@@ -38,9 +40,9 @@ class VirtualEnv(Component):
                 break
         else:
             raise RuntimeError('Could not find virtualenv executable')
-        return executable
+        return '{} {}'.format(executable, arguments)
 
     def update(self):
-        executable = self._detect_virtualenv()
-        self.cmd('{} --no-site-packages --python python{} .'.format(
-                 executable, self.version))
+        commandline = self._detect_virtualenv()
+        target = '.'
+        self.cmd('{} {}'.format(commandline, target))

@@ -15,13 +15,17 @@ class TestVirtualEnv(unittest.TestCase):
     def test_detect_should_use_version_specific_virtualenv_if_available(self):
         virtualenv = self.virtualenv('7.25')
         virtualenv.cmd = mock.Mock(return_value='')
-        self.assertEqual('virtualenv-7.25', virtualenv._detect_virtualenv())
+        self.assertEqual(
+            'virtualenv-7.25 --no-site-packages',
+            virtualenv._detect_virtualenv())
 
     def test_detect_should_use_non_version_spec_venv_if_no_specific_available(
-        self):
+            self):
         virtualenv = self.virtualenv('7.25')
         virtualenv.cmd = mock.Mock(side_effect=[RuntimeError(), ''])
-        self.assertEqual('virtualenv', virtualenv._detect_virtualenv())
+        self.assertEqual(
+            'virtualenv --no-site-packages --python python7.25',
+            virtualenv._detect_virtualenv())
 
     def test_detect_should_raise_RuntimeError_if_no_virtualenv_available(self):
         virtualenv = self.virtualenv('7.25')
@@ -33,7 +37,7 @@ class TestVirtualEnv(unittest.TestCase):
         virtualenv = self.virtualenv('7.25')
         virtualenv.cmd = mock.Mock()
         virtualenv._detect_virtualenv = mock.Mock(
-            return_value='virtualenv-executable')
+            return_value='virtualenv-executable arguments')
         virtualenv.update()
         virtualenv.cmd.assert_called_with(
-            'virtualenv-executable --no-site-packages --python python7.25 .')
+            'virtualenv-executable arguments .')
