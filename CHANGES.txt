@@ -5,6 +5,10 @@ Changelog
 0.2 (unreleased)
 ================
 
+- Improve SSH connection error logging: more readable now and hosts are identifiable. (#12093)
+
+- Do not automatically add missing SSH host keys any longer. (#11606)
+
 - Buildout component: Allow custom buildout.cfg names.
 
 - Use python version specific virtualenv, if availble. This helps with ancient
