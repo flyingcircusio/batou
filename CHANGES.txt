@@ -8,6 +8,11 @@ Changelog
 - Buildout component: Allow custom buildout.cfg names and pass the name to
   bootstrap.
 
+- Improve SSH connection error logging: more readable now and hosts are
+  identifiable. (#12093)
+
+- Do not automatically add missing SSH host keys any longer. (#11606)
+
 - Use python version specific virtualenv, if availble. This helps with ancient
   Python 2.4 components. For specific virtualenv versions no explicit python
   executable is passed.

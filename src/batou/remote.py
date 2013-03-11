@@ -1,6 +1,6 @@
 from .utils import notify
 from .service import ServiceConfig
-from paramiko import AutoAddPolicy
+from paramiko import RejectPolicy, SSHException
 from paramiko.client import SSHClient
 import argparse
 import logging
@@ -106,16 +106,30 @@ class RemoteDeployment(object):
 
     def __call__(self):
         remotes = {}
-        # XXX locking
         for host in self.environment.hosts.values():
             remote = RemoteHost(host, self)
             remotes[host] = remote
 
-        # XXX optional
+        # Serially connect and gather information about all hosts that we could
+        # *not* connect to so we can give a summary output for everything that
+        # failed.
+        failed_connects = []
+        for remote in remotes.values():
+            try:
+                remote.connect()
+            except SSHException, e:
+                failed_connects.append((remote, e))
+
+        if failed_connects:
+            for remote, e in failed_connects:
+                logger.error('{}: {}'.format(remote.host.fqdn, str(e)))
+            sys.exit(1)
+
+        # 20 seems to be a reasonable size in most cases: more seems to confuse
+        # cheap routers and such, less doesn't give as much performance
+        # benefit.
         pool = multiprocessing.pool.ThreadPool(20)
-        pool.map(lambda x: x.connect(), remotes.values())
-        #for x in remotes.values():
-        #   x.connect()
+        pool.map(lambda x: x.bootstrap(), remotes.values())
 
         for component in self.environment.get_sorted_components():
             remote = remotes[component.host]
@@ -133,15 +147,15 @@ class RemoteHost(object):
         self.ssh = SSHClient()
         self.ssh.load_system_host_keys()
         self.ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
-        self.ssh.set_missing_host_key_policy(AutoAddPolicy())
+        self.ssh.set_missing_host_key_policy(RejectPolicy())
         self.ssh.connect(self.host.fqdn, username=self.deployment.ssh_user)
         self.sftp = self.ssh.open_sftp()
-        self.cwd = []
-        self.cwd.append(
-            self.cmd('pwd', service_user=False, ensure_cwd=False).strip())
-        self._bootstrap()
 
     def _reset_before_bootstrap(self):
+        # This is a somewhat hacky way to support an emergency-cleanup if we
+        # screwed up remote deployments somehow. Most specifically this allowed
+        # us to survive an accident after buildout 2 was released.
+
         # Remove virtualenv traces
         self.cmd('rm -rf bin/ include/ lib/')
         # Remove buildout traces
@@ -152,7 +166,11 @@ class RemoteHost(object):
         if not log:
             self.cmd('rm -rf src/')
 
-    def _bootstrap(self):
+    def bootstrap(self):
+        """Ensure that the batou and project code base is current."""
+        self.cwd = []
+        self.cwd.append(
+            self.cmd('pwd', service_user=False, ensure_cwd=False).strip())
         """Ensure that the batou and project code base is current."""
         logger.info('{}: bootstrapping'.format(self.host.fqdn))
         bouncedir = self.cmd(u'echo -n ~/%s' % self.bouncedir_name(),
