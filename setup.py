@@ -19,6 +19,9 @@ setup(
     version=version,
     install_requires=[
         'Jinja2',
+        'flask',
+        'gevent-websocket',
+        'repoze.debug',
         'distribute',
         'mock',
         'paramiko>=1.8',
@@ -32,6 +35,7 @@ setup(
         [console_scripts]
             batou-remote = batou.remote:main
             batou-local = batou.local:main
+            batou-gui = batou.gui.main:main
             secretsedit = batou.lib.secrets.edit:edit
     """,
     author='Christian Theune <ct@gocept.com>',

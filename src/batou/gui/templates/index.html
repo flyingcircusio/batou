@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block body %}
+
+{% if config == None %}
+<div class="row-fluid">
+    <div class="span12">
+        <h2>Service</h2>
+        <p>No service loaded.</p>
+    </div>
+</div>
+{% else %}
+<div class="row-fluid">
+    <div class="span12">
+        <h2>Service</h2>
+        <p>{{config.basedir}}</p>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span4">
+        <h2>Components</h2>
+        <ul>
+            {% for component in config.service.components %}
+            <li>{{component}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="span4">
+        <h2>Environments</h2>
+        <ul>
+            {% for environment in config.environments %}
+            <li>{{environments}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<div class="row-fluid">
+    <div class="span4">
+        <form action="{{ url_for('load') }}" method="post">
+            <fieldset>
+                <legend>Load service</legend>
+                <label>Path</label>
+                <input type="text" name="path" placeholder="Choose path to service definition…"/>
+                <div>
+                    <button type="submit" class="btn">Load</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+{% endblock %}

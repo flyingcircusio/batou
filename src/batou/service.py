@@ -56,7 +56,8 @@ class ServiceConfig(object):
             existing_environments = map(lambda x: x.replace(pattern, ''),
                                            existing_environments)
         self.existing_environments = set(existing_environments)
-
+        if not self.environments:
+            self.environments = self.existing_environments
         for environment in self.environments:
             self.load_environment(environment)
 
