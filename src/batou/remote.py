@@ -1,5 +1,5 @@
-from .utils import notify
-from .service import ServiceConfig
+from batou.service import ServiceConfig
+from batou.utils import notify
 from paramiko import RejectPolicy, SSHException
 from paramiko.client import SSHClient
 import argparse
