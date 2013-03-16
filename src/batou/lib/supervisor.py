@@ -40,6 +40,9 @@ class Program(HookComponent):
 
     def configure(self):
         super(Program, self).configure()
+        if not self.command:
+            raise ValueError('`command` option missing for program {}'.
+                format(self.name))
         if not self.directory:
             self.directory = self.workdir
         if self.command_absolute:
