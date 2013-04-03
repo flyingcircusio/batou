@@ -14,13 +14,7 @@ class EncryptedConfigFileTests(TestCase):
                           '/fixture/secrets/cleartext.cfg')
         self.encrypted = (os.path.dirname(__file__) +
                           '/fixture/secrets/encrypted.cfg')
-        pf = tempfile.NamedTemporaryFile(prefix='passphrase.', delete=False)
-        print('SecretTestPassphrase', file=pf)
-        pf.close()
-        self.passphrase = pf.name
-
-    def tearDown(self):
-        os.unlink(self.passphrase)
+        self.passphrase = 'SecretTestPassphrase'
 
     def test_decrypt(self):
         with EncryptedConfigFile(self.encrypted, self.passphrase) as secrets:
@@ -28,12 +22,9 @@ class EncryptedConfigFileTests(TestCase):
                 self.assertEqual(cleartext.read(), secrets.read())
 
     def test_decrypt_wrong_passphrase(self):
-        with open(self.passphrase, 'w') as pf:
-            print('wrong passphrase wrong passphrase', file=pf)
-            pf.flush()
         with self.assertRaises(RuntimeError):
             encrypted_file = EncryptedConfigFile(
-                self.encrypted, self.passphrase)
+                self.encrypted, 'incorrect passphrase')
             encrypted_file.__enter__()
 
     def test_write_should_fail_unless_write_locked(self):

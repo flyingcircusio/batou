@@ -4,6 +4,7 @@ import pprint
 import argparse
 import sys
 import logging
+import getpass
 
 
 class LocalDeploymentMode(object):
@@ -16,6 +17,8 @@ class LocalDeploymentMode(object):
 class AutoMode(LocalDeploymentMode):
 
     def __call__(self):
+        self.environment.acquire_passphrase(
+            '{}/.batou-passphrase'.format(self.environment.service.base))
         try:
             self.environment.configure()
         except CycleError, e:
@@ -58,16 +61,8 @@ class BatchMode(LocalDeploymentMode):
                 self.output.write('OK\n')
                 self.output.flush()
 
-    def cmd_set(self, args):
-        component, attribute, expression = args.split(' ', 2)
-        overrides = self.environment.overrides
-        overrides = overrides.setdefault(component, {})
-        # Make this an expression (e.g. evaluated using Jinja2)
-        # so we can get real types over the wire.
-        overrides[attribute] = expression
-
-    def cmd_configure(self):
-        self.environment.configure()
+    def cmd_configure(self, passphrase=None):
+        self.environment.configure(passphrase)
         self.host = self.environment.get_host(self.hostname)
 
     def cmd_deploy(self, component):

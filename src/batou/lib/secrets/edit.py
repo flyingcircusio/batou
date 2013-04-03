@@ -1,9 +1,9 @@
 """Securely edit encrypted secret files."""
 
-from .passphrase import PassphraseFile
 from .encryption import EncryptedConfigFile
 import argparse
 import contextlib
+import getpass
 import os
 import subprocess
 import tempfile
@@ -12,9 +12,9 @@ import tempfile
 class SecretsEditor(object):
     """Utility to invoke an editor over a decrypted secrets file."""
 
-    def __init__(self, encrypted, passphrase_file):
+    def __init__(self, encrypted, passphrase):
         self.encrypted = encrypted
-        self.passphrase_file = passphrase_file
+        self.passphrase = passphrase
 
     def __enter__(self):
         return self
@@ -23,7 +23,7 @@ class SecretsEditor(object):
         pass
 
     def edit(self, command):
-        with self.temporary_cleartext(self.passphrase_file) as cleartext_file:
+        with self.temporary_cleartext(self.passphrase) as cleartext_file:
             subprocess.check_call(
                 [command + ' ' + cleartext_file], shell=True)
 
@@ -44,6 +44,21 @@ class SecretsEditor(object):
                     sf.write(new_cleartext)
 
 
+def get_passphrase(subject):
+    if os.path.exists(subject):
+        return getpass.getpass('Enter passphrase for encrypted file {}: '.format(subject))
+
+    phrase1 = getpass.getpass('Enter passphrase for new file {}: '.format(subject))
+    if len(phrase1) < 20:
+        raise RuntimeError(
+            'passphrase must be at least 20 characters long')
+    phrase2 = getpass.getpass(
+        'Enter passphrase for %s again: ' % self.for_what)
+    if phrase1 != phrase2:
+        raise RuntimeError('passphrases do not match')
+    return phrase1
+
+
 def edit():
     """Secrets editor console script.
 
@@ -62,12 +77,6 @@ def edit():
     parser.add_argument('filename', metavar='FILE',
                         help='Encrypted secrets file to edit.')
     args = parser.parse_args()
-    if os.path.exists(args.filename):
-        passphrase_file = PassphraseFile(
-            'encrypted file "%s"' % args.filename, double_entry=False)
-    else:
-        passphrase_file = PassphraseFile(
-            'new file "%s"' % args.filename, double_entry=True)
-    with passphrase_file as passphrase:
-        with SecretsEditor(args.filename, passphrase) as editor:
-            editor.edit(args.editor)
+    passphrase = get_passphrase(args.filename)
+    with SecretsEditor(args.filename, passphrase) as editor:
+        editor.edit(args.editor)

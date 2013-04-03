@@ -11,21 +11,18 @@ class EncryptedConfigFile(object):
 
     lockfd = None
 
-    def __init__(self, encrypted_file, passphrase_file, write_lock=False):
+    def __init__(self, encrypted_file, passphrase, write_lock=False):
         """Context manager that opens an encrypted file.
 
         Use the read() and write() methods in the subordinate "with"
         block to manipulate cleartext content. If the cleartext content
         has been replaced, the encrypted file is updated.
 
-        `passphrase_file` is the path name of the file that contains the
-        pass phrase.
-
         `write_lock` must be set True if a modification of the file is
         intended.
         """
         self.encrypted_file = encrypted_file
-        self.passphrase_file = passphrase_file
+        self.passphrase = passphrase
         self.write_lock = write_lock
         self.cleartext = ''
 
@@ -44,7 +41,7 @@ class EncryptedConfigFile(object):
             raise
         except subprocess.CalledProcessError as e:
             raise RuntimeError('cannot %s' % operation_name,
-                               self.encrypted_file, self.passphrase_file, e)
+                               self.encrypted_file, e)
 
     def __enter__(self):
         self._lock()
@@ -83,9 +80,12 @@ class EncryptedConfigFile(object):
         return checksum.hexdigest()
 
     def _decrypt(self):
+        in_fd, out_fd = os.pipe()
+        os.write(out_fd, self.passphrase)
+        os.close(out_fd)
         with open(self.encrypted_file, 'rb') as enc:
             cleartext = subprocess.check_output(
-                ['aespipe', '-d', '-P', self.passphrase_file], stdin=enc
+                ['aespipe', '-d', '-p{}'.format(in_fd)], stdin=enc
             ).strip(b'\0')
         try:
             checksum, cleartext = cleartext.split(b'\n', 1)
@@ -97,8 +97,11 @@ class EncryptedConfigFile(object):
 
     def _encrypt(self, cleartext):
         cleartext = self._hash(cleartext) + b'\n' + cleartext
+        in_fd, out_fd = os.pipe()
+        os.write(out_fd, self.passphrase)
+        os.close(out_fd)
         with open(self.encrypted_file, 'wb') as enc:
             pipe = subprocess.Popen(
-                ['aespipe', '-P', self.passphrase_file], stdin=subprocess.PIPE,
+                ['aespipe', '-p{}'.format(in_fd)], stdin=subprocess.PIPE,
                 stdout=enc)
             pipe.communicate(cleartext)
