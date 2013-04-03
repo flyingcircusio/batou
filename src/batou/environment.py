@@ -154,6 +154,7 @@ class Environment(object):
     branch = u'default'
     platform = None
     vfs_sandbox = None
+    _passphrase = ''
 
     def __init__(self, name, service):
         self.name = name
