@@ -216,7 +216,7 @@ class RemoteHost(object):
                 root.component.remote_bootstrap(self)
             self._wait_for_remote_ready()
             self.remote_cmd('configure {}'.format(
-                self.deployment.environment.passphrase))
+                self.deployment.environment._passphrase))
 
     def deploy_component(self, component):
         logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
