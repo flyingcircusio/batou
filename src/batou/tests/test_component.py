@@ -251,7 +251,7 @@ class ComponentTests(TestCase):
         c = Component()
         host = Mock()
         host.environment.workdir_base = 'path-to-service/work'
-        root = RootComponent('test', c, host, None)
+        root = RootComponent('test', c, c.__class__, host, None)
         c.root = root
         self.assertEquals('path-to-service/work/test', root.workdir)
         self.assertEquals('path-to-service/work/test', c.workdir)
@@ -268,7 +268,7 @@ class ComponentTests(TestCase):
         host = Mock()
         host.environment.workdir_base = d + '/work'
         host.environment.overrides = {}
-        root = RootComponent('test', c, host, None)
+        root = RootComponent('test', c, c.__class__, host, None)
         self.assertFalse(os.path.isdir(root.workdir))
         root.prepare()
         root.deploy()

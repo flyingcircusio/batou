@@ -1,7 +1,6 @@
 """Component to handle secure distribution of secrets"""
 
 from .encryption import EncryptedConfigFile
-from .passphrase import use_passphrase
 from batou.component import Component
 import ConfigParser
 import StringIO
@@ -25,22 +24,18 @@ class Secrets(Component):
     `aespipe` utility::
 
         aespipe -P passphrase_file <cleartext.cfg >secret.cfg.aes
+
     """
 
-    passphrase = None
-
-    def remote_bootstrap(self, remote_host):
-        with use_passphrase(self.environment, self.service.base) as passphrase:
-            passphrase = open(passphrase, 'r').read().strip()
-            remote_host.set(self.root.name, 'passphrase', passphrase)
+    @property
+    def passphrase(self):
+        return self.environment._passphrase
 
     def configure(self):
         encrypted_file = u'{}/{}.cfg.aes'.format(
                 self.root.defdir, self.environment.name)
         config = ConfigParser.SafeConfigParser()
-        with use_passphrase(self.environment, self.service.base,
-                self.passphrase) as passphrase:
-            with EncryptedConfigFile(encrypted_file, passphrase) as secrets:
-                config.readfp(
-                    StringIO.StringIO(secrets.read()), encrypted_file)
+        with EncryptedConfigFile(encrypted_file, self.passphrase) as secrets:
+            config.readfp(
+                StringIO.StringIO(secrets.read()), encrypted_file)
         self.provide('secrets', config)

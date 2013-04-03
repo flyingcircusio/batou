@@ -46,20 +46,6 @@ class AutoModeTests(unittest.TestCase):
 
 class BatchModeTests(unittest.TestCase):
 
-    def test_set_command_configures_environment(self):
-        environment = Mock()
-        environment.overrides = {}
-        mode = BatchMode(environment, 'asdf')
-        mode.cmd_set('foo bar baz')
-        self.assertEquals({'foo': {'bar': 'baz'}}, environment.overrides)
-
-    def test_set_command_configures_overrides_for_environment(self):
-        environment = Mock()
-        environment.overrides = {}
-        mode = BatchMode(environment, 'localhost')
-        mode.cmd_set('foo bar baz')
-        self.assertEquals({'foo': {'bar': 'baz'}}, environment.overrides)
-
     def test_configure_command_configures_environment(self):
         environment = Mock()
         mode = BatchMode(environment, 'localhost')

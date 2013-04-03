@@ -2,7 +2,9 @@ from batou import NonConvergingWorkingSet, UnusedResource
 from batou.component import RootComponent
 from batou.utils import flatten, revert_graph, topological_sort
 from collections import defaultdict
+import batou.lib.secrets
 import copy
+import getpass
 import logging
 import os
 import pwd
@@ -172,13 +174,38 @@ class Environment(object):
         if self.platform is None and self.host_domain:
             self.platform = self.host_domain
 
-    def configure(self):
+    # The following two methods deal with acquiring a passphrase from a user,
+    # which is used by our main scripts. For API usage you can just pass
+    # 'passphrase' into the configure call.
+    # The passphrase handling doesn't really fit in here, but I wanted to
+    # remove a good chunk of over-generalization to make other parts of the
+    # codebase more malleable.
+
+    @property
+    def needs_passphrase(self):
+        for host in self.hosts.values():
+            for component in host.components:
+                if issubclass(component.class_, batou.lib.secrets.Secrets):
+                    return True
+        return False
+
+    def acquire_passphrase(self, cache=None):
+        if not self.needs_passphrase:
+            return
+        if cache and os.path.exists(cache):
+            self._passphrase = open(cache).read().strip()
+        else:
+            self._passphrase = getpass.getpass('Enter passphrase: ')
+
+    def configure(self, passphrase=None):
         """Configure all top-level components from all hosts.
 
         Monitor the dependencies between resources and try to converge
         to a stable order.
 
         """
+        if passphrase:
+            self.passphrase = passphrase
         # Seed the working set with all components from all hosts
         working_set = set()
         for host in self.hosts.values():

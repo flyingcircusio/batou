@@ -305,7 +305,7 @@ class RootComponentFactory(object):
 
     def __call__(self, service, environment, host, features, config):
         factory = lambda: self.factory(**config)
-        root = RootComponent(self.name, factory, host, self.defdir)
+        root = RootComponent(self.name, factory, self.factory, host, self.defdir)
         if features:
             root.features = features
         return root
@@ -320,8 +320,9 @@ class RootComponent(object):
 
     """
 
-    def __init__(self, name, factory, host, defdir):
+    def __init__(self, name, factory, class_, host, defdir):
         self.factory = factory
+        self.class_ = class_
         self.name = name
         self.defdir = defdir
         self.host = host

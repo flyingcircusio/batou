@@ -11,7 +11,7 @@ class TestResources(unittest.TestCase):
         self.resources = Resources()
 
     def root_component(self):
-        return RootComponent('test', None, Mock(), None)
+        return RootComponent('test', None, None, Mock(), None)
 
     def test_regression_reset_works_if_provided_but_not_required(self):
         root = self.root_component()

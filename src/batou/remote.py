@@ -79,6 +79,7 @@ def main():
                      .format(args.environment, known))
         sys.exit(1)
 
+    environment.acquire_passphrase()
     environment.configure()
 
     deployment = RemoteDeployment(environment, args.ssh_user, args.reset)
@@ -214,7 +215,8 @@ class RemoteHost(object):
             for root in self.host.components:
                 root.component.remote_bootstrap(self)
             self._wait_for_remote_ready()
-            self.remote_cmd('configure')
+            self.remote_cmd('configure {}'.format(
+                self.deployment.environment.passphrase))
 
     def deploy_component(self, component):
         logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
@@ -237,9 +239,6 @@ class RemoteHost(object):
         result = self._wait_for_remote_ready()
         if result != 'OK':
             raise RuntimeError(result)
-
-    def set(self, component, attribute, value):
-        self.remote_cmd('set {} {} {}'.format(component, attribute, value))
 
     def _wait_for_remote_ready(self):
         # Wait for the command to complete.
