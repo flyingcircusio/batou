@@ -225,6 +225,7 @@ class Component(object):
         return batou.utils.cmd(cmd, silent)
 
     def map(self, path):
+        path = os.path.expanduser(path)
         if not path.startswith('/'):
             return os.path.normpath(os.path.join(self.workdir, path))
         return self.environment.map(path)
