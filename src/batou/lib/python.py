@@ -33,7 +33,7 @@ class VirtualEnv(Component):
                 self.version))]
         for executable, arguments in possible_executables:
             try:
-                self.cmd('type {}'.format(executable))
+                self.cmd('type {}'.format(executable), silent=True)
             except RuntimeError:
                 pass
             else:
