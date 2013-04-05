@@ -206,7 +206,7 @@ class Environment(object):
 
         """
         if passphrase:
-            self.passphrase = passphrase
+            self._passphrase = passphrase
         # Seed the working set with all components from all hosts
         working_set = set()
         for host in self.hosts.values():
