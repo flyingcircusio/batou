@@ -349,8 +349,9 @@ class RootComponent(object):
             return
         for key, value in environment.overrides[self.name].items():
             if not hasattr(self.component, key):
-                raise KeyError('Invalid override attribute "{}" for component {}'.format(
-                    key, self.component))
+                raise KeyError(
+                    'Invalid override attribute "{}" for component {}'.format(
+                        key, self.component))
             setattr(self.component, key, value)
 
     def prepare(self):
