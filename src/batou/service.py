@@ -1,6 +1,7 @@
 from .component import load_components_from_file
 from .environment import Environment
 from .host import Host
+import batou.c
 import batou.vfs
 import configobj
 import glob

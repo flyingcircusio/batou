@@ -1,10 +1,13 @@
 import batou
+import batou.c
 import batou.template
 import batou.utils
 import contextlib
 import logging
 import os
 import os.path
+import sys
+import types
 
 logger = logging.getLogger(__name__)
 
@@ -20,12 +23,18 @@ def platform(name, component):
 
 
 def load_components_from_file(filename):
-    g = l = {}
     oldcwd = os.getcwd()
     defdir = os.path.dirname(filename)
     os.chdir(defdir)
-    execfile(filename, g, l)
-    for candidate in l.values():
+    module_name = os.path.basename(defdir)
+    module_path = 'batou.c.{}'.format(module_name)
+    module = types.ModuleType(module_name,
+        'Component definition module for {}'.format(filename))
+    sys.modules[module_path] = module
+    setattr(batou.c, module_name, module)
+    execfile(filename, module.__dict__)
+
+    for candidate in module.__dict__.values():
         if candidate in [Component]:
             # Ignore anything we pushed into the globals before execution
             continue
@@ -44,6 +53,7 @@ class Component(object):
     namevar = ''
 
     changed = False
+    _prepared = False
 
     def __init__(self, namevar=None, **kw):
         if self.namevar:
@@ -63,6 +73,7 @@ class Component(object):
         self.sub_components = []
         self.configure()
         self += self.get_platform()
+        self._prepared = True
 
     def configure(self):
         """Configure the component.
@@ -139,13 +150,27 @@ class Component(object):
     def __add__(self, component):
         """Add a new sub-component.
 
-        This will also automatically prepare the added component.
+        This will also automatically prepare the added component if it hasn't
+        been prepared yet. Could have been prepared if it was configured in the
+        context of a different component.
 
         """
         if component is not None:
             # Allow `None` components to flow right through. This makes the API a
             # bit more convenient in some cases, e.g. with platform handling.
             self.sub_components.append(component)
+            self |= component
+            component.parent = self
+        return self
+
+    def __or__(self, component):
+        """Prepare a component in the context of this component but do not add
+        it to the sub components.
+
+        This allows executing 'configure' in the context of this component
+
+        """
+        if component is not None and not component._prepared:
             component.prepare(self.service, self.environment,
                               self.host, self.root, self)
         return self
@@ -175,12 +200,12 @@ class Component(object):
     def provide(self, key, value):
         self.host.environment.resources.provide(self.root, key, value)
 
-    def require(self, key, host=None, strict=True):
+    def require(self, key, host=None, strict=True, reverse=False):
         return self.host.environment.resources.require(
-            self.root, key, host, strict)
+            self.root, key, host, strict, reverse)
 
-    def require_one(self, key, host=None, strict=True):
-        resources = self.require(key, host, strict)
+    def require_one(self, key, host=None, strict=True, reverse=False):
+        resources = self.require(key, host, strict, reverse)
         if len(resources) > 1:
             raise KeyError(
                 "Expected only one result, got multiple for (key={}, host={})".
