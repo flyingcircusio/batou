@@ -23,3 +23,5 @@ Changelog
 - Introduce new component modelling approach.
 
 - Start writing documentation.
+
+- Improve error message when download fails due to checksum mismatch.
