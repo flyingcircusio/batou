@@ -27,10 +27,16 @@ class Resources(object):
     resources.
     """
 
-    # Maps keys to root components that depend on the key. A "strict"
-    # dependency means that it's not OK to have this dependency unsatisfied and
-    # requires at least one value.
-    # {key: [(root, strict, host), (root, strict, host), ...]}
+    # Maps keys to root components that depend on the key.
+
+    # A "strict" dependency means that it's not OK to have this dependency
+    # unsatisfied and requires at least one value.
+
+    # A reverse dependency means that the dependency map will reverse the root
+    # components order: "require before provide" instead of the default
+    # "provide before require"
+
+    # {key: [(root, strict, host, reverse), (root, strict, host, reverse), ...]}
     subscribers = None
     # Keeps track of root components that have not seen changes to a key they
     # have subscribed to when they were configured earlier..
@@ -45,13 +51,17 @@ class Resources(object):
         self.dirty_dependencies = set()
 
     def _subscribers(self, key, host):
-        return [root for root, strict, host_ in self.subscribers.get(key, ())
-                    if host_ is None or host is None or host_ is host]
+        return [root for root, strict, host_, reverse in self._subscriptions(key, host)]
+
+    def _subscriptions(self, key, host):
+        return [(root, strict, host_, reverse)
+                for root, strict, host_, reverse in self.subscribers.get(key, ())
+                if host_ is None or host is None or host_ is host]
 
     @property
     def strict_subscribers(self):
         for key, subscribers in self.subscribers.items():
-            if any(strict for root, strict, host in subscribers):
+            if any(strict for root, strict, host, reverse in subscribers):
                 yield key
 
     def provide(self, root, key, value):
@@ -71,10 +81,11 @@ class Resources(object):
             results = flatten(self.resources.get(key, {}).values())
         return results
 
-    def require(self, root, key, host=None, strict=True):
+    def require(self, root, key, host=None, strict=True, reverse=False):
         assert isinstance(root, RootComponent)
         """Return resource values and record component dependency."""
-        self.subscribers.setdefault(key, set()).add((root, strict, host))
+        self.subscribers.setdefault(key, set()).add(
+            (root, strict, host, reverse))
         return self.get(key, host)
 
     def reset_component_resources(self, root):
@@ -105,7 +116,7 @@ class Resources(object):
         for key, subscribers in self.subscribers.items():
             if key not in resources:
                 continue
-            for root, strict, host in subscribers:
+            for root, strict, host, reverse in subscribers:
                 if host is None:
                     del resources[key]
                     break
@@ -139,8 +150,12 @@ class Resources(object):
         """
         graph = defaultdict(set)
         for key, providers in self.resources.items():
-            for subscriber in self._subscribers(key, None):
-                graph[subscriber].update(providers)
+            for subscriber, _, _, reverse in self._subscriptions(key, None):
+                if reverse:
+                    for provider in providers:
+                        graph[provider].add(subscriber)
+                else:
+                    graph[subscriber].update(providers)
         return graph
 
 
@@ -212,8 +227,9 @@ class Environment(object):
         for host in self.hosts.values():
             working_set.update(host.components)
 
+        previous_working_sets = []
         while working_set:
-            last_working_set = working_set.copy()
+            previous_working_sets.append(working_set.copy())
             retry = set()
             exceptions = []
             self.resources.dirty_dependencies.clear()
@@ -234,7 +250,7 @@ class Environment(object):
 
             self.get_sorted_components()
 
-            if (retry == last_working_set):
+            if (retry in previous_working_sets):
                 # We did not manage to improve on our last working set, so we
                 # give up.
 
