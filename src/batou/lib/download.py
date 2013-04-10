@@ -35,5 +35,8 @@ class Download(Component):
     def update(self):
         self.cmd('wget -q -O {target} {uri}'.format(
                     target=self.target, uri=self.uri))
-        assert self.checksum == batou.utils.hash(
-            self.target, self.checksum_function)
+        target_checksum = batou.utils.hash(self.target, self.checksum_function)
+        assert self.checksum == target_checksum, '''\
+Checksum mismatch!
+expected: %s
+got: %s''' % (self.checksum, target_checksum)
