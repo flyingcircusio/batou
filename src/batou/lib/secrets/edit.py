@@ -53,7 +53,7 @@ def get_passphrase(subject):
         raise RuntimeError(
             'passphrase must be at least 20 characters long')
     phrase2 = getpass.getpass(
-        'Enter passphrase for %s again: ' % self.for_what)
+        'Enter passphrase for new file {} again: '.format(subject))
     if phrase1 != phrase2:
         raise RuntimeError('passphrases do not match')
     return phrase1
