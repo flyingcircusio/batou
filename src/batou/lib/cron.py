@@ -16,7 +16,7 @@ class CronJob(HookComponent):
     def format(self):
         line = self.expand('{{component.timing}} {{component.command}} {{component.args}}')
         if self.logger:
-            line += self.expand(' |& logger -t {{component.logger}}')
+            line += self.expand(' 2>&1 | logger -t {{component.logger}}')
         return line
 
 
