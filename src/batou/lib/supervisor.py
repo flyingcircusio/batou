@@ -12,19 +12,27 @@ import os.path
 import time
 
 
-class Program(HookComponent):
-    """ XXX
-            * priority (integer)
-            * process_name (string)
-            * options (dictionary)
-            * command (string)
-            * arguments (String)
-            * restart - if True, restart this daemon during the current batou
-              run.
-    """
+class Program(Component):
+
+    program_section = """
+[program:{{component.name}}]
+command = {{component.command}} {{component.args}}
+process_name = {{component.name}}
+directory = {{component.directory}}
+priority = {{component.priority}}
+stderr_logfile = {{component.supervisor.logdir.path}}/{{component.name}}.log
+stderr_logfile_backups = 0
+stderr_logfile_maxbytes = 0
+stdout_logfile = {{component.supervisor.logdir.path}}/{{component.name}}.log
+stdout_logfile_backups = 0
+stdout_logfile_maxbytes = 0
+{% for k, v in component.options.items() %}
+{{k}} = {{v}}
+{% endfor %}
+redirect_stderr = true
+"""
 
     namevar = 'name'
-    key = 'batou.lib.supervisor:Program'
 
     command = None
     command_absolute = True
@@ -39,7 +47,7 @@ class Program(HookComponent):
                         '{args} {directory} true')
 
     def configure(self):
-        super(Program, self).configure()
+        self.supervisor = self.require_one('supervisor', self.host)
         if not self.command:
             raise ValueError('`command` option missing for program {}'.
                 format(self.name))
@@ -49,45 +57,40 @@ class Program(HookComponent):
             self.command = os.path.normpath(
                os.path.join(self.workdir, self.command))
 
-    def format(self, supervisor):
         if not 'startsecs' in self.options:
-            self.options['startsecs'] = 10
-        # XXX some of those could be extracted as platform-specific components
-        self.options['stdout_logfile'] = '%s/var/log/%s.log' % (
-            supervisor.workdir, self.name)
-        self.options['stdout_logfile_maxbytes'] = 0
-        self.options['stdout_logfile_backups'] = 0
-        self.options['stderr_logfile'] = '%s/var/log/%s.log' % (
-            supervisor.workdir, self.name)
-        self.options['stderr_logfile_maxbytes'] = 0
-        self.options['stderr_logfile_backups'] = 0
-        options = '{}'.format(' '.join(
-            '%s=%s' % (k, v) for k, v in sorted(self.options.items())))
-        args = self.args
-        if args:
-            args = '[{}]'.format(args)
-        return self.program_template.format(
-                priority=self.priority,
-                name=self.name,
-                options=options,
-                command=self.command,
-                directory=self.directory,
-                args=args)
+            self.options['startsecs'] = 5
+
+        self.config = self.expand(
+            '{{component.supervisor.program_config_dir.path}}/'
+            '{{component.name}}.conf')
+        self += File(self.config,
+                     content=self.expand(self.program_section))
+
+    def verify(self):
+        context = self
+        if self.restart:
+            context = self.parent
+        context.assert_no_subcomponent_changes()
+
+    def update(self):
+        supervisorctl = '{}/bin/supervisorctl'.format(self.supervisor.workdir)
+        self.cmd('{} reread'.format(supervisorctl))
+        if self.restart:
+            self.cmd('{} restart {}'.format(supervisorctl, self.name))
+        else:
+            self.cmd('{} update'.format(supervisorctl))
 
 
-class Eventlistener(HookComponent):
-    """ XXX
-        * *:eventlistener - supervisor event listener
-            * name
-            * events - list of supervisord events
-            * command
-            * args
+class Eventlistener(Program):
 
-            `events` defaults to TICK_60
-    """
+    program_section = """
+[eventlistener:{{component.name}}]
+command = {{component.command}} {{component.args}}
+events = {{component.events}}
+process_name={{component.name}}
+"""
 
     namevar = 'name'
-    key = 'batou.lib.supervisor:Eventlistener'
 
     events = ('TICK_60',)
     command = None
@@ -95,71 +98,46 @@ class Eventlistener(HookComponent):
 
     def configure(self):
         super(Eventlistener, self).configure()
-        self.events = ' '.join(self.events)
-
-    def format(self, supervisor):
-        return self.expand('{{component.name}} {{component.events}} '
-                           '{{component.command}} [{{component.args}}]')
+        self.events = ','.join(self.events)
+        # Not sure what's right. We only use eventlisteners with superlance
+        # which lives in the supervisor's workdir. However, the
+        # EventListener component gets instanciated as a sub-component of
+        # the actual component using it - which doesn't know about the path
+        # to the superlance plugins. :/
+        self.command = os.path.normpath(
+           os.path.join(self.supervisor.workdir, self.command))
 
 
 class Supervisor(Component):
-    """Start other components' daemons.
-
-    This component runs supervisord and provides hooks for other components to
-    register their daemons.
-
-    Configuration::
-
-        [component:supervisord]
-        address = INET address that supervisor should listen on
-
-    Imported hooks:
-
-        * batou.lib.supervisor:Program - other components' daemon definitions
-
-            See the `Program` component.
-
-        * batou.lib.supervisor:Eventlistener - other components' eventlistener
-           definitions
-
-            See the `Eventlistener` component.
-
-    """
 
     address = 'localhost:9001'
     buildout_cfg = os.path.join(os.path.dirname(__file__), 'resources',
                              'supervisor.buildout.cfg')
+    supervisor_conf = os.path.join(os.path.dirname(__file__), 'resources',
+                             'supervisor.conf')
 
+    program_config_dir = None
+    logdir = None
     loglevel = 'info'
     enable = 'True'  # Allows turning "everything off" via environment configuration
 
     def configure(self):
         self.address = Address(self.address)
-        self.programs = list(self.require(Program.key, self.host))
-        self.programs.sort(key=lambda x: x.name)
-        self.eventlisteners = list(self.require(
-            Eventlistener.key, self.host, strict=False))
-        self.eventlisteners.sort(key=lambda x: x.name)
-
-        for event in self.eventlisteners:
-            # Not sure what's right. We only use eventlisteners with superlance
-            # which lives in the supervisor's workdir. However, the
-            # EventListener component gets instanciated as a sub-component of
-            # the actual component using it - which doesn't know about the path
-            # to the superlance plugins. :/
-            event.command = os.path.normpath(
-               os.path.join(self.workdir, event.command))
+        self.provide('supervisor', self)
 
         buildout_cfg = File('buildout.cfg',
-            source=self.buildout_cfg,
-            template_context=self,
-            is_template=True)
-
+                            source=self.buildout_cfg)
         self += Buildout('buildout',
             config=buildout_cfg,
             python='2.7')
 
-        self += Directory('var/log', leading=True)
+        self.program_config_dir = Directory('etc/supervisor.d', leading=True)
+        self += self.program_config_dir
+        self += File('etc/supervisord.conf',
+                     source=self.supervisor_conf,
+                     is_template=True)
+        self.logdir = Directory('var/log', leading=True)
+        self += self.logdir
 
         postrotate = self.expand('kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)')
         self += RotatedLogfile('var/log/*.log', postrotate=postrotate)
@@ -187,14 +165,12 @@ class Supervisor(Component):
 
 class RunningSupervisor(Component):
 
+    action = None
+
     def verify(self):
         self.assert_file_is_current(
             'var/supervisord.pid',
-            ['.batou.buildout.success'])
-        # XXX make assertions on files of programs?
-        depending_components = self.parent.programs + self.parent.eventlisteners
-        for component in depending_components:
-            component.parent.assert_no_changes()
+            ['bin/supervisord', 'etc/supervisor.conf'])
 
     def update(self):
         out, err = self.cmd('bin/supervisorctl pid')
@@ -207,11 +183,24 @@ class RunningSupervisor(Component):
             # Reload is asynchronous and doesn't wait for supervisor to become
             # fully running again. We actually could monitor supervisorctl,
             # though.
-            time.sleep(30)
-        # XXX re-build selective restart
-        # XXX build restarts based on generic (external) comparison key: a
-        # previous run may have changed something but failed later and we
-        # didn't get the signal based on assert_no_changes
+            wait = 30
+            while wait:
+                time.sleep(1)
+                wait -= 1
+                try:
+                    out, err = self.cmd('bin/supervisorctl pid')
+                except RuntimeError:
+                    pass
+                else:
+                    try:
+                        int(out)
+                    except ValueError:
+                        pass
+                    else:
+                        break
+            else:
+                raise RuntimeError('supervisor master process '
+                                   'did not start within 30 seconds')
 
 
 class StoppedSupervisor(Component):
