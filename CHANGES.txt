@@ -5,6 +5,9 @@ Changelog
 0.2 (unreleased)
 ================
 
+- Lots of stuff that went on unreleased for way too long. Producing a release
+  to allow people to stop running from trunk.
+
 - Buildout component: Allow custom buildout.cfg names and pass the name to
   bootstrap.
 
