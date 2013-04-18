@@ -5,7 +5,9 @@ Changelog
 0.2.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Fix supervisor refactoring: templates contained static paths from my
+  development machine. Event listeners were not formatting the event list
+  correctly.
 
 
 0.2 (2013-04-18)
