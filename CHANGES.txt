@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.1 (unreleased)
+0.2.1 (2013-04-18)
 ==================
 
 - Fix supervisor refactoring: templates contained static paths from my
