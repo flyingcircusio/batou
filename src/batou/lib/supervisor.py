@@ -176,7 +176,8 @@ class RunningSupervisor(Component):
             self.cmd('bin/supervisorctl reload')
             # Reload is asynchronous and doesn't wait for supervisor to become
             # fully running again. We actually could monitor supervisorctl,
-            # though.
+            # though. This can take a long time if supervisor needs to orderly
+            # shut down a lot of services.
             wait = 30
             while wait:
                 time.sleep(1)
@@ -184,7 +185,8 @@ class RunningSupervisor(Component):
                 try:
                     out, err = self.cmd('bin/supervisorctl pid')
                 except RuntimeError:
-                    pass
+                    if 'SHUTDOWN_STATE' in out:
+                        wait += 1
                 else:
                     try:
                         int(out)
