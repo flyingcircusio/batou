@@ -191,7 +191,6 @@ class FileComponent(Component):
 
     def configure(self):
         self.path = self.map(self.path)
-        self += Presence(self.path, leading=self.leading)
 
     @property
     def namevar_for_breadcrumb(self):

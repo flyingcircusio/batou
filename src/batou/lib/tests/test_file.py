@@ -141,20 +141,19 @@ class FileTests(FileTestBase, unittest.TestCase):
         with self.assertRaises(OSError):
             self.deploy(p)
 
-    def test_filecomponent_baseclass_configures_presence_and_namevar(self):
+    def test_filecomponent_baseclass_carries_path(self):
         path = self.filename()
         p = FileComponent(path, leading=sentinel.leading)
         self.deploy(p)
         self.assertEqual(path, p.path)
-        self.assertEqual(1, len(p.sub_components))
-        presence = p.sub_components[0]
-        self.assertIsInstance(presence, Presence)
-        self.assertEqual(path, presence.path)
-        self.assertEqual(p.leading, presence.leading)
 
     def test_content_passed_by_string(self):
         path = self.filename()
         p = Content(path, content='asdf')
+        with open(p.path, 'w') as f:
+            # The content component assumes there's a file already in place. So
+            # we need to create it.
+            pass
         self.deploy(p)
         with open(path) as f:
             self.assertEqual('asdf', f.read())
@@ -163,6 +162,10 @@ class FileTests(FileTestBase, unittest.TestCase):
         path = self.filename()
         p = Content(path,
             content='{{component.foobar}}', is_template=True, foobar='asdf')
+        with open(p.path, 'w') as f:
+            # The content component assumes there's a file already in place. So
+            # we need to create it.
+            pass
         self.deploy(p)
         with open(path) as f:
             self.assertEqual('asdf', f.read())
@@ -173,6 +176,10 @@ class FileTests(FileTestBase, unittest.TestCase):
             f.write('content from source file')
         path = self.filename()
         p = Content(path, source=source)
+        with open(p.path, 'w') as f:
+            # The content component assumes there's a file already in place. So
+            # we need to create it.
+            pass
         self.deploy(p)
         with open(path) as f:
             self.assertEqual('content from source file', f.read())
@@ -183,6 +190,10 @@ class FileTests(FileTestBase, unittest.TestCase):
             f.write('{{component.foobar}}')
         path = self.filename()
         p = Content(path, source=source, is_template=True, foobar='asdf')
+        with open(p.path, 'w') as f:
+            # The content component assumes there's a file already in place. So
+            # we need to create it.
+            pass
         self.deploy(p)
         with open(path) as f:
             self.assertEqual('asdf', f.read())
@@ -205,6 +216,10 @@ class FileTests(FileTestBase, unittest.TestCase):
             content='{{component.foobar}}',
             is_template=True,
             template_context=context)
+        with open(p.path, 'w') as f:
+            # The content component assumes there's a file already in place. So
+            # we need to create it.
+            pass
         self.deploy(p)
         with open(path) as f:
             self.assertEqual('asdf', f.read())
@@ -217,6 +232,10 @@ class FileTests(FileTestBase, unittest.TestCase):
         p = Content(path, source=source)
         root = Mock()
         root.defdir = self.base_path
+        with open(p.path, 'w') as f:
+            # The content component assumes there's a file already in place. So
+            # we need to create it.
+            pass
         self.deploy(p, root=root)
         with open(p.path) as f:
             self.assertEqual('asdf', f.read())
