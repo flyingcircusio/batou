@@ -13,6 +13,9 @@ Changelog
   supervisorctl command returns 'SHUTDOWN_STATE'. This supports large
   installations with many services more gracefully but might get stuck.
 
+- Fix supervisor's Nagios check: I removed the bin/py custom interpreter and
+  didn't notice it was used by the check. Put it back.
+
 0.2 (2013-04-18)
 ================
 
