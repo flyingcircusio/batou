@@ -99,13 +99,6 @@ process_name={{component.name}}
     def configure(self):
         if not isinstance(self.events, str):
             self.events = ','.join(self.events)
-        # Not sure what's right. We only use eventlisteners with superlance
-        # which lives in the supervisor's workdir. However, the
-        # EventListener component gets instanciated as a sub-component of
-        # the actual component using it - which doesn't know about the path
-        # to the superlance plugins. :/
-        self.command = os.path.normpath(
-           os.path.join(self.supervisor.workdir, self.command))
         super(Eventlistener, self).configure()
 
 
