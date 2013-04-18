@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2 (unreleased)
+0.2 (2013-04-18)
 ================
 
 - Lots of stuff that went on unreleased for way too long. Producing a release
