@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.2 (unreleased)
+0.2.2 (2013-04-19)
 ==================
 
 - Allow specifying 'configure_args' on cmmi.Build or 'args' on cmmi.Configure.
