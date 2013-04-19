@@ -4,8 +4,11 @@ from batou.lib.archive import Extract
 
 
 class Configure(Component):
+    # XXX not convergent when changing args
 
     namevar = 'path'
+    args = ''
+
 
     def verify(self):
         with self.chdir(self.path):
@@ -16,7 +19,7 @@ class Configure(Component):
 
     def update(self):
         with self.chdir(self.path):
-            self.cmd(self.expand('./configure --prefix={{component.workdir}}'))
+            self.cmd(self.expand('./configure --prefix={{component.workdir}} {{component.args}}'))
             self.touch('.batou.config.success')
 
 
@@ -47,6 +50,7 @@ class Build(Component):
     namevar = 'uri'
     checksum = None
     source = None
+    configure_args = ''
 
     def configure(self):
         download = Download(
@@ -56,5 +60,6 @@ class Build(Component):
         extract = Extract(download.target, strip=1)
         self += extract
 
-        self += Configure(extract.target)
+        self += Configure(extract.target,
+                          args=self.configure_args)
         self += Make(extract.target)
