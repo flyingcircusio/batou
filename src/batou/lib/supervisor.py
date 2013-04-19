@@ -66,19 +66,27 @@ redirect_stderr = true
         self += File(self.config,
                      content=self.expand(self.program_section))
 
+    def ctl(self, args):
+        command = '{}/bin/supervisorctl'.format(self.supervisor.workdir)
+        return self.cmd('{} {}'.format(command, args))
+
     def verify(self):
         context = self
         if self.restart:
             context = self.parent
         context.assert_no_subcomponent_changes()
 
+        out, err = self.ctl('status {}'.format(self.name))
+        if not 'RUNNING' in out:
+            self.restart = True
+            raise UpdateNeeded()
+
     def update(self):
-        supervisorctl = '{}/bin/supervisorctl'.format(self.supervisor.workdir)
-        self.cmd('{} reread'.format(supervisorctl))
+        self.ctl('reread')
         if self.restart:
-            self.cmd('{} restart {}'.format(supervisorctl, self.name))
+            self.ctl('restart {}'.format(self.name))
         else:
-            self.cmd('{} update'.format(supervisorctl))
+            self.ctl('update')
 
 
 class Eventlistener(Program):

@@ -7,6 +7,9 @@ Changelog
 
 - Allow specifying 'configure_args' on cmmi.Build or 'args' on cmmi.Configure.
 
+- Fix supervisor's path lookup for event listeners to support the automatically
+  installed superlance plugins better. This may change again in the future
+  depending on other event listener needs.
 
 0.2.1 (2013-04-18)
 ==================
