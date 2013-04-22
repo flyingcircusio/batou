@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.4 (unreleased)
+0.2.4 (2013-04-22)
 ==================
 
 - Force reread/update on supervisor after config changes.
