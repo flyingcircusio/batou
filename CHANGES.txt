@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.3 (unreleased)
+0.2.3 (2013-04-22)
 ==================
 
 - supervisor: wait up to 60 seconds instead of 30 until supervisor responds to
