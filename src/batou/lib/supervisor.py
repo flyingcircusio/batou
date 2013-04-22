@@ -57,6 +57,8 @@ redirect_stderr = true
 
         if not 'startsecs' in self.options:
             self.options['startsecs'] = 5
+        self.supervisor.max_startup_delay = max(
+            int(self.options['startsecs']), self.supervisor.max_startup_delay)
 
         self.config = self.expand(
             '{{component.supervisor.program_config_dir.path}}/'
@@ -121,6 +123,7 @@ class Supervisor(Component):
     logdir = None
     loglevel = 'info'
     enable = 'True'  # Allows turning "everything off" via environment configuration
+    max_startup_delay = 0
 
     def configure(self):
         self.address = Address(self.address)
@@ -188,13 +191,18 @@ class RunningSupervisor(Component):
             # shut down a lot of services.
             wait = self.reload_timeout
             while wait:
-                time.sleep(1)
                 wait -= 1
                 try:
-                    out, err = self.cmd('bin/supervisorctl pid')
-                except RuntimeError:
-                    if 'SHUTDOWN_STATE' in out:
-                        wait += 1
+                    out, err = '', ''
+                    out, err = self.cmd('bin/supervisorctl pid', silent=True)
+                except RuntimeError, e:
+                    # Supervisor tends to "randomly" set zero and non-zero exit
+                    # codes. :/
+                    # See https://github.com/Supervisor/supervisor/issues/24
+                    pass
+
+                if 'SHUTDOWN_STATE' in out:
+                    wait += 1
                 else:
                     try:
                         int(out)
@@ -202,10 +210,13 @@ class RunningSupervisor(Component):
                         pass
                     else:
                         break
+                time.sleep(1)
             else:
                 raise RuntimeError(
                     'supervisor master process did not start within {} seconds'
                     .format(self.reload_timeout))
+        # Wait max startup time now that supervisor is back
+        time.sleep(self.parent.max_startup_delay)
 
 
 class StoppedSupervisor(Component):

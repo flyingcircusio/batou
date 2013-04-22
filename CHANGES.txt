@@ -5,8 +5,12 @@ Changelog
 0.2.3 (unreleased)
 ==================
 
-- supervisor: wait 60 seconds instead of 30 until supervisor responds to a PID
-  after finishing shutdown.
+- supervisor: wait up to 60 seconds instead of 30 until supervisor responds to
+  a PID after triggering shutdown. Fix bug trying to detect shutdown:
+  RuntimeError would cause residual data in output variables.
+
+- supervisor: after reloading, wait as long as the highest startup delay was
+  configured on a program to avoid subsequent accidental restarts.
 
 - supervisor: remove 'restart' flag: always restart if we have a relevant
   change.
