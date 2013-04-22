@@ -172,7 +172,7 @@ class RunningSupervisor(Component):
     def verify(self):
         self.assert_file_is_current(
             'var/supervisord.pid',
-            ['bin/supervisord', 'etc/supervisor.conf'])
+            ['bin/supervisord', 'etc/supervisord.conf'])
 
     def update(self):
         out, err = self.cmd('bin/supervisorctl pid')

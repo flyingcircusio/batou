@@ -11,6 +11,7 @@ Changelog
 - supervisor: remove 'restart' flag: always restart if we have a relevant
   change.
 
+- supervisor: fix bug in reload logic: path to supervisord.conf was wrong
 
 0.2.2 (2013-04-19)
 ==================
