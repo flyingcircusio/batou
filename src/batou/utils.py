@@ -190,7 +190,7 @@ def cmd(cmd, silent=False):
             print("=" * 72)
             print(stderr)
         raise RuntimeError(
-            'Command "{}" returned unsuccessfully.'.format(cmd))
+            'Command "{}" returned unsuccessfully.'.format(cmd), retcode)
     stdin.close()
     return stdout, stderr
 
