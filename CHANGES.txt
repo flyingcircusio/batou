@@ -7,6 +7,11 @@ Changelog
 
 - Allow specifying 'configure_args' on cmmi.Build or 'args' on cmmi.Configure.
 
+- supervisor: wait 60 seconds instead of 30 until supervisor responds to a PID
+  after finishing shutdown.
+
+- supervisor: remove 'restart' flag: always restart if a parent's subcomponent
+  changed. Only 'update' if the supervisor config was the only thing changed.
 
 0.2.1 (2013-04-18)
 ==================

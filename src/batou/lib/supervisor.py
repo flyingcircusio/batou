@@ -41,8 +41,6 @@ redirect_stderr = true
     priority = 10
     directory = None
 
-    restart = False  # ... if parent component changed
-
     program_template = ('{priority} {name} ({options}) {command} '
                         '{args} {directory} true')
 
@@ -67,15 +65,23 @@ redirect_stderr = true
                      content=self.expand(self.program_section))
 
     def verify(self):
-        context = self
-        if self.restart:
-            context = self.parent
-        context.assert_no_subcomponent_changes()
+        self.config_change = False
+        self.program_change = False
+        try:
+            self.assert_no_subcomponent_changes()
+        except UpdateNeeded:
+            self.config_change = True
+        try:
+            self.parent.assert_no_subcomponent_changes()
+        except UpdateNeeded:
+            self.program_change = True
+        if self.config_change or self.program_change:
+            raise UpdateNeeded()
 
     def update(self):
         supervisorctl = '{}/bin/supervisorctl'.format(self.supervisor.workdir)
         self.cmd('{} reread'.format(supervisorctl))
-        if self.restart:
+        if self.program_change:
             self.cmd('{} restart {}'.format(supervisorctl, self.name))
         else:
             self.cmd('{} update'.format(supervisorctl))
@@ -169,6 +175,7 @@ class Supervisor(Component):
 class RunningSupervisor(Component):
 
     action = None
+    reload_timeout = 60
 
     def verify(self):
         self.assert_file_is_current(
@@ -187,7 +194,7 @@ class RunningSupervisor(Component):
             # fully running again. We actually could monitor supervisorctl,
             # though. This can take a long time if supervisor needs to orderly
             # shut down a lot of services.
-            wait = 30
+            wait = self.reload_timeout
             while wait:
                 time.sleep(1)
                 wait -= 1
@@ -204,8 +211,9 @@ class RunningSupervisor(Component):
                     else:
                         break
             else:
-                raise RuntimeError('supervisor master process '
-                                   'did not start within 30 seconds')
+                raise RuntimeError(
+                    'supervisor master process did not start within {} seconds'
+                    .format(self.reload_timeout))
 
 
 class StoppedSupervisor(Component):
