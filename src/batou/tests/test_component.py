@@ -289,7 +289,9 @@ class ComponentTests(TestCase):
         except RuntimeError, e:
             self.assertEquals(
                 'Command "asdf" returned unsuccessfully.',
-                str(e))
+                str(e[0]))
+            self.assertEquals(
+                127, e[1])
 
     def test_cmd_should_not_stop_if_process_expects_input(self):
         c = Component()
