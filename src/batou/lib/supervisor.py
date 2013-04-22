@@ -78,6 +78,7 @@ redirect_stderr = true
 
     def update(self):
         self.ctl('reread')
+        self.ctl('update')
         self.ctl('restart {}'.format(self.name))
 
 
