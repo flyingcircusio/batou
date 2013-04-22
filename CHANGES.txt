@@ -5,7 +5,11 @@ Changelog
 0.2.3 (unreleased)
 ==================
 
-- Nothing changed yet.
+- supervisor: wait 60 seconds instead of 30 until supervisor responds to a PID
+  after finishing shutdown.
+
+- supervisor: remove 'restart' flag: always restart if a parent's subcomponent
+  changed. Only 'update' if the supervisor config was the only thing changed.
 
 
 0.2.2 (2013-04-19)
@@ -16,6 +20,7 @@ Changelog
 - Fix supervisor's path lookup for event listeners to support the automatically
   installed superlance plugins better. This may change again in the future
   depending on other event listener needs.
+
 
 0.2.1 (2013-04-18)
 ==================
