@@ -69,30 +69,14 @@ redirect_stderr = true
         return self.cmd('{} {}'.format(command, args))
 
     def verify(self):
-        self.config_change = False
-        self.program_change = False
-        try:
-            self.assert_no_subcomponent_changes()
-        except UpdateNeeded:
-            self.config_change = True
-        try:
-            self.parent.assert_no_subcomponent_changes()
-        except UpdateNeeded:
-            self.program_change = True
-        if self.config_change or self.program_change:
-            raise UpdateNeeded()
-
+        self.parent.assert_no_subcomponent_changes()
         out, err = self.ctl('status {}'.format(self.name))
         if not 'RUNNING' in out:
-            self.restart = True
             raise UpdateNeeded()
 
     def update(self):
         self.ctl('reread')
-        if self.program_change:
-            self.ctl('restart {}'.format(self.name))
-        else:
-            self.ctl('update')
+        self.ctl('restart {}'.format(self.name))
 
 
 class Eventlistener(Program):

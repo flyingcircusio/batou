@@ -8,8 +8,8 @@ Changelog
 - supervisor: wait 60 seconds instead of 30 until supervisor responds to a PID
   after finishing shutdown.
 
-- supervisor: remove 'restart' flag: always restart if a parent's subcomponent
-  changed. Only 'update' if the supervisor config was the only thing changed.
+- supervisor: remove 'restart' flag: always restart if we have a relevant
+  change.
 
 
 0.2.2 (2013-04-19)
