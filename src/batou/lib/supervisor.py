@@ -47,13 +47,13 @@ redirect_stderr = true
     def configure(self):
         self.supervisor = self.require_one('supervisor', self.host)
         if not self.command:
-            raise ValueError('`command` option missing for program {}'.
-                format(self.name))
+            raise ValueError(
+                '`command` option missing for program {}'.format(self.name))
         if not self.directory:
             self.directory = self.workdir
         if self.command_absolute:
             self.command = os.path.normpath(
-               os.path.join(self.workdir, self.command))
+                os.path.join(self.workdir, self.command))
 
         if not 'startsecs' in self.options:
             self.options['startsecs'] = 5
