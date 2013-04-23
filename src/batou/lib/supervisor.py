@@ -71,6 +71,8 @@ redirect_stderr = true
         return self.cmd('{} {}'.format(command, args))
 
     def verify(self):
+        if not self.supervisor.enabled:
+            return
         self.parent.assert_no_subcomponent_changes()
         out, err = self.ctl('status {}'.format(self.name))
         if not 'RUNNING' in out:

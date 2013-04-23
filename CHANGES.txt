@@ -5,7 +5,8 @@ Changelog
 0.2.5 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Fix interaction between supervisor programs and disabled supervisors: don't
+  try to start those programs.
 
 
 0.2.4 (2013-04-22)
