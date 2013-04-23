@@ -109,7 +109,7 @@ process_name={{component.name}}
             # to the superlance plugins. :/
             self.supervisor = self.require_one('supervisor', self.host)
             self.command = os.path.normpath(
-               os.path.join(self.supervisor.workdir, self.command))
+                os.path.join(self.supervisor.workdir, self.command))
 
         super(Eventlistener, self).configure()
 
@@ -117,15 +117,16 @@ process_name={{component.name}}
 class Supervisor(Component):
 
     address = 'localhost:9001'
-    buildout_cfg = os.path.join(os.path.dirname(__file__), 'resources',
-                             'supervisor.buildout.cfg')
-    supervisor_conf = os.path.join(os.path.dirname(__file__), 'resources',
-                             'supervisor.conf')
+    buildout_cfg = os.path.join(
+        os.path.dirname(__file__), 'resources', 'supervisor.buildout.cfg')
+    supervisor_conf = os.path.join(
+        os.path.dirname(__file__), 'resources', 'supervisor.conf')
 
     program_config_dir = None
     logdir = None
     loglevel = 'info'
-    enable = 'True'  # Allows turning "everything off" via environment configuration
+    enable = 'True'  # Allows turning "everything off" via environment
+                     # configuration
     max_startup_delay = 0
 
     def configure(self):
@@ -134,9 +135,7 @@ class Supervisor(Component):
 
         buildout_cfg = File('buildout.cfg',
                             source=self.buildout_cfg)
-        self += Buildout('buildout',
-            config=buildout_cfg,
-            python='2.7')
+        self += Buildout('buildout', config=buildout_cfg, python='2.7')
 
         self.program_config_dir = Directory('etc/supervisor.d', leading=True)
         self += self.program_config_dir
@@ -146,7 +145,8 @@ class Supervisor(Component):
         self.logdir = Directory('var/log', leading=True)
         self += self.logdir
 
-        postrotate = self.expand('kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)')
+        postrotate = self.expand(
+            'kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)')
         self += RotatedLogfile('var/log/*.log', postrotate=postrotate)
 
         self += Service('bin/supervisord', pidfile='var/supervisord.pid')
@@ -159,13 +159,15 @@ class Supervisor(Component):
 
         # Nagios check
         self += File('check_supervisor',
-                mode=0o755,
-                source=os.path.join(
-                    os.path.dirname(__file__), 'resources',
-                    'check_supervisor.py.in'),
-                is_template=True)
+                     mode=0o755,
+                     source=os.path.join(
+                         os.path.dirname(__file__),
+                         'resources',
+                         'check_supervisor.py.in'),
+                     is_template=True)
 
-        self += ServiceCheck('Supervisor programs',
+        self += ServiceCheck(
+            'Supervisor programs',
             nrpe=True,
             command=self.expand('{{component.workdir}}/check_supervisor'))
 
