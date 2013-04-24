@@ -2,7 +2,7 @@
 Change log for batou
 ====================
 
-0.1.5 (unreleased)
+0.1.5 (2013-04-24)
 ==================
 
 - Speed up deployments by improving the logic if bootstraps are required. Now
