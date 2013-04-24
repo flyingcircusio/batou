@@ -1,5 +1,5 @@
 syntax: glob
-
+.batou.buildout.success
 *.egg-info
 .DS_Store
 *.pyc
