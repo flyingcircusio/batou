@@ -5,7 +5,7 @@ Changelog
 0.2.6 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Add component that clones from a Mercurial repository.
 
 
 0.2.5 (2013-04-23)
