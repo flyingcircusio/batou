@@ -12,6 +12,8 @@ class UserInit(Component):
     def configure(self):
         self.executable = self.parent.executable
         self.pidfile = self.parent.pidfile
+        if not os.path.isabs(self.pidfile):
+            self.pidfile = os.path.join(self.root.workdir, self.pidfile)
         target = '/var/spool/init.d/{0}/{1}'.format(
             self.environment.service_user,
             os.path.basename(self.parent.executable))
