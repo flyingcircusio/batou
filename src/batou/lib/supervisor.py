@@ -204,26 +204,21 @@ class RunningSupervisor(Component):
         # shut down a lot of services.
         wait = self.reload_timeout
         while wait:
-            wait -= 1
             out, err = '', ''
-            try:
-                out, err = self.cmd('bin/supervisorctl pid', silent=True)
-            except RuntimeError:
-                # Supervisor tends to "randomly" set zero and non-zero exit
-                # codes. :/
-                # See https://github.com/Supervisor/supervisor/issues/24
-                pass
-
+            # Supervisor tends to "randomly" set zero and non-zero exit codes.
+            # See https://github.com/Supervisor/supervisor/issues/24 :-/
+            out, err = self.cmd('bin/supervisorctl pid', silent=True,
+                                ignore_returncode=True)
             if 'SHUTDOWN_STATE' in out:
-                wait += 1
+                time.sleep(1)
+                continue
+            try:
+                int(out) > 0
+            except ValueError:
+                time.sleep(1)
+                wait -= 1
             else:
-                try:
-                    int(out) > 0
-                except ValueError:
-                    pass
-                else:
-                    break
-            time.sleep(1)
+                break
         else:
             raise RuntimeError(
                 'supervisor master process did not start within {} seconds'

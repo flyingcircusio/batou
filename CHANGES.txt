@@ -8,6 +8,8 @@ Changelog
 - Add component that clones from a Mercurial repository.
 - Write supervisord.pid into /run/local instead of ${workdir}/var to ensure
   correct startup after machine crashes.
+- Add `ignore_returncode` parameter to Component.cmd() to suppress exceptions
+  on unsuccessful command execution.
 
 
 0.2.5 (2013-04-23)
