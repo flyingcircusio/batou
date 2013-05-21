@@ -17,8 +17,6 @@ class LocalDeploymentMode(object):
 class AutoMode(LocalDeploymentMode):
 
     def __call__(self):
-        self.environment.acquire_passphrase(
-            '{}/.batou-passphrase'.format(self.environment.service.base))
         try:
             self.environment.configure()
         except CycleError, e:
@@ -61,8 +59,8 @@ class BatchMode(LocalDeploymentMode):
                 self.output.write('OK\n')
                 self.output.flush()
 
-    def cmd_configure(self, passphrase=None):
-        self.environment.configure(passphrase)
+    def cmd_configure(self):
+        self.environment.configure()
         self.host = self.environment.get_host(self.hostname)
 
     def cmd_deploy(self, component):
