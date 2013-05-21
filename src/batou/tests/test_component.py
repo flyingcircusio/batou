@@ -200,6 +200,12 @@ class ComponentTests(TestCase):
         with self.assertRaises(RuntimeError):
             c.cmd('non-existing-command')
 
+    def test_cmd_returns_output_if_ignore_returncode(self):
+        c = Component()
+        out, err = c.cmd('echo important output && false', silent=True,
+                         ignore_returncode=True)
+        self.assertEquals('important output\n', out)
+
     def test_touch_creates_new_file(self):
         reference = tempfile.mktemp()
         self.assertFalse(os.path.exists(reference))

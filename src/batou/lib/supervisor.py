@@ -1,5 +1,5 @@
 from batou import UpdateNeeded
-from batou.component import Component, HookComponent
+from batou.component import Component
 from batou.lib.buildout import Buildout
 from batou.lib.file import File, Directory
 from batou.lib.nagios import ServiceCheck
@@ -26,10 +26,10 @@ stderr_logfile_maxbytes = 0
 stdout_logfile = {{component.supervisor.logdir.path}}/{{component.name}}.log
 stdout_logfile_backups = 0
 stdout_logfile_maxbytes = 0
+redirect_stderr = true
 {% for k, v in component.options.items() %}
 {{k}} = {{v}}
-{% endfor %}
-redirect_stderr = true
+{% endfor -%}
 """
 
     namevar = 'name'
@@ -57,6 +57,8 @@ redirect_stderr = true
 
         if not 'startsecs' in self.options:
             self.options['startsecs'] = 5
+        if not 'startretries' in self.options:
+            self.options['startretries'] = 3
         self.supervisor.max_startup_delay = max(
             int(self.options['startsecs']), self.supervisor.max_startup_delay)
 
@@ -128,8 +130,10 @@ class Supervisor(Component):
     enable = 'True'  # Allows turning "everything off" via environment
                      # configuration
     max_startup_delay = 0
+    pidfile = '/run/local/supervisord.pid'
 
     def configure(self):
+        self.pidfile = self.map(self.pidfile)
         self.address = Address(self.address)
         self.provide('supervisor', self)
 
@@ -149,7 +153,7 @@ class Supervisor(Component):
             'kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)')
         self += RotatedLogfile('var/log/*.log', postrotate=postrotate)
 
-        self += Service('bin/supervisord', pidfile='var/supervisord.pid')
+        self += Service('bin/supervisord', pidfile=self.pidfile)
 
         self.enable = ast.literal_eval(self.enable)
         if self.enable:
@@ -179,49 +183,46 @@ class RunningSupervisor(Component):
 
     def verify(self):
         self.assert_file_is_current(
-            'var/supervisord.pid',
-            ['bin/supervisord', 'etc/supervisord.conf'])
+            self.parent.pidfile, ['bin/supervisord', 'etc/supervisord.conf'])
 
     def update(self):
-        out, err = self.cmd('bin/supervisorctl pid')
+        pid, err = self.cmd('bin/supervisorctl pid', silent=True)
         try:
-            int(out)
+            int(pid) > 0
         except ValueError:
             self.cmd('bin/supervisord')
         else:
-            self.cmd('bin/supervisorctl reload')
-            # Reload is asynchronous and doesn't wait for supervisor to become
-            # fully running again. We actually could monitor supervisorctl,
-            # though. This can take a long time if supervisor needs to orderly
-            # shut down a lot of services.
-            wait = self.reload_timeout
-            while wait:
-                wait -= 1
-                try:
-                    out, err = '', ''
-                    out, err = self.cmd('bin/supervisorctl pid', silent=True)
-                except RuntimeError, e:
-                    # Supervisor tends to "randomly" set zero and non-zero exit
-                    # codes. :/
-                    # See https://github.com/Supervisor/supervisor/issues/24
-                    pass
-
-                if 'SHUTDOWN_STATE' in out:
-                    wait += 1
-                else:
-                    try:
-                        int(out)
-                    except ValueError:
-                        pass
-                    else:
-                        break
-                time.sleep(1)
-            else:
-                raise RuntimeError(
-                    'supervisor master process did not start within {} seconds'
-                    .format(self.reload_timeout))
+            self.reload_supervisor()
         # Wait max startup time now that supervisor is back
         time.sleep(self.parent.max_startup_delay)
+
+    def reload_supervisor(self):
+        self.cmd('bin/supervisorctl reload')
+        # Reload is asynchronous and doesn't wait for supervisor to become
+        # fully running again. We actually could monitor supervisorctl,
+        # though. This can take a long time if supervisor needs to orderly
+        # shut down a lot of services.
+        wait = self.reload_timeout
+        while wait:
+            out, err = '', ''
+            # Supervisor tends to "randomly" set zero and non-zero exit codes.
+            # See https://github.com/Supervisor/supervisor/issues/24 :-/
+            out, err = self.cmd('bin/supervisorctl pid', silent=True,
+                                ignore_returncode=True)
+            if 'SHUTDOWN_STATE' in out:
+                time.sleep(1)
+                continue
+            try:
+                int(out) > 0
+            except ValueError:
+                time.sleep(1)
+                wait -= 1
+            else:
+                break
+        else:
+            raise RuntimeError(
+                'supervisor master process did not start within {} seconds'
+                .format(self.reload_timeout))
 
 
 class StoppedSupervisor(Component):

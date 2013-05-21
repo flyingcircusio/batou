@@ -205,7 +205,7 @@ class RemoteHost(object):
             if not self.exists('bin/buildout'):
                 # XXX We tend to have upgrade issues with setuptools. We used
                 # to always bootstrap but it's becoming a pain.
-                self.cmd('bin/python2.7 bootstrap.py -d')
+                self.cmd('bin/python2.7 bootstrap.py')
             self.cmd('bin/buildout -t 15')
 
             self.batou = self.cmd('bin/batou-local --batch {} {}'
