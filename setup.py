@@ -32,7 +32,7 @@ setup(
         [console_scripts]
             batou-remote = batou.remote:main
             batou-local = batou.local:main
-            secretsedit = batou.lib.secrets.edit:edit
+            secretsedit = batou.secrets.edit:edit
     """,
     author='Christian Theune <ct@gocept.com>',
     author_email='ct@gocept.com',
