@@ -1,6 +1,6 @@
 #!{{component.workdir}}/bin/py
-# Copyright (c) 2012 gocept gmbh & co. kg
-# See also LICENSE.txt
+# Copyright (c) gocept gmbh & co. kg
+
 """Check supervisord programs."""
 
 from __future__ import print_function, unicode_literals

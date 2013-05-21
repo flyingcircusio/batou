@@ -246,8 +246,8 @@ class Component(object):
             raise batou.UpdateNeeded()
         self.assert_no_subcomponent_changes()
 
-    def cmd(self, cmd, silent=False):
-        return batou.utils.cmd(cmd, silent)
+    def cmd(self, cmd, silent=False, ignore_returncode=False):
+        return batou.utils.cmd(cmd, silent, ignore_returncode)
 
     def map(self, path):
         path = os.path.expanduser(path)
