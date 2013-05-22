@@ -7,6 +7,7 @@ Changelog
 
 - Fix template for Nagios check service dependencies.
 
+- Update bootstrap call for batou-internal bootstrapping.
 
 0.2.6 (2013-05-18)
 ==================
