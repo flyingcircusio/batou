@@ -5,7 +5,7 @@ Changelog
 0.2.7 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Fix template for Nagios check service dependencies.
 
 
 0.2.6 (2013-05-18)
