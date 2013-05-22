@@ -198,10 +198,10 @@ class Component(object):
     # Resource provider/user API
 
     def provide(self, key, value):
-        self.host.environment.resources.provide(self.root, key, value)
+        self.environment.resources.provide(self.root, key, value)
 
     def require(self, key, host=None, strict=True, reverse=False):
-        return self.host.environment.resources.require(
+        return self.environment.resources.require(
             self.root, key, host, strict, reverse)
 
     def require_one(self, key, host=None, strict=True, reverse=False):
