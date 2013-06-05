@@ -5,7 +5,7 @@ Changelog
 0.2.8 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Added archive extractor for .dmg files.
 
 
 0.2.7 (2013-05-22)
