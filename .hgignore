@@ -30,5 +30,6 @@ lib/python2.*
 lib64
 local
 local.cfg
+my-buildout.cfg
 parts
 tags
