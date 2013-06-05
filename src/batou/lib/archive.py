@@ -34,6 +34,7 @@ class Extractor(Component):
 
     create_target_dir = True
     suffixes = ()
+    strip = 0
     target = None
 
     @classmethod
@@ -89,8 +90,6 @@ class Unzip(Extractor):
 class Untar(Extractor):
 
     suffixes = ('.tar.gz', '.tar', '.tar.bz2', '.tgz')
-    strip = 0
-
     exclude = ('._*',)
 
     def configure(self):
