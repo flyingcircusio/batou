@@ -8,6 +8,7 @@ import os.path
 import plistlib
 import shutil
 import subprocess
+import zope.cachedescriptors.property
 
 
 class Extract(Component):
@@ -173,7 +174,10 @@ class DMGExtractor(Extractor):
     def configure(self):
         super(DMGExtractor, self).configure()
         assert self.strip == 0, "Strip is not supported by DMGExtractor"
-        self.volume = DMGVolume(self.archive)
+
+    @zope.cachedescriptors.property.Lazy
+    def volume(self):
+        return DMGVolume(os.path.join(self.workdir, self.archive))
 
     def get_names_from_archive(self):
         return self.volume.namelist()
