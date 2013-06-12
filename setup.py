@@ -23,6 +23,7 @@ setup(
         'mock',
         'paramiko>=1.8',
         'configobj',
+        'zope.cachedescriptors',
     ],
     extras_require={
         'test': [
