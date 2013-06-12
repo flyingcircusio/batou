@@ -133,11 +133,11 @@ class DMGVolume(object):
             for name in itertools.chain(dirnames, filenames):
                 yield os.path.join(root, name)
 
-    def copy_to(self, target_dir):
+    def copy_to(self, target_dir, exclude=None):
         if os.path.exists(target_dir):
             # shutil.copytree insists that the target_dir does not exist
             shutil.rmtree(target_dir)
-        shutil.copytree(self.volume_path, target_dir)
+        shutil.copytree(self.volume_path, target_dir, ignore=exclude)
 
     def _mount(self):
         """Mount the .dmg file as volume."""
@@ -163,12 +163,15 @@ class DMGVolume(object):
     def _unmount(self):
         """Unmount and eject the mounted .dmg file."""
         if self.volume_path is not None:
-            batou.utils.cmd([self.HDIUTIL, 'eject', self.volume_path])
+            batou.utils.cmd(
+                [self.HDIUTIL, 'eject',
+                 self.volume_path.replace(' ', '\ ')])  # XXX: #12527
 
 
 class DMGExtractor(Extractor):
 
     suffixes = ('.dmg',)
+    exclude = (' ', )  # Typical link to /Applications in App-DMGs
 
     def configure(self):
         super(DMGExtractor, self).configure()
@@ -182,4 +185,6 @@ class DMGExtractor(Extractor):
         return self.volume.namelist()
 
     def update(self):
-        self.volume.copy_to(self.target)
+        exclude = shutil.ignore_patterns(*self.exclude)
+        self.volume.copy_to(
+            os.path.join(self.workdir, self.target), exclude=exclude)
