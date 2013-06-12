@@ -7,7 +7,6 @@ import os
 import os.path
 import plistlib
 import shutil
-import subprocess
 import zope.cachedescriptors.property
 
 
