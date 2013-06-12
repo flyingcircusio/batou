@@ -20,7 +20,7 @@ class Extract(Component):
     strip = 0
 
     def configure(self):
-        for candidate in [Unzip, Untar]:
+        for candidate in [Unzip, Untar, DMGExtractor]:
             if candidate.can_handle(self.archive):
                 extractor = candidate(self.archive,
                             target=self.target,
