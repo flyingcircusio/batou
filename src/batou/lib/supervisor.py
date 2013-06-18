@@ -68,9 +68,9 @@ redirect_stderr = true
         self += File(self.config,
                      content=self.expand(self.program_section))
 
-    def ctl(self, args):
+    def ctl(self, args, **kw):
         command = '{}/bin/supervisorctl'.format(self.supervisor.workdir)
-        return self.cmd('{} {}'.format(command, args))
+        return self.cmd('{} {}'.format(command, args), **kw)
 
     def verify(self):
         if not self.supervisor.enable:
