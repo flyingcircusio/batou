@@ -267,7 +267,7 @@ class RemoteHost(object):
         """Execute `cmd` in the remote service user's context."""
         real_cmd = '{}'
         if service_user:
-            real_cmd = 'sudo -u {0} -i "{{}}"'.format(
+            real_cmd = 'sudo -u {0} -i bash -c "{{}}"'.format(
                 self.deployment.environment.service_user)
         if ensure_cwd:
             real_cmd = real_cmd.format('cd {} && {{}}'.format(self.cwd[-1]))
