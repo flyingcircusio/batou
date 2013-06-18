@@ -171,7 +171,7 @@ def topological_sort(graph):
     return sorted
 
 
-def cmd(cmd, silent=False, ignore_returncode=False):
+def cmd(cmd, silent=False, ignore_returncode=False, communicate=True):
     if not isinstance(cmd, basestring):
         # We use `shell=True`, so the command needs to be a single string:
         cmd = ' '.join(cmd)
@@ -181,6 +181,9 @@ def cmd(cmd, silent=False, ignore_returncode=False):
         stderr=subprocess.PIPE,
         stdin=subprocess.PIPE,
         shell=True)
+    if not communicate:
+        # XXX See #12550
+        return
     stdout, stderr = process.communicate()
     if process.returncode:
         if not silent:
