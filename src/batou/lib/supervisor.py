@@ -83,7 +83,8 @@ redirect_stderr = true
     def update(self):
         self.ctl('reread')
         self.ctl('update')
-        self.ctl('restart {}'.format(self.name))
+        self.ctl('restart {}'.format(self.name),
+                 communicate=self.supervisor.wait_for_running)
 
 
 class Eventlistener(Program):
@@ -130,6 +131,7 @@ class Supervisor(Component):
     enable = 'True'  # Allows turning "everything off" via environment
                      # configuration
     max_startup_delay = 0
+    wait_for_running = 'True'
     pidfile = '/run/local/supervisord.pid'
 
     def configure(self):
@@ -155,6 +157,7 @@ class Supervisor(Component):
 
         self += Service('bin/supervisord', pidfile=self.pidfile)
 
+        self.wait_for_running = ast.literal_eval(self.wait_for_running)
         self.enable = ast.literal_eval(self.enable)
         if self.enable:
             self += RunningSupervisor()
@@ -193,8 +196,9 @@ class RunningSupervisor(Component):
             self.cmd('bin/supervisord')
         else:
             self.reload_supervisor()
-        # Wait max startup time now that supervisor is back
-        time.sleep(self.parent.max_startup_delay)
+        if self.parent.wait_for_running:
+            # Wait max startup time now that supervisor is back
+            time.sleep(self.parent.max_startup_delay)
 
     def reload_supervisor(self):
         self.cmd('bin/supervisorctl reload')

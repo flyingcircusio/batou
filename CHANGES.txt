@@ -7,6 +7,8 @@ Changelog
 
 - Added archive extractor for .dmg files.
 
+- Added flag for supervisor to control whether global or individual restarts
+  wait until everything is running.
 
 0.2.7 (2013-05-22)
 ==================
