@@ -1,0 +1,14 @@
+Support
+=======
+
+batou itself is released "as is". Feel free to contact us through our `bugtracker 
+<http://projects.gocept.com/projects/batou>`_.
+
+Commercial support
+------------------
+
+We will be happy to give you commercial support for batou: feature
+implementation, bug fixing, consulting, or education.
+
+If you need us, send an email to `mail@gocept.com <mailto:mail@gocept.com?Subject=Support%20for%20batou>`_ to
+get an offer for our services.
