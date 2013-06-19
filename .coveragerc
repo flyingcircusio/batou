@@ -1,13 +1,10 @@
 [run]
 branch = True
-source = batou
+source = bandersnatch
 
 [report]
 precision = 2
-omit = */interfaces.py
-       */interfaces
-       */tests/*
-       */tests.py
-
-[html]
-directory = coverage-report
+omit = */apache_*.py
+       */buildout.py
+       */release.py
+       */log.py
