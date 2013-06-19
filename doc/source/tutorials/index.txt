@@ -1,8 +1,17 @@
 Tutorials
 =========
 
-.. toctree::
-    :maxdepth: 1
+Hello world!
+------------
 
-    helloworld
-    component
+This tutorial is intendend to give you a working setup of a “Hello world” project with batou. It will not do anything useful but you will get in touch with core concepts and the tool to perform deployments locally.
+
+:doc:`Read the "Hello world!" tutorial <helloworld>`
+
+Using components
+----------------
+
+This is a tutorial about batou components. You will use batou to deploy a
+simple long-running process as a daemon using supervisor.
+
+:doc:`Read the "Using components" tutorial. <component>`

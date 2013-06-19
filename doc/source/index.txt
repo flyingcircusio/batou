@@ -65,9 +65,9 @@ Learn more
     keyfeatures
     introduction
     requirements
-    principles
     tutorials/index
     guide/index
+    principles
 
 
 Resources

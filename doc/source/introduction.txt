@@ -1,5 +1,5 @@
-Introduction
-============
+In-depth introduction
+=====================
 
 .. contents::
     :local:
@@ -28,7 +28,6 @@ environment, the application itself being only one of them. An example of a
 project that we typically deal with looks like this:
 
 .. image:: production-architecture.png
-    :width: 400px
 
 This "environment" consists of 27 virtual machines running a good number of
 runtime components that need to be configured. The actual application (in this
