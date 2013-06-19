@@ -1,5 +1,5 @@
-Hello world
-=========== 
+Hello world!
+============
 
 This tutorial is intendend to give you a working setup of a "Hello world"
 project with batou. It will not do anything useful but you will get in touch

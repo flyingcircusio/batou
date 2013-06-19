@@ -1,11 +1,76 @@
 Guide
 =====
 
-.. toctree::
-    :maxdepth: 1
+This guide is intended to help understanding basic concepts and as a reference
+to behaviour, features, and API of batou. It should answer all questions that
+you have when setting up your own deployments.
 
-    components
-    environments
-    library
-    local
-    remote
+.. contents::
+    :local:
+
+General model
+-------------
+
+A deployment (or "service") is split into two parts: the components and
+environments.
+
+.. image:: general-model.png
+    :width: 400px
+
+**Components** define the general parts that your service consists of: frontend
+configuration, your application itself, database configuration, cronjobs, and
+additional services and infrastructure support.
+
+They also:
+
+* implement the **configure, verify, update cyle**
+* (re)use other components to construct a **hierarchy** for breaking complex
+   tasks into smaller pieces
+* explicitly determine execution **order** of lower-level components within
+  their level of the hierarchy
+* can exchange information between each other using the **resource
+  API** - a simple in-memory key-value store, modelling dependencies between
+  components and determining higher-level execution order
+* should generally not have *any* specific hard-coded information
+  about hostnames, public addresses, etc.
+
+**Environments** define individual installations of your service by mapping the
+service's components to hosts. A service can define any number of environments.
+You need at least one environment to actually perform any deployment.
+
+They also:
+
+* can override any attributes on top-level components
+* determine the type of the **platform** that is deployed to, activating
+  platform-specific components in addition to the services' general model
+
+
+When **deploying locally** all components of the specific host/environment
+combination will be configured in your **working directory**.
+
+When **deploying remotely** all components of all hosts of the specified
+environment will be configured on the target machines' working directories.
+
+
+Components
+----------
+
+details about component features and API
+- access to service, environment, and host objects
+- naming rules, multiple components in same definition directory vs. working directory
+multiple component
+
+Environments
+------------
+
+details about environment features
+
+Standard component library
+--------------------------
+
+list of default components
+
+Runners
+-------
+
+local, remote
