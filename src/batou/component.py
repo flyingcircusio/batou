@@ -28,8 +28,8 @@ def load_components_from_file(filename):
     os.chdir(defdir)
     module_name = os.path.basename(defdir)
     module_path = 'batou.c.{}'.format(module_name)
-    module = types.ModuleType(module_name,
-        'Component definition module for {}'.format(filename))
+    module = types.ModuleType(
+        module_name, 'Component definition module for {}'.format(filename))
     sys.modules[module_path] = module
     setattr(batou.c, module_name, module)
     execfile(filename, module.__dict__)
@@ -39,11 +39,11 @@ def load_components_from_file(filename):
             # Ignore anything we pushed into the globals before execution
             continue
         if (isinstance(candidate, type) and
-            issubclass(candidate, Component)):
+                issubclass(candidate, Component)):
             factory = RootComponentFactory(
-                    candidate.__name__.lower(),
-                    candidate,
-                    defdir)
+                candidate.__name__.lower(),
+                candidate,
+                defdir)
             yield factory
     os.chdir(oldcwd)
 
@@ -138,8 +138,8 @@ class Component(object):
         pass
 
     def last_updated(self):
-        """An optional helper to indicate to other components a timestamp how new any changes
-        in the target system related to this component are.
+        """An optional helper to indicate to other components a timestamp how
+        new any changes in the target system related to this component are.
 
         Can be used to determine file ages, etc.
         """
@@ -156,8 +156,8 @@ class Component(object):
 
         """
         if component is not None:
-            # Allow `None` components to flow right through. This makes the API a
-            # bit more convenient in some cases, e.g. with platform handling.
+            # Allow `None` components to flow right through. This makes the API
+            # a bit more convenient in some cases, e.g. with platform handling.
             self.sub_components.append(component)
             self |= component
             component.parent = self
@@ -208,12 +208,12 @@ class Component(object):
         resources = self.require(key, host, strict, reverse)
         if len(resources) > 1:
             raise KeyError(
-                "Expected only one result, got multiple for (key={}, host={})".
-                    format(key, host))
+                'Expected only one result, got multiple for (key={}, host={})'.
+                format(key, host))
         elif len(resources) == 0:
             raise KeyError(
-                "Expected one result, got none for (key={}, host={})".
-                    format(key, host))
+                'Expected one result, got none for (key={}, host={})'.
+                format(key, host))
         return resources[0]
 
     # Component (convenience) API
@@ -332,7 +332,8 @@ class RootComponentFactory(object):
 
     def __call__(self, service, environment, host, features, config):
         factory = lambda: self.factory(**config)
-        root = RootComponent(self.name, factory, self.factory, host, self.defdir)
+        root = RootComponent(self.name, factory, self.factory,
+                             host, self.defdir)
         if features:
             root.features = features
         return root

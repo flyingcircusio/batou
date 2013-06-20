@@ -1,8 +1,6 @@
 from batou.component import Component, HookComponent
 from batou.lib.file import File
 import os.path
-import urlparse
-
 
 
 def ServiceCheck(name, **kw):
@@ -59,14 +57,14 @@ class NagiosServer(Component):
     """
 
     nagios_cfg = os.path.join(os.path.dirname(__file__),
-                             'resources', 'nagios.cfg')
+                              'resources', 'nagios.cfg')
 
     # Additional static content that will be appended to the generated file.
     static = ''
 
     def configure(self):
         self.services = list(self.require(Service.key))
-        self.services.sort(key=lambda x:(x.host.name, x.description))
+        self.services.sort(key=lambda x: (x.host.name, x.description))
 
         self += File(
             self.expand('nagios-server-{{environment.service_user}}.cfg'),
@@ -86,9 +84,11 @@ class NRPEHost(Component):
         self.services = [
             service for service in self.require(Service.key, host=self.host)
             if isinstance(service, NRPEService)]
-        self.services.sort(key=lambda x:x.name)
+        self.services.sort(key=lambda x: x.name)
 
-        self += File(self.expand('/etc/nagios/nrpe/local/{{environment.service_user}}.cfg'),
+        self += File(
+            self.expand('/etc/nagios/nrpe/local/'
+                        '{{environment.service_user}}.cfg'),
             source=self.nrpe_cfg,
             is_template=True,
             mode=0o644)

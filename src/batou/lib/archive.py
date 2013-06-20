@@ -22,15 +22,16 @@ class Extract(Component):
     def configure(self):
         for candidate in [Unzip, Untar, DMGExtractor]:
             if candidate.can_handle(self.archive):
-                extractor = candidate(self.archive,
-                            target=self.target,
-                            create_target_dir=self.create_target_dir,
-                            strip=self.strip)
-                self += extractor
                 break
         else:
             raise ValueError("No handler found for archive '{}'."
                              .format(self.archive))
+        extractor = candidate(
+            self.archive,
+            target=self.target,
+            create_target_dir=self.create_target_dir,
+            strip=self.strip)
+        self += extractor
         self.target = extractor.target
 
 

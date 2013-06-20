@@ -25,7 +25,7 @@ setup(
         'paramiko>=1.8',
         'pytest',
         'pytest-capturelog',
-        #'pytest-codecheckers',
+        'pytest-codecheckers',
         'pytest-cov',
         'zope.cachedescriptors',
     ],
