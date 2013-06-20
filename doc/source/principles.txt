@@ -46,6 +46,16 @@ Simplicity
     expectations about existing components; people who are experienced
     with them ought to be able to predict their behaviour.
 
+    Similarly, we do not want to invent a whole new programming language and
+    thus selected Python both as our choice for implementing batou and for
+    implementing specific deployments.
+
+    You can do whatever Python can do in your code, we won't handcuff you.
+    Conversely, we will indicate areas where you need to respect certain
+    assumptions (like the ``configure()`` method) as we can't effectively stop
+    you from shooting yourself in the foot - and we won't pretend that we
+    could.
+
 Domain-agnostic
     Batou should not make any assumption about your service: we do mostly
     deploy web application stacks but honestly, the abstract model does not
