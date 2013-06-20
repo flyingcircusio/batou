@@ -11,23 +11,24 @@ class Developer(object):
             return path
         path = path[1:]
         path = os.path.join(self.environment.workdir_base, '_', path)
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(path)
+        dir = os.path.dirname(path)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
         return path
 
 
 class Map(object):
 
     def __init__(self, environment, config):
-        self.map = []
+        self._map = []
         for key, value in config.items():
             if not key.startswith('/'):
                 continue
-            self.map.append((key, value))
-        self.map.sort(key=lambda x: len(x[0]), reverse=True)
+            self._map.append((key, value))
+        self._map.sort(key=lambda x: len(x[0]), reverse=True)
 
     def map(self, path):
-        for prefix, replacement in self.map:
+        for prefix, replacement in self._map:
             if path.startswith(prefix):
                 return path.replace(prefix, replacement, 1)
         return path
