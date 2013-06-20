@@ -5,7 +5,9 @@ Changelog
 0.2.9 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Clean up buildout versions specifications.
+
+- Switch testrunner to pytest.
 
 
 0.2.8 (2013-06-18)
