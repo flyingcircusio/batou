@@ -10,6 +10,7 @@ syntax: glob
 .batou-lock
 .batou-passphrase
 .batou.buildout.success
+.coverage
 .installed.cfg
 .mr.developer.cfg
 ID
@@ -25,6 +26,7 @@ eggs
 examples/*/.batou-lock
 examples/*/local
 examples/*/work
+htmlcov
 include/python2.*
 lib/python2.*
 lib64
