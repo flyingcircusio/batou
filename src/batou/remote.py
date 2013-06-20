@@ -1,5 +1,5 @@
-from .utils import notify
 from .service import ServiceConfig
+from .utils import notify
 from paramiko import RejectPolicy, SSHException
 from paramiko.client import SSHClient
 import argparse
@@ -10,7 +10,6 @@ import os.path
 import re
 import subprocess
 import sys
-import time
 
 
 logger = logging.getLogger('batou.remote')
@@ -28,7 +27,8 @@ def main():
     parser.add_argument(
         '--reset', action='store_true',
         help='Reset the batou environment on all remote hosts by '
-             'deleting the generated runtime environment. Leaves work/ intact.')
+             'deleting the generated runtime environment. '
+             'Leaves work/ intact.')
     parser.add_argument(
         '-D', '--dirty', action='store_true',
         help='Allow deploying dirty working copies.')
@@ -57,7 +57,8 @@ def main():
         repository_status = subprocess.check_output(
             ['hg', 'stat'], stderr=subprocess.STDOUT)
     except (OSError, subprocess.CalledProcessError):
-        logger.error("Unable to check repository status. Is there an HG repository here?")
+        logger.error('Unable to check repository status. '
+                     'Is there an HG repository here?')
         sys.exit(1)
     else:
         if repository_status.strip():
@@ -209,9 +210,10 @@ class RemoteHost(object):
                 self.cmd('bin/python2.7 bootstrap.py')
             self.cmd('bin/buildout -t 15')
 
-            self.batou = self.cmd('bin/batou-local --batch {} {}'
-                    .format(self.deployment.environment.name,
-                        self.host.fqdn), interactive=True)
+            self.batou = self.cmd(
+                'bin/batou-local --batch {} {}'.format(
+                    self.deployment.environment.name, self.host.fqdn),
+                interactive=True)
             for root in self.host.components:
                 root.component.remote_bootstrap(self)
             self._wait_for_remote_ready()
@@ -247,9 +249,11 @@ class RemoteHost(object):
         line = ''
         while True:
             char = self.batou[2].read(1)
-            logger.debug('waiting for remote {} - got: {}'.format(self.host.name, repr(char)))
+            logger.debug('waiting for remote {} - got: {}'.format(
+                self.host.name, repr(char)))
             if not char:
-                raise RuntimeError('Empty response from server {}.'.format(self.host.name))
+                raise RuntimeError('Empty response from server {}.'.format(
+                    self.host.name))
             line += char
             if line == '> ':
                 logger.debug('done waiting for {}'.format(self.host.name))

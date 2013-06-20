@@ -9,7 +9,6 @@ class Configure(Component):
     namevar = 'path'
     args = ''
 
-
     def verify(self):
         with self.chdir(self.path):
             # This is guesswork. Unfortunately CMMI doesn't work any better.
@@ -19,7 +18,8 @@ class Configure(Component):
 
     def update(self):
         with self.chdir(self.path):
-            self.cmd(self.expand('./configure --prefix={{component.workdir}} {{component.args}}'))
+            self.cmd(self.expand('./configure --prefix={{component.workdir}} '
+                                 '{{component.args}}'))
             self.touch('.batou.config.success')
 
 

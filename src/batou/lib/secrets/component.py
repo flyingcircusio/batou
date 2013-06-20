@@ -33,7 +33,7 @@ class Secrets(Component):
 
     def configure(self):
         encrypted_file = u'{}/{}.cfg.aes'.format(
-                self.root.defdir, self.environment.name)
+            self.root.defdir, self.environment.name)
         config = ConfigParser.SafeConfigParser()
         with EncryptedConfigFile(encrypted_file, self.passphrase) as secrets:
             config.readfp(

@@ -19,8 +19,9 @@ class UserInit(Component):
             os.path.basename(self.parent.executable))
         init_source = os.path.join(
             os.path.dirname(__file__), 'resources', 'init.sh')
-        self += File(target,
-                source=init_source,
-                is_template=True,
-                mode=0o755,
-                leading=True)
+        self += File(
+            target,
+            source=init_source,
+            is_template=True,
+            mode=0o755,
+            leading=True)

@@ -30,10 +30,9 @@ class DownloadTest(unittest.TestCase):
         download = Download('url', checksum='foobar:1234')
         download.configure()
         with mock.patch('batou.lib.download.Download.cmd'), \
-             mock.patch('batou.utils.hash') as buh,\
-             self.assertRaises(AssertionError) as err:
+                mock.patch('batou.utils.hash') as buh,\
+                self.assertRaises(AssertionError) as err:
             buh.return_value = '4321'
             download.update()
         self.assertEqual('Checksum mismatch!\nexpected: 1234\ngot: 4321',
                          str(err.exception))
-

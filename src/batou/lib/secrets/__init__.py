@@ -24,3 +24,5 @@ new one is created.
 
 # Reexport for API
 from .component import Secrets  # noqa
+
+Secrets  # Make pyflakes happy

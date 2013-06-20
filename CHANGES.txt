@@ -5,6 +5,9 @@ Changelog
 0.2.9 (unreleased)
 ==================
 
+- Clean up PEP8 / pyflakes errors, integrate pytest plugin to ensure continued
+  compliance.
+
 - Clean up buildout versions specifications.
 
 - Switch testrunner to pytest.

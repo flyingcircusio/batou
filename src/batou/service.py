@@ -54,8 +54,8 @@ class ServiceConfig(object):
         """Set up basic environment objects for all configs found."""
         existing_environments = glob.glob(self.environment_pattern)
         for pattern in [self.service.base + '/environments/', '.cfg']:
-            existing_environments = map(lambda x: x.replace(pattern, ''),
-                                           existing_environments)
+            existing_environments = map(
+                lambda x: x.replace(pattern, ''), existing_environments)
         self.existing_environments = set(existing_environments)
 
         for environment in self.environments:

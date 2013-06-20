@@ -37,9 +37,9 @@ class AutoModeTests(unittest.TestCase):
         environment.get_host.return_value = host
         log = []
         environment.get_sorted_components.return_value = components = [
-                SampleComponent(log, host),
-                SampleComponent(log, Mock()),
-                SampleComponent(log, host)]
+            SampleComponent(log, host),
+            SampleComponent(log, Mock()),
+            SampleComponent(log, host)]
         AutoMode(environment, 'localhost')()
         self.assertListEqual([components[0], components[2]], log)
 

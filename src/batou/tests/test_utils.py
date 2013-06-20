@@ -23,7 +23,7 @@ class ResolveTests(unittest.TestCase):
         self.assertEqual('127.0.0.1:8080', resolve('localhost:8080'))
 
     @mock.patch('socket.gethostbyname',
-            side_effect=socket.gaierror('lookup failed'))
+                side_effect=socket.gaierror('lookup failed'))
     def test_socket_error_shows_hostname(self, ghbn):
         try:
             resolve('localhost')

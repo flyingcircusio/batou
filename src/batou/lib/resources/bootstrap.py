@@ -18,7 +18,13 @@ The script accepts buildout command-line options, so you can
 use the -c option to specify an alternate configuration file.
 """
 
-import os, shutil, sys, tempfile, urllib, urllib2, subprocess
+import os
+import shutil
+import sys
+import tempfile
+import urllib
+import urllib2
+import subprocess
 from optparse import OptionParser
 
 if sys.platform == 'win32':
@@ -58,12 +64,13 @@ if not has_broken_dash_S and 'site' in sys.modules:
 # loaded by .pth files.
 clean_path = sys.path[:]
 import site  # imported because of its side effects
+site  # make pyflakes happy
 sys.path[:] = clean_path
 for k, v in sys.modules.items():
     if k in ('setuptools', 'pkg_resources') or (
-        hasattr(v, '__path__') and
-        len(v.__path__) == 1 and
-        not os.path.exists(os.path.join(v.__path__[0], '__init__.py'))):
+            hasattr(v, '__path__') and
+            len(v.__path__) == 1 and
+            not os.path.exists(os.path.join(v.__path__[0], '__init__.py'))):
         # This is a namespace package.  Remove it.
         sys.modules.pop(k)
 
@@ -102,10 +109,10 @@ local resources, you can keep this script from going over the network.
 
 parser = OptionParser(usage=usage)
 parser.add_option("-v", "--version", dest="version",
-                          help="use a specific zc.buildout version")
+                  help="use a specific zc.buildout version")
 parser.add_option("-d", "--distribute",
-                   action="store_true", dest="use_distribute", default=False,
-                   help="Use Distribute rather than Setuptools.")
+                  action="store_true", dest="use_distribute", default=False,
+                  help="Use Distribute rather than Setuptools.")
 parser.add_option("--setup-source", action="callback", dest="setup_source",
                   callback=normalize_to_url, nargs=1, type="string",
                   help=("Specify a URL or file location for the setup file. "
@@ -131,8 +138,8 @@ parser.add_option("-t", "--accept-buildout-test-releases",
                         "bootstrap and buildout will get the newest releases "
                         "even if they are alphas or betas."))
 parser.add_option("-c", None, action="store", dest="config_file",
-                   help=("Specify the path to the buildout configuration "
-                         "file to be used."))
+                  help=("Specify the path to the buildout configuration "
+                        "file to be used."))
 
 options, args = parser.parse_args()
 

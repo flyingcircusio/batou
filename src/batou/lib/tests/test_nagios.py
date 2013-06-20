@@ -25,7 +25,8 @@ class TestNagiosServer(unittest.TestCase):
 
     def test_server_template(self):
         from ..nagios import NagiosServer, Service
-        service = Service('http',
+        service = Service(
+            'http',
             command='http',
             args='-H localhost -u /login.html',
             depend_on=[('localhost', 'Supervisor')])
@@ -55,4 +56,3 @@ define servicedependency {
     dependent_service_description http
 }
 """, server.sub_components[-1].content)
-

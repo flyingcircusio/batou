@@ -46,9 +46,11 @@ class SecretsEditor(object):
 
 def get_passphrase(subject):
     if os.path.exists(subject):
-        return getpass.getpass('Enter passphrase for encrypted file {}: '.format(subject))
+        return getpass.getpass(
+            'Enter passphrase for encrypted file {}: '.format(subject))
 
-    phrase1 = getpass.getpass('Enter passphrase for new file {}: '.format(subject))
+    phrase1 = getpass.getpass(
+        'Enter passphrase for new file {}: '.format(subject))
     if len(phrase1) < 20:
         raise RuntimeError(
             'passphrase must be at least 20 characters long')
