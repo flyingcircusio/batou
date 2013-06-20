@@ -5,12 +5,14 @@ Changelog
 0.2.9 (unreleased)
 ==================
 
+- Switch testrunner to pytest. Refactor some tests to take advantage of its
+  capabilities.
+
 - Clean up PEP8 / pyflakes errors, integrate pytest plugin to ensure continued
   compliance.
 
 - Clean up buildout versions specifications.
 
-- Switch testrunner to pytest.
 
 
 0.2.8 (2013-06-18)
