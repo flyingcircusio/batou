@@ -10,7 +10,7 @@ import tempfile
 import time
 
 
-class TestComponent(Component):
+class SampleComponent(Component):
     updated = False
     needs_update = True
 
@@ -36,16 +36,16 @@ class ComponentTests(TestCase):
         component.update()
 
     def test_init_component_with_namevar_uses_first_argument(self):
-        class TestComponent(Component):
+        class SampleComponent(Component):
             namevar = 'asdf'
-        component = TestComponent('foobar')
+        component = SampleComponent('foobar')
         self.assertEquals('foobar', component.asdf)
 
     def test_init_component_with_namevar_fails_without_argument(self):
-        class TestComponent(Component):
+        class SampleComponent(Component):
             namevar = 'asdf'
         with self.assertRaises(ValueError):
-            TestComponent()
+            SampleComponent()
 
     def test_init_keyword_args_update_dict(self):
         component = Component(foobar=1)
@@ -113,13 +113,13 @@ class ComponentTests(TestCase):
         component.deploy()
 
     def test_deploy_update_performed_if_needed(self):
-        component = TestComponent(needs_update=True)
+        component = SampleComponent(needs_update=True)
         component.prepare(None, Mock(), None, None)
         component.deploy()
         self.assertTrue(component.updated)
 
     def test_deploy_update_not_performed_if_not_needed(self):
-        component = TestComponent(needs_update=False)
+        component = SampleComponent(needs_update=False)
         component.prepare(None, Mock(), None, None)
         component.deploy()
         self.assertFalse(component.updated)
