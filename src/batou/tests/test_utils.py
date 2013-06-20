@@ -1,44 +1,47 @@
 from StringIO import StringIO
-from batou.utils import resolve, input, MultiFile, locked, notify, Address
-from batou.utils import revert_graph, topological_sort
 from batou.utils import hash
+from batou.utils import resolve, input, MultiFile, locked, notify, Address
+from batou.utils import revert_graph, topological_sort, flatten, NetLoc
+from batou.utils import remove_nodes_without_outgoing_edges, cmd
 import mock
 import os
+import pytest
 import socket
 import tempfile
 import threading
 import unittest
 
 
-class ResolveTests(unittest.TestCase):
-
-    @mock.patch('socket.gethostbyname')
-    def test_host_without_port_resolves(self, ghbn):
-        ghbn.return_value = '127.0.0.1'
-        self.assertEqual('127.0.0.1', resolve('localhost'))
-
-    @mock.patch('socket.gethostbyname')
-    def test_host_with_port_resolves_and_keeps_port(self, ghbn):
-        ghbn.return_value = '127.0.0.1'
-        self.assertEqual('127.0.0.1:8080', resolve('localhost:8080'))
-
-    @mock.patch('socket.gethostbyname',
-                side_effect=socket.gaierror('lookup failed'))
-    def test_socket_error_shows_hostname(self, ghbn):
-        try:
-            resolve('localhost')
-        except socket.gaierror, e:
-            self.assertEquals('lookup failed (localhost)', str(e))
+@mock.patch('socket.gethostbyname')
+def test_host_without_port_resolves(ghbn):
+    ghbn.return_value = '127.0.0.1'
+    assert resolve('localhost') == '127.0.0.1'
 
 
-class InputTests(unittest.TestCase):
+@mock.patch('socket.gethostbyname')
+def test_host_with_port_resolves_and_keeps_port(ghbn):
+    ghbn.return_value = '127.0.0.1'
+    assert resolve('localhost:8080') == '127.0.0.1:8080'
 
-    @mock.patch('__builtin__.raw_input')
-    def test_input(self, raw_input):
-        raw_input.return_value = 'asdf'
-        out = StringIO()
-        self.assertEquals('asdf', input('foo', out))
-        self.assertEquals('foo', out.getvalue())
+
+@mock.patch('socket.gethostbyname',
+            side_effect=socket.gaierror('lookup failed'))
+def test_socket_error_shows_hostname(ghbn):
+    with pytest.raises(socket.gaierror) as e:
+        resolve('localhost')
+    assert str(e.value) == 'lookup failed (localhost)'
+
+
+@mock.patch('__builtin__.raw_input')
+def test_input(raw_input):
+    raw_input.return_value = 'asdf'
+    out = StringIO()
+    assert input('foo', out) == 'asdf'
+    assert out.getvalue() == 'foo'
+
+
+def test_flatten():
+    assert [1, 2, 3, 4] == flatten([[1, 2], [3, 4]])
 
 
 class MultiFileTests(unittest.TestCase):
@@ -133,24 +136,50 @@ class AddressNetLocTests(unittest.TestCase):
         self.assertEquals('8080', address.connect.port)
 
 
-class GraphTests(unittest.TestCase):
+def test_address_format_with_port():
+    assert str(Address('127.0.0.1:8080').listen) == '127.0.0.1:8080'
 
-    def test_revert_graph_no_edges_is_identical(self):
-        graph = {1: set(), 2: set()}
-        self.assertEquals(graph, dict(revert_graph(graph)))
 
-    def test_revert_graph_one_edge_reverses(self):
-        graph = {1: set([2])}
-        self.assertEquals({2: set([1]), 1: set()}, dict(revert_graph(graph)))
+def test_netloc_format_without_port():
+    assert str(NetLoc('127.0.0.1')) == '127.0.0.1'
 
-    def test_topological_sort_simple_chain(self):
-        graph = {1: set([2]), 2: set([3]), 3: set([4])}
-        self.assertEquals([1, 2, 3, 4], topological_sort(graph))
 
-    def test_topological_sort_raises_on_loop(self):
-        graph = {1: set([2]), 2: set([3]), 3: set([1])}
-        with self.assertRaises(ValueError):
-            topological_sort(graph)
+def test_revert_graph_no_edges_is_identical():
+    graph = {1: set(), 2: set()}
+    assert graph == dict(revert_graph(graph))
+
+
+def test_revert_graph_one_edge_reverses():
+    graph = {1: set([2])}
+    assert {2: set([1]), 1: set()} == dict(revert_graph(graph))
+
+
+def test_topological_sort_simple_chain():
+    graph = {1: set([2]), 2: set([3]), 3: set([4])}
+    assert [1, 2, 3, 4] == topological_sort(graph)
+
+
+def test_topological_sort_multiple_paths():
+    graph = {1: set([2, 3]), 2: set([3])}
+    assert [1, 2, 3] == topological_sort(graph)
+
+
+def test_topological_sort_raises_on_loop():
+    graph = {1: set([2]), 2: set([3]), 3: set([1])}
+    with pytest.raises(ValueError):
+        topological_sort(graph)
+
+
+def test_topological_sort_with_single_item():
+    graph = {1: set()}
+    assert [1] == topological_sort(graph)
+
+
+def test_graph_remove_leafs():
+    graph = {1: [1],
+             2: []}
+    remove_nodes_without_outgoing_edges(graph)
+    assert graph == {1: [1]}
 
 
 class Checksum(unittest.TestCase):
@@ -165,3 +194,11 @@ class Checksum(unittest.TestCase):
     def test_hash_sha1(self):
         self.assertEquals('164d8815aa839cca339e38054622b58ca80124a1',
                           hash(self.fixture, 'sha1'))
+
+
+@mock.patch('subprocess.Popen')
+def test_cmd_joins_list_args(popen):
+    popen().communicate.return_value = ('', '')
+    popen().returncode = 0
+    cmd(['cat', 'foo', 'bar'])
+    assert popen.call_args[0] == ('cat foo bar',)
