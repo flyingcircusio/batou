@@ -39,7 +39,7 @@ def test_jinja2_template_str():
 def test_jinja2_template_file():
     tmpl = TemplateEngine.get('jinja2')
     filename = '{}/haproxy.cfg'.format(fixture)
-    result = tmpl.template(filename+'.jinja2', sample_dict)
+    result = tmpl.template(filename + '.jinja2', sample_dict)
     with open(filename) as ref:
         assert ref.read() == result
 
