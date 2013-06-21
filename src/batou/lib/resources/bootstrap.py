@@ -247,7 +247,7 @@ if version is None and not options.accept_buildout_test_releases:
             version = best[-1].version
 
 if version:
-    requirement += '=='+version
+    requirement += '==' + version
 else:
     requirement += '<2dev'
 
