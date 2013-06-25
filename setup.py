@@ -53,7 +53,7 @@ Programming Language :: Python :: 2 :: Only
 """[:-1].split('\n'),
     description=__doc__.strip(),
     long_description='\n\n'.join(open(project_path(name)).read() for name in (
-            'README.txt',
+            'README',
             'CHANGES.txt',
             'HACKING.txt',
             )),
