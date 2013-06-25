@@ -11,12 +11,14 @@ encrypted_file = (os.path.dirname(__file__) + '/fixture/secrets/encrypted.cfg')
 passphrase = 'SecretTestPassphrase'
 
 
+@pytest.mark.aespipe
 def test_decrypt():
     with EncryptedConfigFile(encrypted_file, passphrase) as secrets:
         with open(cleartext_file) as cleartext:
             assert cleartext.read() == secrets.read()
 
 
+@pytest.mark.aespipe
 def test_decrypt_wrong_passphrase():
     secrets = EncryptedConfigFile(
         encrypted_file, 'incorrect passphrase')
@@ -24,6 +26,7 @@ def test_decrypt_wrong_passphrase():
         secrets.__enter__()
 
 
+@pytest.mark.aespipe
 def test_write_should_fail_unless_write_locked():
     with EncryptedConfigFile(encrypted_file, passphrase) as secrets:
         with pytest.raises(RuntimeError):
@@ -46,6 +49,7 @@ def test_open_nonexistent_file_for_write_should_create_empty_file():
     os.unlink(tf.name)
 
 
+@pytest.mark.aespipe
 def test_write():
     with tempfile.NamedTemporaryFile(prefix='new_encrypted.') as tf:
         shutil.copy(encrypted_file, tf.name)
