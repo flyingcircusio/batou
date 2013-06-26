@@ -15,6 +15,7 @@ Changelog
 
 - Clean up buildout versions specifications.
 
+- Fix .dmg extractor to copy symlinks as symlinks.
 
 
 0.2.8 (2013-06-18)

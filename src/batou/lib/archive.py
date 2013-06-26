@@ -134,11 +134,11 @@ class DMGVolume(object):
             for name in itertools.chain(dirnames, filenames):
                 yield os.path.join(root, name)
 
-    def copy_to(self, target_dir, exclude=None):
+    def copy_to(self, target_dir):
         if os.path.exists(target_dir):
             # shutil.copytree insists that the target_dir does not exist
             shutil.rmtree(target_dir)
-        shutil.copytree(self.volume_path, target_dir, ignore=exclude)
+        shutil.copytree(self.volume_path, target_dir, symlinks=True)
 
     def _mount(self):
         """Mount the .dmg file as volume."""
@@ -172,7 +172,6 @@ class DMGVolume(object):
 class DMGExtractor(Extractor):
 
     suffixes = ('.dmg',)
-    exclude = (' ', )  # Typical link to /Applications in App-DMGs
 
     def configure(self):
         super(DMGExtractor, self).configure()
@@ -186,6 +185,4 @@ class DMGExtractor(Extractor):
         return self.volume.namelist()
 
     def update(self):
-        exclude = shutil.ignore_patterns(*self.exclude)
-        self.volume.copy_to(
-            os.path.join(self.workdir, self.target), exclude=exclude)
+        self.volume.copy_to(os.path.join(self.workdir, self.target))

@@ -40,10 +40,10 @@ class DMGExtractorTests(unittest.TestCase):
     @unittest.skipUnless(sys.platform == 'darwin', 'Requires Mac OS')
     def test_extracts_archive_to_target_directory(self):
         component = self.deploy()
-        # Symlink with empty name (usually links to /Applications) is not
-        # copied
-        self.assertEqual([u'a\u0308sdf.txt', u'example.app'],
+        self.assertEqual([u' ', u'a\u0308sdf.txt', u'example.app'],
                          os.listdir(unicode(component.target)))
+        # ' ' is a symlink which stays one after copying:
+        self.assertTrue(os.path.islink(os.path.join(component.target, ' ')))
         start_bin = os.path.join(
             component.target, 'example.app', 'MacOS', 'start.bin')
         with open(start_bin) as start_bin:
