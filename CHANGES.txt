@@ -17,6 +17,8 @@ Changelog
 
 - Fix .dmg extractor to copy symlinks as symlinks.
 
+- Fix remote sudo for Mac OS X target hosts.
+
 
 0.2.8 (2013-06-18)
 ==================
