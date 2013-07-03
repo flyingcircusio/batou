@@ -271,8 +271,14 @@ class RemoteHost(object):
         """Execute `cmd` in the remote service user's context."""
         real_cmd = '{}'
         if service_user:
-            real_cmd = 'sudo -u {0} -i bash -c "{{}}"'.format(
-                self.deployment.environment.service_user)
+            if self._cmd('uname').startswith('Darwin'):
+                # Mac OS X does not seem to like bash -c as command, leaving
+                # it out helps to avoid problems:
+                sudo_command = ''
+            else:
+                sudo_command = 'bash -c'
+            real_cmd = 'sudo -u {0} -i {1} "{{}}"'.format(
+                self.deployment.environment.service_user, sudo_command)
         if ensure_cwd:
             real_cmd = real_cmd.format('cd {} && {{}}'.format(self.cwd[-1]))
         cmd = real_cmd.format(cmd)
