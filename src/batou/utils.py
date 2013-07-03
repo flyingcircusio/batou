@@ -172,8 +172,15 @@ def topological_sort(graph):
 
 def cmd(cmd, silent=False, ignore_returncode=False, communicate=True):
     if not isinstance(cmd, basestring):
-        # We use `shell=True`, so the command needs to be a single string:
-        cmd = ' '.join(cmd)
+        # We use `shell=True`, so the command needs to be a single string and
+        # we need to pay attention to shell quoting.
+        quoted_args = []
+        for arg in cmd:
+            arg = arg.replace('\'', '\\\'')
+            if ' ' in arg:
+                arg = "'{}'".format(arg)
+            quoted_args.append(arg)
+        cmd = ' '.join(quoted_args)
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,

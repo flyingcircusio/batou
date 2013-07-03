@@ -202,3 +202,13 @@ def test_cmd_joins_list_args(popen):
     popen().returncode = 0
     cmd(['cat', 'foo', 'bar'])
     assert popen.call_args[0] == ('cat foo bar',)
+
+
+@mock.patch('subprocess.Popen')
+def test_cmd_quotes_spacey_args(popen):
+    popen().communicate.return_value = ('', '')
+    popen().returncode = 0
+    cmd(['cat', 'foo', 'bar bz baz'])
+    assert popen.call_args[0] == ("cat foo 'bar bz baz'",)
+    cmd(['cat', 'foo', "bar 'bz baz"])
+    assert popen.call_args[0] == (r"cat foo 'bar \'bz baz'",)

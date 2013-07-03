@@ -5,6 +5,8 @@ Changelog
 0.2.9 (unreleased)
 ==================
 
+- Fix #12527: utils.cmd breaks on spacey arguments and embedded quotes.
+
 - Avoid accidentally creating incorrect directories in developer VFS mapping.
 
 - Switch testrunner to pytest. Refactor some tests to take advantage of its
