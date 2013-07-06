@@ -19,3 +19,7 @@ and encrypts it afterwards. If the secrets file did not exist before, a
 new one is created.
 
 """
+
+from .encryption import EncryptedConfigFile
+
+EncryptedConfigFile     # make pep8 happy
