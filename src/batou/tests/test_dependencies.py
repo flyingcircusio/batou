@@ -58,19 +58,19 @@ class TestDependencies(unittest.TestCase):
         super(TestDependencies, self).setUp()
         self.service = Service()
         self.service.components['provider'] = RootComponentFactory(
-                'provider', Provider, '.')
+            'provider', Provider, '.')
         self.service.components['consumer'] = RootComponentFactory(
-                'consumer', Consumer, '.')
+            'consumer', Consumer, '.')
         self.service.components['aggressiveconsumer'] = RootComponentFactory(
-                'aggressiveconsumer', AggressiveConsumer, '.')
+            'aggressiveconsumer', AggressiveConsumer, '.')
         self.service.components['samehostconsumer'] = RootComponentFactory(
-                'samehostconsumer', SameHostConsumer, '.')
+            'samehostconsumer', SameHostConsumer, '.')
         self.service.components['broken'] = RootComponentFactory(
-                'broken', Broken, '.')
+            'broken', Broken, '.')
         self.service.components['circular1'] = RootComponentFactory(
-                'circular1', CircularDependency1, '.')
+            'circular1', CircularDependency1, '.')
         self.service.components['circular2'] = RootComponentFactory(
-                'circular2', CircularDependency2, '.')
+            'circular2', CircularDependency2, '.')
 
         self.env = Environment('test', self.service)
         self.env.hosts['test'] = self.host = Host('test', self.env)
@@ -87,12 +87,12 @@ class TestDependencies(unittest.TestCase):
         self.env.configure()
         self.assertListEqual([42], list(consumer.component.the_answer))
         self.assertListEqual(
-                [provider, consumer],
-                self.env.get_sorted_components())
+            [provider, consumer],
+            self.env.get_sorted_components())
 
     def test_provider_with_consumer_limited_by_host_raises_error(self):
-        provider = self.host.add_component('provider')
-        consumer = self.host2.add_component('samehostconsumer')
+        self.host.add_component('provider')
+        self.host2.add_component('samehostconsumer')
         with self.assertRaises(UnusedResource):
             self.env.configure()
 
@@ -102,8 +102,8 @@ class TestDependencies(unittest.TestCase):
         self.env.configure()
         self.assertListEqual([42], list(consumer.component.the_answer))
         self.assertListEqual(
-                [provider, consumer],
-                self.env.get_sorted_components())
+            [provider, consumer],
+            self.env.get_sorted_components())
 
     def test_consumer_without_provider_raises_error(self):
         self.host.add_component('consumer')

@@ -2,12 +2,9 @@
 
 from .encryption import EncryptedConfigFile
 import argparse
-import contextlib
-import getpass
 import os
 import subprocess
 import tempfile
-
 
 
 def edit():
@@ -40,7 +37,9 @@ def edit():
                 clearfile.write(cleartext)
                 clearfile.flush()
 
-                subprocess.check_call([command + ' ' + clearfile.name], shell=True)
+                subprocess.check_call(
+                    [command + ' ' + clearfile.name],
+                    shell=True)
 
                 with open(clearfile.name, 'r') as new_clearfile:
                     new_cleartext = new_clearfile.read()
@@ -51,7 +50,9 @@ def edit():
                     sf.write(new_cleartext)
                 except Exception, e:
                     print "Could not encrypt due to error: {}".format(e)
-                    answer = raw_input("Open editor (type 'edit') or quit and loose changes (type 'quit')")
+                    answer = raw_input(
+                        "Open editor (type 'edit') or quit and loose changes "
+                        "(type 'quit')")
                     if answer == 'quit':
                         break
                 else:

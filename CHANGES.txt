@@ -2,18 +2,56 @@
 Changelog
 =========
 
-0.3.0 (unreleased)
+0.3 (unreleased)
+================
+
+- Refactor secrets: turn them into a core feature instead of a pure library
+  component.
+
+
+0.2.9 (2013-07-06)
 ==================
 
-- Nothing changed yet.
+- Fix #12527: utils.cmd breaks on spacey arguments and embedded quotes.
 
+- Avoid accidentally creating incorrect directories in developer VFS mapping.
+
+- Switch testrunner to pytest. Refactor some tests to take advantage of its
+  capabilities.
+
+- Clean up PEP8 / pyflakes errors, integrate pytest plugin to ensure continued
+  compliance.
+
+- Clean up buildout versions specifications.
+
+- Fix .dmg extractor to copy symlinks as symlinks.
+
+- Fix remote sudo for Mac OS X target hosts.
+
+
+0.2.8 (2013-06-18)
+==================
+
+- Added archive extractor for .dmg files.
+
+- Added flag for supervisor to control whether global or individual restarts
+  wait until everything is running.
+
+0.2.7 (2013-05-22)
+==================
+
+- Fix template for Nagios check service dependencies.
+
+- Update bootstrap call for batou-internal bootstrapping.
 
 0.2.6 (2013-05-18)
 ==================
 
 - Add component that clones from a Mercurial repository.
+
 - Write supervisord.pid into /run/local instead of ${workdir}/var to ensure
   correct startup after machine crashes.
+
 - Add `ignore_returncode` parameter to Component.cmd() to suppress exceptions
   on unsuccessful command execution.
 

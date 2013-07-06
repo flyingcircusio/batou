@@ -1,0 +1,44 @@
+Key features
+------------
+
+**Initial and continued** deployments: services can be deployed for the first
+time or incrementally as changes occur. This also allows you to perform later
+deployments for disaster recovery without additional code in your component
+definitions. Especially **managed secrets** allow you to avoid any additional
+manual actions during first installation.
+
+**Single command** deployments: running local or remote deployments only
+requires you to start the local or remote controller and maybe enter a password
+for decrypting any secrets (which an agent will help to avoid). Nothing else
+needs interaction.
+
+It does not matter where you deploy a configuration: you can always compute any
+configuration and ask batou to deploy it **locally or remotely**. This helps a
+lot when debugging production configuration and trying to predict what a
+configuration will look like in production without actually pushing it there.
+
+**All configuration** (including secrets) can and will be managed **in version
+control**. As batou has some basic understanding of Mercurial it also supports
+managing multiple branches and ensuring that you do not accidentally deploy a
+development change to production.
+
+The generic model makes no assumption about platforms. However, batou also
+supports expressing differences in you model based on **different platforms**:
+depending whether you have a development deployment on your Mac or a production
+deployment on RHEL you can customize your deployment configuration, for example
+to change how process supervision or system startup integration works.
+
+The component model describes your service in a generic fashion:
+**environments** control how this model is applied for development, staging,
+production or any other installation of your service.
+
+**Relationships** are automatically created between your components as they
+leverage the **resource API** to communicate about shared information, like
+IPs, ports, database names, etc. The execution order will pay attention to this
+information and prepare components that others depend upon first.
+
+As all of your **components are just Python code** you can leverage all the
+power of the Python language and the general ecosystem: need other libraries to
+perform tasks? Just include their eggs as dependencies and use them. Also, you
+can **reuse your own components in other services** by packaging them up just
+like any other library.

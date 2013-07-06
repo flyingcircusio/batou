@@ -2,9 +2,6 @@ from batou import NonConvergingWorkingSet, UnusedResource
 from batou.component import RootComponent
 from batou.utils import flatten, revert_graph, topological_sort
 from collections import defaultdict
-import batou.lib.secrets
-import copy
-import getpass
 import logging
 import os
 import pwd
@@ -36,7 +33,8 @@ class Resources(object):
     # components order: "require before provide" instead of the default
     # "provide before require"
 
-    # {key: [(root, strict, host, reverse), (root, strict, host, reverse), ...]}
+    # {key: [(root, strict, host, reverse),
+    #        (root, strict, host, reverse), ...]}
     subscribers = None
     # Keeps track of root components that have not seen changes to a key they
     # have subscribed to when they were configured earlier..
@@ -51,11 +49,13 @@ class Resources(object):
         self.dirty_dependencies = set()
 
     def _subscribers(self, key, host):
-        return [root for root, strict, host_, reverse in self._subscriptions(key, host)]
+        return [root for root, strict, host_, reverse
+                in self._subscriptions(key, host)]
 
     def _subscriptions(self, key, host):
         return [(root, strict, host_, reverse)
-                for root, strict, host_, reverse in self.subscribers.get(key, ())
+                for root, strict, host_, reverse
+                in self.subscribers.get(key, ())
                 if host_ is None or host is None or host_ is host]
 
     @property
@@ -102,7 +102,7 @@ class Resources(object):
     def copy_resources(self):
         # A "one level deep" copy of the resources dict to be used by the
         # `unused` property.
-        resources =  {}
+        resources = {}
         for key, providers in self.resources.items():
             resources[key] = dict(providers)
         return resources
@@ -236,7 +236,7 @@ class Environment(object):
                 # once we report this as well.
                 if self.resources.unsatisfied:
                     logger.error('Unsatisfied resources: %s' %
-                        ', '.join(self.resources.unsatisfied))
+                                 ', '.join(self.resources.unsatisfied))
                 raise NonConvergingWorkingSet(retry)
 
             working_set = retry
