@@ -24,18 +24,15 @@ from .encryption import EncryptedConfigFile
 import os.path
 
 
-def get_secrets_for_environment(environment):
-    secrets = {}
+def add_secrets_to_environment_override(environment):
     secrets_file = '{}/secrets/{}.cfg'.format(
         environment.service.base, environment.name)
     if not os.path.exists(secrets_file):
-        return secrets
+        return
     with EncryptedConfigFile(secrets_file) as f:
         f.read()
         for section in f.config.sections():
             if section == 'batou':
                 continue
-            for key, value in f.config.items(section):
-                secrets.setdefault(section, {})
-                secrets[section][key] = value
-    return secrets
+            o = environment.overrides.setdefault(section, {})
+            o.update(f.config.items(section))

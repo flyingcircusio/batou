@@ -1,3 +1,4 @@
+from .secrets import add_secrets_to_environment_override
 from .service import ServiceConfig
 from .utils import notify
 from paramiko import RejectPolicy, SSHException
@@ -83,6 +84,7 @@ def main():
                      .format(args.environment, known))
         sys.exit(1)
 
+    add_secrets_to_environment_override(environment)
     environment.configure()
 
     deployment = RemoteDeployment(environment, args.ssh_user,

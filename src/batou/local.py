@@ -1,6 +1,6 @@
 from .service import ServiceConfig
 from .utils import notify, locked, MultiFile, input, CycleError
-from .secrets import get_secrets_for_environment
+from .secrets import add_secrets_to_environment_override
 import pprint
 import argparse
 import sys
@@ -18,11 +18,7 @@ class AutoMode(LocalDeploymentMode):
 
     def __call__(self):
         # XXX extract?
-        secrets = get_secrets_for_environment(self.environment)
-        overrides = self.environment.overrides
-        for component in secrets:
-            c = overrides.setdefault(component, {})
-            c.update(secrets[component])
+        add_secrets_to_environment_override(self.environment)
         try:
             self.environment.configure()
         except CycleError, e:
