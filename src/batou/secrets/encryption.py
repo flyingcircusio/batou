@@ -2,10 +2,8 @@ from __future__ import print_function, unicode_literals
 import ConfigParser
 import StringIO
 import fcntl
-import hashlib
 import os
 import subprocess
-import sys
 
 
 class EncryptedConfigFile(object):
@@ -77,7 +75,8 @@ class EncryptedConfigFile(object):
         os.rename(self.encrypted_file, self.encrypted_file+'.old')
         try:
             pipe = subprocess.Popen(
-                ['gpg --batch --encrypt {} -o {}'.format(recipients, self.encrypted_file)],
+                ['gpg --batch --encrypt {} -o {}'.format(
+                    recipients, self.encrypted_file)],
                 stdin=subprocess.PIPE, shell=True)
             pipe.communicate(self.cleartext)
         except Exception:

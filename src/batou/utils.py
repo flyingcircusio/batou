@@ -5,7 +5,6 @@ import fcntl
 import hashlib
 import itertools
 import os
-import re
 import socket
 import subprocess
 import sys
@@ -171,17 +170,28 @@ def topological_sort(graph):
     return sorted
 
 
-def cmd(cmd, silent=False):
-    stdin = open('/dev/null')
+def cmd(cmd, silent=False, ignore_returncode=False, communicate=True):
+    if not isinstance(cmd, basestring):
+        # We use `shell=True`, so the command needs to be a single string and
+        # we need to pay attention to shell quoting.
+        quoted_args = []
+        for arg in cmd:
+            arg = arg.replace('\'', '\\\'')
+            if ' ' in arg:
+                arg = "'{}'".format(arg)
+            quoted_args.append(arg)
+        cmd = ' '.join(quoted_args)
     process = subprocess.Popen(
-        [cmd],
+        cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        stdin=stdin,
+        stdin=subprocess.PIPE,
         shell=True)
+    if not communicate:
+        # XXX See #12550
+        return
     stdout, stderr = process.communicate()
-    retcode = process.poll()
-    if retcode:
+    if process.returncode:
         if not silent:
             print("STDOUT")
             print("=" * 72)
@@ -189,9 +199,10 @@ def cmd(cmd, silent=False):
             print("STDERR")
             print("=" * 72)
             print(stderr)
-        raise RuntimeError(
-            'Command "{}" returned unsuccessfully.'.format(cmd), retcode)
-    stdin.close()
+        if not ignore_returncode:
+            raise RuntimeError(
+                'Command "{}" returned unsuccessfully.'.format(cmd),
+                process.returncode, stdout, stderr)
     return stdout, stderr
 
 

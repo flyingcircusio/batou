@@ -2,9 +2,10 @@
 
 # XXX make more flexible. E.g. by using entry points.
 import batou.lib.goceptnet  # noqa
-
+batou  # Make pyflakes happy
 # API re-exports
 from .component import Component  # noqa
+Component  # Make pyflakes happy
 
 
 class UpdateNeeded(Exception):
