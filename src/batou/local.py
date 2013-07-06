@@ -1,10 +1,11 @@
+from .secrets import add_secrets_to_environment_override
 from .service import ServiceConfig
 from .utils import notify, locked, MultiFile, input, CycleError
-from .secrets import add_secrets_to_environment_override
-import pprint
 import argparse
-import sys
+import json
 import logging
+import pprint
+import sys
 
 
 class LocalDeploymentMode(object):
@@ -60,6 +61,9 @@ class BatchMode(LocalDeploymentMode):
             else:
                 self.output.write('OK\n')
                 self.output.flush()
+
+    def cmd_load_overrides(self):
+        self.environment.overrides = json.load(open('work/overrides.json'))
 
     def cmd_configure(self):
         self.environment.configure()
