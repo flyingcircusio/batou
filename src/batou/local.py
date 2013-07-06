@@ -62,8 +62,8 @@ class BatchMode(LocalDeploymentMode):
                 self.output.write('OK\n')
                 self.output.flush()
 
-    def cmd_load_overrides(self):
-        self.environment.overrides = json.load(open('work/overrides.json'))
+    def cmd_load_overrides(self, filename):
+        self.environment.overrides = json.load(open(filename))
 
     def cmd_configure(self):
         self.environment.configure()

@@ -229,9 +229,11 @@ class RemoteHost(object):
             for root in self.host.components:
                 root.component.remote_bootstrap(self)
             self._wait_for_remote_ready()
+            overrides_file = '{}/overrides.json'.format(bouncedir)
             json.dump(self.deployment.environment.overrides,
-                      self.sftp.open('work/overrides.json', 'w'))
-            self.remote_cmd('load_overrides')
+                      self.sftp.open(overrides_file, 'w'))
+            self.remote_cmd('load_overrides {}'.format(overrides_file))
+            self.sftp.remove(overrides_files)
             self.remote_cmd('configure')
 
     def deploy_component(self, component):
