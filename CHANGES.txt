@@ -2,8 +2,10 @@
 Changelog
 =========
 
-0.3 (unreleased)
+1.0 (unreleased)
 ================
+
+- Apply semantic versioning: initial development is over, so this is 1.0 now.
 
 - Refactor secrets: turn them into a core feature instead of a pure library
   component.
