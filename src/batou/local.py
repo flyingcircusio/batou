@@ -4,7 +4,6 @@ import pprint
 import argparse
 import sys
 import logging
-import getpass
 
 
 class LocalDeploymentMode(object):
@@ -87,7 +86,6 @@ def main():
     args = parser.parse_args()
     mode = BatchMode if args.batch else AutoMode
 
-
     level = logging.INFO
 
     if args.debug:
@@ -96,7 +94,6 @@ def main():
         level = logging.DEBUG
 
     logging.basicConfig(stream=sys.stdout, level=level, format='%(message)s')
-
 
     with locked('.batou-lock'):
         config = ServiceConfig('.', [args.environment])

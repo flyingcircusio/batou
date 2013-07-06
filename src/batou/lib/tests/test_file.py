@@ -161,7 +161,9 @@ class FileTests(FileTestBase, unittest.TestCase):
     def test_content_passed_by_string_template(self):
         path = self.filename()
         p = Content(path,
-            content='{{component.foobar}}', is_template=True, foobar='asdf')
+                    content='{{component.foobar}}',
+                    is_template=True,
+                    foobar='asdf')
         with open(p.path, 'w') as f:
             # The content component assumes there's a file already in place. So
             # we need to create it.
@@ -213,9 +215,9 @@ class FileTests(FileTestBase, unittest.TestCase):
         context = Mock()
         context.foobar = 'asdf'
         p = Content(path,
-            content='{{component.foobar}}',
-            is_template=True,
-            template_context=context)
+                    content='{{component.foobar}}',
+                    is_template=True,
+                    template_context=context)
         with open(p.path, 'w') as f:
             # The content component assumes there's a file already in place. So
             # we need to create it.

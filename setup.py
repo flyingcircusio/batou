@@ -19,10 +19,16 @@ setup(
     version=version,
     install_requires=[
         'Jinja2',
+        'configobj',
         'distribute',
         'mock',
         'paramiko>=1.8',
-        'configobj',
+        'pytest',
+        'pytest-capturelog',
+        'pytest-codecheckers',
+        'pytest-cov',
+        'pytest-cache',
+        'zope.cachedescriptors',
     ],
     extras_require={
         'test': [
@@ -48,7 +54,7 @@ Programming Language :: Python :: 2 :: Only
 """[:-1].split('\n'),
     description=__doc__.strip(),
     long_description='\n\n'.join(open(project_path(name)).read() for name in (
-            'README.txt',
+            'README',
             'CHANGES.txt',
             'HACKING.txt',
             )),

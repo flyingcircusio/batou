@@ -13,7 +13,7 @@ class LocalTests(unittest.TestCase):
             main()
 
 
-class TestComponent(object):
+class SampleComponent(object):
 
     def __init__(self, log, host):
         self.log = log
@@ -37,9 +37,9 @@ class AutoModeTests(unittest.TestCase):
         environment.get_host.return_value = host
         log = []
         environment.get_sorted_components.return_value = components = [
-                TestComponent(log, host),
-                TestComponent(log, Mock()),
-                TestComponent(log, host)]
+            SampleComponent(log, host),
+            SampleComponent(log, Mock()),
+            SampleComponent(log, host)]
         AutoMode(environment, 'localhost')()
         self.assertListEqual([components[0], components[2]], log)
 
@@ -56,8 +56,8 @@ class BatchModeTests(unittest.TestCase):
         environment = Mock()
         log = []
         mode = BatchMode(environment, 'localhost')
-        mode.host = dict(asdf=TestComponent(log, Mock()),
-                         bsdf=TestComponent(log, Mock()))
+        mode.host = dict(asdf=SampleComponent(log, Mock()),
+                         bsdf=SampleComponent(log, Mock()))
         mode.cmd_deploy('asdf')
         self.assertListEqual([mode.host['asdf']], log)
 

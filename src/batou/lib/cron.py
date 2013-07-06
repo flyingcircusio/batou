@@ -14,7 +14,8 @@ class CronJob(HookComponent):
     logger = None
 
     def format(self):
-        line = self.expand('{{component.timing}} {{component.command}} {{component.args}}')
+        line = self.expand(
+            '{{component.timing}} {{component.command}} {{component.args}}')
         if self.logger:
             line += self.expand(' 2>&1 | logger -t {{component.logger}}')
         return line
@@ -22,8 +23,7 @@ class CronJob(HookComponent):
 
 def ignore_comments(data):
     lines = data.splitlines()
-    lines = filter(lambda x:not x.startswith('#'),
-                   lines)
+    lines = filter(lambda x: not x.startswith('#'), lines)
     return '\n'.join(lines)
 
 
@@ -34,8 +34,9 @@ class CronTab(Component):
 
     def configure(self):
         self.jobs = self.require(CronJob.key, host=self.host)
-        self.jobs.sort(key=lambda job:job.command + ' ' + job.args)
-        self.crontab = File('crontab',
+        self.jobs.sort(key=lambda job: job.command + ' ' + job.args)
+        self.crontab = File(
+            'crontab',
             source=self.crontab_template,
             is_template=True)
         self += self.crontab
