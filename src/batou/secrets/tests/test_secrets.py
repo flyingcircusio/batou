@@ -1,62 +1,84 @@
-from batou.secrets.encryption import EncryptedConfigFile
+from batou.secrets.encryption import EncryptedConfigFile, NEW_FILE_TEMPLATE
+import ConfigParser
 import os
 import os.path
 import pytest
 import shutil
+import subprocess
 import tempfile
 
 
-cleartext_file = (os.path.dirname(__file__) + '/fixture/secrets/cleartext.cfg')
-encrypted_file = (os.path.dirname(__file__) + '/fixture/secrets/encrypted.cfg')
-passphrase = 'SecretTestPassphrase'
+FIXTURE = os.path.join(os.path.dirname(__file__), 'fixture')
+cleartext_file = os.path.join(FIXTURE, 'cleartext.cfg')
+encrypted_file = os.path.join(FIXTURE, 'encrypted.cfg')
 
 
-@pytest.mark.aespipe
+class EncryptedConfigFile(EncryptedConfigFile):
+
+    gpg_homedir = os.path.join(FIXTURE, 'gnupg')
+    gpg_opts = '--homedir {}'.format(gpg_homedir)
+
+
 def test_decrypt():
-    with EncryptedConfigFile(encrypted_file, passphrase) as secrets:
+    with EncryptedConfigFile(encrypted_file) as secrets:
         with open(cleartext_file) as cleartext:
             assert cleartext.read() == secrets.read()
 
 
-@pytest.mark.aespipe
-def test_decrypt_wrong_passphrase():
+def test_decrypt_missing_key():
     secrets = EncryptedConfigFile(
-        encrypted_file, 'incorrect passphrase')
-    with pytest.raises(RuntimeError):
-        secrets.__enter__()
+        encrypted_file)
+    secrets.gpg_opts = '--homedir /tmp'
+    with pytest.raises(subprocess.CalledProcessError):
+        f = secrets.__enter__()
+        f.read()
 
 
-@pytest.mark.aespipe
 def test_write_should_fail_unless_write_locked():
-    with EncryptedConfigFile(encrypted_file, passphrase) as secrets:
+    with EncryptedConfigFile(encrypted_file) as secrets:
         with pytest.raises(RuntimeError):
             secrets.write('dummy')
 
 
 def test_open_nonexistent_file_for_read_should_fail():
     with pytest.raises(IOError):
-        EncryptedConfigFile('/no/such/file', passphrase).__enter__()
+        EncryptedConfigFile('/no/such/file').__enter__()
 
 
-def test_open_nonexistent_file_for_write_should_create_empty_file():
+def test_open_nonexistent_file_for_write_should_create_template_file():
     tf = tempfile.NamedTemporaryFile(prefix='new_encrypted.')
     tf.close()  # deletes file
     encrypted = EncryptedConfigFile(
-        tf.name, passphrase, write_lock=True)
+        tf.name, write_lock=True)
     with encrypted as secrets:
-        assert '' == secrets.read()
+        assert secrets.read() == NEW_FILE_TEMPLATE
         assert os.path.exists(secrets.encrypted_file)
     os.unlink(tf.name)
 
 
-@pytest.mark.aespipe
+def test_write_unparsable_raises_error():
+    with tempfile.NamedTemporaryFile(prefix='new_encrypted.') as tf:
+        shutil.copy(encrypted_file, tf.name)
+        encrypted = EncryptedConfigFile(
+            tf.name, write_lock=True)
+        with encrypted as secrets:
+            with pytest.raises(ConfigParser.Error):
+                secrets.write('some new file contents\n')
+
+
 def test_write():
     with tempfile.NamedTemporaryFile(prefix='new_encrypted.') as tf:
         shutil.copy(encrypted_file, tf.name)
         encrypted = EncryptedConfigFile(
-            tf.name, passphrase, write_lock=True)
+            tf.name, write_lock=True)
         with encrypted as secrets:
-            secrets.write('some new file contents\n')
+            secrets.write("""\
+[batou]
+members = batou
+[asdf]
+x = 1
+""")
+
         with open(encrypted_file, 'rb') as old:
             with open(tf.name, 'rb') as new:
                 assert old.read() != new.read()

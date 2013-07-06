@@ -8,6 +8,8 @@ Changelog
 - Refactor secrets: turn them into a core feature instead of a pure library
   component.
 
+- Switch from using aespipe to using gpg encryption.
+
 
 0.2.9 (2013-07-06)
 ==================
