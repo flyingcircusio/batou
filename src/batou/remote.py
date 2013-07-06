@@ -182,7 +182,7 @@ class RemoteHost(object):
             netloc = self.host.fqdn
             if self.deployment.ssh_user:
                 netloc = '%s@%s' % (self.deployment.ssh_user, netloc)
-            subprocess.check_output(['hg push --new-branch ssh://%s/%s' %
+            subprocess.check_output(['hg push -f --new-branch ssh://%s/%s' %
                                     (netloc, bouncedir)], shell=True)
         except subprocess.CalledProcessError, e:
             if e.returncode != 1:
