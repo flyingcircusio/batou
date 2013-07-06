@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.9 (unreleased)
+0.2.9 (2013-07-06)
 ==================
 
 - Fix #12527: utils.cmd breaks on spacey arguments and embedded quotes.
