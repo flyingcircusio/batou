@@ -39,6 +39,7 @@ def locked(filename):
         try:
             fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
+            print >> sys.stderr('Could not acquire lock {}'.format(filename))
             raise RuntimeError(
                 'cannot create lock "%s": more than one instance running '
                 'concurrently?' % lockfile, lockfile)
