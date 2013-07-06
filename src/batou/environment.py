@@ -1,5 +1,4 @@
 from batou import NonConvergingWorkingSet, UnusedResource
-from .secrets import EncryptedConfigFile
 from batou.component import RootComponent
 from batou.utils import flatten, revert_graph, topological_sort
 from collections import defaultdict
@@ -197,19 +196,6 @@ class Environment(object):
         to a stable order.
 
         """
-        # Establish secrets
-        secrets_file = '{}/secrets/{}.cfg'.format(
-            self.service.base, self.name)
-        if os.path.exists(secrets_file):
-            with EncryptedConfigFile(secrets_file) as f:
-                f.read()
-                for section in f.config.sections():
-                    if section == 'batou':
-                        continue
-                    for key, value in f.config.items(section):
-                        self.overrides.setdefault(section, {})
-                        self.overrides[section][key] = value
-
         # Seed the working set with all components from all hosts
         working_set = set()
         for host in self.hosts.values():
