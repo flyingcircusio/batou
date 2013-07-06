@@ -7,10 +7,13 @@ Changelog
 
 - Apply semantic versioning: initial development is over, so this is 1.0 now.
 
-- Refactor secrets: turn them into a core feature instead of a pure library
-  component.
+- Major revamp of secrets management:
 
-- Switch from using aespipe to using gpg encryption.
+  - switch to GPG (instead of aespipe)
+
+  - turn secrets into a core feature, removing the need for a special component
+
+- Add '--single' to suppress parallel bootstrapping.
 
 
 0.2.9 (2013-07-06)

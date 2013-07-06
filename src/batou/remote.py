@@ -33,6 +33,9 @@ def main():
         '-D', '--dirty', action='store_true',
         help='Allow deploying dirty working copies.')
     parser.add_argument(
+        '-S', '--single', action='store_true',
+        help='Disable parallel bootstrapping.')
+    parser.add_argument(
         '--ssh-user', default=None,
         help='User to connect to via SSH')
     args = parser.parse_args()
@@ -82,7 +85,8 @@ def main():
 
     environment.configure()
 
-    deployment = RemoteDeployment(environment, args.ssh_user, args.reset)
+    deployment = RemoteDeployment(environment, args.ssh_user,
+                                  args.reset, args.single)
     deployment()
     notify('Deployment finished',
            '{} was deployed successfully.'.format(environment.name))
@@ -90,10 +94,11 @@ def main():
 
 class RemoteDeployment(object):
 
-    def __init__(self, environment, ssh_user, reset):
+    def __init__(self, environment, ssh_user, reset, single):
         self.environment = environment
         self.ssh_user = ssh_user
         self.reset = reset
+        self.single = single
         # It may be that the service definition isn't in the root of the
         # repository. As we expect `batou-remote` to be called with a working
         # directory that is the root, we simply make this relative to the
@@ -126,11 +131,15 @@ class RemoteDeployment(object):
                 logger.error('{}: {}'.format(remote.host.fqdn, str(e)))
             sys.exit(1)
 
-        # 20 seems to be a reasonable size in most cases: more seems to confuse
-        # cheap routers and such, less doesn't give as much performance
-        # benefit.
-        pool = multiprocessing.pool.ThreadPool(20)
-        pool.map(lambda x: x.bootstrap(), remotes.values())
+        if not self.single:
+            # 20 seems to be a reasonable size in most cases: more seems to
+            # confuse cheap routers and such, less doesn't give as much
+            # performance benefit.
+            pool = multiprocessing.pool.ThreadPool(20)
+            pool.map(lambda x: x.bootstrap(), remotes.values())
+        else:
+            for remote in remotes.values():
+                remote.bootstrap()
 
         for component in self.environment.get_sorted_components():
             remote = remotes[component.host]
@@ -251,8 +260,9 @@ class RemoteHost(object):
             logger.debug('waiting for remote {} - got: {}'.format(
                 self.host.name, repr(char)))
             if not char:
-                raise RuntimeError('Empty response from server {}.'.format(
-                    self.host.name))
+                raise RuntimeError(
+                    'Incomplete response from server {}.\n{}'.format(
+                        self.host.name, line))
             line += char
             if line == '> ':
                 logger.debug('done waiting for {}'.format(self.host.name))
