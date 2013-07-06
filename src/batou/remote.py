@@ -4,6 +4,7 @@ from .utils import notify
 from paramiko import RejectPolicy, SSHException
 from paramiko.client import SSHClient
 import argparse
+import json
 import logging
 import multiprocessing.pool
 import os
@@ -228,6 +229,9 @@ class RemoteHost(object):
             for root in self.host.components:
                 root.component.remote_bootstrap(self)
             self._wait_for_remote_ready()
+            json.dump(self.deployment.environment.overrides,
+                      self.sftp.open('work/overrides.json', 'w'))
+            self.remote_cmd('load_overrides')
             self.remote_cmd('configure')
 
     def deploy_component(self, component):
@@ -244,7 +248,7 @@ class RemoteHost(object):
 
     # Internal API
 
-    def remote_cmd(self, cmd):
+    def remote_cmd(self, cmd, args):
         logger.debug('Sending command to {}: {}'.format(self.host.name, cmd))
         self.batou[1].write(cmd + '\n')
         self.batou[1].flush()
