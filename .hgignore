@@ -1,5 +1,4 @@
 syntax: glob
-
 *.egg-info
 *.pyc
 *.pyc
@@ -34,5 +33,6 @@ local
 local.cfg
 my-buildout.cfg
 parts
-tags
 report.xml
+tags
+vagrant/.vagrant
