@@ -17,6 +17,8 @@ constructor, class attributes, environment overrides
 VFS mapping
 -----------
 
+- how to use map()
+
 
 Features
 --------

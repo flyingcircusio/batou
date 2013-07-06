@@ -17,8 +17,9 @@ class BrokenConfigTests(unittest.TestCase):
 class ConfigTestsBasicScenario(unittest.TestCase):
 
     def setUp(self):
-        self.config = ServiceConfig(os.path.dirname(__file__) +
-                   '/fixture/basic_service', ['dev'])
+        self.config = ServiceConfig(
+            os.path.dirname(__file__) + '/fixture/basic_service',
+            ['dev'])
         self.config.scan()
         self.service = self.config.service
 
@@ -30,8 +31,8 @@ class ConfigTestsBasicScenario(unittest.TestCase):
         self.assertEquals(['zeo', 'zope'], sorted(self.service.components))
 
     def test_dev_is_loaded_but_production_is_not(self):
-        self.assertEquals(['dev'],
-                          sorted(self.service.environments))
+        self.assertEquals(
+            ['dev'], sorted(self.service.environments))
 
     def test_production_environment_is_loaded(self):
         self.config.environments = set(['production'])

@@ -9,11 +9,10 @@ batou
 
 .. rubric:: multi-(component | host | environment | platform) deployment
 
-batou is a tool that makes it easy to define automated service deployments for
-complex (web) applications. It is developed at `gocept
-<http://gocept.com>`_ and made available under the BSD license.
+batou makes it easy to define and perform automated service deployments.  It is developed at `gocept <http://gocept.com>`_ and made available under the
+2-clause BSD license.
 
-Here is the smallest component and environment definition you can make:
+The smallest service definition you could possibly make looks like this:
 
 .. literalinclude:: ../../examples/tutorial-helloworld/components/hello/component.py
     :language: python
@@ -21,40 +20,75 @@ Here is the smallest component and environment definition you can make:
 .. literalinclude:: ../../examples/tutorial-helloworld/environments/tutorial.cfg
     :language: ini
 
+If you deploy this service it will look like this:
+
 .. code-block:: bash
 
     $ bin/batou-local dev localhost
     Updating Hello > File(hello) > Presence(hello)
     Updating Hello > File(hello) > Content(hello)
 
-batou was created by extracting our experience with automated deployments for
-complex projects. We have used Fabric previously and are happy users of Puppet
-for system configuration.  We want to make it easy for you to have deployment
-automation that is idempotent and convergent -- two very useful properties
-for this kind of work.
+Philosophy
+----------
 
-This project is still young and being developed very actively -- so please be
-aware that things may change a lot.  However: all of the code is being used for
-our own projects on a daily basis.
+batou tries to combine the simplicity of SSH-automation (as found in Fabric) with
+the elegance of model-driven, idempotent, and convergent systems (like Puppet).
 
-Documentation
--------------
+batou wants to:
+
+* deploy services -- fast and reliably
+* describe services consisely
+* work on multiple platforms (Linux, OS X)
+* work hand-in-hand with systems configured by other parties
+* make only few assumptions
+* have few dependencies on the target systems for basic operation
+* be useful for developers and admins
+
+batou does *not* want to:
+
+* provision VMs or configure operating systems
+* add additional runtime complexity to services
+
+
+.. note::
+
+    batou is still young and undergoing major changes every now and then.
+    However, all of the code is used in production projects on a daily basis.
+
+Learn more
+----------
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :glob:
 
+    keyfeatures
     introduction
+    requirements
     tutorials/index
     guide/index
+    principles
+
+
+Resources
+---------
+
+.. toctree::
+    :maxdepth: 1
+
+    support
     changes
     legal
 
-Contributing
-------------
+
+Contribute
+----------
 
 We'd love if you want to contribute: whether by reporting bugs, sending us your
-ideas, or by hacking on batou. Here are the tools we use to develop batou:
+feedback, or by hacking on batou.
+
+Here are the tools we use to develop batou:
 
 * `batou redmine project <http://projects.gocept.com/projects/batou>`_
 * `bitbucket repository <http://bitbucket.org/gocept/batou>`_ (pull requests welcome!)
+

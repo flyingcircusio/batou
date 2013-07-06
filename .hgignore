@@ -1,14 +1,16 @@
 syntax: glob
-.batou.buildout.success
+.cache
 *.egg-info
-.DS_Store
 *.pyc
 *.pyc
 *.swo
 *.swp
+.DS_Store
 .Python
 .batou-lock
 .batou-passphrase
+.batou.buildout.success
+.coverage
 .installed.cfg
 .mr.developer.cfg
 ID
@@ -24,10 +26,14 @@ eggs
 examples/*/.batou-lock
 examples/*/local
 examples/*/work
+htmlcov
 include/python2.*
 lib/python2.*
 lib64
 local
 local.cfg
+my-buildout.cfg
 parts
+report.xml
 tags
+vagrant/.vagrant
