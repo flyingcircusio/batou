@@ -21,5 +21,21 @@ new one is created.
 """
 
 from .encryption import EncryptedConfigFile
+import os.path
 
-EncryptedConfigFile     # make pep8 happy
+
+def get_secrets_for_environment(environment):
+    secrets = {}
+    secrets_file = '{}/secrets/{}.cfg'.format(
+        environment.service.base, environment.name)
+    if not os.path.exists(secrets_file):
+        return secrets
+    with EncryptedConfigFile(secrets_file) as f:
+        f.read()
+        for section in f.config.sections():
+            if section == 'batou':
+                continue
+            for key, value in f.config.items(section):
+                secrets.setdefault(section, {})
+                secrets[section][key] = value
+    return secrets
