@@ -233,7 +233,7 @@ class RemoteHost(object):
             json.dump(self.deployment.environment.overrides,
                       self.sftp.open(overrides_file, 'w'))
             self.remote_cmd('load_overrides {}'.format(overrides_file))
-            self.sftp.remove(overrides_files)
+            self.sftp.remove(overrides_file)
             self.remote_cmd('configure')
 
     def deploy_component(self, component):
@@ -250,7 +250,7 @@ class RemoteHost(object):
 
     # Internal API
 
-    def remote_cmd(self, cmd, args):
+    def remote_cmd(self, cmd):
         logger.debug('Sending command to {}: {}'.format(self.host.name, cmd))
         self.batou[1].write(cmd + '\n')
         self.batou[1].flush()
