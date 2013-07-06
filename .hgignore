@@ -36,3 +36,4 @@ parts
 report.xml
 tags
 vagrant/.vagrant
+src/batou/secrets/tests/fixture/gnupg/random_seed
