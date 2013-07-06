@@ -22,7 +22,7 @@ setup(
         'configobj',
         'distribute',
         'mock',
-        'paramiko>=1.8',
+        'execnet',
         'pytest',
         'pytest-capturelog',
         'pytest-codecheckers',
