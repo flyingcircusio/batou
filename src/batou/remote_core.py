@@ -19,6 +19,7 @@ def update_code(channel):
     channel.send('updated')
     cmd("hg up -C")
     id = cmd("hg id -i")
+    channel.send(base)
     channel.send(id)
 
 
@@ -32,6 +33,7 @@ def build_batou(channel):
         cmd('bin/easy_install-2.7 -U setuptools')
         cmd('bin/python2.7 bootstrap.py')
     cmd('bin/buildout -t 15')
+    channel.send('OK')
 
 
 def get_deployment_base():

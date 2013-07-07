@@ -1,4 +1,5 @@
 from . import remote_core
+from .log import setup_logging
 from .secrets import add_secrets_to_environment_override
 from .service import ServiceConfig
 from .utils import notify, cmd
@@ -29,19 +30,9 @@ def main():
         help='Enable debug mode.')
     args = parser.parse_args()
 
-    if args.debug:
-        loggers = ['batou', 'ssh']
-        log_level = logging.DEBUG
-    else:
-        loggers = ['batou']
-        log_level = logging.INFO
-
-    handler = logging.StreamHandler()
-    handler.setLevel(log_level)
-    for log in loggers:
-        log = logging.getLogger(log)
-        log.setLevel(log_level)
-        log.addHandler(handler)
+    setup_logging(
+        ['batou'],
+        logging.DEBUG if args.debug else logging.INFO)
 
     # XXX See #12602. Put safety belt back again.
 
@@ -82,7 +73,9 @@ class RemoteDeployment(object):
             remotes[host] = remote
             remote.connect()
 
-        # XXX Acquire locks!
+        # Bootstrap and get channel to batou environment
+        for remote in remotes.values():
+            remote.start()
 
         logger.info('Updating remote working copies... ')
         for remote in remotes.values():
@@ -109,8 +102,10 @@ class RemoteHost(object):
             "ssh={}//python=sudo -u test2 python2.7".format(self.host.fqdn))
         self.mainloop = self.gateway.remote_exec(remote_core)
 
-    def update_working_copy(self):
-        # XXX make choice of data transfer flexible.
+    def start(self):
+        # XXX Acquire locks!
+
+        # TODO make choice of data transfer flexible.
         self.mainloop.send('update_code')
 
         upstream = cmd('hg show paths')[0].split('\n')[0].strip()
@@ -123,11 +118,25 @@ class RemoteHost(object):
         # XXX safety-belt: ensure clean working copy
         # XXX safety-belt: ensure no outgoing changes
         # XXX safety-belt: compare id to local repository
+        remote_base = self.mainloop.receive()
+        self.remote_base = os.path.join(
+            remote_base, self.deployment.service_base)
         id = self.mainloop.receive()
 
         self.mainloop.send('build_batou')
         self.mainloop.send(self.deployment.service_base)
 
+        result = self.mainloop.receive()
+        assert result == 'OK'
+
+        # Now, replace the basic interpreter connection, with a "real" one that
+        # has all our dependencies installed.
+        self.gateway.exit()
+
+        self.gateway = execnet.makegateway(
+            "ssh={}//python=sudo -u test2 {}/bin/py".format(
+                self.host.fqdn, self.remote_base))
+        self.mainloop = self.gateway.remote_exec(remote_core)
 
     def bootstrap(self):
         """Ensure that the batou and project code base is current."""
