@@ -10,15 +10,6 @@ import subprocess
 import sys
 
 
-def input(prompt, out=sys.stdout):
-    """Provide a variation of raw_input that ensures flushing
-    of the stdout filehandle after writing the prompt.
-    """
-    out.write(prompt)
-    out.flush()
-    return raw_input()
-
-
 class MultiFile(object):
 
     def __init__(self, files):

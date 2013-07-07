@@ -1,24 +1,19 @@
 from .secrets import add_secrets_to_environment_override
 from .service import ServiceConfig
-from .utils import notify, locked, MultiFile, input, CycleError
+from .utils import notify, locked, MultiFile, CycleError
 import argparse
-import json
 import logging
 import pprint
 import sys
 
 
-class LocalDeploymentMode(object):
+class LocalDeployment(object):
 
     def __init__(self, environment, hostname):
         self.environment = environment
         self.hostname = hostname
 
-
-class AutoMode(LocalDeploymentMode):
-
     def __call__(self):
-        # XXX extract?
         add_secrets_to_environment_override(self.environment)
         try:
             self.environment.configure()
@@ -33,46 +28,6 @@ class AutoMode(LocalDeploymentMode):
             component.deploy()
 
 
-class BatchMode(LocalDeploymentMode):
-
-    output = sys.stdout
-
-    def input(self):
-        return input('> ')
-
-    def __call__(self):
-        while True:
-            try:
-                command = self.input()
-            except EOFError:
-                break
-            if not command:
-                continue
-            command = command.split(' ', 1)
-            command, args = command[0], command[1:]
-            cmd = getattr(self, 'cmd_{}'.format(command), None)
-            if cmd is None:
-                continue
-            try:
-                cmd(*args)
-            except Exception:
-                self.output.write('ERROR\n')
-                self.output.flush()
-            else:
-                self.output.write('OK\n')
-                self.output.flush()
-
-    def cmd_load_overrides(self, filename):
-        self.environment.overrides = json.load(open(filename))
-
-    def cmd_configure(self):
-        self.environment.configure()
-        self.host = self.environment.get_host(self.hostname)
-
-    def cmd_deploy(self, component):
-        self.host[component].deploy()
-
-
 def main():
     parser = argparse.ArgumentParser(
         description=u'Deploy components locally.')
@@ -85,13 +40,9 @@ def main():
         '--platform', default=None,
         help='Alternative platform to choose. Empty for no platform.')
     parser.add_argument(
-        '-b', '--batch', action='store_true',
-        help='Batch mode - read component names to deploy from STDIN.')
-    parser.add_argument(
         '-d', '--debug', action='store_true',
         help='Enable debug mode. Logs stdout to `batou-debug-log`.')
     args = parser.parse_args()
-    mode = BatchMode if args.batch else AutoMode
 
     level = logging.INFO
 
@@ -113,7 +64,7 @@ def main():
             parser.error('environment "{}" unknown.\nKnown environments: {}'
                          .format(args.environment, known))
         try:
-            mode(environment, args.hostname)()
+            LocalDeployment(environment, args.hostname)()
         except:
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
