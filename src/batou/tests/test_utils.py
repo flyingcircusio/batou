@@ -1,6 +1,6 @@
 from StringIO import StringIO
 from batou.utils import hash
-from batou.utils import resolve, input, MultiFile, locked, notify, Address
+from batou.utils import resolve, MultiFile, locked, notify, Address
 from batou.utils import revert_graph, topological_sort, flatten, NetLoc
 from batou.utils import remove_nodes_without_outgoing_edges, cmd
 import mock
@@ -30,14 +30,6 @@ def test_socket_error_shows_hostname(ghbn):
     with pytest.raises(socket.gaierror) as e:
         resolve('localhost')
     assert str(e.value) == 'lookup failed (localhost)'
-
-
-@mock.patch('__builtin__.raw_input')
-def test_input(raw_input):
-    raw_input.return_value = 'asdf'
-    out = StringIO()
-    assert input('foo', out) == 'asdf'
-    assert out.getvalue() == 'foo'
 
 
 def test_flatten():
