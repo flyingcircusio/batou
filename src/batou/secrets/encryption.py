@@ -76,7 +76,7 @@ class EncryptedConfigFile(object):
 
     def _decrypt(self):
         self.cleartext = subprocess.check_output(
-            ['gpg {} --decrypt {}'.format
+            ['gpg --quiet --no-tty {} --decrypt {}'.format
                 (self.gpg_opts, self.encrypted_file)],
             shell=True)
 
@@ -90,7 +90,7 @@ class EncryptedConfigFile(object):
         os.rename(self.encrypted_file, self.encrypted_file+'.old')
         try:
             gpg = subprocess.Popen(
-                ['gpg {} --batch --encrypt {} -o {}'.format(
+                ['gpg --quiet --no-tty {} --batch --encrypt {} -o {}'.format(
                     self.gpg_opts, recipients, self.encrypted_file)],
                 stdin=subprocess.PIPE,
                 shell=True)
