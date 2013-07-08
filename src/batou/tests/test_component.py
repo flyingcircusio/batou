@@ -51,14 +51,6 @@ def test_init_keyword_args_update_dict():
     assert 1 == component.foobar
 
 
-def test_remote_bootstrap():
-    # The default remote bootstrap doesn't do anything: just exercise that
-    # it's there.  This could go away once we start testing the remoting
-    # code.
-    component = Component(Mock())
-    component.remote_bootstrap(Mock())
-
-
 def test_prepare_sets_up_vars():
     service = Mock()
     environment = Mock()

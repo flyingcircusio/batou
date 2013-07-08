@@ -60,6 +60,10 @@ class RemoteDeployment(object):
     def __init__(self, environment):
         self.environment = environment
 
+        self.upstream = cmd('hg show paths')[0].split('\n')[0].strip()
+        assert self.upstream.startswith('paths.default')
+        self.upstream = self.upstream.split('=')[1]
+
         self.repository_root = subprocess.check_output(['hg', 'root']).strip()
         self.service_base = os.path.relpath(
                 self.environment.service.base,
@@ -77,84 +81,71 @@ class RemoteDeployment(object):
         for remote in remotes.values():
             remote.start()
 
-        logger.info('Updating remote working copies... ')
-        for remote in remotes.values():
-            remote.update_working_copy()
-
-        #for component in self.environment.get_sorted_components():
-        #    remote = remotes[component.host]
-        #    remote.deploy_component(component)
+        for component in self.environment.get_sorted_components():
+            remote = remotes[component.host]
+            remote.deploy_component(component)
 
         for remote in remotes.values():
             remote.gateway.exit()
 
 
+class RPCWrapper(object):
+
+    def __init__(self, host):
+        self.host = host
+
+    def __getattr__(self, name):
+        def call(*args, **kw):
+            self.host.channel.send((name, args, kw))
+            return self.host.channel.receive()
+        return  call
+
 
 class RemoteHost(object):
+
+    gateway = None
 
     def __init__(self, host, deployment):
         self.host = host
         self.deployment = deployment
+        self.rpc = RPCWrapper(self)
 
-    def connect(self):
-        logger.info('{}: connecting'.format(self.host.fqdn))
+    def connect(self, interpreter='python2.7'):
+        if not self.gateway:
+            logger.info('{}: connecting'.format(self.host.fqdn))
+        else:
+            logger.info('{}: reconnecting'.format(self.host.fqdn))
+            self.gateway.exit()
+
         self.gateway = execnet.makegateway(
-            "ssh={}//python=sudo -u test2 python2.7".format(self.host.fqdn))
-        self.mainloop = self.gateway.remote_exec(remote_core)
+            "ssh={}//python=sudo -u {} python2.7".format(
+                self.host.fqdn, self.host.environment.service_user))
+        self.channel = self.gateway.remote_exec(remote_core)
 
     def start(self):
-        # XXX Acquire locks!
-
-        # TODO make choice of data transfer flexible.
-        self.mainloop.send('update_code')
-
-        upstream = cmd('hg show paths')[0].split('\n')[0].strip()
-        assert upstream.startswith('paths.default')
-        upstream = upstream.split('=')[1]
-        # Tell remote to update from this upstream URL
-        self.mainloop.send(upstream)
-        assert self.mainloop.receive() == 'updated'
+        logger.info('{}: bootstrapping'.format(self.host.fqdn))
+        self.rpc.lock()
 
         # XXX safety-belt: ensure clean working copy
         # XXX safety-belt: ensure no outgoing changes
         # XXX safety-belt: compare id to local repository
-        remote_base = self.mainloop.receive()
+        remote_base, remote_id = self.rpc.update_code(
+            upstream=self.deployment.upstream)
+
         self.remote_base = os.path.join(
             remote_base, self.deployment.service_base)
-        id = self.mainloop.receive()
 
-        self.mainloop.send('build_batou')
-        self.mainloop.send(self.deployment.service_base)
-
-        result = self.mainloop.receive()
-        assert result == 'OK'
+        self.rpc.build_batou(self.deployment.service_base)
 
         # Now, replace the basic interpreter connection, with a "real" one that
         # has all our dependencies installed.
-        self.gateway.exit()
+        self.connect(self.remote_base + '/bin/py')
 
-        self.gateway = execnet.makegateway(
-            "ssh={}//python=sudo -u test2 {}/bin/py".format(
-                self.host.fqdn, self.remote_base))
-        self.mainloop = self.gateway.remote_exec(remote_core)
-
-    def bootstrap(self):
-        """Ensure that the batou and project code base is current."""
-        return
-        self.batou = self.cmd(
-            'bin/batou-local --batch {} {}'.format(
-                self.deployment.environment.name, self.host.fqdn),
-            interactive=True)
-        for root in self.host.components:
-            root.component.remote_bootstrap(self)
-        self._wait_for_remote_ready()
-        overrides_file = '{}/overrides.json'.format(bouncedir)
-        json.dump(self.deployment.environment.overrides,
-                  self.sftp.open(overrides_file, 'w'))
-        self.remote_cmd('load_overrides {}'.format(overrides_file))
-        self.sftp.remove(overrides_file)
-        self.remote_cmd('configure')
+        self.rpc.setup_service(
+            self.deployment.environment.name,
+            self.host.fqdn,
+            self.deployment.environment.overrides)
 
     def deploy_component(self, component):
         logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
-        self.remote_cmd('deploy {}'.format(component.name))
+        #self.remote_cmd('deploy {}'.format(component.name))
