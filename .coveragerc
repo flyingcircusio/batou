@@ -1,10 +1,6 @@
 [run]
 branch = true
-source = bandersnatch
+source = batou
 
 [report]
 precision = 2
-omit = */apache_*.py
-       */buildout.py
-       */release.py
-       */log.py
