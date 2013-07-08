@@ -5,15 +5,11 @@ from .service import ServiceConfig
 from .utils import notify, cmd
 import argparse
 import execnet
-import json
 import logging
-import multiprocessing.pool
 import os
 import os.path
-import re
 import subprocess
 import sys
-import tempfile
 
 
 logger = logging.getLogger('batou.remote')
@@ -66,8 +62,8 @@ class RemoteDeployment(object):
 
         self.repository_root = subprocess.check_output(['hg', 'root']).strip()
         self.service_base = os.path.relpath(
-                self.environment.service.base,
-                self.repository_root)
+            self.environment.service.base,
+            self.repository_root)
         assert self.service_base[0] not in ['.', '/']
 
     def __call__(self):
@@ -97,12 +93,12 @@ class RPCWrapper(object):
     def __getattr__(self, name):
         def call(*args, **kw):
             logger.debug('rpc {}: {}(*{}, **{})'.format
-                    (self.host.host.fqdn, name, args, kw))
+                         (self.host.host.fqdn, name, args, kw))
             self.host.channel.send((name, args, kw))
             result = self.host.channel.receive()
             logger.debug('result: {}'.format(result))
             return result
-        return  call
+        return call
 
 
 class RemoteHost(object):
