@@ -2,6 +2,11 @@ import os
 import os.path
 import subprocess
 
+# Satisfy flake8 and support testing.
+try:
+    channel
+except NameError:
+    channel = None
 
 host = None
 
@@ -10,9 +15,11 @@ def lock():
     # XXX implement!
     pass
 
+
 def cmd(c):
     return subprocess.check_output(
         [c], shell=True)
+
 
 def update_code(upstream):
     # TODO Make choice of VCS flexible
