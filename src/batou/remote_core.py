@@ -23,15 +23,13 @@ def update_code(upstream):
     # Phase 1: update working copy
     # XXX manage certificates
     cmd("hg pull {}".format(upstream))
-    channel.send('updated')
     cmd("hg up -C")
     id = cmd("hg id -i")
     return base, id
 
 
-def build_batou(channel):
+def build_batou(service_base):
     base = get_deployment_base()
-    service_base = channel.receive()
     os.chdir(os.path.join(base, service_base))
     if not os.path.exists('bin/python2.7'):
         cmd('virtualenv --no-site-packages --python python2.7 .')
@@ -39,19 +37,21 @@ def build_batou(channel):
         cmd('bin/easy_install-2.7 -U setuptools')
         cmd('bin/python2.7 bootstrap.py')
     cmd('bin/buildout -t 15')
-    channel.send('OK')
 
 
-def setup_service(env_name, host_name, overrides):
+def setup_service(service_base, env_name, host_name, overrides):
     from batou.service import ServiceConfig
     global host
+
+    base = get_deployment_base()
+    os.chdir(os.path.join(base, service_base))
 
     config = ServiceConfig('.', [env_name])
     config.scan()
     environment = config.service.environments[env_name]
     environment.overrides = overrides
     environment.configure()
-    host = environmentget_host(host_name)
+    host = environment.get_host(host_name)
 
 
 def deploy_component(component_name):
