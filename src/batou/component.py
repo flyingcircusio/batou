@@ -94,11 +94,6 @@ class Component(object):
         """
         pass
 
-    # Support remote bootstrapping
-
-    def remote_bootstrap(self, remote_host):
-        pass
-
     # Deployment phase
 
     def deploy(self):

@@ -3,12 +3,19 @@ import os.path
 import subprocess
 
 
+host = None
+
+
+def lock():
+    # XXX implement!
+    pass
+
 def cmd(c):
     return subprocess.check_output(
         [c], shell=True)
 
-def update_code(channel):
-    upstream = channel.receive()
+def update_code(upstream):
+    # TODO Make choice of VCS flexible
     base = get_deployment_base()
     if not os.path.exists(base):
         cmd("hg init {}".format(base))
@@ -19,8 +26,7 @@ def update_code(channel):
     channel.send('updated')
     cmd("hg up -C")
     id = cmd("hg id -i")
-    channel.send(base)
-    channel.send(id)
+    return base, id
 
 
 def build_batou(channel):
@@ -36,6 +42,23 @@ def build_batou(channel):
     channel.send('OK')
 
 
+def setup_service(env_name, host_name, overrides):
+    from batou.service import ServiceConfig
+    global host
+
+    config = ServiceConfig('.', [env_name])
+    config.scan()
+    environment = config.service.environments[env_name]
+    environment.overrides = overrides
+    environment.configure()
+    host = environmentget_host(host_name)
+
+
+def deploy_component(component_name):
+    global host
+    host[component_name].deploy()
+
+
 def get_deployment_base():
     # XXX make configurable?
     return os.path.expanduser('~/deployment')
@@ -45,8 +68,9 @@ if __name__ == '__channelexec__':
     while not channel.isclosed():
         # Allow other channels to interleave with our mainloop
         try:
-            task = channel.receive(0.1)
+            task, args, kw = channel.receive(0.1)
         except channel.TimeoutError:
             pass
         else:
-            locals()[task](channel)
+            result = locals()[task](*args, **kw)
+            channel.send(result)
