@@ -96,8 +96,12 @@ class RPCWrapper(object):
 
     def __getattr__(self, name):
         def call(*args, **kw):
+            logger.debug('rpc {}: {}(*{}, **{})'.format
+                    (self.host.host.fqdn, name, args, kw))
             self.host.channel.send((name, args, kw))
-            return self.host.channel.receive()
+            result = self.host.channel.receive()
+            logger.debug('result: {}'.format(result))
+            return result
         return  call
 
 
@@ -118,8 +122,10 @@ class RemoteHost(object):
             self.gateway.exit()
 
         self.gateway = execnet.makegateway(
-            "ssh={}//python=sudo -u {} python2.7".format(
-                self.host.fqdn, self.host.environment.service_user))
+            "ssh={}//python=sudo -u {} {}".format(
+                self.host.fqdn,
+                self.host.environment.service_user,
+                interpreter))
         self.channel = self.gateway.remote_exec(remote_core)
 
     def start(self):
@@ -141,11 +147,12 @@ class RemoteHost(object):
         # has all our dependencies installed.
         self.connect(self.remote_base + '/bin/py')
 
-        self.rpc.setup_service(
+        print self.rpc.setup_service(
+            self.deployment.service_base,
             self.deployment.environment.name,
             self.host.fqdn,
             self.deployment.environment.overrides)
 
     def deploy_component(self, component):
         logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
-        #self.remote_cmd('deploy {}'.format(component.name))
+        self.rpc.deploy_component(component.name)
