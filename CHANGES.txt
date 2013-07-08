@@ -5,7 +5,7 @@ Changelog
 0.2.10 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Add ``use_distribute`` to  Bootstrap and Buildout component.
 
 
 0.2.9 (2013-07-06)

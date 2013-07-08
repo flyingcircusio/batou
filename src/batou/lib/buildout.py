@@ -11,6 +11,7 @@ class Bootstrap(Component):
     python = None
     buildout = 'bin/buildout'
     custom_bootstrap = False
+    use_distribute = True
     bootstrap = os.path.join(os.path.dirname(__file__), 'resources',
                              'bootstrap.py')
     config_file_name = 'buildout.cfg'
@@ -28,7 +29,11 @@ class Bootstrap(Component):
             raise UpdateNeeded()
 
     def update(self):
-        self.cmd('%s bootstrap.py --distribute' % self.python)
+        if self.use_distribute:
+            args = ' --distribute'
+        else:
+            args = ''
+        self.cmd('%s bootstrap.py %s' % (self.python, args))
 
 
 class Buildout(Component):
@@ -39,6 +44,7 @@ class Buildout(Component):
     config = None
     additional_config = ()
     custom_bootstrap = False
+    use_distribute = True
     config_file_name = 'buildout.cfg'
 
     build_env = {}  # XXX not frozen. :/
@@ -62,7 +68,8 @@ class Buildout(Component):
         self += venv
         self += Bootstrap(python=venv.python,
                           custom_bootstrap=self.custom_bootstrap,
-                          config_file_name=self.config_file_name)
+                          config_file_name=self.config_file_name,
+                          use_distribute=self.use_distribute)
 
     def verify(self):
         # XXX we can't be sure that all config objects are files!
