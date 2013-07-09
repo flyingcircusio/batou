@@ -73,11 +73,6 @@ def get_deployment_base():
 
 if __name__ == '__channelexec__':
     while not channel.isclosed():
-        # Allow other channels to interleave with our mainloop
-        try:
-            task, args, kw = channel.receive(0.1)
-        except channel.TimeoutError:
-            pass
-        else:
-            result = locals()[task](*args, **kw)
-            channel.send(result)
+        task, args, kw = channel.receive()
+        result = locals()[task](*args, **kw)
+        channel.send(result)

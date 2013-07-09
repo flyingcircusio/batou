@@ -1,6 +1,6 @@
 from batou import remote_core
 import inspect
-import mock
+import pytest
 
 
 def test_host_and_channel_exist():
@@ -17,11 +17,56 @@ def test_cmd():
     assert result == "asdf\n"
 
 
-def test_channelexec():
-    # Simulate the channel exec call
-    channel = mock.Mock()
-    source = inspect.getsource(remote_core)
+class DummyChannel(object):
+
+    _closed = False
+
+    def __init__(self):
+        self.receivequeue = []
+        self.sendqueue = []
+
+    def isclosed(self):
+        return self._closed
+
+    def receive(self, timeout=None):
+        result = self.receivequeue.pop()
+        if not self.receivequeue:
+            self._closed = True
+        return result
+
+    def send(self, item):
+        self.sendqueue.append(item)
+
+
+@pytest.fixture
+def remote_core_mod():
+    channel = DummyChannel()
 
     local_namespace = dict(channel=channel, __name__='__channelexec__')
-    exec source in local_namespace
-    assert {} == local_namespace
+
+    remote_core_mod = compile(
+        inspect.getsource(remote_core),
+        inspect.getsourcefile(remote_core),
+        'exec')
+
+    def run():
+        exec remote_core_mod in local_namespace
+
+    return (channel, run)
+
+
+def test_channelexec_already_closed(remote_core_mod):
+    channel, run = remote_core_mod
+    channel._closed = True
+    run()
+    assert channel.receivequeue == []
+    assert channel.sendqueue == []
+
+
+def test_channelexec_echo_cmd(remote_core_mod):
+    channel, run = remote_core_mod
+    channel.receivequeue.append(('cmd', ('echo "asdf"',), {}))
+    run()
+    assert channel.isclosed()
+    assert channel.receivequeue == []
+    assert channel.sendqueue == ['asdf\n']
