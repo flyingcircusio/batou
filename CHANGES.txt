@@ -5,7 +5,7 @@ Changelog
 1.0b3 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Allow remote deployments from root of repository.
 
 
 1.0b2 (2013-07-09)
