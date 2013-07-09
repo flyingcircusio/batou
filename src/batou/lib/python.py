@@ -56,7 +56,10 @@ class PIP(Component):
     version = '1.3'
 
     def verify(self):
-        result, _ = self.cmd('bin/pip --version')
+        try:
+            result, _ = self.cmd('bin/pip --version')
+        except RuntimeError:
+            raise UpdateNeeded()
         if not result.startswith('pip {} '.format(self.version)):
             raise UpdateNeeded()
 
