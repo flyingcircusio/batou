@@ -24,7 +24,14 @@ class VirtualEnv(Component):
         return 'bin/python{}'.format(self.version)
 
     def verify(self):
+        self._clean = False
         self.assert_file_is_current(self.python)
+        try:
+            # If the Python is broken enough, we have to clean it _a lot_
+            self.cmd('{} -c "import pkg_resources"')
+        except RuntimeError:
+            self._clean = True
+            raise UpdateNeeded()
 
     def _detect_virtualenv(self):
         # Prefer the virtualenv of the target version. There are some
@@ -45,6 +52,8 @@ class VirtualEnv(Component):
         return '{} {}'.format(executable, arguments)
 
     def update(self):
+        if self._clean:
+            self.cmd('rm -rf bin/ lib/ include/')
         commandline = self._detect_virtualenv()
         target = '.'
         self.cmd('{} {}'.format(commandline, target))
