@@ -74,5 +74,11 @@ def get_deployment_base():
 if __name__ == '__channelexec__':
     while not channel.isclosed():
         task, args, kw = channel.receive()
-        result = locals()[task](*args, **kw)
+        try:
+            result = locals()[task](*args, **kw)
+        except Exception, e:
+            result = ('batou-remote-core-error',
+                      e.__class__.__name__,
+                      e.__class__.__module__,
+                      e.args)
         channel.send(result)
