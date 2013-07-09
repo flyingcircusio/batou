@@ -143,7 +143,7 @@ class RemoteHost(object):
         # has all our dependencies installed.
         self.connect(self.remote_base + '/bin/py')
 
-        print self.rpc.setup_service(
+        self.rpc.setup_service(
             self.deployment.service_base,
             self.deployment.environment.name,
             self.host.fqdn,
