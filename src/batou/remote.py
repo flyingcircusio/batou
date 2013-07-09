@@ -64,7 +64,7 @@ class RemoteDeployment(object):
         self.service_base = os.path.relpath(
             self.environment.service.base,
             self.repository_root)
-        assert self.service_base[0] not in ['.', '/']
+        assert self.service_base == '.' or self.service_base[0] not in ['.', '/']
 
     def __call__(self):
         remotes = {}
