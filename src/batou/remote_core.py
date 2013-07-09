@@ -1,6 +1,8 @@
+import logging
 import os
 import os.path
 import subprocess
+
 
 # Satisfy flake8 and support testing.
 try:
@@ -71,8 +73,26 @@ def get_deployment_base():
     return os.path.expanduser('~/deployment')
 
 
+def setup_logging(loggers, level):
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s')
+    ch.setFormatter(formatter)
+    for logger in loggers:
+        logger = logging.getLogger(logger)
+        logger.setLevel(level)
+        logger.addHandler(ch)
+
+
 if __name__ == '__channelexec__':
+    setup_logging(['batou'], logging.INFO)
     while not channel.isclosed():
         task, args, kw = channel.receive()
-        result = locals()[task](*args, **kw)
+        try:
+            result = locals()[task](*args, **kw)
+        except Exception, e:
+            result = ('batou-remote-core-error',
+                      e.__class__.__name__,
+                      e.__class__.__module__,
+                      e.args)
         channel.send(result)

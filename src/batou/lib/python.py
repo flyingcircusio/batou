@@ -10,6 +10,7 @@ class VirtualEnv(Component):
     """
 
     namevar = 'version'
+    _clean = False
 
     # XXX unsure whether this factoring is OK.
     # Depending on the platform and or environment the python executable may
@@ -25,6 +26,12 @@ class VirtualEnv(Component):
 
     def verify(self):
         self.assert_file_is_current(self.python)
+        try:
+            # If the Python is broken enough, we have to clean it _a lot_
+            self.cmd('{} -c "import pkg_resources"'.format(self.python))
+        except RuntimeError:
+            self._clean = True
+            raise UpdateNeeded()
 
     def _detect_virtualenv(self):
         # Prefer the virtualenv of the target version. There are some
@@ -45,6 +52,8 @@ class VirtualEnv(Component):
         return '{} {}'.format(executable, arguments)
 
     def update(self):
+        if self._clean:
+            self.cmd('rm -rf bin/ lib/ include/')
         commandline = self._detect_virtualenv()
         target = '.'
         self.cmd('{} {}'.format(commandline, target))
@@ -56,7 +65,10 @@ class PIP(Component):
     version = '1.3'
 
     def verify(self):
-        result, _ = self.cmd('bin/pip --version')
+        try:
+            result, _ = self.cmd('bin/pip --version')
+        except RuntimeError:
+            raise UpdateNeeded()
         if not result.startswith('pip {} '.format(self.version)):
             raise UpdateNeeded()
 
