@@ -1,6 +1,8 @@
 """Components to manage Python environments."""
 
 from batou.component import Component
+from batou import UpdateNeeded
+import yaml
 
 
 class VirtualEnv(Component):
@@ -46,3 +48,40 @@ class VirtualEnv(Component):
         commandline = self._detect_virtualenv()
         target = '.'
         self.cmd('{} {}'.format(commandline, target))
+
+
+class PIP(Component):
+
+    namevar = 'version'
+    version = '1.3'
+
+    def verify(self):
+        result, _ = self.cmd('bin/pip --version')
+        if not result.startswith('pip {} '.format(self.version)):
+            raise UpdateNeeded()
+
+    def update(self):
+        self.cmd('bin/pip install --upgrade "pip=={}"'.format(self.version))
+
+
+class Package(Component):
+
+    namevar = 'package'
+    version = None
+
+    def verify(self):
+        result, _ = self.cmd('bin/pip show {}'.format(self.package))
+        result = result.strip()
+        if not result:
+            raise UpdateNeeded()
+        result = yaml.load(result)
+        if result['Version'] != self.version:
+            raise UpdateNeeded()
+
+    def update(self):
+        self.cmd('bin/pip install --upgrade "{}=={}"'.format(
+            self.package, self.version))
+
+    @property
+    def namevar_for_breadcrumb(self):
+        return '{}=={}'.format(self.package, self.version)
