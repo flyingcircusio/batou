@@ -28,7 +28,7 @@ class VirtualEnv(Component):
         self.assert_file_is_current(self.python)
         try:
             # If the Python is broken enough, we have to clean it _a lot_
-            self.cmd('{} -c "import pkg_resources"')
+            self.cmd('{} -c "import pkg_resources"'.format(self.python))
         except RuntimeError:
             self._clean = True
             raise UpdateNeeded()
