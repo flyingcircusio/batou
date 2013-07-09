@@ -45,7 +45,12 @@ def main():
     environment.configure()
 
     deployment = RemoteDeployment(environment)
-    deployment()
+    try:
+        deployment()
+    except RuntimeError, e:
+        logger.error('\n'.join(str(x) for x in e.args))
+    except Exception, e:
+        logger.exception(e)
 
     notify('Deployment finished',
            '{} was deployed successfully.'.format(environment.name))
@@ -98,6 +103,16 @@ class RPCWrapper(object):
             self.host.channel.send((name, args, kw))
             result = self.host.channel.receive()
             logger.debug('result: {}'.format(result))
+            try:
+                result[0]
+            except TypeError:
+                pass
+            else:
+                if result[0] == 'batou-remote-core-error':
+                    class_, mod, args = result[1:]
+                    mod = __import__(mod)
+                    class_ = getattr(mod, class_)
+                    raise class_(*args)
             return result
         return call
 
