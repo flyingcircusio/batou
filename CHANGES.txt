@@ -5,6 +5,12 @@ Changelog
 1.0b3 (unreleased)
 ==================
 
+- Enable logging in the remote core to see what's going on on the remote side.
+
+- Try to better format exceptions from the remote side.
+
+- Try harder to get virtualenv back into a working state.
+
 - Allow remote deployments from root of repository.
 
 - Make PIP management more robust.
