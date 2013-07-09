@@ -5,6 +5,8 @@ Changelog
 1.0b3 (unreleased)
 ==================
 
+- Fix #12399: incorrect stat attributes for Owner and Group
+
 - Allow remote deployments from root of repository.
 
 
