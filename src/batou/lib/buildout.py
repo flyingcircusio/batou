@@ -1,10 +1,8 @@
-from batou import UpdateNeeded
 from batou.component import Component
 from batou.lib.file import File
 from batou.lib.python import VirtualEnv, PIP, Package
 import contextlib
 import os.path
-
 
 
 class Buildout(Component):
