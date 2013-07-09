@@ -272,12 +272,12 @@ class Owner(FileComponent):
             self.owner = pwd.getpwnam(self.owner)
 
     def verify(self):
-        current = os.stat(self.path).uid
+        current = os.stat(self.path).st_uid
         if current != self.owner:
             raise batou.UpdateNeeded()
 
     def update(self):
-        group = os.stat(self.path).gid
+        group = os.stat(self.path).st_gid
         os.chown(self.path, self.owner, group)
 
 
@@ -289,12 +289,12 @@ class Group(FileComponent):
             self.group = pwd.getpwnam(self.group)
 
     def verify(self):
-        current = os.stat(self.path).gid
+        current = os.stat(self.path).st_gid
         if current != self.group:
             raise batou.UpdateNeeded()
 
     def update(self):
-        owner = os.stat(self.path).uid
+        owner = os.stat(self.path).st_uid
         os.chown(self.path, owner, self.group)
 
 
