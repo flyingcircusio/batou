@@ -5,7 +5,13 @@ Changelog
 1.0b2 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Add component to manage PIP within a virtual env.
+
+- Add component to manage packages with PIP within a virtual env.
+
+- Restructure buildout component to make it more robust regarding
+  setuptools/distribute preparation. Also remove usage of bootstrap completely
+  as we rely on virtualenv anyway.
 
 
 1.0b1 (2013-07-09)
