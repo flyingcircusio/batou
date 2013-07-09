@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b3 (unreleased)
+1.0b3 (2013-07-09)
 ==================
 
 - Enable logging in the remote core to see what's going on on the remote side.
