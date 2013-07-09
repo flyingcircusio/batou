@@ -2,8 +2,8 @@
 Changelog
 =========
 
-1.0 (unreleased)
-================
+1.0b1 (2013-07-09)
+==================
 
 - Apply semantic versioning: initial development is over, so this is 1.0 now.
 
