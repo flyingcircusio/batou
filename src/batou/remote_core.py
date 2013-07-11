@@ -27,6 +27,7 @@ def update_code(upstream):
     # TODO Make choice of VCS flexible
     base = get_deployment_base()
     if not os.path.exists(base):
+        os.mkdir(base)
         cmd("hg init {}".format(base))
     os.chdir(base)
     # Phase 1: update working copy
