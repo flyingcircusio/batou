@@ -21,7 +21,7 @@ setup(
         'Jinja2',
         'PyYAML',
         'configobj',
-        'distribute',
+        'setuptools',
         'execnet',
         'mock',
         'pytest',
