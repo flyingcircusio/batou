@@ -5,6 +5,9 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Improve convenience of the 'secrets-edit' wrapper script to allow
+  re-encrypting without re-entering the editor.
+
 - Consistently switch to using setuptools.
 
 - Fix #12399: incorrect stat attributes for Owner and Group
