@@ -5,6 +5,9 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Remove superfluous '--update' from pip calls that would temporarily install
+  the incorrect package version.
+
 - Improve convenience of the 'secrets-edit' wrapper script to allow
   re-encrypting without re-entering the editor.
 
