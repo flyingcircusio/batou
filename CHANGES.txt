@@ -18,6 +18,8 @@ Changelog
 
 - Fix #12399: incorrect stat attributes for Owner and Group
 
+- Add ``exclude`` parameter to Directory component.
+
 
 1.0b3 (2013-07-09)
 ==================

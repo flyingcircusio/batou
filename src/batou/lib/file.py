@@ -127,20 +127,28 @@ class SyncDirectory(Component):
 
     namevar = 'path'
     source = None
+    exclude = ()
 
     def configure(self):
         self.path = self.map(self.path)
         self.source = os.path.normpath(
             os.path.join(self.root.defdir, self.source))
 
+    @property
+    def exclude_arg(self):
+        if not self.exclude:
+            return ''
+        return ' '.join("--exclude '{}'".format(x) for x in self.exclude) + ' '
+
     def verify(self):
-        stdout, stderr = self.cmd('rsync -rclnv {}/ {}'.format(
-            self.source, self.path))
+        stdout, stderr = self.cmd('rsync -rclnv {}{}/ {}'.format(
+            self.exclude_arg, self.source, self.path))
         if len(stdout.strip().splitlines()) - 4 > 0:
             raise batou.UpdateNeeded()
 
     def update(self):
-        self.cmd('rsync --inplace -lr {}/ {}'.format(self.source, self.path))
+        self.cmd('rsync --inplace -lr {}{}/ {}'.format(
+            self.exclude_arg, self.source, self.path))
 
     @property
     def namevar_for_breadcrumb(self):
@@ -152,12 +160,14 @@ class Directory(Component):
     namevar = 'path'
     leading = False
     source = None
+    exclude = ()
 
     def configure(self):
         self.path = self.map(self.path)
         if self.source:
             # XXX The ordering is wrong. SyncDirectory should run *after*.
-            self += SyncDirectory(self.path, source=self.source)
+            self += SyncDirectory(
+                self.path, source=self.source, exclude=self.exclude)
 
     def verify(self):
         if not os.path.isdir(self.path):
