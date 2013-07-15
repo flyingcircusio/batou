@@ -19,6 +19,7 @@ setup(
     version=version,
     install_requires=[
         'Jinja2',
+        'PyYAML',
         'configobj',
         'mock',
         'paramiko>=1.8',

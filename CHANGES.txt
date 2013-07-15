@@ -5,7 +5,8 @@ Changelog
 0.2.10 (unreleased)
 ===================
 
-- Add ``use_distribute`` to  Bootstrap and Buildout component.
+- Backport buildout/virtualenv handling from 1.x branch (mostly due to
+  distribute/setuptools merge, but brings nice additional robustness).
 
 
 0.2.9 (2013-07-06)
