@@ -7,7 +7,8 @@ class Supervisor(Component):
 
     def configure(self):
         self.programs = self.require('programs', self.host)
-        self += Buildout('supervisor', python='2.7')
+        self += Buildout('supervisor', python='2.7',
+                         version='2.2', setuptools='0.8')
         self += Service('bin/supervisord',
                         pidfile='var/supervisord.pid')
 
