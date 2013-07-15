@@ -1,6 +1,8 @@
 """Components to manage Python environments."""
 
 from batou.component import Component
+from batou import UpdateNeeded
+import yaml
 
 
 class VirtualEnv(Component):
@@ -8,6 +10,7 @@ class VirtualEnv(Component):
     """
 
     namevar = 'version'
+    _clean = False
 
     # XXX unsure whether this factoring is OK.
     # Depending on the platform and or environment the python executable may
@@ -23,6 +26,12 @@ class VirtualEnv(Component):
 
     def verify(self):
         self.assert_file_is_current(self.python)
+        try:
+            # If the Python is broken enough, we have to clean it _a lot_
+            self.cmd('{} -c "import pkg_resources"'.format(self.python))
+        except RuntimeError:
+            self._clean = True
+            raise UpdateNeeded()
 
     def _detect_virtualenv(self):
         # Prefer the virtualenv of the target version. There are some
@@ -43,6 +52,48 @@ class VirtualEnv(Component):
         return '{} {}'.format(executable, arguments)
 
     def update(self):
+        if self._clean:
+            self.cmd('rm -rf bin/ lib/ include/')
         commandline = self._detect_virtualenv()
         target = '.'
         self.cmd('{} {}'.format(commandline, target))
+
+
+class PIP(Component):
+
+    namevar = 'version'
+    version = '1.3'
+
+    def verify(self):
+        try:
+            result, _ = self.cmd('bin/pip --version')
+        except RuntimeError:
+            raise UpdateNeeded()
+        if not result.startswith('pip {} '.format(self.version)):
+            raise UpdateNeeded()
+
+    def update(self):
+        self.cmd('bin/pip install --upgrade "pip=={}"'.format(self.version))
+
+
+class Package(Component):
+
+    namevar = 'package'
+    version = None
+
+    def verify(self):
+        result, _ = self.cmd('bin/pip show {}'.format(self.package))
+        result = result.strip()
+        if not result:
+            raise UpdateNeeded()
+        result = yaml.load(result)
+        if str(result['Version']) != self.version:
+            raise UpdateNeeded()
+
+    def update(self):
+        self.cmd('bin/pip install "{}=={}"'.format(
+            self.package, self.version))
+
+    @property
+    def namevar_for_breadcrumb(self):
+        return '{}=={}'.format(self.package, self.version)

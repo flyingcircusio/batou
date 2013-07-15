@@ -12,21 +12,22 @@ def project_path(*names):
     return os.path.join(os.path.dirname(__file__), *names)
 
 
-version = '0.2.9.dev0'
+version = '0.2.10.dev0'
 
 setup(
     name='batou',
     version=version,
     install_requires=[
         'Jinja2',
+        'PyYAML',
         'configobj',
-        'distribute',
         'mock',
         'paramiko>=1.8',
         'pytest',
         'pytest-capturelog',
         'pytest-codecheckers',
         'pytest-cov',
+        'setuptools',
         'zope.cachedescriptors',
     ],
     extras_require={
