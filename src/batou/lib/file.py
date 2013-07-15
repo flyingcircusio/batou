@@ -136,17 +136,19 @@ class SyncDirectory(Component):
 
     @property
     def exclude_arg(self):
-        return ' '.join("--exclude '{}'".format(x) for x in self.exclude)
+        if not self.exclude:
+            return ''
+        return ' '.join("--exclude '{}'".format(x) for x in self.exclude) + ' '
 
     def verify(self):
-        stdout, stderr = self.cmd('rsync -rclnv {} {}/ {}'.format(
-            self.exclude_args, self.source, self.path))
+        stdout, stderr = self.cmd('rsync -rclnv {}{}/ {}'.format(
+            self.exclude_arg, self.source, self.path))
         if len(stdout.strip().splitlines()) - 4 > 0:
             raise batou.UpdateNeeded()
 
     def update(self):
-        self.cmd('rsync --inplace -lr {} {}/ {}'.format(
-            self.exclude_args, self.source, self.path))
+        self.cmd('rsync --inplace -lr {}{}/ {}'.format(
+            self.exclude_arg, self.source, self.path))
 
     @property
     def namevar_for_breadcrumb(self):
