@@ -160,7 +160,8 @@ a template.
     # components/zodb/component.py
     class ZODB(Component):
         def configure(self):
-            self += Buildout(‘zodb’, python=’2.7’)
+            self += Buildout(‘zodb’, python=’2.7’,
+                             version='2.2', setuptools='0.8')
 
 
 archive

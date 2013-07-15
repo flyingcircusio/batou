@@ -141,7 +141,8 @@ class Supervisor(Component):
 
         buildout_cfg = File('buildout.cfg',
                             source=self.buildout_cfg)
-        self += Buildout('buildout', config=buildout_cfg, python='2.7')
+        self += Buildout('buildout', config=buildout_cfg, python='2.7',
+                         version='1.5.2', distribute='0.6.40')
 
         self.program_config_dir = Directory('etc/supervisor.d', leading=True)
         self += self.program_config_dir

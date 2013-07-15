@@ -1,34 +1,8 @@
-from batou import UpdateNeeded
 from batou.component import Component
 from batou.lib.file import File
-from batou.lib.python import VirtualEnv
+from batou.lib.python import VirtualEnv, PIP, Package
 import contextlib
 import os.path
-
-
-class Bootstrap(Component):
-
-    python = None
-    buildout = 'bin/buildout'
-    custom_bootstrap = False
-    bootstrap = os.path.join(os.path.dirname(__file__), 'resources',
-                             'bootstrap.py')
-    config_file_name = 'buildout.cfg'
-
-    def configure(self):
-        if not self.custom_bootstrap:
-            self += File('bootstrap.py', source=self.bootstrap)
-
-    def verify(self):
-        self.assert_file_is_current(
-            self.buildout, ['bootstrap.py', self.python])
-        buildout = open('bin/buildout', 'r').readlines()[0]
-        if not buildout.startswith(
-                '#!{0}/{1}'.format(self.root.workdir, self.python)):
-            raise UpdateNeeded()
-
-    def update(self):
-        self.cmd('%s bootstrap.py --distribute' % self.python)
 
 
 class Buildout(Component):
@@ -38,13 +12,17 @@ class Buildout(Component):
     use_default = True
     config = None
     additional_config = ()
-    custom_bootstrap = False
     config_file_name = 'buildout.cfg'
+
+    distribute = None
+    setuptools = None
+    version = None
 
     build_env = {}  # XXX not frozen. :/
 
     def configure(self):
-        if not self.config and self.use_default:
+        if self.use_default and not self.config:
+            # We expect that your definition directory has a buildout.cfg
             self.config = File('buildout.cfg',
                                source='buildout.cfg',
                                template_context=self.parent,
@@ -58,11 +36,17 @@ class Buildout(Component):
         self.config.extend(self.additional_config)
         for component in self.config:
             self += component
+
         venv = VirtualEnv(self.python)
         self += venv
-        self += Bootstrap(python=venv.python,
-                          custom_bootstrap=self.custom_bootstrap,
-                          config_file_name=self.config_file_name)
+        self += PIP('1.3')
+        if self.distribute:
+            self += Package(
+                'distribute', version=self.distribute)
+        if self.setuptools:
+            self += Package('setuptools', version=self.setuptools)
+
+        self += Package('zc.buildout', version=self.version)
 
     def verify(self):
         # XXX we can't be sure that all config objects are files!
@@ -70,6 +54,7 @@ class Buildout(Component):
             File('.installed.cfg'), [File('bin/buildout')] + self.config)
         self.assert_file_is_current(
             '.batou.buildout.success', ['.installed.cfg'])
+        self.assert_no_subcomponent_changes()
 
     def update(self):
         with safe_environment(self.build_env):
