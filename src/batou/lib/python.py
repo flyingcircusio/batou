@@ -91,7 +91,7 @@ class Package(Component):
             raise UpdateNeeded()
 
     def update(self):
-        self.cmd('bin/pip install --upgrade "{}=={}"'.format(
+        self.cmd('bin/pip install "{}=={}"'.format(
             self.package, self.version))
 
     @property
