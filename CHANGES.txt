@@ -2,7 +2,13 @@
 Changelog
 =========
 
-0.2.10 (unreleased)
+0.2.11 (unreleased)
+===================
+
+- Nothing changed yet.
+
+
+0.2.10 (2013-07-15)
 ===================
 
 - Backport buildout/virtualenv handling from 1.x branch (mostly due to
