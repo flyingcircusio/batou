@@ -87,7 +87,7 @@ class Package(Component):
         if not result:
             raise UpdateNeeded()
         result = yaml.load(result)
-        if result['Version'] != self.version:
+        if str(result['Version']) != self.version:
             raise UpdateNeeded()
 
     def update(self):

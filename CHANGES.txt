@@ -5,6 +5,9 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Counter YAML's accidental interpretation of version numbers from 'pip show'
+  as floats.
+
 - Remove superfluous '--update' from pip calls that would temporarily install
   the incorrect package version.
 
