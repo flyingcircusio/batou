@@ -20,13 +20,13 @@ setup(
     install_requires=[
         'Jinja2',
         'configobj',
-        'distribute',
         'mock',
         'paramiko>=1.8',
         'pytest',
         'pytest-capturelog',
         'pytest-codecheckers',
         'pytest-cov',
+        'setuptools',
         'zope.cachedescriptors',
     ],
     extras_require={
