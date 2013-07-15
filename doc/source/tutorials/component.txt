@@ -133,7 +133,8 @@ and providing a ``buildout.cfg`` file. Create a file
   class Supervisor(Component):
 
       def configure(self):
-          self += Buildout('supervisor', python='2.7')
+          self += Buildout('supervisor', python='2.7',
+                           version='2.2', setuptools='0.8')
 
 By default, the buildout configuration is expected to sit next to the
 component definition. Create a file ``components/supervisor/buildout.cfg``
@@ -241,7 +242,8 @@ like this:
 
       def configure(self):
           self.programs = self.require('programs', self.host)
-          self += Buildout('supervisor', python='2.7')
+          self += Buildout('supervisor', python='2.7',
+                           version='2.2', setuptools='0.8')
 
 Change the file ``components/supervisor/buildout.cfg`` to replace the
 hard-coded program line for "tick" with a loop (in the Jinja templating
