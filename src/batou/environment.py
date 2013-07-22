@@ -1,162 +1,22 @@
+from .component import load_components_from_file
+from .host import Host
+from .resources import Resources
+from .secrets import add_secrets_to_environment_override
 from batou import NonConvergingWorkingSet, UnusedResource
 from batou.component import RootComponent
 from batou.utils import flatten, revert_graph, topological_sort
 from collections import defaultdict
+import batou.c
+import batou.vfs
+import configobj
+import glob
 import logging
 import os
+import os.path
 import pwd
 
 
 logger = logging.getLogger(__name__)
-
-
-class Resources(object):
-    """A registry for resources.
-
-    Resources are mappings of keys to lists of values.
-
-    Components can `provide` resources by specifying a key and a value.
-
-    Components can retrieve all resources for a key by `requiring` the key.
-    Optionally components can limit the values returned to a specific host.
-
-    The registry keeps track of which component depends on what
-    resources.
-    """
-
-    # Maps keys to root components that depend on the key.
-
-    # A "strict" dependency means that it's not OK to have this dependency
-    # unsatisfied and requires at least one value.
-
-    # A reverse dependency means that the dependency map will reverse the root
-    # components order: "require before provide" instead of the default
-    # "provide before require"
-
-    # {key: [(root, strict, host, reverse),
-    #        (root, strict, host, reverse), ...]}
-    subscribers = None
-    # Keeps track of root components that have not seen changes to a key they
-    # have subscribed to when they were configured earlier..
-    dirty_dependencies = None
-
-    # {key: {host: [values]}}
-    resources = None
-
-    def __init__(self):
-        self.resources = {}
-        self.subscribers = {}
-        self.dirty_dependencies = set()
-
-    def _subscribers(self, key, host):
-        return [root for root, strict, host_, reverse
-                in self._subscriptions(key, host)]
-
-    def _subscriptions(self, key, host):
-        return [(root, strict, host_, reverse)
-                for root, strict, host_, reverse
-                in self.subscribers.get(key, ())
-                if host_ is None or host is None or host_ is host]
-
-    @property
-    def strict_subscribers(self):
-        for key, subscribers in self.subscribers.items():
-            if any(strict for root, strict, host, reverse in subscribers):
-                yield key
-
-    def provide(self, root, key, value):
-        assert isinstance(root, RootComponent)
-        values = self.resources.setdefault(key, defaultdict(list))
-        values[root].append(value)
-        self.dirty_dependencies.update(self._subscribers(key, root.host))
-
-    def get(self, key, host=None):
-        """Return resource values without recording a dependency."""
-        if host is not None:
-            results = []
-            for root, values in self.resources.get(key, {}).items():
-                if root.component.host is host:
-                    results.extend(values)
-        else:
-            results = flatten(self.resources.get(key, {}).values())
-        return results
-
-    def require(self, root, key, host=None, strict=True, reverse=False):
-        assert isinstance(root, RootComponent)
-        """Return resource values and record component dependency."""
-        self.subscribers.setdefault(key, set()).add(
-            (root, strict, host, reverse))
-        return self.get(key, host)
-
-    def reset_component_resources(self, root):
-        """Move all resources aside that were provided by this component."""
-        for key, resources in self.resources.items():
-            if root not in resources:
-                continue
-            del resources[root]
-            # Removing this resource requires invalidating components that
-            # depend on this resource and have already been configured so we
-            # need to mark them as dirty.
-            self.dirty_dependencies.update(self._subscribers(key, root.host))
-
-    def copy_resources(self):
-        # A "one level deep" copy of the resources dict to be used by the
-        # `unused` property.
-        resources = {}
-        for key, providers in self.resources.items():
-            resources[key] = dict(providers)
-        return resources
-
-    @property
-    def unused(self):
-        # XXX. Gah. This makes my head explode: we need to take the 'host'
-        # filter into account whether some of the values provided where never
-        # used.
-        resources = self.copy_resources()
-        for key, subscribers in self.subscribers.items():
-            if key not in resources:
-                continue
-            for root, strict, host, reverse in subscribers:
-                if host is None:
-                    del resources[key]
-                    break
-                for resource_root in list(resources[key]):
-                    if resource_root.host is host:
-                        del resources[key][resource_root]
-                        if not resources[key]:
-                            del resources[key]
-                            break
-                if not key in resources:
-                    break
-        return resources
-
-    @property
-    def unsatisfied(self):
-        return set(self.strict_subscribers) - set(self.resources)
-
-    @property
-    def unsatisfied_components(self):
-        components = set()
-        for resource in self.unsatisfied:
-            components.update(self._subscribers(resource, None))
-        return components
-
-    def get_dependency_graph(self):
-        """Return a dependency graph as a dict of lists:
-
-        {component: [dependency1, dependency2],
-         ...}
-
-        """
-        graph = defaultdict(set)
-        for key, providers in self.resources.items():
-            for subscriber, _, _, reverse in self._subscriptions(key, None):
-                if reverse:
-                    for provider in providers:
-                        graph[provider].add(subscriber)
-                else:
-                    graph[subscriber].update(providers)
-        return graph
 
 
 class Environment(object):
@@ -170,36 +30,79 @@ class Environment(object):
     platform = None
     vfs_sandbox = None
 
-    def __init__(self, name, service):
+    def __init__(self, name):
         self.name = name
-        self.service = service
         self.hosts = {}
         self.resources = Resources()
-        # A mapping of overriding values that can be set on the root
-        # components.
         self.overrides = {}
 
-    def from_config(self, config):
-        """Pull options that come from cfg file out of `config` dict."""
-        for key in ['service_user', 'host_domain', 'branch', 'platform']:
-            if key in config:
+        # These are the component classes, decorated with their 
+        # name.
+        self.components = {}
+        # These are the components assigned to hosts.
+        self.root_components = []
+
+    # XXX Extract
+    def load(self):
+        # Scan all components
+        for filename in glob.glob('components/*/component.py'):
+            self.components.update(load_components_from_file(filename))
+
+        # Load environment configuration
+        config_file = 'environments/{}.cfg'.format(self.name)
+        if not os.path.isfile(config_file):
+            raise ValueError('No such environment "{}"'.format(self.name))
+
+        config = configobj.ConfigObj(config_file)
+
+        if 'environment' in config:
+            for key in ['service_user', 'host_domain', 'branch', 'platform']:
+                if key not in config:
+                    configure
+                if getattr(self, key) is not None:
+                    # Support early overrides from e.g. the CLI or tests
+                    continue
                 setattr(self, key, config[key])
+
         if self.service_user is None:
             self.service_user = pwd.getpwuid(os.getuid()).pw_name
+
         if self.platform is None and self.host_domain:
             self.platform = self.host_domain
 
-    def configure(self):
-        """Configure all top-level components from all hosts.
+        if 'vfs' in config:
+            sandbox = config['vfs']['sandbox']
+            sandbox = getattr(batou.vfs, sandbox)(self, config['vfs'])
+            self.vfs_sandbox = sandbox
 
-        Monitor the dependencies between resources and try to converge
-        to a stable order.
+        for hostname in config['hosts']:
+            fqdn = self.normalize_host_name(hostname)
+            self.hosts[fqdn] = host = Host(fqdn)
+            # load components for host
+            for name, features in parse_host_components(
+                    config['hosts'].as_list(hostname)).items():
+                root = RootComponent(self.components[name])
+                root.name = name
+                root.host = host
+                root.features = features
+                self.root_components.append(root)
+
+        # load overrides
+        for section in config:
+            if not section.startswith('component:'):
+                continue
+            root_name = section.replace('component:', '')
+            self.overrides.setdefault(root_name, {})
+            self.overrides[root_name].update(config[section])
+
+    def configure(self):
+        """Configure all root components.
+
+        Monitor the dependencies between resources and try to reach a stable
+        order.
 
         """
-        # Seed the working set with all components from all hosts
-        working_set = set()
-        for host in self.hosts.values():
-            working_set.update(host.components)
+        working_set = set(self.root_components)
 
         previous_working_sets = []
         while working_set:
@@ -210,7 +113,9 @@ class Environment(object):
 
             for root in working_set:
                 try:
-                    root.prepare()
+                    self.resources.reset_component_resources(root)
+                    root.component = root.factory()
+                    root.component.prepare(self, root.host, root) 
                 except Exception, e:
                     exceptions.append(e)
                     retry.add(root)
@@ -222,7 +127,7 @@ class Environment(object):
             # Try to find a valid order of the components. If we can't then we
             # have detected a dependency cycle and need to stop.
 
-            self.get_sorted_components()
+            self.roots_in_order()
 
             if (retry in previous_working_sets):
                 # We did not manage to improve on our last working set, so we
@@ -247,8 +152,12 @@ class Environment(object):
         if self.resources.unused:
             raise UnusedResource(self.resources.unused)
 
-    def get_sorted_components(self):
-        """Return a list of components sorted by their resource dependencies.
+    def load_secrets(self):
+        add_secrets_to_environment_override(self)
+
+    def roots_in_order(self, host=None):
+        """Return a list of root components sorted by their resource dependencies,
+        filtered by host if specified.
 
         Raises ValueError if component dependencies have cycles.
 
@@ -256,11 +165,14 @@ class Environment(object):
         dependencies = self.resources.get_dependency_graph()
         # Complete the graph with components that do not have any dependencies
         # (yet)
-        for host in self.hosts.values():
-            for root in host.components:
-                if root not in dependencies:
-                    dependencies[root] = set()
-        return list(topological_sort(revert_graph(dependencies)))
+        for root in self.root_components:
+            if root not in dependencies:
+                dependencies[root] = set()
+        roots = topological_sort(revert_graph(dependencies))
+        if host is not None:
+            host = self.get_host(host)
+            roots = filter(lambda x:x.host is host, roots)
+        return roots
 
     def normalize_host_name(self, hostname):
         """Ensure the given host name is an FQDN for this environment."""
@@ -277,6 +189,24 @@ class Environment(object):
             return self.vfs_sandbox.map(path)
         return path
 
-    @property
-    def workdir_base(self):
-        return '%s/work' % self.service.base
+
+def parse_host_components(components):
+    """Parse a component list as given in an environment config for a host
+    into a mapping of compoment -> features.
+
+    Expected syntax:
+
+    component[:feature], component[:feature]
+
+    """
+    result = {}
+    for name in components:
+        name = name.strip()
+        if ':' in name:
+            name, feature = name.split(':', 1)
+        else:
+            feature = None
+        result.setdefault(name, [])
+        if feature:
+            result[name].append(feature)
+    return result

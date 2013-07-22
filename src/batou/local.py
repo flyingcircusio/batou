@@ -1,31 +1,8 @@
-from .secrets import add_secrets_to_environment_override
-from .service import ServiceConfig
-from .utils import notify, locked, MultiFile, CycleError
+from .utils import notify, locked
+from .environment import Environment
 import argparse
 import logging
-import pprint
 import sys
-
-
-class LocalDeployment(object):
-
-    def __init__(self, environment, hostname):
-        self.environment = environment
-        self.hostname = hostname
-
-    def __call__(self):
-        add_secrets_to_environment_override(self.environment)
-        try:
-            self.environment.configure()
-        except CycleError, e:
-            print 'Detected cycle:'
-            pprint.pprint(e.args[0])
-            raise
-        host = self.environment.get_host(self.hostname)
-        for component in self.environment.get_sorted_components():
-            if component.host is not host:
-                continue
-            component.deploy()
 
 
 def main():
@@ -37,38 +14,32 @@ def main():
     parser.add_argument(
         'hostname', help='Host to deploy.')
     parser.add_argument(
-        '--platform', default=None,
+        '-p', '--platform', default=None,
         help='Alternative platform to choose. Empty for no platform.')
     parser.add_argument(
         '-d', '--debug', action='store_true',
-        help='Enable debug mode. Logs stdout to `batou-debug-log`.')
+        help='Enable debug mode.')
     args = parser.parse_args()
 
-    level = logging.INFO
-
     if args.debug:
-        log = open('batou-debug-log', 'a+')
-        sys.stdout = MultiFile([sys.stdout, log])
         level = logging.DEBUG
-
+    else:
+        level = logging.INFO
     logging.basicConfig(stream=sys.stdout, level=level, format='%(message)s')
 
     with locked('.batou-lock'):
-        config = ServiceConfig('.', [args.environment])
-        config.platform = args.platform
-        config.scan()
         try:
-            environment = config.service.environments[args.environment]
-        except KeyError:
-            known = ', '.join(sorted(config.existing_environments))
-            parser.error('environment "{}" unknown.\nKnown environments: {}'
-                         .format(args.environment, known))
-        try:
-            LocalDeployment(environment, args.hostname)()
+            environment = Environment(args.environment)
+            environment.load()
+            environment.platform = args.platform
+            environment.load_secrets()
+            environment.configure()
+            for root in environment.roots_in_order(host=args.hostname):
+                root.deploy()
         except:
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
-                       environment.name, args.hostname))
+                       args.environment, args.hostname))
             raise
         else:
             notify('Deployment finished',

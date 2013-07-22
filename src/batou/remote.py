@@ -32,16 +32,8 @@ def main():
 
     # XXX See #12602. Put safety belt back again.
 
-    config = ServiceConfig('.', [args.environment])
-    config.scan()
-    if args.environment not in config.service.environments:
-        known = ', '.join(sorted(config.existing_environments))
-        logger.error('Environment "{}" unknown.\nKnown environments: {}'
-                     .format(args.environment, known))
-        sys.exit(1)
-
-    environment = config.service.environments[args.environment]
-    add_secrets_to_environment_override(environment)
+    environment = Environment(args.environment)
+    environment.load_secrets()
     environment.configure()
 
     deployment = RemoteDeployment(environment)
@@ -51,9 +43,9 @@ def main():
         logger.error('\n'.join(str(x) for x in e.args))
     except Exception, e:
         logger.exception(e)
-
-    notify('Deployment finished',
-           '{} was deployed successfully.'.format(environment.name))
+    else:
+        notify('Deployment finished',
+               '{} was deployed successfully.'.format(environment.name))
 
 
 class RemoteDeployment(object):
@@ -66,11 +58,10 @@ class RemoteDeployment(object):
         self.upstream = self.upstream.split('=')[1]
 
         self.repository_root = subprocess.check_output(['hg', 'root']).strip()
-        self.service_base = os.path.relpath(
-            self.environment.service.base,
-            self.repository_root)
-        assert (self.service_base == '.' or
-                self.service_base[0] not in ['.', '/'])
+        self.deployment_base = os.path.relpath(
+            self.environment.base, self.repository_root)
+        assert (self.deployment_base == '.' or
+                self.deployment_base[0] not in ['.', '/'])
 
     def __call__(self):
         remotes = {}
@@ -83,9 +74,9 @@ class RemoteDeployment(object):
         for remote in remotes.values():
             remote.start()
 
-        for component in self.environment.get_sorted_components():
-            remote = remotes[component.host]
-            remote.deploy_component(component)
+        for root in self.environment.roots_in_order():
+            remote = remotes[root.host]
+            remote.deploy(root)
 
         for remote in remotes.values():
             remote.gateway.exit()

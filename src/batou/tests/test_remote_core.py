@@ -20,14 +20,14 @@ def test_cmd():
 
 
 @pytest.fixture
-def mock_remote_core(monkeypatch):
+def mock_remote_core(monkeypatch, tmpdir):
     # Suppress active actions in the remote_core module
     monkeypatch.setattr(remote_core, 'cmd', mock.Mock())
     monkeypatch.setattr(remote_core, 'get_deployment_base', mock.Mock())
-
-
-def test_update_code_existing_target(mock_remote_core, tmpdir):
     remote_core.get_deployment_base.return_value = str(tmpdir)
+
+
+def test_update_code_existing_target(mock_remote_core):
     remote_core.update_code('http://bitbucket.org/gocept/batou')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
@@ -35,15 +35,38 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
     assert calls.next() == 'hg id -i'
 
 
-def test_update_code_new_target(mock_remote_core, tmpdir):
-    remote_core.get_deployment_base.return_value = str(tmpdir / 'foo')
+def test_update_code_new_target(mock_remote_core):
+    remote_core.get_deployment_base.return_value += '/foo'
+
     remote_core.update_code('http://bitbucket.org/gocept/batou')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
+    assert remote_core.cmd.call_count == 4
     assert calls.next() == 'hg init {}'.format(
         remote_core.get_deployment_base())
     assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
     assert calls.next() == 'hg up -C'
     assert calls.next() == 'hg id -i'
+
+
+def test_build_batou_fresh_install(mock_remote_core):
+    remote_core.build_batou('.')
+    calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
+    assert remote_core.cmd.call_count == 4
+    assert calls.next() == 'virtualenv --no-site-packages --python python2.7 .'
+    assert calls.next() == 'bin/easy_install-2.7 -U setuptools'
+    assert calls.next() == 'bin/python2.7 bootstrap.py'
+    assert calls.next() == 'bin/buildout -t 15'
+
+
+def test_build_batou_virtualenv_exists(mock_remote_core):
+    os.mkdir(remote_core.get_deployment_base() + '/bin')
+    open(remote_core.get_deployment_base() + '/bin/python2.7', 'w')
+    remote_core.build_batou('.')
+    calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
+    assert remote_core.cmd.call_count == 3
+    assert calls.next() == 'bin/easy_install-2.7 -U setuptools'
+    assert calls.next() == 'bin/python2.7 bootstrap.py'
+    assert calls.next() == 'bin/buildout -t 15'
 
 
 def test_expand_deployment_base():
