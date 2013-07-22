@@ -23,9 +23,10 @@ def platform(name, component):
 
 
 def load_components_from_file(filename):
-    oldcwd = os.getcwd()
+    # XXX protect against loading the same component name multiple times.
+    components = {}
+
     defdir = os.path.dirname(filename)
-    os.chdir(defdir)
     module_name = os.path.basename(defdir)
     module_path = 'batou.c.{}'.format(module_name)
     module = types.ModuleType(
@@ -38,15 +39,13 @@ def load_components_from_file(filename):
         if candidate in [Component]:
             # Ignore anything we pushed into the globals before execution
             continue
-        if (isinstance(candidate, type) and
+        if not (isinstance(candidate, type) and
                 issubclass(candidate, Component)):
-            factory = RootComponentFactory(
-                candidate.__name__.lower(),
-                candidate,
-                defdir)
-            yield factory
-    os.chdir(oldcwd)
+            continue
+        candidate.defdir = defdir
+        components[candidate.__name__.lower()] = candidate
 
+    return components
 
 class Component(object):
 
@@ -318,13 +317,6 @@ class HookComponent(Component):
         self.provide(self.key, self)
 
 
-class RootComponentFactory(object):
-
-    def __init__(self, name, factory, defdir):
-        self.name = name
-        self.factory = factory
-        self.defdir = defdir
-
     def __call__(self, service, environment, host, features, config):
         factory = lambda: self.factory(**config)
         root = RootComponent(self.name, factory, self.factory,
@@ -343,48 +335,22 @@ class RootComponent(object):
 
     """
 
-    def __init__(self, name, factory, class_, host, defdir):
+    component = None
+    host = None
+
+    name = None
+    defdir = None
+    workdir = None
+    features = None
+
+    def __init__(self, factory, host):
         self.factory = factory
-        self.class_ = class_
-        self.name = name
-        self.defdir = defdir
         self.host = host
-        # XXX law of demeter.
-        self.service = self.host.environment.service
-        self.environment = self.host.environment
 
     def __repr__(self):
         return '<%s "%s" object at %s>' % (
             self.__class__.__name__, self.name, id(self))
 
-    @property
-    def workdir(self):
-        return '%s/%s' % (self.environment.workdir_base, self.name)
-
-    def _ensure_workdir(self):
-        if not os.path.exists(self.workdir):
-            os.makedirs(self.workdir)
-
-    def setup_overrides(self):
-        environment = self.host.environment
-        if self.name not in environment.overrides:
-            return
-        for key, value in environment.overrides[self.name].items():
-            if not hasattr(self.component, key):
-                raise KeyError(
-                    'Invalid override attribute "{}" for component {}'.format(
-                        key, self.component))
-            setattr(self.component, key, value)
-
-    def prepare(self):
-        environment = self.host.environment
-        environment.resources.reset_component_resources(self)
-        self.component = self.factory()
-        self.setup_overrides()
-        self.component.prepare(
-            self.service, environment, self.host, self)
-
     def deploy(self):
-        self._ensure_workdir()
         os.chdir(self.workdir)
-        self.component.deploy()
+        self._component.deploy()

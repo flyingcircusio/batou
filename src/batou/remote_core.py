@@ -10,7 +10,20 @@ try:
 except NameError:
     channel = None
 
-host = None
+deployment = None
+
+
+class Deployment(object):
+
+    environment = None
+
+    def __init__(self, environment, host):
+        self.environment = environment
+        self.host = host
+
+    def deploy(self, root):
+        root = self.environment.get_root(root, self.host)
+        root.deploy()
 
 
 def lock():
@@ -25,22 +38,22 @@ def cmd(c):
 
 def update_code(upstream):
     # TODO Make choice of VCS flexible
-    base = get_deployment_base()
-    if not os.path.exists(base):
-        os.mkdir(base)
-        cmd("hg init {}".format(base))
-    os.chdir(base)
+    target = target_directory()
+    if not os.path.exists(target):
+        os.mkdir(target)
+        cmd("hg init {}".format(target))
+    os.chdir(target)
     # Phase 1: update working copy
     # XXX manage certificates
     cmd("hg pull {}".format(upstream))
     cmd("hg up -C")
     id = cmd("hg id -i")
-    return base, id
+    return target, id
 
 
-def build_batou(service_base):
-    base = get_deployment_base()
-    os.chdir(os.path.join(base, service_base))
+def build_batou(deployment_base):
+    target = target_directory()
+    os.chdir(os.path.join(target, deployment_base))
     if not os.path.exists('bin/python2.7'):
         cmd('virtualenv --no-site-packages --python python2.7 .')
     if not os.path.exists('bin/buildout'):
@@ -49,27 +62,25 @@ def build_batou(service_base):
     cmd('bin/buildout -t 15')
 
 
-def setup_service(service_base, env_name, host_name, overrides):
+def setup_deployment(deployment_base, env_name, host_name, overrides):
     from batou.service import ServiceConfig
-    global host
 
-    base = get_deployment_base()
-    os.chdir(os.path.join(base, service_base))
+    target = target_directory()
+    os.chdir(os.path.join(target, deployment_base))
 
-    config = ServiceConfig('.', [env_name])
-    config.scan()
-    environment = config.service.environments[env_name]
+    environment = Environment(env_name)
     environment.overrides = overrides
     environment.configure()
-    host = environment.get_host(host_name)
+
+    global deployment
+    deployment = Deployment(environment, host_name)
 
 
-def deploy_component(component_name):
-    global host
-    host[component_name].deploy()
+def deploy(root):
+    deployment.deploy(root)
 
 
-def get_deployment_base():
+def target_directory():
     # XXX make configurable?
     return os.path.expanduser('~/deployment')
 

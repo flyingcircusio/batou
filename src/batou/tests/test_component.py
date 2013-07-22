@@ -270,6 +270,12 @@ def test_root_component_computes_working_dir():
     assert c.workdir == 'path-to-service/work/test'
 
 
+def test_root_component_repr():
+    host = Mock()
+    root = RootComponent('haproxy', object, object, host, '.')
+    assert repr(root).startswith('<RootComponent "haproxy" object at ')
+
+
 def test_root_component_creates_working_dir_runs_component_deploy(tmpdir):
     d = str(tmpdir)
 

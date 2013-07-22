@@ -25,8 +25,7 @@ import os.path
 
 
 def add_secrets_to_environment_override(environment):
-    secrets_file = '{}/secrets/{}.cfg'.format(
-        environment.service.base, environment.name)
+    secrets_file = 'secrets/{}.cfg'.format(environment.name)
     if not os.path.exists(secrets_file):
         return
     with EncryptedConfigFile(secrets_file) as f:
