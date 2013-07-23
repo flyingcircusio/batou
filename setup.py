@@ -21,7 +21,7 @@ setup(
     name='batou',
     version=version,
     install_requires=[
-        'distribute',
+        'setuptools',
         'Fabric',
         'Mako',
         'Jinja2',
