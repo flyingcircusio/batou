@@ -250,10 +250,6 @@ class Buildout(Component):
 
     def _install_virtualenv(self):
         self.cmd('virtualenv --no-site-packages --python %s .' % self.python)
-        if self.distribute:
-            self.cmd('bin/pip install --upgrade distribute=={}'.format(self.distribute))
-        if self.setuptools:
-            self.cmd('bin/pip install --upgrade setuptools=={}'.format(self.setuptools))
 
     def _python_config_candidates(self):
         """List possible file names for python-config."""
@@ -293,6 +289,17 @@ class Buildout(Component):
 
         if do_install_venv:
             self._install_virtualenv()
+
+        if self.distribute:
+            try:
+                self.cmd('bin/python -c "import pkg_resources;assert pkg_resources.require(\'distribute\')[0].version==\'{}\'"'.format(self.distribute))
+            except subprocess.CalledProcessError:
+                self.cmd('bin/pip install --upgrade distribute=={}'.format(self.distribute))
+        if self.setuptools:
+            try:
+                self.cmd('bin/python -c "import pkg_resources;assert pkg_resources.require(\'setuptools\')[0].version==\'{}\'"'.format(self.setuptools))
+            except subprocess.CalledProcessError:
+                self.cmd('bin/pip install --upgrade setuptools=={}'.format(self.setuptools))
 
         if not os.path.islink('bin/python-config'):
             try:
