@@ -5,7 +5,7 @@ Change log for batou
 0.1.6 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Workarounds for managing setuptools/distribute mess.
 
 
 0.1.5 (2013-04-24)
