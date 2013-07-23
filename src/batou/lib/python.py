@@ -87,11 +87,11 @@ class Package(Component):
         if not result:
             raise UpdateNeeded()
         result = yaml.load(result)
-        if result['Version'] != self.version:
+        if str(result['Version']) != self.version:
             raise UpdateNeeded()
 
     def update(self):
-        self.cmd('bin/pip install --upgrade "{}=={}"'.format(
+        self.cmd('bin/pip install "{}=={}"'.format(
             self.package, self.version))
 
     @property

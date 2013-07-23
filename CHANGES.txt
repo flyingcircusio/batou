@@ -5,9 +5,20 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Counter YAML's accidental interpretation of version numbers from 'pip show'
+  as floats.
+
+- Remove superfluous '--update' from pip calls that would temporarily install
+  the incorrect package version.
+
+- Improve convenience of the 'secrets-edit' wrapper script to allow
+  re-encrypting without re-entering the editor.
+
 - Consistently switch to using setuptools.
 
 - Fix #12399: incorrect stat attributes for Owner and Group
+
+- Add ``exclude`` parameter to Directory component.
 
 
 1.0b3 (2013-07-09)

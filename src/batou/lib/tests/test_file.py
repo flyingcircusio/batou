@@ -375,3 +375,24 @@ class FileTests(FileTestBase, unittest.TestCase):
         file = File(path, ensure='pipe')
         with self.assertRaises(ValueError):
             self.deploy(file)
+
+    def test_directory_copies_all_files(self):
+        os.mkdir(self.filename('source'))
+        open(self.filename('source', 'one'), 'w').close()
+        open(self.filename('source', 'two'), 'w').close()
+        p = Directory(
+            self.filename('target'), source=self.filename('source'))
+        self.deploy(p)
+        self.assertEqual(
+            ['one', 'two'], sorted(os.listdir(self.filename('target'))))
+
+    def test_directory_does_not_copy_excluded_files(self):
+        os.mkdir(self.filename('source'))
+        open(self.filename('source', 'one'), 'w').close()
+        open(self.filename('source', 'two'), 'w').close()
+        p = Directory(
+            self.filename('target'),
+            source=self.filename('source'),
+            exclude=('two',))
+        self.deploy(p)
+        self.assertEqual(1, len(os.listdir(self.filename('target'))))
