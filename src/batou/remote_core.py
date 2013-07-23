@@ -51,14 +51,18 @@ def update_code(upstream):
     return target, id
 
 
-def build_batou(deployment_base):
+def build_batou(deployment_base, setuptools_version, buildout_version):
     target = target_directory()
     os.chdir(os.path.join(target, deployment_base))
     if not os.path.exists('bin/python2.7'):
         cmd('virtualenv --no-site-packages --python python2.7 .')
     if not os.path.exists('bin/buildout'):
-        cmd('bin/easy_install-2.7 -U setuptools')
-        cmd('bin/python2.7 bootstrap.py')
+        cmd('bin/pip install --upgrade setuptools=={}'.format(
+            setuptools_version))
+        # XXX this is a chance to install batou without buildout ...
+        # XXX would be nice to think this through regarding the sprint goal of
+        # making batou easier to handle for developers
+        cmd('bin/pip install --upgrade buildout=={}'.format(buildout_version))
     cmd('bin/buildout -t 15')
 
 
