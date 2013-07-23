@@ -5,6 +5,8 @@ Changelog
 0.2.11 (unreleased)
 ===================
 
+- Make bootstrapping virtualenv with correct setuptools version more reliable.
+
 - Silence verification command for virtualenv pkg_resources availability.
 
 

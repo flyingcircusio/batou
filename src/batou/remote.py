@@ -12,6 +12,9 @@ import subprocess
 import sys
 
 
+import pkg_resources
+MY_SETUPTOOLS_VERSION = pkg_resources.require("setuptools")[0].version
+
 logger = logging.getLogger('batou.remote')
 
 
@@ -203,7 +206,10 @@ class RemoteHost(object):
                 self._reset_before_bootstrap()
             self.cmd(u'hg update -C %s' % self.deployment.environment.branch)
             if not self.exists('bin/python2.7'):
-                self.cmd('virtualenv --no-site-packages --python python2.7 .')
+                self.cmd('virtualenv --no-site-packages --setuptools '
+                         '--python python2.7 .')
+            self.cmd('bin/pip install --upgrade setuptools=={}'.format(
+                MY_SETUPTOOLS_VERSION))
             if not self.exists('bin/buildout'):
                 # XXX We tend to have upgrade issues with setuptools. We used
                 # to always bootstrap but it's becoming a pain.
