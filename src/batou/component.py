@@ -287,7 +287,7 @@ class Buildout(Component):
         else:
             try:
                 self.cmd('bin/python -c "import pkg_resources"')
-            except RuntimeError:
+            except subprocess.CalledProcessError:
                 self.cmd('rm -rf bin/ lib/ include/')
                 do_install_venv = True
 
