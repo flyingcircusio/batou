@@ -282,6 +282,8 @@ class Buildout(Component):
     @step(1)
     def install(self):
         """Basic prerequisites: python virtual and supporting files."""
+        # Ensure clean pip build directory
+        self.cmd('rm -rf build/')
         do_install_venv = False
         if not os.path.exists(self.executable):
             do_install_venv = True
