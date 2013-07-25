@@ -2,7 +2,6 @@
 
 from batou.component import Component
 from batou import UpdateNeeded
-import yaml
 
 
 class VirtualEnv(Component):
@@ -18,6 +17,9 @@ class VirtualEnv(Component):
 
     # Alternatively we could have (Unix) environment variables defined in the
     # (batou) environment definition. (Sounds like a good idea.)
+
+    _venv_python_compatibility = {'2.4': '1.7.2',
+                                  '2.5': '1.9'}
 
     @property
     def python(self):
@@ -57,7 +59,27 @@ class VirtualEnv(Component):
             self.cmd('rm -rf bin/ lib/ include/')
         commandline = self._detect_virtualenv()
         target = '.'
-        self.cmd('{} {}'.format(commandline, target))
+        try:
+            self.cmd('{} {}'.format(commandline, target), silent=True)
+        except RuntimeError:
+            # Sigh. There is a good chance that the Python version we're trying
+            # to get virtualenved isn't compatible with this version of
+            # virtualenv. We'll have to sacrifice a chicken: create a
+            # workaround-virtualenv "whatever works" that we use to downgrade
+            # to a specific virtualenv version that we know supports our target
+            # python version.
+            self.cmd('virtualenv bootstrap-venv')
+            with self.chdir('bootstrap-venv'):
+                usable_venv = self._venv_python_compatibility.get(self.version)
+                if usable_venv:
+                    self.cmd('bin/pip install --upgrade virtualenv=={}'.format(usable_venv))
+                else:
+                    # We don't know a specific version, let's try the most
+                    # current one.
+                    self.cmd('bin/pip install --upgrade virtualenv')
+            self.cmd('bootstrap-venv/bin/virtualenv --python=python{} '
+                     '--no-site-packages {}'.format(self.version, target))
+            self.cmd('rm -rf bootstrap-venv')
 
 
 class PIP(Component):
@@ -74,7 +96,7 @@ class PIP(Component):
             raise UpdateNeeded()
 
     def update(self):
-        self.cmd('bin/pip install --upgrade "pip=={}"'.format(self.version))
+        self.cmd('bin/easy_install --upgrade "pip=={}"'.format(self.version))
 
 
 class Package(Component):
@@ -83,12 +105,15 @@ class Package(Component):
     version = None
 
     def verify(self):
-        result, _ = self.cmd('bin/pip show {}'.format(self.package))
-        result = result.strip()
-        if not result:
-            raise UpdateNeeded()
-        result = yaml.load(result)
-        if str(result['Version']) != self.version:
+        result, _ = self.cmd('bin/pip freeze')
+        for line in result.split('\n'):
+            try:
+                pkg, version = line.split('==')
+            except ValueError:
+                continue
+            if pkg == self.package and version == self.version:
+                break
+        else:
             raise UpdateNeeded()
 
     def update(self):

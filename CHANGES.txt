@@ -5,10 +5,21 @@ Changelog
 0.2.11 (unreleased)
 ===================
 
+- More resilience for creating virtualenvs for old python versions: provide a
+  bootstrapping venv that carries a compatible venv package to create the
+  actual virtualenv. Brr.
+
+- Rewrite PIP interaction with the installed database: don't need YAML any
+  longer and works with old versions of PIP that are required to work with
+  Python 2.4.
+
+- Allow specifying the PIP version on the buildout master component.
+
 - Make bootstrapping virtualenv with correct setuptools version more reliable.
 
 - Silence verification command for virtualenv pkg_resources availability.
 
+- Support upgrading SVN working copies using the 'svn upgrade' command if necessary.
 
 0.2.10 (2013-07-15)
 ===================
