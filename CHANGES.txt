@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.11 (unreleased)
+0.2.11 (2013-07-25)
 ===================
 
 - More resilience for creating virtualenvs for old python versions: provide a
