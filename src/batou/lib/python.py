@@ -72,7 +72,8 @@ class VirtualEnv(Component):
             with self.chdir('bootstrap-venv'):
                 usable_venv = self._venv_python_compatibility.get(self.version)
                 if usable_venv:
-                    self.cmd('bin/pip install --upgrade virtualenv=={}'.format(usable_venv))
+                    self.cmd('bin/pip install --upgrade virtualenv=={}'.format(
+                        usable_venv))
                 else:
                     # We don't know a specific version, let's try the most
                     # current one.
