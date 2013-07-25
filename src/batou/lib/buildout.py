@@ -17,6 +17,7 @@ class Buildout(Component):
     distribute = None
     setuptools = None
     version = None
+    pip = '1.3'
 
     build_env = {}  # XXX not frozen. :/
 
@@ -39,7 +40,9 @@ class Buildout(Component):
 
         venv = VirtualEnv(self.python)
         self += venv
-        self += PIP('1.3')
+        # XXX actually pip (and the version compatibility to setuptools and
+        # Python) should be managed by the VirtualEnv component
+        self += PIP(self.pip)
         if self.distribute:
             self += Package(
                 'distribute', version=self.distribute)
