@@ -20,7 +20,8 @@ class Subversion(Component):
             if not os.path.exists('.svn'):
                 raise UpdateNeeded()
             try:
-                stdout, stderr = self.cmd('svn info | grep Revision:', silent=True)
+                stdout, stderr = (
+                    self.cmd('svn info | grep Revision:', silent=True))
             except RuntimeError, e:
                 stderr = e.args[3]
                 if 'E155036' in stderr:

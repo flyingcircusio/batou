@@ -40,4 +40,4 @@ class TestVirtualEnv(unittest.TestCase):
             return_value='virtualenv-executable arguments')
         virtualenv.update()
         virtualenv.cmd.assert_called_with(
-            'virtualenv-executable arguments .')
+            'virtualenv-executable arguments .', silent=True)
