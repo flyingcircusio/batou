@@ -5,8 +5,9 @@ Changelog
 0.2.12 (unreleased)
 ===================
 
-- Nothing changed yet.
-
+- Another attempt at getting convergency for package installation: actually
+  leverage pkg_resources to check what version of a package is installed. PIP
+  does not necessarily list or freeze setuptools, even if forced to reinstall.
 
 0.2.11 (2013-07-25)
 ===================
