@@ -2,7 +2,6 @@
 
 from batou.component import Component
 from batou import UpdateNeeded
-import yaml
 
 
 class VirtualEnv(Component):
@@ -83,17 +82,17 @@ class Package(Component):
     version = None
 
     def verify(self):
-        result, _ = self.cmd('bin/pip show {}'.format(self.package))
-        result = result.strip()
-        if not result:
-            raise UpdateNeeded()
-        result = yaml.load(result)
-        if str(result['Version']) != self.version:
+        try:
+            self.cmd('bin/python -c "import pkg_resources; '
+                     'pkg_resources.require(\'{}\')[0].version == \'{}\'"'
+                     .format(self.package, self.version), silent=True)
+        except RuntimeError, e:
+            logger.debug(e[3])
             raise UpdateNeeded()
 
     def update(self):
-        self.cmd('bin/pip install "{}=={}"'.format(
-            self.package, self.version))
+        self.cmd('bin/pip --timeout=10 --force-reinstall install '
+                 '"{}=={}"'.format(self.package, self.version))
 
     @property
     def namevar_for_breadcrumb(self):
