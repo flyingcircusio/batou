@@ -5,8 +5,9 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
-- Counter YAML's accidental interpretation of version numbers from 'pip show'
-  as floats.
+- Another attempt at getting convergency for package installation: actually
+  leverage pkg_resources to check what version of a package is installed. PIP
+  does not necessarily list or freeze setuptools, even if forced to reinstall.
 
 - Remove superfluous '--update' from pip calls that would temporarily install
   the incorrect package version.
