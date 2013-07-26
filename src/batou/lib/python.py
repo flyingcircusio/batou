@@ -119,7 +119,7 @@ class Package(Component):
             raise UpdateNeeded()
 
     def update(self):
-        self.cmd('bin/pip --timeout=10 --force-reinstall install '
+        self.cmd('bin/pip --timeout=10 install --force-reinstall '
                  '"{}=={}"'.format(self.package, self.version))
 
     @property
