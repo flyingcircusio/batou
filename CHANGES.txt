@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.12 (unreleased)
+0.2.12 (2013-07-26)
 ===================
 
 - Another attempt at getting convergency for package installation: actually
