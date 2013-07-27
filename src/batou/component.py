@@ -302,12 +302,12 @@ class Buildout(Component):
             try:
                 self.cmd('bin/python -c "import pkg_resources;assert pkg_resources.require(\'distribute\')[0].version==\'{}\'"'.format(self.distribute))
             except subprocess.CalledProcessError:
-                self.cmd('bin/pip install --upgrade distribute=={}'.format(self.distribute))
+                self.cmd('bin/pip install --force-reinstall distribute=={}'.format(self.distribute))
         if self.setuptools:
             try:
                 self.cmd('bin/python -c "import pkg_resources;assert pkg_resources.require(\'setuptools\')[0].version==\'{}\'"'.format(self.setuptools))
             except subprocess.CalledProcessError:
-                self.cmd('bin/pip install --upgrade setuptools=={}'.format(self.setuptools))
+                self.cmd('bin/pip install --force-reinstall setuptools=={}'.format(self.setuptools))
 
         if not os.path.islink('bin/python-config'):
             try:
@@ -339,7 +339,7 @@ class Buildout(Component):
     @step(3)
     def bootstrap(self):
         if self._bootstrap_required():
-            self.cmd('bin/pip install --upgrade zc.buildout=={}'.format(self.version))
+            self.cmd('bin/pip install zc.buildout=={}'.format(self.version))
             os.utime('bin/buildout', None)
 
     @step(4)
