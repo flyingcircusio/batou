@@ -5,6 +5,8 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Remove non-functional deprecated 'md5sum' attribute.
+
 - Components are context managers now. If you provide __enter__ it will be
   called before verify() and if you provide __exit__ this will be called after
   update (always - even if update isn't actually called). This allows you to

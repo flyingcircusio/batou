@@ -10,7 +10,6 @@ class Download(Component):
     namevar = 'uri'
 
     target = None  # Filename where the download will be stored.
-    md5sum = None  # XXX deprecated
     checksum = None
 
     def configure(self):
@@ -19,8 +18,6 @@ class Download(Component):
         if not self.target:
             raise KeyError('No target is given and the URI does not allow '
                            'deriving a filename.')
-        if self.md5sum:
-            raise ValueError('md5sum is deprecated. Use checksum="md5:..."')
         if not self.checksum:
             raise ValueError('No checksum given.')
         self.checksum_function, self.checksum = self.checksum.split(':')
