@@ -29,7 +29,6 @@ setup(
         'pytest-codecheckers',
         'pytest-cov',
         'pytest-timeout',
-        'zope.cachedescriptors',
     ],
     extras_require={
         'test': [

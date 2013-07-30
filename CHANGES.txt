@@ -5,6 +5,12 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Components are context managers now. If you provide __enter__ it will be
+  called before verify() and if you provide __exit__ this will be called after
+  update (always - even if update isn't actually called). This allows you to
+  manage temporary state on the target system more gracefully. See the
+  DMGExtractor for an example.
+
 - Major refactoring of internal data structures to simplify and improve test
   coverage. Some breakage to be expected:
 
