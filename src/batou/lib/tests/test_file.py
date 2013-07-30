@@ -1,398 +1,416 @@
 from batou.lib.file import Content, Mode, Symlink, File
 from batou.lib.file import Presence, Directory, FileComponent
 from batou.lib.file import ensure_path_nonexistent
-from mock import Mock, sentinel
+from mock import Mock
 from stat import S_IMODE
 import os
-import shutil
-import tempfile
-import time
-import unittest
+import pytest
 
 
-class FileTestBase(object):
-
-    def setUp(self):
-        self.base_path = tempfile.mkdtemp()
-
-    def tearDown(self):
-        shutil.rmtree(self.base_path)
-
-    def filename(self, *path):
-        if not path:
-            path = ['path']
-        return os.path.join(self.base_path, *path)
+def test_ensure_path_nonexistent_removes_normal_file(tmpdir):
+    open('asdf', 'w').close()
+    assert os.path.exists('asdf')
+    ensure_path_nonexistent('asdf')
+    assert not os.path.exists('asdf')
 
 
-class FileRemovalTests(FileTestBase, unittest.TestCase):
+def test_ensure_path_nonexistent_removes_normal_symlink(tmpdir):
+    os.chdir(str(tmpdir))
+    open('target', 'w').close()
+    os.symlink('target', 'link')
+    assert os.path.exists('link')
+    assert os.path.exists('target')
 
-    def test_ensure_path_nonexistent_removes_normal_file(self):
-        path = self.filename()
-        open(path, 'w').close()
-        ensure_path_nonexistent(path)
-        self.assertFalse(os.path.exists(path))
+    ensure_path_nonexistent('link')
 
-    def test_ensure_path_nonexistent_removes_normal_symlink(self):
-        link_to = self.filename()
-        open(link_to, 'w').close()
-        link = self.filename('symlink')
-        os.symlink(link_to, link)
-        ensure_path_nonexistent(link)
-        self.assertFalse(os.path.exists(link))
-        self.assertTrue(os.path.exists(link_to))
-
-    def test_ensure_path_nonexistent_removes_broken_symlink(self):
-        link_to = self.filename()
-        link = self.filename('symlink')
-        os.symlink(link_to, link)
-        ensure_path_nonexistent(link)
-        self.assertFalse(os.path.exists(link))
-        self.assertFalse(os.path.exists(link_to))
-
-    def test_ensure_path_nonexistent_removes_directory(self):
-        directory = self.filename()
-        os.mkdir(directory)
-        ensure_path_nonexistent(directory)
-        self.assertFalse(os.path.exists(directory))
-
-    def test_ensure_path_does_not_fail_on_nonexisting_path(self):
-        missing = self.filename()
-        self.assertFalse(os.path.exists(missing))
-        ensure_path_nonexistent(missing)
-        self.assertFalse(os.path.exists(missing))
+    assert not os.path.exists('link')
+    assert os.path.exists('target')
 
 
-class FileTests(FileTestBase, unittest.TestCase):
+def test_ensure_path_nonexistent_removes_broken_symlink(tmpdir):
+    os.chdir(str(tmpdir))
+    os.symlink('target', 'link')
+    assert os.path.islink('link')
+    assert not os.path.exists('target')
+    ensure_path_nonexistent('link')
+    assert not os.path.exists('link')
+    assert not os.path.exists('target')
 
-    def deploy(self, component, root=None):
-        root = Mock() if root is None else root
-        service = Mock()
-        service.base = ''
-        environment = Mock()
-        environment.map.side_effect = lambda x: x
-        component.prepare(service, environment, Mock(), root)
-        component.deploy()
 
-    def test_presence_creates_nonexisting_file(self):
-        path = self.filename()
-        p = Presence(path)
-        self.deploy(p)
-        with open(path) as f:
-            self.assertEqual('', f.read())
+def test_ensure_path_nonexistent_removes_directory(tmpdir):
+    os.chdir(str(tmpdir))
+    os.mkdir('dir')
+    assert os.path.exists('dir')
+    ensure_path_nonexistent('dir')
+    assert not os.path.exists('dir')
 
-    def test_presence_leaves_existing_file_with_content_intact(self):
-        path = self.filename()
-        with open(path, 'w') as f:
-            f.write('Hello there!')
-        p = Presence(path)
-        self.deploy(p)
-        with open(path) as f:
-            self.assertEqual('Hello there!', f.read())
 
-    def test_presence_creates_directories_if_configured(self):
-        path = self.filename('directory', 'file')
-        p = Presence(path, leading=True)
-        self.deploy(p)
-        with open(path) as f:
-            self.assertEqual('', f.read())
+def test_ensure_path_does_not_fail_on_nonexisting_path():
+    assert not os.path.exists('missing')
+    ensure_path_nonexistent('missing')
+    assert not os.path.exists('missing')
 
-    def test_presence_doesnt_create_directories_by_default(self):
-        path = self.filename('directory', 'file')
-        p = Presence(path)
-        with self.assertRaises(IOError):
-            self.deploy(p)
 
-    def test_presence_removes_conflicting_symlinks(self):
-        link_to = self.filename()
-        path = self.filename('symlink')
-        os.symlink(link_to, path)
-        with self.assertRaises(IOError):
-            open(path)
-        p = Presence(path)
-        self.deploy(p)
-        self.assertFalse(os.path.islink(path))
-        with open(path) as f:
-            self.assertEqual('', f.read())
+def test_presence_creates_nonexisting_file(root):
+    p = Presence('path')
+    root.component += p
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == ''
 
-    def test_presence_removes_conflicting_directories(self):
-        path = self.filename()
-        os.mkdir(path)
-        p = Presence(path)
-        self.deploy(p)
-        self.assertFalse(os.path.isdir(path))
-        with open(path) as f:
-            self.assertEqual('', f.read())
 
-    def test_directory_creates_directory(self):
-        path = self.filename()
-        p = Directory(path)
-        self.deploy(p)
-        self.assertTrue(os.path.isdir(path))
+def test_presence_leaves_existing_file_with_content_intact(root):
+    p = Presence('path')
+    root.component += p
+    with open(p.path, 'w') as f:
+        f.write('Hello there!')
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == 'Hello there!'
 
-    def test_directory_creates_leading_directories_if_configured(self):
-        path = self.filename('directory', 'path')
-        p = Directory(path, leading=True)
-        self.deploy(p)
-        self.assertTrue(os.path.isdir(path))
 
-    def test_directory_doesnt_create_leading_directories_by_default(self):
-        path = self.filename('directory', 'path')
-        p = Directory(path)
-        with self.assertRaises(OSError):
-            self.deploy(p)
+def test_presence_creates_directories_if_configured(root):
+    p = Presence('directory/file', leading=True)
+    root.component += p
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == ''
 
-    def test_filecomponent_baseclass_carries_path(self):
-        path = self.filename()
-        p = FileComponent(path, leading=sentinel.leading)
-        self.deploy(p)
-        self.assertEqual(path, p.path)
 
-    def test_content_passed_by_string(self):
-        path = self.filename()
-        p = Content(path, content='asdf')
-        with open(p.path, 'w') as f:
-            # The content component assumes there's a file already in place. So
-            # we need to create it.
-            pass
-        self.deploy(p)
-        with open(path) as f:
-            self.assertEqual('asdf', f.read())
+def test_presence_doesnt_create_directories_by_default(root):
+    root.component += Presence('directory/file')
+    with pytest.raises(IOError):
+        root.component.deploy()
 
-    def test_content_passed_by_string_template(self):
-        path = self.filename()
-        p = Content(path,
-                    content='{{component.foobar}}',
-                    is_template=True,
-                    foobar='asdf')
-        with open(p.path, 'w') as f:
-            # The content component assumes there's a file already in place. So
-            # we need to create it.
-            pass
-        self.deploy(p)
-        with open(path) as f:
-            self.assertEqual('asdf', f.read())
 
-    def test_content_passed_by_file(self):
-        source = self.filename('source')
-        with open(source, 'w') as f:
-            f.write('content from source file')
-        path = self.filename()
-        p = Content(path, source=source)
-        with open(p.path, 'w') as f:
-            # The content component assumes there's a file already in place. So
-            # we need to create it.
-            pass
-        self.deploy(p)
-        with open(path) as f:
-            self.assertEqual('content from source file', f.read())
+def test_presence_removes_conflicting_symlinks(root):
+    p = Presence('link')
+    root.component += p
+    os.symlink('target', p.path)
+    assert os.path.islink(p.path)
+    with pytest.raises(IOError):
+        open(p.path)
+    root.component.deploy()
+    assert not os.path.islink(p.path)
+    with open(p.path) as f:
+        assert f.read() == ''
 
-    def test_content_passed_by_file_template(self):
-        source = self.filename('source')
-        with open(source, 'w') as f:
-            f.write('{{component.foobar}}')
-        path = self.filename()
-        p = Content(path, source=source, is_template=True, foobar='asdf')
-        with open(p.path, 'w') as f:
-            # The content component assumes there's a file already in place. So
-            # we need to create it.
-            pass
-        self.deploy(p)
-        with open(path) as f:
-            self.assertEqual('asdf', f.read())
 
-    def test_content_passed_by_file_using_path_as_default(self):
-        path = self.filename()
-        with open(path, 'w') as f:
-            f.write('content from source file')
-        p = Content(path)
-        self.deploy(p)
-        with open(path) as f:
-            # Actually, as source and target are the same: nothing happened.
-            self.assertEqual('content from source file', f.read())
+def test_presence_removes_conflicting_directories(root):
+    p = Presence('dir')
+    root.component += p
+    os.mkdir(p.path)
+    root.component.deploy()
+    assert not os.path.isdir(p.path)
+    with open(p.path) as f:
+        assert f.read() == ''
 
-    def test_content_template_with_explicit_context(self):
-        path = self.filename()
-        context = Mock()
-        context.foobar = 'asdf'
-        p = Content(path,
-                    content='{{component.foobar}}',
-                    is_template=True,
-                    template_context=context)
-        with open(p.path, 'w') as f:
-            # The content component assumes there's a file already in place. So
-            # we need to create it.
-            pass
-        self.deploy(p)
-        with open(path) as f:
-            self.assertEqual('asdf', f.read())
 
-    def test_content_relative_source_path_computed_wrt_definition_dir(self):
-        path = self.filename()
-        source = 'source'
-        with open(self.filename(source), 'w') as f:
-            f.write('asdf')
-        p = Content(path, source=source)
-        root = Mock()
-        root.defdir = self.base_path
-        with open(p.path, 'w') as f:
-            # The content component assumes there's a file already in place. So
-            # we need to create it.
-            pass
-        self.deploy(p, root=root)
-        with open(p.path) as f:
-            self.assertEqual('asdf', f.read())
+def test_directory_creates_directory(root):
+    path = 'dir'
+    d = Directory(path)
+    root.component += d
+    assert not os.path.isdir(d.path)
+    root.component.deploy()
+    assert os.path.isdir(d.path)
 
-    def test_content_only_required_changes_touch_file(self):
-        path = self.filename()
-        p = Content(path, content='asdf')
-        # Lets start with an existing file that has the wrong content:
-        with open(path, 'w') as f:
-            f.write('bsdf')
-        stat = os.stat(path)
-        # Need to sleep a second to ensure that we actually do get different
-        # stat results even if the OS has no sub-second resolution.
-        time.sleep(1)
-        self.deploy(p)
-        stat2 = os.stat(path)
-        self.assertTrue(stat.st_mtime < stat2.st_mtime)
-        # Now, sleeping and running the deployment again will not touch the
-        # file.
-        time.sleep(1)
-        self.deploy(p)
-        stat3 = os.stat(path)
-        self.assertEqual(stat2.st_mtime, stat3.st_mtime)
 
-    def test_content_does_not_allow_both_content_and_source(self):
-        path = self.filename()
-        p = Content(path, content='asdf', source='bsdf')
-        with self.assertRaises(ValueError):
-            self.deploy(p)
+def test_directory_creates_leading_directories_if_configured(root):
+    path = 'directory/path'
+    d = Directory(path, leading=True)
+    root.component += d
+    root.component.deploy()
+    assert os.path.isdir(d.path)
 
-    def test_mode_ensures_mode_for_files(self):
-        path = self.filename()
-        open(path, 'w').close()
-        mode = Mode(path, mode=0o000)
-        self.deploy(mode)
-        self.assertEquals(0o000, S_IMODE(os.stat(path).st_mode))
 
-        mode = Mode(path, mode=0o777)
-        self.deploy(mode)
-        self.assertEquals(0o777, S_IMODE(os.stat(path).st_mode))
-        self.assertTrue(mode.changed)
+def test_directory_doesnt_create_leading_directories_by_default(root):
+    path = 'directory/path'
+    root.component += Directory(path)
+    with pytest.raises(OSError):
+        root.component.deploy()
 
-        self.deploy(mode)
-        self.assertFalse(mode.changed)
 
-    def test_mode_ensures_mode_for_directories(self):
-        path = self.filename()
-        os.mkdir(path)
-        mode = Mode(path, mode=0o000)
-        self.deploy(mode)
-        self.assertEquals(0o000, S_IMODE(os.stat(path).st_mode))
+def test_filecomponent_baseclass_carries_path(root):
+    path = 'path'
+    p = FileComponent(path)
+    root.component += p
+    assert p.path.endswith(path)
+    assert p.original_path == path
 
-        mode = Mode(path, mode=0o777)
-        self.deploy(mode)
-        self.assertEquals(0o777, S_IMODE(os.stat(path).st_mode))
-        self.assertTrue(mode.changed)
 
-        self.deploy(mode)
-        self.assertFalse(mode.changed)
+def test_content_passed_by_string(root):
+    path = 'path'
+    p = Content(path, content='asdf')
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == 'asdf'
 
-    @unittest.skipUnless(hasattr(os, 'lchmod'),
-                         'Only supported on platforms with lchmod')
-    def test_mode_ensures_mode_for_symlinks(self):
-        # This test is only relevant
-        path = self.filename()
-        link_to = self.filename('link_to')
-        open(link_to, 'w').close()
-        os.symlink(link_to, path)
-        mode = Mode(path, mode=0o000)
-        self.deploy(mode)
-        self.assertEquals(0o000, S_IMODE(os.lstat(path).st_mode))
 
-        mode = Mode(path, mode=0o777)
-        self.deploy(mode)
-        self.assertEquals(0o777, S_IMODE(os.lstat(path).st_mode))
-        self.assertTrue(mode.changed)
+def test_content_passed_by_string_template(root):
+    path = 'path'
+    root.component.foobar = 'asdf'
+    p = Content(path,
+                content='{{component.foobar}}',
+                is_template=True)
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == 'asdf'
 
-        self.deploy(mode)
-        self.assertFalse(mode.changed)
 
-    @unittest.skipIf(not hasattr(os, 'lchmod'),
-                     'Only supported on platforms without lchmod')
-    def test_mode_does_not_break_on_platforms_without_lchmod(self):
-        # This test is only relevant on platforms without lchmod. We basically
-        # ensure that deploying the component doesn't break but it's a noop
-        # anyway.
-        path = self.filename()
-        link_to = self.filename('link_to')
-        open(link_to, 'w').close()
-        os.symlink(link_to, path)
-        mode = Mode(path, mode=0o000)
-        self.deploy(mode)
+def test_content_passed_by_file(root):
+    source = 'source'
+    with open(source, 'w') as f:
+        f.write('content from source file')
+    path = 'path'
+    p = Content(path, source=source)
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == 'content from source file'
 
-    def test_symlink_creates_new_link(self):
-        link = self.filename()
-        link_to = self.filename('link-to')
-        symlink = Symlink(link, source=link_to)
-        self.deploy(symlink)
-        self.assertEquals(link_to, os.readlink(link))
 
-    def test_symlink_updates_existing_link(self):
-        link = self.filename()
-        link_to = self.filename('link-to')
-        # Create an initial link
-        symlink = Symlink(link, source=link_to)
-        self.deploy(symlink)
-        # Update link with other target
-        link_to2 = self.filename('link-to2')
-        symlink = Symlink(link, source=link_to2)
-        self.deploy(symlink)
-        self.assertEquals(link_to2, os.readlink(link))
+def test_content_passed_by_file_template(root):
+    source = 'source'
+    with open(source, 'w') as f:
+        f.write('{{component.foobar}}')
+    path = 'path'
+    root.component.foobar = 'asdf'
+    p = Content(path, source=source, is_template=True)
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == 'asdf'
 
-    def test_file_creates_subcomponent_for_presence(self):
-        path = self.filename()
-        file = File(path)
-        self.assertEquals('file', file.ensure)
-        self.deploy(file)
-        self.assertIsInstance(file.sub_components[0], Presence)
 
-    def test_file_creates_subcomponent_for_directory(self):
-        path = self.filename()
-        file = File(path, ensure='directory')
-        self.deploy(file)
-        self.assertIsInstance(file.sub_components[0], Directory)
+def test_content_passed_by_file_using_path_as_default(root):
+    path = 'path'
+    with open(path, 'w') as f:
+        f.write('content from source file')
+    p = Content(path)
+    root.component += p
+    with open(p.path, 'w') as f:
+        # Ensure file exists
+        pass
+    assert p.source == root.defdir + '/path'
+    root.component.deploy()
+    with open(p.path) as f:
+        # Actually, as source and target are the same: nothing happened.
+        assert f.read() == 'content from source file'
 
-    def test_file_creates_subcomponent_for_symlink(self):
-        path = self.filename()
-        link_to = self.filename('link-to')
-        file = File(path, ensure='symlink', link_to=link_to)
-        self.deploy(file)
-        self.assertIsInstance(file.sub_components[0], Symlink)
 
-    def test_file_prohibits_unknown_ensure_parameter(self):
-        path = self.filename()
-        file = File(path, ensure='pipe')
-        with self.assertRaises(ValueError):
-            self.deploy(file)
+def test_content_template_with_explicit_context(root):
+    path = 'path'
+    context = Mock()
+    context.foobar = 'asdf'
+    p = Content(path,
+                content='{{component.foobar}}',
+                is_template=True,
+                template_context=context)
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == 'asdf'
 
-    def test_directory_copies_all_files(self):
-        os.mkdir(self.filename('source'))
-        open(self.filename('source', 'one'), 'w').close()
-        open(self.filename('source', 'two'), 'w').close()
-        p = Directory(
-            self.filename('target'), source=self.filename('source'))
-        self.deploy(p)
-        self.assertEqual(
-            ['one', 'two'], sorted(os.listdir(self.filename('target'))))
 
-    def test_directory_does_not_copy_excluded_files(self):
-        os.mkdir(self.filename('source'))
-        open(self.filename('source', 'one'), 'w').close()
-        open(self.filename('source', 'two'), 'w').close()
-        p = Directory(
-            self.filename('target'),
-            source=self.filename('source'),
-            exclude=('two',))
-        self.deploy(p)
-        self.assertEqual(1, len(os.listdir(self.filename('target'))))
+def test_content_relative_source_path_computed_wrt_definition_dir(root):
+    path = 'path'
+    source = 'source'
+    with open(source, 'w') as f:
+        f.write('asdf')
+    p = Content(path, source=source)
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == 'asdf'
+
+
+def test_content_only_required_changes_touch_file(root):
+    path = 'path'
+    p = Content(path, content='asdf')
+    root.component += p
+    # Lets start with an existing file that has the wrong content:
+    with open(p.path, 'w') as f:
+        f.write('bsdf')
+    os.utime(p.path, (0, 0))
+    # Modify mtime so we can prove it's been changed.
+    root.component.deploy()
+    stat = os.stat(p.path)
+    assert stat.st_mtime != 0
+
+    os.utime(p.path, (0, 0))
+    root.component.deploy()
+    stat = os.stat(p.path)
+    assert stat.st_mtime == 0
+
+
+def test_content_does_not_allow_both_content_and_source(root):
+    path = 'path'
+    with pytest.raises(ValueError):
+        root.component += Content(path, content='asdf', source='bsdf')
+
+
+def test_mode_ensures_mode_for_files(root):
+    path = 'path'
+    open('work/mycomponent/'+path, 'w').close()
+    mode = Mode(path, mode=0o000)
+    root.component += mode
+    root.component.deploy()
+    assert S_IMODE(os.stat(mode.path).st_mode) == 0o000
+
+    mode.mode = 0o777
+    root.component.deploy()
+    assert S_IMODE(os.stat(mode.path).st_mode) == 0o777
+    assert mode.changed
+
+    root.component.deploy()
+    assert not mode.changed
+
+
+def test_mode_ensures_mode_for_directories(root):
+    path = 'path'
+    os.makedirs('work/mycomponent/path')
+    mode = Mode(path, mode=0o000)
+    root.component += mode
+    root.component.deploy()
+    assert S_IMODE(os.stat(mode.path).st_mode) == 0o000
+
+    mode.mode = 0o777
+    root.component.deploy()
+    assert S_IMODE(os.stat(mode.path).st_mode) == 0o777
+    assert mode.changed
+
+    root.component.deploy()
+    assert not mode.changed
+
+
+@pytest.mark.skipIf("not hasattr(os, 'lchmod')")
+def test_mode_ensures_mode_for_symlinks(root):
+    # This test is only relevant
+    link_to = 'link_to'
+    open(link_to, 'w').close()
+    os.symlink(link_to, 'work/mycomponent/path')
+    mode = Mode('path', mode=0o000)
+    root.component += mode
+    root.component.deploy()
+    assert S_IMODE(os.lstat('work/mycomponent/path').st_mode) == 0o000
+
+    mode.mode = 0o777
+    root.component.deploy()
+    assert S_IMODE(os.lstat('work/mycomponent/path').st_mode) == 0o777
+    assert mode.changed
+
+    root.component.deploy()
+    assert not mode.changed
+
+
+@pytest.mark.skipIf("hasattr(os, 'lchmod')")
+def test_mode_does_not_break_on_platforms_without_lchmod(root):
+    # This test is only relevant on platforms without lchmod. We basically
+    # ensure that deploying the component doesn't break but it's a noop
+    # anyway.
+    path = 'path'
+    link_to = 'link_to'
+    open(link_to, 'w').close()
+    mode = Mode(path, mode=0o000)
+    root.component += mode
+    os.symlink(link_to, mode.path)
+    root.component.deploy()
+
+
+def test_symlink_creates_new_link(root):
+    link = 'path'
+    link_to = 'link_to'
+    symlink = Symlink(link, source=link_to)
+    root.component += symlink
+    root.component.deploy()
+    assert os.readlink('work/mycomponent/'+link) == symlink.source
+
+
+def test_symlink_updates_existing_link(root):
+    link = 'path'
+    link_to = 'link_to'
+    # Create an initial link
+    symlink = Symlink(link, source=link_to)
+    root.component += symlink
+    root.component.deploy()
+    # Update link with other target
+    link_to2 = 'link_to2'
+    symlink.source = link_to2
+    root.component.deploy()
+    assert os.readlink('work/mycomponent/'+link) == link_to2
+
+
+def test_file_creates_subcomponent_for_presence(root):
+    path = 'path'
+    file = File(path)
+    assert file.ensure == 'file'
+    root.component += file
+    assert isinstance(file.sub_components[0], Presence)
+
+
+def test_file_creates_subcomponent_for_directory(root):
+    file = File('dir', ensure='directory')
+    root.component += file
+    root.component.deploy()
+    assert isinstance(file.sub_components[0], Directory)
+
+
+def test_file_creates_subcomponent_for_symlink(root):
+    file = File(
+        'link', ensure='symlink', link_to='target')
+    root.component += file
+    root.component.deploy()
+    assert isinstance(file.sub_components[0], Symlink)
+
+
+def test_file_prohibits_unknown_ensure_parameter(root):
+    with pytest.raises(ValueError):
+        root.component += File('file', ensure='pipe')
+
+
+def test_directory_copies_all_files(root):
+    os.mkdir('source')
+    open('source/one', 'w').close()
+    open('source/two', 'w').close()
+    root.component += Directory('target', source='source')
+    root.component.deploy()
+    assert sorted(os.listdir('work/mycomponent/target')) == ['one', 'two']
+
+
+def test_directory_does_not_copy_excluded_files(root):
+    os.mkdir('source')
+    open('source/one', 'w').close()
+    open('source/two', 'w').close()
+    p = Directory(
+        'target',
+        source='source',
+        exclude=('two',))
+    root.component += p
+    root.component.deploy()
+    assert len(os.listdir('work/mycomponent/target')) == 1

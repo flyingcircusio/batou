@@ -62,9 +62,11 @@ class Extractor(Component):
                 raise AttributeError(
                     "Target not given and not derivable from archive name "
                     "({}).".format(self.archive))
-            self += Directory(self.target, leading=True)
+            d = Directory(self.target, leading=True)
+            self += d
+            self.target = d.path
         else:
-            self.target = '.'
+            self.target = self.map('.')
 
     def verify(self):
         # Check that all files in the directory are newer than the archive.
@@ -83,7 +85,8 @@ class Unzip(Extractor):
 
     def configure(self):
         super(Unzip, self).configure()
-        assert self.strip == 0, "Strip is not supported by Unzip"
+        if self.strip != 0:
+            raise ValueError("Strip is not supported by Unzip")
 
     def get_names_from_archive(self):
         with ZipFile(self.archive) as f:
@@ -116,7 +119,7 @@ class Untar(Extractor):
 
 
 class DMGVolume(object):
-    """Wrapper to mount an .dgb volume and operate on it."""
+    """Wrapper to mount a .dmg volume and operate on it."""
 
     HDIUTIL = '/usr/bin/hdiutil'
     volume_path = None
@@ -175,7 +178,8 @@ class DMGExtractor(Extractor):
 
     def configure(self):
         super(DMGExtractor, self).configure()
-        assert self.strip == 0, "Strip is not supported by DMGExtractor"
+        if self.strip != 0:
+            raise ValueError("Strip is not supported by DMGExtractor")
 
     @zope.cachedescriptors.property.Lazy
     def volume(self):

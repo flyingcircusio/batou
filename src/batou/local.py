@@ -5,6 +5,16 @@ import logging
 import sys
 
 
+def deploy(environment, platform, hostname):
+    environment = Environment(environment)
+    environment.load()
+    environment.platform = platform
+    environment.load_secrets()
+    environment.configure()
+    for root in environment.roots_in_order(host=hostname):
+        root.component.deploy()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=u'Deploy components locally.')
@@ -29,13 +39,7 @@ def main():
 
     with locked('.batou-lock'):
         try:
-            environment = Environment(args.environment)
-            environment.load()
-            environment.platform = args.platform
-            environment.load_secrets()
-            environment.configure()
-            for root in environment.roots_in_order(host=args.hostname):
-                root.deploy()
+            deploy(args.environment, args.platform, args.hostname)
         except:
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
@@ -44,4 +48,4 @@ def main():
         else:
             notify('Deployment finished',
                    '{}:{} was deployed successfully.'.format(
-                       environment.name, args.hostname))
+                       args.environment, args.hostname))

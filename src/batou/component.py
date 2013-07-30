@@ -47,9 +47,12 @@ def load_components_from_file(filename):
 
     return components
 
+
 class Component(object):
 
     namevar = ''
+
+    workdir = None
 
     changed = False
     _prepared = False
@@ -61,14 +64,25 @@ class Component(object):
             kw[self.namevar] = namevar
         self.__dict__.update(kw)
 
+    @property
+    def host(self):
+        return self.root.host
+
+    @property
+    def environment(self):
+        return self.root.environment
+
     # Configuration phase
 
-    def prepare(self, service, environment, host, root, parent=None):
-        self.service = service
-        self.environment = environment
-        self.host = host
+    def prepare(self, root, parent=None):
+        # XXX why can parent be None? Can the root be the last parent?
+        # Can't the direct access to root be removed here?
         self.root = root
         self.parent = parent
+        if parent:
+            self.workdir = parent.workdir
+        else:
+            self.workdir = root.workdir
         self.sub_components = []
         self.configure()
         self += self.get_platform()
@@ -78,8 +92,7 @@ class Component(object):
         """Configure the component.
 
         At this point the component has been embedded into the overall
-        structure, so that service, environment, host, root, and parent are
-        set.
+        structure, so that environment, host, root, and parent are set.
 
         Also, any environment-specific attributes have been set.
 
@@ -96,6 +109,7 @@ class Component(object):
     # Deployment phase
 
     def deploy(self):
+        # XXX This is an inner loop - we need to keep this code fast.
         # Reset changed flag here to support triggering deploy() multiple
         # times.
         self.changed = False
@@ -103,12 +117,16 @@ class Component(object):
             sub_component.deploy()
             if sub_component.changed:
                 self.changed = True
-        try:
-            self.verify()
-        except batou.UpdateNeeded:
-            logger.info('Updating {}'.format(self._breadcrumbs))
-            self.update()
-            self.changed = True
+        # This could be superfluous and make the inner loop slow.
+        if not os.path.exists(self.workdir):
+            os.makedirs(self.workdir)
+        with self.chdir(self.workdir):
+            try:
+                self.verify()
+            except batou.UpdateNeeded:
+                logger.info('Updating {}'.format(self._breadcrumbs))
+                self.update()
+                self.changed = True
 
     def verify(self):
         """Verify whether this component has been deployed correctly or needs
@@ -165,8 +183,7 @@ class Component(object):
 
         """
         if component is not None and not component._prepared:
-            component.prepare(self.service, self.environment,
-                              self.host, self.root, self)
+            component.prepare(self.root, self)
         return self
 
     @property
@@ -209,12 +226,6 @@ class Component(object):
                 'Expected one result, got none for (key={}, host={})'.
                 format(key, host))
         return resources[0]
-
-    # Component (convenience) API
-
-    @property
-    def workdir(self):
-        return self.root.workdir
 
     # XXX backwards-compatibility. :/
     def assert_file_is_current(self, reference, requirements=[], **kw):
@@ -272,7 +283,6 @@ class Component(object):
         args = dict(
             host=self.host,
             environment=self.environment,
-            service=self.service,
             component=component)
         args.update(kw)
         return args
@@ -317,40 +327,50 @@ class HookComponent(Component):
         self.provide(self.key, self)
 
 
-    def __call__(self, service, environment, host, features, config):
-        factory = lambda: self.factory(**config)
-        root = RootComponent(self.name, factory, self.factory,
-                             host, self.defdir)
-        if features:
-            root.features = features
-        return root
-
-
 class RootComponent(object):
     """Wrapper to manage top-level components assigned to hosts in an
     environment.
 
-    Root components have a name and "own" the working directory for itself and
-    its sub-components.
+    Root components have a name and determine the initial working directory
+    of the sub-components.
 
     """
 
-    component = None
-    host = None
-
-    name = None
-    defdir = None
-    workdir = None
-    features = None
-
-    def __init__(self, factory, host):
-        self.factory = factory
+    def __init__(self, name, environment, host, features):
+        self.name = name
+        self.environment = environment
         self.host = host
+        self.features = features
+
+    # XXX Should we turn this around and make the environment responsible for
+    # putting those attributes on the root?
+
+    @property
+    def defdir(self):
+        return self.environment.components[self.name].defdir
+
+    @property
+    def workdir(self):
+        return os.path.join(
+            self.environment.workdir_base, self.name)
+
+    def prepare(self):
+        self.component = self.environment.components[self.name]()
+        if self.features:
+            self.component.features = self.features
+        self._overrides()
+        self.component.prepare(self)
+
+    def _overrides(self):
+        if self.name not in self.environment.overrides:
+            return
+        for key, value in self.environment.overrides[self.name].items():
+            if not hasattr(self.component, key):
+                raise KeyError(
+                    'Invalid override attribute "{}" for component {}'.format(
+                        key, self.component))
+            setattr(self.component, key, value)
 
     def __repr__(self):
         return '<%s "%s" object at %s>' % (
             self.__class__.__name__, self.name, id(self))
-
-    def deploy(self):
-        os.chdir(self.workdir)
-        self._component.deploy()
