@@ -1,55 +1,33 @@
 # -*- coding: utf-8 -*-
-from mock import Mock
+from batou.lib.archive import DMGExtractor
+from pkg_resources import resource_filename
 import os
-import shutil
-import sys
-import tempfile
-import unittest
+import pytest
 
 
-class DMGExtractorTests(unittest.TestCase):
-    """Testing ..archive.DMGExtractor."""
+@pytest.mark.skipIf("sys.platform != 'darwin")
+def test_extracts_archive_to_target_directory(root):
+    dmg = DMGExtractor(
+        resource_filename('batou.lib.tests', 'example.dmg'),
+        target='example')
+    root.component += dmg
+    root.component.deploy()
 
-    def setUp(self):
-        super(DMGExtractorTests, self).setUp()
-        self.tempdir = tempfile.mkdtemp()
+    assert os.listdir(unicode(dmg.target)) == [
+        u' ', u'a\u0308sdf.txt', u'example.app']
 
-    def tearDown(self):
-        super(DMGExtractorTests, self).tearDown()
-        shutil.rmtree(self.tempdir)
+    # ' ' is a symlink which stays one after copying:
+    assert os.path.islink(dmg.target+'/ ')
+    start_bin = dmg.target + '/example.app/MacOS/start.bin'
+    with open(start_bin) as start_bin:
+        assert start_bin.read() == 'I start the example app! ;)'
 
-    def deploy(self, **kw):
-        from ..archive import DMGExtractor
-        from pkg_resources import resource_filename
-        archive_path = resource_filename('batou.lib.tests', 'example.dmg')
 
-        root = Mock()
-        service = Mock()
-        service.base = ''
-        environment = Mock()
-        environment.map.side_effect = lambda x: x
-
-        component = DMGExtractor(archive_path, **kw)
-        component.target = self.tempdir
-
-        component.prepare(service, environment, Mock(), root)
-        component.deploy()
-
-        return component
-
-    @unittest.skipUnless(sys.platform == 'darwin', 'Requires Mac OS')
-    def test_extracts_archive_to_target_directory(self):
-        component = self.deploy()
-        self.assertEqual([u' ', u'a\u0308sdf.txt', u'example.app'],
-                         os.listdir(unicode(component.target)))
-        # ' ' is a symlink which stays one after copying:
-        self.assertTrue(os.path.islink(os.path.join(component.target, ' ')))
-        start_bin = os.path.join(
-            component.target, 'example.app', 'MacOS', 'start.bin')
-        with open(start_bin) as start_bin:
-            self.assertEqual('I start the example app! ;)', start_bin.read())
-
-    def test_does_not_support_strip(self):
-        with self.assertRaisesRegexp(
-                AssertionError, 'Strip is not supported by DMGExtractor'):
-            self.deploy(strip=1)
+def test_does_not_support_strip(root):
+    dmg = DMGExtractor(
+        resource_filename('batou.lib.tests', 'example.dmg'),
+        strip=1,
+        target='example')
+    with pytest.raises(ValueError) as e:
+        root.component += dmg
+        assert e.value.args[0] == 'Strip is not supported by DMGExtractor'

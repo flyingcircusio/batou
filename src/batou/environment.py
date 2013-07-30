@@ -4,8 +4,7 @@ from .resources import Resources
 from .secrets import add_secrets_to_environment_override
 from batou import NonConvergingWorkingSet, UnusedResource
 from batou.component import RootComponent
-from batou.utils import flatten, revert_graph, topological_sort
-from collections import defaultdict
+from batou.utils import revert_graph, topological_sort
 import batou.c
 import batou.vfs
 import configobj
@@ -26,43 +25,71 @@ class Environment(object):
 
     service_user = None
     host_domain = None
-    branch = u'default'
+    branch = None
     platform = None
     vfs_sandbox = None
 
-    def __init__(self, name):
+    def __init__(self, name, basedir='.'):
         self.name = name
         self.hosts = {}
         self.resources = Resources()
         self.overrides = {}
 
-        # These are the component classes, decorated with their 
+        # These are the component classes, decorated with their
         # name.
         self.components = {}
         # These are the components assigned to hosts.
         self.root_components = []
 
-    # XXX Extract
+        self.base_dir = os.path.abspath(basedir)
+        self.workdir_base = os.path.join(self.base_dir, 'work')
+
+    # XXX Extract?
     def load(self):
         # Scan all components
-        for filename in glob.glob('components/*/component.py'):
+        for filename in glob.glob(
+                os.path.join(self.base_dir, 'components/*/component.py')):
             self.components.update(load_components_from_file(filename))
 
         # Load environment configuration
-        config_file = 'environments/{}.cfg'.format(self.name)
+        config_file = os.path.join(
+            self.base_dir, 'environments/{}.cfg'.format(self.name))
         if not os.path.isfile(config_file):
             raise ValueError('No such environment "{}"'.format(self.name))
 
         config = configobj.ConfigObj(config_file)
 
-        if 'environment' in config:
-            for key in ['service_user', 'host_domain', 'branch', 'platform']:
-                if key not in config:
-                    configure
-                if getattr(self, key) is not None:
-                    # Support early overrides from e.g. the CLI or tests
-                    continue
-                setattr(self, key, config[key])
+        self.load_environment(config)
+        for hostname in config.get('hosts', {}):
+            components = parse_host_components(
+                config['hosts'].as_list(hostname))
+            for component, features in components.items():
+                self.add_root(component, hostname, features)
+
+        # load overrides
+        for section in config:
+            if not section.startswith('component:'):
+                continue
+            root_name = section.replace('component:', '')
+            self.overrides.setdefault(root_name, {})
+            self.overrides[root_name].update(config[section])
+
+    def load_secrets(self):
+        add_secrets_to_environment_override(self)
+
+    def load_environment(self, config):
+        environment = config.get('environment', {})
+        for key in ['service_user', 'host_domain', 'branch', 'platform']:
+            if key not in environment:
+                continue
+            if getattr(self, key) is not None:
+                # Avoid overriding early changes that have already been
+                # applied, e.g. by tests.
+                continue
+            setattr(self, key, environment[key])
+
+        if self.branch is None:
+            self.branch = u'default'
 
         if self.service_user is None:
             self.service_user = pwd.getpwuid(os.getuid()).pw_name
@@ -75,25 +102,29 @@ class Environment(object):
             sandbox = getattr(batou.vfs, sandbox)(self, config['vfs'])
             self.vfs_sandbox = sandbox
 
-        for hostname in config['hosts']:
-            fqdn = self.normalize_host_name(hostname)
-            self.hosts[fqdn] = host = Host(fqdn)
-            # load components for host
-            for name, features in parse_host_components(
-                    config['hosts'].as_list(hostname)).items():
-                root = RootComponent(self.components[name])
-                root.name = name
-                root.host = host
-                root.features = features
-                self.root_components.append(root)
+    # API to instrument environment config loading
 
-        # load overrides
-        for section in config:
-            if not section.startswith('component:'):
-                continue
-            root_name = section.replace('component:', '')
-            self.overrides.setdefault(root_name, {})
-            self.overrides[root_name].update(config[section])
+    def add_host(self, hostname):
+        fqdn = self.normalize_host_name(hostname)
+        if fqdn not in self.hosts:
+            self.hosts[fqdn] = Host(fqdn)
+        return self.hosts[fqdn]
+
+    def add_root(self, component_name, hostname, features=()):
+        host = self.add_host(hostname)
+        root = RootComponent(component_name, self, host, features)
+        self.root_components.append(root)
+        return root
+
+    def get_root(self, component_name, hostname):
+        host = self.add_host(hostname)
+        for root in self.root_components:
+            if root.host == host and root.name == component_name:
+                return root
+        raise KeyError("Component {} not configured for host {}".format(
+            component_name, hostname))
+
+    # Deployment API (implements the configure-verify-update cycle)
 
     def configure(self):
         """Configure all root components.
@@ -114,8 +145,7 @@ class Environment(object):
             for root in working_set:
                 try:
                     self.resources.reset_component_resources(root)
-                    root.component = root.factory()
-                    root.component.prepare(self, root.host, root) 
+                    root.prepare()
                 except Exception, e:
                     exceptions.append(e)
                     retry.add(root)
@@ -152,12 +182,9 @@ class Environment(object):
         if self.resources.unused:
             raise UnusedResource(self.resources.unused)
 
-    def load_secrets(self):
-        add_secrets_to_environment_override(self)
-
     def roots_in_order(self, host=None):
-        """Return a list of root components sorted by their resource dependencies,
-        filtered by host if specified.
+        """Return a list of root components sorted by their resource
+        dependencies, filtered by host if specified.
 
         Raises ValueError if component dependencies have cycles.
 
@@ -171,7 +198,7 @@ class Environment(object):
         roots = topological_sort(revert_graph(dependencies))
         if host is not None:
             host = self.get_host(host)
-            roots = filter(lambda x:x.host is host, roots)
+            roots = filter(lambda x: x.host is host, roots)
         return roots
 
     def normalize_host_name(self, hostname):

@@ -1,7 +1,9 @@
-"""Components to manage Python environments."""
-
 from batou.component import Component
 from batou import UpdateNeeded
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class VirtualEnv(Component):
@@ -91,7 +93,7 @@ class Package(Component):
             raise UpdateNeeded()
 
     def update(self):
-        self.cmd('bin/pip --timeout=10 --force-reinstall install '
+        self.cmd('bin/pip --timeout=10 install --force-reinstall'
                  '"{}=={}"'.format(self.package, self.version))
 
     @property

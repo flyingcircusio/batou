@@ -1,7 +1,6 @@
 from . import remote_core
+from .environment import Environment
 from .log import setup_logging
-from .secrets import add_secrets_to_environment_override
-from .service import ServiceConfig
 from .utils import notify, cmd
 import argparse
 import execnet
@@ -9,7 +8,6 @@ import logging
 import os
 import os.path
 import subprocess
-import sys
 
 
 logger = logging.getLogger('batou.remote')

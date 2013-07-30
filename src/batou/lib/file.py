@@ -89,7 +89,7 @@ class File(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.service.base)
+        return os.path.relpath(self.path, self.environment.base_dir)
 
     def last_updated(self, key='st_mtime'):
         if not os.path.exists(self.path):
@@ -120,7 +120,7 @@ class Presence(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.service.base)
+        return os.path.relpath(self.path, self.environment.base_dir)
 
 
 class SyncDirectory(Component):
@@ -152,7 +152,7 @@ class SyncDirectory(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.service.base)
+        return os.path.relpath(self.path, self.environment.base_dir)
 
 
 class Directory(Component):
@@ -191,7 +191,7 @@ class Directory(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.service.base)
+        return os.path.relpath(self.path, self.environment.base_dir)
 
 
 class FileComponent(Component):
@@ -200,11 +200,12 @@ class FileComponent(Component):
     leading = False
 
     def configure(self):
-        self.path = self.map(self.path)
+        self.original_path = self.path
+        self.path = self.map(self.original_path)
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.service.base)
+        return os.path.relpath(self.path, self.environment.base_dir)
 
 
 class Content(FileComponent):
@@ -229,7 +230,7 @@ class Content(FileComponent):
                 'Only one of either "content" or "source" are allowed.')
         if not self.content:
             if not self.source:
-                self.source = self.path
+                self.source = self.original_path
             if not self.source.startswith('/'):
                 self.source = os.path.join(self.root.defdir, self.source)
 

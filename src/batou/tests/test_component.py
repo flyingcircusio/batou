@@ -4,7 +4,6 @@ import batou
 import os
 import os.path
 import pytest
-import time
 
 
 class SampleComponent(Component):
@@ -51,30 +50,22 @@ def test_init_keyword_args_update_dict():
     assert 1 == component.foobar
 
 
-def test_prepare_sets_up_vars():
-    service = Mock()
-    environment = Mock()
-    host = Mock()
-    root = Mock()
-    parent = Mock()
-    component = Component()
-    component.prepare(
-        service, environment, host, root, parent)
-    assert service == component.service
-    assert environment == component.environment
-    assert host == component.host
-    assert root == component.root
-    assert parent == component.parent
+def test_prepare_sets_up_vars(root):
+    root.prepare()
+    assert root.component.environment is root.environment
+    assert root.component.host is root.host
+    assert root.component.root is root
+    assert root.component.parent is None
 
 
 def test_prepare_calls_configure():
     component = Component()
     component.configure = Mock()
-    component.prepare(None, Mock(), None, None)
+    component.prepare(Mock(), Mock())
     assert component.configure.called
 
 
-def test_prepare_configures_applicable_platforms_as_subcomponents():
+def test_prepare_configures_applicable_platforms_as_subcomponents(root):
     class MyComponent(Component):
         pass
 
@@ -89,41 +80,40 @@ def test_prepare_configures_applicable_platforms_as_subcomponents():
     class MyOtherPlatform(Component):
         pass
 
-    environment = Mock()
-    environment.platform = 'testplatform'
+    root.environment.platform = 'testplatform'
     component = MyComponent()
-    component.prepare(None, environment, None, None)
+    root.component += component
     assert 1 == len(component.sub_components)
     assert isinstance(component.sub_components[0], MyPlatform)
     # Because we currently have no defined behaviour about this
     # I'm playing this rather safe: a sub-class of a component does not
     # automatically get to have the same platform components applied.
     other_component = MyOtherComponent()
-    other_component.prepare(None, environment, None, None)
+    root.component += other_component
     assert 0 == len(other_component.sub_components)
 
 
-def test_deploy_empty_component_runs_without_error():
-    component = Component()
-    component.prepare(None, Mock(), None, None)
-    component.deploy()
+def test_deploy_empty_component_runs_without_error(root):
+    root.component.deploy()
 
 
-def test_deploy_update_performed_if_needed():
+def test_deploy_update_performed_if_needed(root):
+    root.prepare()
     component = SampleComponent(needs_update=True)
-    component.prepare(None, Mock(), None, None)
-    component.deploy()
+    root.component += component
+    root.component.deploy()
     assert component.updated
 
 
-def test_deploy_update_not_performed_if_not_needed():
+def test_deploy_update_not_performed_if_not_needed(root):
+    root.prepare()
     component = SampleComponent(needs_update=False)
-    component.prepare(None, Mock(), None, None)
-    component.deploy()
+    root.component += component
+    root.component.deploy()
     assert not component.updated
 
 
-def test_sub_components_are_deployed_first():
+def test_sub_components_are_deployed_first(root):
     log = []
 
     class MyComponent(Component):
@@ -135,23 +125,22 @@ def test_sub_components_are_deployed_first():
 
         def update(self):
             log.append('{}:update'.format(self.id))
-    top = MyComponent('1')
-    top.prepare(None, Mock(), None, None)
-    top += MyComponent('2')
-    top.deploy()
+
+    c1 = MyComponent('1')
+    root.component += c1
+    c1 += MyComponent('2')
+    root.component.deploy()
     assert [u'2:verify', u'2:update', u'1:verify', u'1:update'] == log
 
 
-def test_adding_subcomponents_configures_them_immediately():
+def test_adding_subcomponents_configures_them_immediately(root):
     class MyComponent(Component):
         configured = False
 
         def configure(self):
             self.configured = True
-    component = Component()
-    component.prepare(None, Mock(), None, None)
     my = MyComponent()
-    component += my
+    root.component += my
     assert my.configured
 
 
@@ -174,23 +163,19 @@ def test_afic_raises_if_file_isolder_than_reference(tmpdir):
 
 
 # ANSC = assert no subcomponent changes
-def test_ansc_raises_if_subcomponent_changed():
-    c = Component()
-    c.prepare(None, Mock(), 'localhost', None)
+def test_ansc_raises_if_subcomponent_changed(root):
     c2 = Component()
-    c += c2
+    root.component += c2
     c2.changed = True
     with pytest.raises(batou.UpdateNeeded):
-        c.assert_no_subcomponent_changes()
+        root.component.assert_no_subcomponent_changes()
 
 
-def test_ansc_does_not_raise_if_no_subcomponent_changed():
-    c = Component()
-    c.prepare(None, Mock(), 'localhost', None)
+def test_ansc_does_not_raise_if_no_subcomponent_changed(root):
     c2 = Component()
-    c += c2
+    root.component += c2
     c2.changed = False
-    c.assert_no_subcomponent_changes()
+    root.component.assert_no_subcomponent_changes()
 
 
 def test_cmd_returns_output():
@@ -223,28 +208,24 @@ def test_touch_updates_mtime_leaves_content_intact(tmpdir):
     reference = str(tmpdir / 'reference')
     with open(reference, 'w') as r:
         r.write('Hello world')
-    mtime = os.stat(reference).st_mtime
     c = Component()
-    time.sleep(1)
+    os.utime(reference, (0, 0))
     c.touch(reference)
-    assert mtime < os.stat(reference).st_mtime
+    assert os.stat(reference).st_mtime != 0
     with open(reference, 'r') as r:
         assert 'Hello world' == r.read()
 
 
-def test_expand():
-    c = Component()
-    c.prepare(None, Mock(), 'localhost', None)
-    assert 'Hello localhost' == c.expand('Hello {{host}}')
+def test_expand(root):
+    assert root.component.expand('Hello {{host.fqdn}}') == (
+        'Hello host')
 
 
-def test_templates(tmpdir):
-    sample = str(tmpdir / 'sample')
-    with open(sample, 'w') as template:
-        template.write('Hello {{host}}')
-    c = Component()
-    c.prepare(None, Mock(), 'localhost', None)
-    assert 'Hello localhost\n' == c.template(sample)
+def test_templates(root):
+    with open('sample', 'w') as template:
+        template.write('Hello {{host.fqdn}}')
+    assert root.component.template('sample') == (
+        'Hello host\n')
 
 
 def test_chdir_contextmanager_is_stackable():
@@ -260,42 +241,33 @@ def test_chdir_contextmanager_is_stackable():
     assert outer == os.getcwd()
 
 
-def test_root_component_computes_working_dir():
-    c = Component()
-    host = Mock()
-    host.environment.workdir_base = 'path-to-service/work'
-    root = RootComponent('test', c, c.__class__, host, None)
-    c.root = root
-    assert root.workdir == 'path-to-service/work/test'
-    assert c.workdir == 'path-to-service/work/test'
+def test_root_and_component_know_working_dir(root):
+    assert root.workdir.endswith('/work/mycomponent')
+    assert root.component.workdir.endswith('/work/mycomponent')
 
 
 def test_root_component_repr():
     host = Mock()
-    root = RootComponent('haproxy', object, object, host, '.')
+    root = RootComponent('haproxy', object, host, [])
     assert repr(root).startswith('<RootComponent "haproxy" object at ')
 
 
-def test_root_component_creates_working_dir_runs_component_deploy(tmpdir):
-    d = str(tmpdir)
+def test_component_manages_working_dir(root):
+    previous_workdir = os.getcwd()
+    os.rmdir(root.workdir)
 
-    class MyComponent(Component):
-        pass
-    c = MyComponent
-    c.deploy = Mock()
-    host = Mock()
-    host.environment.workdir_base = d + '/work'
-    host.environment.overrides = {}
-    root = RootComponent('test', c, c.__class__, host, None)
-    assert not os.path.isdir(root.workdir)
-    root.prepare()
-    root.deploy()
+    class RememberWorkDir(Component):
+        def verify(self):
+            self.parent.i_was_in = os.getcwd()
+    root.component += RememberWorkDir()
+    root.component.deploy()
     assert os.path.isdir(root.workdir)
+    assert (os.path.realpath(root.component.i_was_in) ==
+            os.path.realpath(root.workdir))
     cwd = os.getcwd()
     # Need to ensure we resolve symlinks: on OS x /var/tmp may lead to
     # /private/...
-    assert os.path.realpath(cwd) == os.path.realpath(root.workdir)
-    assert c.deploy.called
+    assert os.path.realpath(cwd) == os.path.realpath(previous_workdir)
 
 
 def test_cmd_execution_failed_gives_command_in_exception():

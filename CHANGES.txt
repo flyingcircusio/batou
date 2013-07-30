@@ -5,6 +5,12 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Major refactoring of internal data structures to simplify and improve test
+  coverage. Some breakage to be expected:
+
+  * Components do not have a 'service' attribute any longer. If you need access
+    to the service base directory use 'environment.base_dir'.
+
 - Another attempt at getting convergency for package installation: actually
   leverage pkg_resources to check what version of a package is installed. PIP
   does not necessarily list or freeze setuptools, even if forced to reinstall.

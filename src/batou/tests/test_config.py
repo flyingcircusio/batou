@@ -1,91 +1,88 @@
 from batou.component import Component
-from batou.service import ServiceConfig
+from batou.environment import Environment
 import os
 import os.path
 import pwd
-import unittest
+import pytest
 
 
-class BrokenConfigTests(unittest.TestCase):
-
-    def test_parse_nonexisting_file_raises_ioerror(self):
-        with self.assertRaises(IOError):
-            ServiceConfig(os.path.dirname(__file__) +
-                          '/no/such/file.cfg', ['foo'])
+def test_parse_nonexisting_file_raises_ioerror(tmpdir):
+    env = Environment('test', basedir=str(tmpdir))
+    with pytest.raises(ValueError):
+        env.load()
 
 
-class ConfigTestsBasicScenario(unittest.TestCase):
+@pytest.fixture
+def env():
+    environment = Environment(
+        'dev', os.path.dirname(__file__) + '/fixture/basic_service')
+    environment.load()
+    return environment
 
-    def setUp(self):
-        self.config = ServiceConfig(
-            os.path.dirname(__file__) + '/fixture/basic_service',
-            ['dev'])
-        self.config.scan()
-        self.service = self.config.service
 
-    def test_service_options_are_set(self):
-        self.assertTrue(self.service.base.endswith(
-            '/fixture/basic_service'))
+@pytest.fixture
+def env_prod():
+    environment = Environment(
+        'production', os.path.dirname(__file__) + '/fixture/basic_service')
+    environment.load()
+    return environment
 
-    def test_components_are_fully_loaded(self):
-        self.assertEquals(['zeo', 'zope'], sorted(self.service.components))
 
-    def test_dev_is_loaded_but_production_is_not(self):
-        self.assertEquals(
-            ['dev'], sorted(self.service.environments))
+def test_service_options_are_set(env):
+    assert env.base_dir.endswith('/fixture/basic_service')
 
-    def test_production_environment_is_loaded(self):
-        self.config.environments = set(['production'])
-        self.config.scan()
-        production = self.service.environments['production']
-        self.assertEquals('alice', production.service_user)
-        self.assertEquals('production', production.branch)
-        self.assertEquals('example.com', production.host_domain)
 
-        self.assertEquals(['host1.example.com', 'host2.example.com',
-                           'host3.example.com'],
-                          sorted(production.hosts))
+def test_components_are_fully_loaded(env):
+    assert sorted(env.components) == ['zeo', 'zope']
 
-        host1 = production.hosts['host1.example.com']
-        self.assertEqual('host1', host1.name)
-        self.assertEqual('host1.example.com', host1.fqdn)
-        self.assertEqual(1, len(host1.components))
-        zope = host1['zope']
-        self.assertIsInstance(zope.factory(), Component)
-        self.assertEqual('zope', zope.name)
 
-    def test_dev_environment_is_loaded(self):
-        dev = self.service.environments['dev']
-        self.assertEquals(pwd.getpwuid(os.getuid()).pw_name, dev.service_user)
-        self.assertEquals('default', dev.branch)
-        self.assertEquals(None, dev.host_domain)
+def test_production_environment_is_loaded(env_prod):
+    assert env_prod.service_user == 'alice'
+    assert env_prod.branch == 'production'
+    assert env_prod.host_domain == 'example.com'
 
-        self.assertEquals(['localhost'], sorted(dev.hosts))
+    assert sorted(env_prod.hosts) == [
+        'host1.example.com', 'host2.example.com', 'host3.example.com']
 
-        localhost = dev.hosts['localhost']
-        self.assertEqual('localhost', localhost.name)
-        self.assertEqual('localhost', localhost.fqdn)
-        self.assertEqual(
-            set(['zeo', 'zope']),
-            set(x.name for x in localhost.components))
-        zeo = localhost['zeo']
-        self.assertIsInstance(zeo.factory(), Component)
-        self.assertEqual('zeo', zeo.name)
+    host1 = env_prod.hosts['host1.example.com']
+    assert host1.name == 'host1'
+    assert host1.fqdn == 'host1.example.com'
+    host1_components = [x.name for x in env_prod.root_components
+                        if x.host is host1]
+    assert host1_components == ['zope']
 
-    def test_component_has_features_set(self):
-        dev = self.service.environments['dev']
-        localhost = dev.hosts['localhost']
-        zeo = localhost['zeo']
-        self.assertEquals(['test'], zeo.features)
 
-    def test_load_environment_with_specific_platform(self):
-        self.config.platform = 'foobar'
-        self.config.scan()
-        self.assertEquals('foobar', self.service.environments['dev'].platform)
+def test_dev_environment_is_loaded(env):
+    assert pwd.getpwuid(os.getuid()).pw_name == env.service_user
+    assert env.branch == 'default'
+    assert env.host_domain is None
+    assert set(env.hosts.keys()) == set(['localhost', 'host2'])
 
-    def test_load_environment_with_overrides(self):
-        dev = self.service.environments['dev']
-        dev.overrides['zeo'] = {'port': '9002'}
-        dev.configure()
-        zeo = dev.hosts['localhost']['zeo'].component
-        self.assertEquals('9002', zeo.port)
+    localhost = env.hosts['localhost']
+    assert localhost.name == 'localhost'
+    assert localhost.fqdn == 'localhost'
+    assert set(['zeo', 'zope']) == set(
+        x.name for x in env.root_components if x.host is localhost)
+
+    zeo = env.get_root('zeo', 'localhost')
+    zeo.prepare()
+    assert isinstance(zeo.component, Component)
+    assert zeo.name == 'zeo'
+
+
+def test_component_has_features_set(env):
+    env.configure()
+    # The localhost ZEO doesn't specify features and thus gets all set
+    zeo1 = env.get_root('zeo', 'localhost').component
+    assert zeo1.features == ['test', 'test2']
+
+    # ZEO on host2 has selected only 'test'
+    zeo2 = env.get_root('zeo', 'host2').component
+    assert zeo2.features == ['test']
+
+
+def test_load_environment_with_overrides(env):
+    env.overrides['zeo'] = {'port': '9002'}
+    env.configure()
+    zeo = env.get_root('zeo', 'localhost').component
+    assert zeo.port == '9002'

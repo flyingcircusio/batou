@@ -1,10 +1,6 @@
-from batou import NonConvergingWorkingSet, UnusedResource
-from batou.component import RootComponent
-from batou.utils import flatten, revert_graph, topological_sort
+from batou.utils import flatten
 from collections import defaultdict
 import logging
-import os
-import pwd
 
 
 logger = logging.getLogger(__name__)
@@ -65,7 +61,6 @@ class Resources(object):
                 yield key
 
     def provide(self, root, key, value):
-        assert isinstance(root, RootComponent)
         values = self.resources.setdefault(key, defaultdict(list))
         values[root].append(value)
         self.dirty_dependencies.update(self._subscribers(key, root.host))
@@ -82,7 +77,6 @@ class Resources(object):
         return results
 
     def require(self, root, key, host=None, strict=True, reverse=False):
-        assert isinstance(root, RootComponent)
         """Return resource values and record component dependency."""
         self.subscribers.setdefault(key, set()).add(
             (root, strict, host, reverse))
