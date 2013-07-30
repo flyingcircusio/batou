@@ -1,13 +1,12 @@
 from batou.component import Component
 from batou.lib.file import Directory
+from batou.utils import cmd
 from zipfile import ZipFile
-import batou.utils
 import itertools
 import os
 import os.path
 import plistlib
 import shutil
-import zope.cachedescriptors.property
 
 
 class Extract(Component):
@@ -20,6 +19,8 @@ class Extract(Component):
     strip = 0
 
     def configure(self):
+        self.archive = self.map(self.archive)
+
         for candidate in [Unzip, Untar, DMGExtractor]:
             if candidate.can_handle(self.archive):
                 break
@@ -39,6 +40,8 @@ class Extractor(Component):
 
     namevar = 'archive'
 
+    _supports_strip = False
+
     create_target_dir = True
     suffixes = ()
     strip = 0
@@ -55,6 +58,9 @@ class Extractor(Component):
                 return archive.rsplit(suffix, 1)[0]
 
     def configure(self):
+        if self.strip and not self._supports_strip:
+            raise ValueError("Strip is not supported by {}".format(
+                self.__class__.__name__))
         if self.create_target_dir:
             if self.target is None:
                 self.target = self.extract_base_name(self.archive)
@@ -82,11 +88,6 @@ class Extractor(Component):
 class Unzip(Extractor):
 
     suffixes = ('.zip',)
-
-    def configure(self):
-        super(Unzip, self).configure()
-        if self.strip != 0:
-            raise ValueError("Strip is not supported by Unzip")
 
     def get_names_from_archive(self):
         with ZipFile(self.archive) as f:
@@ -129,9 +130,6 @@ class DMGVolume(object):
         self.name = os.path.basename(path)
         self.volume_path = self._mount()
 
-    def __del__(self):
-        self._unmount()
-
     def namelist(self):
         for root, dirnames, filenames in os.walk(self.volume_path):
             for name in itertools.chain(dirnames, filenames):
@@ -148,7 +146,7 @@ class DMGVolume(object):
         if not os.path.exists(self.path):
             raise UserWarning('Path %r does not exist.' % self.path)
         volume_path = None
-        mount_plist, _ = batou.utils.cmd(
+        mount_plist, _ = cmd(
             [self.HDIUTIL, 'mount', '-plist', self.path])
         mount_points = plistlib.readPlistFromString(
             mount_plist)['system-entities']
@@ -167,23 +165,19 @@ class DMGVolume(object):
     def _unmount(self):
         """Unmount and eject the mounted .dmg file."""
         if self.volume_path is not None:
-            batou.utils.cmd(
-                [self.HDIUTIL, 'eject',
-                 self.volume_path.replace(' ', '\ ')])  # XXX: #12527
+            cmd([self.HDIUTIL, 'eject', self.volume_path])
 
 
 class DMGExtractor(Extractor):
 
+    _supports_strip = False
     suffixes = ('.dmg',)
 
-    def configure(self):
-        super(DMGExtractor, self).configure()
-        if self.strip != 0:
-            raise ValueError("Strip is not supported by DMGExtractor")
+    def __enter__(self):
+        self.volume = DMGVolume(self.archive)
 
-    @zope.cachedescriptors.property.Lazy
-    def volume(self):
-        return DMGVolume(os.path.join(self.workdir, self.archive))
+    def __exit__(self, type, value, tb):
+        self.volume._unmount()
 
     def get_names_from_archive(self):
         return self.volume.namelist()

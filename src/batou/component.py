@@ -108,19 +108,28 @@ class Component(object):
 
     # Deployment phase
 
+    # We're context managers - to allow components to do setup/teardown nicely.
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, tb):
+        pass
+
     def deploy(self):
-        # XXX This is an inner loop - we need to keep this code fast.
+        # Remember: this is a tight loop - we need to keep this code fast.
+
         # Reset changed flag here to support triggering deploy() multiple
-        # times.
+        # times. This is mostly helpful for testing, but who know.
         self.changed = False
         for sub_component in self.sub_components:
             sub_component.deploy()
             if sub_component.changed:
                 self.changed = True
-        # This could be superfluous and make the inner loop slow.
+
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        with self.chdir(self.workdir):
+        with self.chdir(self.workdir), self:
             try:
                 self.verify()
             except batou.UpdateNeeded:
@@ -227,7 +236,6 @@ class Component(object):
                 format(key, host))
         return resources[0]
 
-    # XXX backwards-compatibility. :/
     def assert_file_is_current(self, reference, requirements=[], **kw):
         from batou.lib.file import File
         self.assert_component_is_current(
@@ -294,7 +302,6 @@ class Component(object):
             os.chdir(path)
             yield
         finally:
-            # XXX missing test
             os.chdir(old)
 
     # internal methods

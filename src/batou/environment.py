@@ -44,7 +44,6 @@ class Environment(object):
         self.base_dir = os.path.abspath(basedir)
         self.workdir_base = os.path.join(self.base_dir, 'work')
 
-    # XXX Extract?
     def load(self):
         # Scan all components
         for filename in glob.glob(
