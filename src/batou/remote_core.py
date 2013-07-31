@@ -2,6 +2,7 @@ import logging
 import os
 import os.path
 import subprocess
+import traceback
 
 
 # Satisfy flake8 and support testing.
@@ -23,7 +24,7 @@ class Deployment(object):
 
     def deploy(self, root):
         root = self.environment.get_root(root, self.host)
-        root.deploy()
+        root.component.deploy()
 
 
 def lock():
@@ -62,7 +63,7 @@ def build_batou(deployment_base, setuptools_version, buildout_version):
         # XXX this is a chance to install batou without buildout ...
         # XXX would be nice to think this through regarding the sprint goal of
         # making batou easier to handle for developers
-        cmd('bin/pip install --force-reinstall buildout=={}'.
+        cmd('bin/pip install --force-reinstall zc.buildout=={}'.
             format(buildout_version))
     cmd('bin/buildout -t 15')
 
@@ -74,6 +75,7 @@ def setup_deployment(deployment_base, env_name, host_name, overrides):
     os.chdir(os.path.join(target, deployment_base))
 
     environment = Environment(env_name)
+    environment.load()
     environment.overrides = overrides
     environment.configure()
 
@@ -108,8 +110,6 @@ if __name__ == '__channelexec__':
         try:
             result = locals()[task](*args, **kw)
         except Exception, e:
-            result = ('batou-remote-core-error',
-                      e.__class__.__name__,
-                      e.__class__.__module__,
-                      e.args)
+            tb = traceback.format_exc()
+            result = ('batou-remote-core-error', tb)
         channel.send(result)
