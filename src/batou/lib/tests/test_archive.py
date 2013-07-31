@@ -2,7 +2,11 @@
 from batou.lib.archive import DMGExtractor
 from pkg_resources import resource_filename
 import os
+import sys
 import pytest
+
+
+sys  # Make pyflakes happy
 
 
 @pytest.mark.skipIf("sys.platform != 'darwin")
