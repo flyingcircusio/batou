@@ -126,8 +126,8 @@ class Package(Component):
         # installed cleanly.
         base_package = self.package.split('.')[0]
         try:
-            self.cmd('bin/python -c "import {0};{0}.__file__'.format(
-                     base_package))
+            self.cmd('bin/python -c "import {0};{0}.__file__"'.format(
+                    base_package), silent=True)
         except RuntimeError:
             self.pip_install_options.extend(['-I', '--no-deps'])
 
