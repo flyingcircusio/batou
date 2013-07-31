@@ -83,7 +83,7 @@ class Package(Component):
     namevar = 'package'
     version = None
 
-    pip_install_options = ['--egg', '--force-reinstall']
+    pip_install_options = ('--egg', '--force-reinstall')
 
     def verify(self):
         # Is the right version installed according to PIP?
@@ -103,7 +103,7 @@ class Package(Component):
             self.cmd('bin/python -c "import {0};{0}.__file__"'.format(
                     base_package), silent=True)
         except RuntimeError:
-            self.pip_install_options.extend(['-I', '--no-deps'])
+            self.pip_install_options += ('-I', '--no-deps')
             raise UpdateNeeded()
 
     def update(self):
