@@ -101,7 +101,7 @@ class Package(Component):
         base_package = self.package.split('.')[0]
         try:
             self.cmd('bin/python -c "import {0};{0}.__file__"'.format(
-                    base_package), silent=True)
+                base_package), silent=True)
         except RuntimeError:
             self.pip_install_options += ('-I', '--no-deps')
             raise UpdateNeeded()
