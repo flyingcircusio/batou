@@ -54,7 +54,7 @@ def test_build_batou_fresh_install(mock_remote_core):
     assert remote_core.cmd.call_count == 4
     assert calls.next() == 'virtualenv --no-site-packages --python python2.7 .'
     assert calls.next() == 'bin/pip install --force-reinstall setuptools==0.9'
-    assert calls.next() == 'bin/pip install --force-reinstall buildout==2.0'
+    assert calls.next() == 'bin/pip install --force-reinstall zc.buildout==2.0'
     assert calls.next() == 'bin/buildout -t 15'
 
 
@@ -65,7 +65,7 @@ def test_build_batou_virtualenv_exists(mock_remote_core):
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 3
     assert calls.next() == 'bin/pip install --force-reinstall setuptools==0.9'
-    assert calls.next() == 'bin/pip install --force-reinstall buildout==2.0'
+    assert calls.next() == 'bin/pip install --force-reinstall zc.buildout==2.0'
     assert calls.next() == 'bin/buildout -t 15'
 
 
@@ -141,8 +141,7 @@ def test_channelexec_handle_exception(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    assert channel.sendqueue == [(
-        'batou-remote-core-error',
-        'CalledProcessError',
-        'subprocess',
-        ())]
+    response = channel.sendqueue[0]
+    assert response[0] == 'batou-remote-core-error'
+    assert ('CalledProcessError: Command \'[\'fdjkahfkjdasbfda\']\' returned '
+            'non-zero exit status 127' in response[1])

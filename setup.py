@@ -29,6 +29,7 @@ setup(
         'pytest-codecheckers',
         'pytest-cov',
         'pytest-timeout',
+        'zc.buildout'  # need buildout to find version to bootstrap remotely
     ],
     extras_require={
         'test': [

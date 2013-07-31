@@ -7,10 +7,15 @@ import execnet
 import logging
 import os
 import os.path
+import pkg_resources
 import subprocess
 
 
 logger = logging.getLogger('batou.remote')
+
+
+SETUPTOOLS = pkg_resources.require('setuptools')[0].version
+ZCBUILDOUT = pkg_resources.require('zc.buildout')[0].version
 
 
 def main():
@@ -31,14 +36,13 @@ def main():
     # XXX See #12602. Put safety belt back again.
 
     environment = Environment(args.environment)
+    environment.load()
     environment.load_secrets()
     environment.configure()
 
     deployment = RemoteDeployment(environment)
     try:
         deployment()
-    except RuntimeError, e:
-        logger.error('\n'.join(str(x) for x in e.args))
     except Exception, e:
         logger.exception(e)
     else:
@@ -57,7 +61,7 @@ class RemoteDeployment(object):
 
         self.repository_root = subprocess.check_output(['hg', 'root']).strip()
         self.deployment_base = os.path.relpath(
-            self.environment.base, self.repository_root)
+            self.environment.base_dir, self.repository_root)
         assert (self.deployment_base == '.' or
                 self.deployment_base[0] not in ['.', '/'])
 
@@ -74,7 +78,7 @@ class RemoteDeployment(object):
 
         for root in self.environment.roots_in_order():
             remote = remotes[root.host]
-            remote.deploy(root)
+            remote.deploy_component(root)
 
         for remote in remotes.values():
             remote.gateway.exit()
@@ -98,10 +102,8 @@ class RPCWrapper(object):
                 pass
             else:
                 if result[0] == 'batou-remote-core-error':
-                    class_, mod, args = result[1:]
-                    mod = __import__(mod)
-                    class_ = getattr(mod, class_)
-                    raise class_(*args)
+                    logger.error(result[1])
+                    raise RuntimeError('Remote exception encountered.')
             return result
         return call
 
@@ -125,7 +127,7 @@ class RemoteHost(object):
         self.gateway = execnet.makegateway(
             "ssh={}//python=sudo -u {} {}".format(
                 self.host.fqdn,
-                self.host.environment.service_user,
+                self.deployment.environment.service_user,
                 interpreter))
         self.channel = self.gateway.remote_exec(remote_core)
 
@@ -140,20 +142,21 @@ class RemoteHost(object):
             upstream=self.deployment.upstream)
 
         self.remote_base = os.path.join(
-            remote_base, self.deployment.service_base)
+            remote_base, self.deployment.deployment_base)
 
-        self.rpc.build_batou(self.deployment.service_base)
+        self.rpc.build_batou(
+            self.deployment.deployment_base, SETUPTOOLS, ZCBUILDOUT)
 
         # Now, replace the basic interpreter connection, with a "real" one that
         # has all our dependencies installed.
         self.connect(self.remote_base + '/bin/py')
 
-        self.rpc.setup_service(
-            self.deployment.service_base,
+        self.rpc.setup_deployment(
+            self.deployment.deployment_base,
             self.deployment.environment.name,
             self.host.fqdn,
             self.deployment.environment.overrides)
 
     def deploy_component(self, component):
         logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
-        self.rpc.deploy_component(component.name)
+        self.rpc.deploy(component.name)
