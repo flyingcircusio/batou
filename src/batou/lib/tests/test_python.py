@@ -1,6 +1,6 @@
 # Copyright (c) 2012 gocept gmbh & co. kg
 # See also LICENSE.txt
-
+from batou.lib.python import Package
 import mock
 import unittest
 
@@ -41,3 +41,11 @@ class TestVirtualEnv(unittest.TestCase):
         virtualenv.update()
         virtualenv.cmd.assert_called_with(
             'virtualenv-executable arguments .', silent=True)
+
+
+def test_package_install():
+    package = Package('foo', version='1.2.5')
+    package.cmd = mock.Mock()
+    package.update()
+    package.cmd.assert_called_with(
+        'bin/pip --timeout=10 install --egg --force-reinstall "foo==1.2.5"')

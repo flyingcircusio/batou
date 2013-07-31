@@ -5,7 +5,10 @@ Changelog
 0.2.13 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Switch to asking pip installing eggs instead of flat installations as
+  namespaces seem to collide otherwise.
+
+- Remove non-functional deprecated 'md5sum' attribute.
 
 
 0.2.12 (2013-07-26)
