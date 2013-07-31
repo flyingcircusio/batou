@@ -5,6 +5,9 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Switch to asking pip installing eggs instead of flat installations as
+  namespaces seem to collide otherwise.
+
 - Remove non-functional deprecated 'md5sum' attribute.
 
 - Components are context managers now. If you provide __enter__ it will be

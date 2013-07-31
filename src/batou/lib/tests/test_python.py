@@ -46,4 +46,4 @@ def test_package_install():
     package.cmd = mock.Mock()
     package.update()
     package.cmd.assert_called_with(
-        'bin/pip --timeout=10 install --force-reinstall "foo==1.2.5"')
+        'bin/pip --timeout=10 install --egg --force-reinstall "foo==1.2.5"')

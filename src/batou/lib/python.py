@@ -83,7 +83,10 @@ class Package(Component):
     namevar = 'package'
     version = None
 
+    pip_install_options = ['--egg', '--force-reinstall']
+
     def verify(self):
+        # Is the right version installed according to PIP?
         try:
             self.cmd('bin/python -c "import pkg_resources; '
                      'pkg_resources.require(\'{}\')[0].version == \'{}\'"'
@@ -91,10 +94,22 @@ class Package(Component):
         except RuntimeError, e:
             logger.debug(e[3])
             raise UpdateNeeded()
+        # Is the package usable? Is the package a module?  This might be
+        # overspecific - I'm looking for a way to deal with:
+        # https://github.com/pypa/pip/issues/3 if a namespace package was not
+        # installed cleanly.
+        base_package = self.package.split('.')[0]
+        try:
+            self.cmd('bin/python -c "import {0};{0}.__file__'.format(
+                     base_package))
+        except RuntimeError:
+            self.pip_install_options.extend(['-I', '--no-deps'])
 
     def update(self):
-        self.cmd('bin/pip --timeout=10 install --force-reinstall '
-                 '"{}=={}"'.format(self.package, self.version))
+        options = ' '.join(self.pip_install_options)
+        self.cmd('bin/pip --timeout=10 install {} '
+                 '"{}=={}"'.format(
+                     options, self.package, self.version))
 
     @property
     def namevar_for_breadcrumb(self):
