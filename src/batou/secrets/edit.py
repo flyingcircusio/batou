@@ -28,6 +28,8 @@ class Editor(object):
                 print "\tencrypt (tries to encrypt current data again)"
                 print "\tquit (quits and looses your changes)"
                 cmd = raw_input("> ").strip()
+            else:
+                break
 
     def process_cmd(self, cmd):
             if cmd == 'edit':
