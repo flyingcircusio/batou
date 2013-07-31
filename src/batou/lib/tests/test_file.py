@@ -311,7 +311,8 @@ def test_mode_ensures_mode_for_directories(root):
 
 @pytest.mark.skipIf("not hasattr(os, 'lchmod')")
 def test_mode_ensures_mode_for_symlinks(root):
-    # This test is only relevant
+    # This test is only relevant on platforms that support managing the mode of
+    # symlinks.
     link_to = 'link_to'
     open(link_to, 'w').close()
     os.symlink(link_to, 'work/mycomponent/path')
