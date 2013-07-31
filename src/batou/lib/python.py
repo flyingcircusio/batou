@@ -104,6 +104,7 @@ class Package(Component):
                     base_package), silent=True)
         except RuntimeError:
             self.pip_install_options.extend(['-I', '--no-deps'])
+            raise UpdateNeeded()
 
     def update(self):
         options = ' '.join(self.pip_install_options)
