@@ -55,7 +55,7 @@ def main():
 def check_clean_hg_repository():
     # Safety belt that we're acting on a clean repository.
     try:
-        status, _ = cmd('hg -q stat')
+        status, _ = cmd('hg -q stat', silent=True)
     except RuntimeError:
         logger.error('Unable to check repository status. '
                      'Is there an HG repository here?')
@@ -69,7 +69,7 @@ def check_clean_hg_repository():
             sys.exit(1)
 
     try:
-        cmd('hg -q outgoing -l 1')
+        cmd('hg -q outgoing -l 1', silent=True)
     except RuntimeError, e:
         if e.args[1] == 1 and not e.args[2] and not e.args[3]:
             # this means there' snothing outgoing
