@@ -9,7 +9,9 @@ import os
 import os.path
 import pkg_resources
 import subprocess
+import sys
 
+# XXX reset
 
 logger = logging.getLogger('batou.remote')
 
@@ -33,7 +35,7 @@ def main():
         ['batou'],
         logging.DEBUG if args.debug else logging.INFO)
 
-    # XXX See #12602. Put safety belt back again.
+    check_clean_hg_repository()
 
     environment = Environment(args.environment)
     environment.load()
@@ -48,6 +50,35 @@ def main():
     else:
         notify('Deployment finished',
                '{} was deployed successfully.'.format(environment.name))
+
+
+def check_clean_hg_repository():
+    # Safety belt that we're acting on a clean repository.
+    try:
+        status, _ = cmd('hg -q stat')
+    except RuntimeError:
+        logger.error('Unable to check repository status. '
+                     'Is there an HG repository here?')
+        sys.exit(1)
+    else:
+        status = status.strip()
+        if status.strip():
+            logger.error(
+                'Refusing to deploy remotely with a dirty working copy:')
+            logger.error(status)
+            sys.exit(1)
+
+    try:
+        cmd('hg -q outgoing -l 1')
+    except RuntimeError, e:
+        if e.args[1] == 1 and not e.args[2] and not e.ergs[3]:
+            # this means there' snothing outgoing
+            pass
+        else:
+            raise
+    else:
+        logger.error('Refusing to deploy with outgoing changes.')
+        sys.exit(1)
 
 
 class RemoteDeployment(object):
@@ -135,11 +166,9 @@ class RemoteHost(object):
         logger.info('{}: bootstrapping'.format(self.host.fqdn))
         self.rpc.lock()
 
-        # XXX safety-belt: ensure clean working copy
-        # XXX safety-belt: ensure no outgoing changes
-        # XXX safety-belt: compare id to local repository
         remote_base, remote_id = self.rpc.update_code(
             upstream=self.deployment.upstream)
+        # XXX safety-belt: compare id to local repository
 
         self.remote_base = os.path.join(
             remote_base, self.deployment.deployment_base)
