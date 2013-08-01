@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.13 (unreleased)
+0.2.13 (2013-08-01)
 ===================
 
 - Switch to asking pip installing eggs instead of flat installations as
