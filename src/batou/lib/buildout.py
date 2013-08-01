@@ -42,7 +42,8 @@ class Buildout(Component):
         self += PIP('1.3')
         if self.distribute:
             self += Package(
-                'distribute', version=self.distribute)
+                'distribute', version=self.distribute,
+                check_package_is_module=False)
         if self.setuptools:
             self += Package('setuptools', version=self.setuptools)
 
