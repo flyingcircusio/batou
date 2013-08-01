@@ -71,7 +71,7 @@ def check_clean_hg_repository():
     try:
         cmd('hg -q outgoing -l 1')
     except RuntimeError, e:
-        if e.args[1] == 1 and not e.args[2] and not e.ergs[3]:
+        if e.args[1] == 1 and not e.args[2] and not e.args[3]:
             # this means there' snothing outgoing
             pass
         else:
