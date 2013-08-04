@@ -58,6 +58,39 @@ def test_prepare_sets_up_vars(root):
     assert root.component.parent is None
 
 
+def test_op_orassignment_ignores_none(root):
+    root.prepare()
+    root.component |= None
+
+
+def test_recursive_sub_component_iterator(root):
+    root.prepare()
+    for x in range(3):
+        c = Component(name='x{}'.format(x))
+        root.component += c
+        for y in range(2):
+            c2 = Component(name='x{}y{}'.format(x, y))
+            c += c2
+    assert (['x0', 'x0y0', 'x0y1',
+             'x1', 'x1y0', 'x1y1',
+             'x2', 'x2y0', 'x2y1'] ==
+            list(x.name for x in root.component.recursive_sub_components))
+
+
+def test_op_orassignment_ignores_already_preapred_component(root):
+    class Counting(Component):
+        x = 1
+
+        def configure(self):
+            self.x += 1
+    c = Counting()
+    root.prepare()
+    root.component |= c
+    assert c.x == 2
+    root.component |= c
+    assert c.x == 2
+
+
 def test_prepare_calls_configure():
     component = Component()
     component.configure = Mock()
@@ -282,3 +315,9 @@ def test_cmd_should_not_stop_if_process_expects_input():
     c = Component()
     stdout, stderr = c.cmd('cat')
     # The assertion is, that the test doesn't get stuck .
+
+
+def test_last_updated_not_implemented_on_base():
+    c = Component()
+    with pytest.raises(NotImplementedError):
+        c.last_updated()
