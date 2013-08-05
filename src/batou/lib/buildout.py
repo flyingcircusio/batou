@@ -51,8 +51,8 @@ class Buildout(Component):
 
     def verify(self):
         # XXX we can't be sure that all config objects are files!
-        self.assert_component_is_current(
-            File('.installed.cfg'), [File('bin/buildout')] + self.config)
+        File('.installed.cfg').assert_component_is_current(
+            [File('bin/buildout')] + self.config)
         self.assert_file_is_current(
             '.batou.buildout.success', ['.installed.cfg'])
         self.assert_no_subcomponent_changes()
