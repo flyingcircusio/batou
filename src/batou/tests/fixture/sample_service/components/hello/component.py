@@ -5,6 +5,8 @@ import os.path
 
 class Hello(Component):
 
+    asdf = None
+
     def verify(self):
         if not os.path.exists(self.root.name):
             raise UpdateNeeded()

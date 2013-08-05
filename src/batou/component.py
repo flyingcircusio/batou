@@ -238,11 +238,14 @@ class Component(object):
 
     def assert_file_is_current(self, reference, requirements=[], **kw):
         from batou.lib.file import File
-        self.assert_component_is_current(
-            File(reference), [File(r) for r in requirements], **kw)
+        reference = File(reference)
+        reference.assert_component_is_current(
+            [File(r) for r in requirements], **kw)
 
-    def assert_component_is_current(self, component, requirements=[], **kw):
-        reference = component.last_updated(**kw)
+    def assert_component_is_current(self, requirements=[], **kw):
+        if isinstance(requirements, Component):
+            requirements = [requirements]
+        reference = self.last_updated(**kw)
         if reference is None:
             raise batou.UpdateNeeded()
         for requirement in requirements:

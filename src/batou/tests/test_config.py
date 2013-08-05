@@ -61,8 +61,9 @@ def test_dev_environment_is_loaded(env):
     localhost = env.hosts['localhost']
     assert localhost.name == 'localhost'
     assert localhost.fqdn == 'localhost'
-    assert set(['zeo', 'zope']) == set(
-        x.name for x in env.root_components if x.host is localhost)
+    root_components = set(
+        [x.name for x in env.root_components if x.host is localhost])
+    assert root_components == set(['zeo', 'zope'])
 
     zeo = env.get_root('zeo', 'localhost')
     zeo.prepare()

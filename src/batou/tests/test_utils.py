@@ -93,7 +93,7 @@ class LockfileContextManagerTests(unittest.TestCase):
         lockfile = self.tempfile()
         with locked(lockfile):
             locked2 = locked(lockfile)
-            self.assertRaises(Exception, locked2.__enter__)
+            self.assertRaises(RuntimeError, locked2.__enter__)
 
 
 class NotifyTests(unittest.TestCase):
@@ -204,3 +204,12 @@ def test_cmd_quotes_spacey_args(popen):
     assert popen.call_args[0] == ("cat foo 'bar bz baz'",)
     cmd(['cat', 'foo', "bar 'bz baz"])
     assert popen.call_args[0] == (r"cat foo 'bar \'bz baz'",)
+
+
+@mock.patch('subprocess.Popen')
+def test_cmd_returns_process_if_no_communicate(popen):
+    process = mock.Mock()
+    popen.return_value = process
+    p = cmd(['asdf'], communicate=False)
+    assert popen.communicate.call_count == 0
+    assert p is process
