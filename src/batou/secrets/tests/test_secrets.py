@@ -25,6 +25,13 @@ def test_decrypt():
             assert cleartext.read() == secrets.read()
 
 
+def test_caches_cleartext():
+    with EncryptedConfigFile(encrypted_file) as secrets:
+        secrets.read()
+        secrets._cleartext = '[foo]bar=2'
+        assert secrets.read() == '[foo]bar=2'
+
+
 def test_decrypt_missing_key():
     secrets = EncryptedConfigFile(
         encrypted_file)
@@ -83,3 +90,34 @@ x = 1
             with open(tf.name, 'rb') as new:
                 assert old.read() != new.read()
         assert 0 != os.stat(tf.name).st_size
+
+
+def test_write_fails_without_recipients():
+    with tempfile.NamedTemporaryFile(prefix='new_encrypted.') as tf:
+        shutil.copy(encrypted_file, tf.name)
+        encrypted = EncryptedConfigFile(
+            tf.name, write_lock=True)
+        with encrypted as secrets:
+            with pytest.raises(ValueError):
+                secrets.write("""\
+[batou]
+members =
+[asdf]
+x = 1
+""")
+
+
+def test_write_fails_if_recipient_key_is_missing_keeps_old_file():
+    with tempfile.NamedTemporaryFile(prefix='new_encrypted.') as tf:
+        shutil.copy(encrypted_file, tf.name)
+        encrypted = EncryptedConfigFile(
+            tf.name, write_lock=True)
+        with encrypted as secrets:
+            with pytest.raises(RuntimeError):
+                secrets.write("""\
+[batou]
+members = foobar@example.com
+[asdf]
+x = 1
+""")
+        assert open(tf.name).read() == open(encrypted_file).read()

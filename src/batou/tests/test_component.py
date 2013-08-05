@@ -51,7 +51,6 @@ def test_init_keyword_args_update_dict():
 
 
 def test_prepare_sets_up_vars(root):
-    root.prepare()
     assert root.component.environment is root.environment
     assert root.component.host is root.host
     assert root.component.root is root
@@ -59,22 +58,21 @@ def test_prepare_sets_up_vars(root):
 
 
 def test_op_orassignment_ignores_none(root):
-    root.prepare()
     root.component |= None
 
 
 def test_recursive_sub_component_iterator(root):
-    root.prepare()
     for x in range(3):
         c = Component(name='x{}'.format(x))
         root.component += c
         for y in range(2):
             c2 = Component(name='x{}y{}'.format(x, y))
             c += c2
+
+    recursive = list(x.name for x in root.component.recursive_sub_components)
     assert (['x0', 'x0y0', 'x0y1',
              'x1', 'x1y0', 'x1y1',
-             'x2', 'x2y0', 'x2y1'] ==
-            list(x.name for x in root.component.recursive_sub_components))
+             'x2', 'x2y0', 'x2y1'] == recursive)
 
 
 def test_op_orassignment_ignores_already_preapred_component(root):
@@ -84,7 +82,6 @@ def test_op_orassignment_ignores_already_preapred_component(root):
         def configure(self):
             self.x += 1
     c = Counting()
-    root.prepare()
     root.component |= c
     assert c.x == 2
     root.component |= c
@@ -131,7 +128,6 @@ def test_deploy_empty_component_runs_without_error(root):
 
 
 def test_deploy_update_performed_if_needed(root):
-    root.prepare()
     component = SampleComponent(needs_update=True)
     root.component += component
     root.component.deploy()
@@ -139,7 +135,6 @@ def test_deploy_update_performed_if_needed(root):
 
 
 def test_deploy_update_not_performed_if_not_needed(root):
-    root.prepare()
     component = SampleComponent(needs_update=False)
     root.component += component
     root.component.deploy()
@@ -209,6 +204,51 @@ def test_ansc_does_not_raise_if_no_subcomponent_changed(root):
     root.component += c2
     c2.changed = False
     root.component.assert_no_subcomponent_changes()
+
+# ACIC = assert component is current
+
+
+def test_acic_raises_if_no_reference():
+    c = Component()
+    c.last_updated = Mock(return_value=None)
+    c2 = Component()
+    c2.last_updated = Mock(return_value=21)
+    with pytest.raises(batou.UpdateNeeded):
+        c.assert_component_is_current(c2)
+
+
+def test_acic_raises_if_older_reference():
+    c = Component()
+    c.last_updated = Mock(return_value=20)
+    c2 = Component()
+    c2.last_updated = Mock(return_value=21)
+    with pytest.raises(batou.UpdateNeeded):
+        c.assert_component_is_current(c2)
+
+
+def test_acic_does_not_raise_if_current():
+    c = Component()
+    c.last_updated = Mock(return_value=21)
+    c2 = Component()
+    c2.last_updated = Mock(return_value=21)
+    c.assert_component_is_current(c2)
+
+
+def test_acic_does_not_raise_if_newer():
+    c = Component()
+    c.last_updated = Mock(return_value=22)
+    c2 = Component()
+    c2.last_updated = Mock(return_value=21)
+    c.assert_component_is_current(c2)
+
+
+def test_acic_accepts_multiple_components():
+    c = Component()
+    c.last_updated = Mock(return_value=20)
+    c2 = Component()
+    c2.last_updated = Mock(return_value=21)
+    with pytest.raises(batou.UpdateNeeded):
+        c.assert_component_is_current([c2, c2])
 
 
 def test_cmd_returns_output():
@@ -321,3 +361,61 @@ def test_last_updated_not_implemented_on_base():
     c = Component()
     with pytest.raises(NotImplementedError):
         c.last_updated()
+
+
+def test_require_one_convenience_api_returns_scalar():
+    c = Component()
+    c.require = Mock(return_value=[1])
+    assert 1 == c.require_one('asdf')
+
+
+def test_require_one_convenience_raises_if_no_result():
+    c = Component()
+    c.require = Mock(return_value=[])
+    with pytest.raises(KeyError):
+        c.require_one('asdf')
+
+
+def test_require_one_convenience_raises_if_more_results():
+    c = Component()
+    c.require = Mock(return_value=[1, 2])
+    with pytest.raises(KeyError):
+        c.require_one('asdf')
+
+
+def test_assert_no_changes_local_does_not_raise(root):
+    root.component.assert_no_changes()
+
+
+def test_assert_no_changes_local_raises(root):
+    root.component.changed = True
+    with pytest.raises(batou.UpdateNeeded):
+        root.component.assert_no_changes()
+
+
+def test_assert_no_changes_recursive_does_not_raise(root):
+    root.component += Component()
+    root.component.assert_no_changes()
+
+
+def test_assert_no_changes_recursive_raises(root):
+    c2 = Component()
+    root.component += c2
+    c2.changed = True
+    with pytest.raises(batou.UpdateNeeded):
+        root.component.assert_no_changes()
+
+
+def test_root_overrides_missing_attribute_raises(root):
+    root.environment.overrides = {'mycomponent': {'asdf': 1}}
+    with pytest.raises(KeyError):
+        root.prepare()
+
+
+def test_root_overrides_existing_attribute(root):
+    class OtherComponent(Component):
+        asdf = None
+    root.environment.components['mycomponent'] = OtherComponent
+    root.environment.overrides = {'mycomponent': {'asdf': 1}}
+    root.prepare()
+    assert root.component.asdf == 1

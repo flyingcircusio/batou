@@ -9,19 +9,48 @@ def test_environment_should_raise_if_no_config_file(tmpdir):
         e.load()
 
 
-def test_configure_should_use_defaults(sample_service):
+def test_load_should_use_defaults(sample_service):
     e = Environment(u'test-without-env-config')
     e.load()
     assert None == e.host_domain
     assert 'default' == e.branch
 
 
-def test_configure_should_use_config(sample_service):
+def test_load_should_use_config(sample_service):
     e = Environment(u'test-with-env-config')
     e.load()
     assert e.service_user == u'joe'
     assert e.host_domain == u'example.com'
     assert e.branch == u'release'
+
+
+def test_load_ignores_predefined_environment_settings(sample_service):
+    e = Environment(u'test-with-env-config')
+    e.service_user = u'bob'
+    e.host_domain = u'sample.com'
+    e.branch = u'default'
+    e.load()
+    assert e.service_user == u'bob'
+    assert e.host_domain == u'sample.com'
+    assert e.branch == u'default'
+
+
+def test_load_sets_up_overrides(sample_service):
+    e = Environment('test-with-overrides')
+    e.load()
+    assert e.overrides == {'hello1': {'asdf': '1'}}
+
+
+def test_loads_configures_vfs_sandbox(sample_service):
+    e = Environment('test-with-vfs-sandbox')
+    e.load()
+    assert e.vfs_sandbox.map('/asdf').endswith('work/_/asdf')
+    assert e.map('/asdf').endswith('work/_/asdf')
+
+
+def test_default_sandbox_is_identity():
+    e = Environment(u'foo')
+    assert e.map('/asdf') == '/asdf'
 
 
 def test_get_host_raises_keyerror_if_unknown():
@@ -54,3 +83,9 @@ def test_get_host_without_subdomain_also_works():
     e.hosts['example.com'] = host = Mock()
     e.host_domain = 'example.com'
     assert host == e.get_host('example.com')
+
+
+def test_get_root_raises_keyerror_on_nonassigned_component():
+    e = Environment(u'foo')
+    with pytest.raises(KeyError):
+        e.get_root('asdf', 'localhost')

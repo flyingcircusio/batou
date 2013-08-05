@@ -1,4 +1,3 @@
-from __future__ import print_function
 from collections import defaultdict
 import contextlib
 import fcntl
@@ -30,14 +29,14 @@ def locked(filename):
         try:
             fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
-            print >> sys.stderr('Could not acquire lock {}'.format(filename))
+            print >> sys.stderr, 'Could not acquire lock {}'.format(filename)
             raise RuntimeError(
                 'cannot create lock "%s": more than one instance running '
                 'concurrently?' % lockfile, lockfile)
         # publishing the process id comes handy for debugging
         lockfile.seek(0)
         lockfile.truncate()
-        print(os.getpid(), file=lockfile)
+        print >> lockfile, os.getpid()
         lockfile.flush()
         yield
         lockfile.seek(0)
@@ -181,7 +180,7 @@ def cmd(cmd, silent=False, ignore_returncode=False, communicate=True):
         shell=True)
     if not communicate:
         # XXX See #12550
-        return
+        return process
     stdout, stderr = process.communicate()
     if process.returncode:
         if not silent:

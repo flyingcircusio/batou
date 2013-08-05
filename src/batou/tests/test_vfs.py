@@ -17,6 +17,7 @@ def test_developer_mapping(tmpdir):
     assert not os.path.exists(str(tmpdir / '_' / 'var'))
 
     assert mapping.map(str(tmpdir / 'foo')) == str(tmpdir / 'foo')
+    assert mapping.map('asdf') == 'asdf'
 
 
 def test_arbitrary_mapping():

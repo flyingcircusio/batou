@@ -9,6 +9,8 @@ class Developer(object):
     def map(self, path):
         if path.startswith(self.environment.workdir_base):
             return path
+        if not os.path.isabs(path):
+            return path
         path = path[1:]
         path = os.path.join(self.environment.workdir_base, '_', path)
         dir = os.path.dirname(path)

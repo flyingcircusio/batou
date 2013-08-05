@@ -92,7 +92,7 @@ class DummyChannel(object):
         return self._closed
 
     def receive(self, timeout=None):
-        result = self.receivequeue.pop()
+        result = self.receivequeue.pop(0)
         if not self.receivequeue:
             self._closed = True
         return result
@@ -133,6 +133,16 @@ def test_channelexec_echo_cmd(remote_core_mod):
     assert channel.isclosed()
     assert channel.receivequeue == []
     assert channel.sendqueue == ['asdf\n']
+
+
+def test_channelexec_multiple_echo_cmds(remote_core_mod):
+    channel, run = remote_core_mod
+    channel.receivequeue.append(('cmd', ('echo "asdf1"',), {}))
+    channel.receivequeue.append(('cmd', ('echo "asdf2"',), {}))
+    run()
+    assert channel.isclosed()
+    assert channel.receivequeue == []
+    assert channel.sendqueue == ['asdf1\n', 'asdf2\n']
 
 
 def test_channelexec_handle_exception(remote_core_mod):
