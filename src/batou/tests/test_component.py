@@ -1,4 +1,5 @@
 from batou.component import Component, RootComponent, platform
+from batou import UpdateNeeded
 from mock import Mock
 import batou
 import os
@@ -312,3 +313,14 @@ def test_cmd_should_not_stop_if_process_expects_input():
     c = Component()
     stdout, stderr = c.cmd('cat')
     # The assertion is, that the test doesn't get stuck .
+
+
+def test_assert_cmd_when_succesful():
+    c = Component()
+    c.assert_cmd('true')
+
+
+def test_assert_cmd_when_unsuccessful():
+    c = Component()
+    with pytest.raises(UpdateNeeded):
+        c.assert_cmd('false')
