@@ -1,4 +1,5 @@
 from batou.component import Component, RootComponent, platform
+from batou import UpdateNeeded
 from mock import Mock
 import batou
 import os
@@ -381,6 +382,17 @@ def test_require_one_convenience_raises_if_more_results():
     c.require = Mock(return_value=[1, 2])
     with pytest.raises(KeyError):
         c.require_one('asdf')
+
+
+def test_assert_cmd_when_succesful():
+    c = Component()
+    c.assert_cmd('true')
+
+
+def test_assert_cmd_when_unsuccessful():
+    c = Component()
+    with pytest.raises(UpdateNeeded):
+        c.assert_cmd('false')
 
 
 def test_assert_no_changes_local_does_not_raise(root):
