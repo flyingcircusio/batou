@@ -236,6 +236,13 @@ class Component(object):
                 format(key, host))
         return resources[0]
 
+    def assert_cmd(self, *args, **kw):
+        try:
+            kw['silent'] = True
+            self.cmd(*args, **kw)
+        except RuntimeError:
+            raise batou.UpdateNeeded()
+
     def assert_file_is_current(self, reference, requirements=[], **kw):
         from batou.lib.file import File
         reference = File(reference)
