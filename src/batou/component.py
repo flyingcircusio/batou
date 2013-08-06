@@ -222,6 +222,13 @@ class Component(object):
     def workdir(self):
         return self.root.workdir
 
+    def assert_cmd(self, *args, **kw):
+        try:
+            kw['silent'] = True
+            self.cmd(*args, **kw)
+        except RuntimeError:
+            raise batou.UpdateNeeded()
+
     # XXX backwards-compatibility. :/
     def assert_file_is_current(self, reference, requirements=[], **kw):
         from batou.lib.file import File

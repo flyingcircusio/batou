@@ -5,13 +5,14 @@ Changelog
 0.2.15 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Add 'assert_cmd' API to support simpler assertions for verify when needing to
+  check the result of an external command.
 
 
 0.2.14 (2013-08-19)
 ===================
 
-- Fix Python package installtion version check.
+- Fix Python package installation version check.
 
 - Don't use `bin/buildout bootstrap` command anymore. PIP installs a sufficient
   `bin/buildout` so buildout can do the rest internally.
