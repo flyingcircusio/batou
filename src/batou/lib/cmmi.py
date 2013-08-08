@@ -1,6 +1,7 @@
 from batou.component import Component
-from batou.lib.download import Download
 from batou.lib.archive import Extract
+from batou.lib.download import Download
+import os.path
 
 
 class Configure(Component):
@@ -63,3 +64,7 @@ class Build(Component):
         self += Configure(extract.target,
                           args=self.configure_args)
         self += Make(extract.target)
+
+    @property
+    def namevar_for_breadcrumb(self):
+        return os.path.basename(self.uri)
