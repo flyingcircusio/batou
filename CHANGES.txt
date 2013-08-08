@@ -5,6 +5,8 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Shorten URLs in the Build component to their basename.
+
 - Add 'assert_cmd' API to support simpler assertions for verify when needing to
   check the result of an external command.
 
