@@ -9,7 +9,7 @@ and provides the secrets as an additional overlay to top-level components.
 The `secretsedit` program is provided to edit the secrets file in a
 convenient fashion::
 
-    secretsedit secrets/myenv.cfg.pgp
+    secretsedit secrets/myenv.cfg
 
 You need to have gpg configured with a default key and need to have all
 involved users' keys for an environment to encrypt again.
