@@ -290,6 +290,7 @@ class Buildout(Component):
         else:
             try:
                 self.cmd('bin/python -c "import pkg_resources"')
+                self.cmd('bin/python -c "import setuptools"')
                 self.cmd('bin/pip --help')
             except subprocess.CalledProcessError:
                 self.cmd('rm -rf bin/ lib/ include/')
