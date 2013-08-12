@@ -28,6 +28,7 @@ setup(
         'pytest-cov',
         'setuptools',
         'zope.cachedescriptors',
+        'zc.buildout',
     ],
     extras_require={
         'test': [
