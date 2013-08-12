@@ -14,6 +14,7 @@ import sys
 
 import pkg_resources
 MY_SETUPTOOLS_VERSION = pkg_resources.require("setuptools")[0].version
+MY_BUILDOUT_VERSION = pkg_resources.require("zc.buildout")[0].version
 
 logger = logging.getLogger('batou.remote')
 
@@ -207,12 +208,10 @@ class RemoteHost(object):
             self.cmd(u'hg update -C %s' % self.deployment.environment.branch)
             if not self.exists('bin/python2.7'):
                 self.cmd('virtualenv --no-site-packages --python python2.7 .')
-            self.cmd('bin/pip install --upgrade setuptools=={}'.format(
+            self.cmd('bin/pip install setuptools=={}'.format(
                 MY_SETUPTOOLS_VERSION))
-            if not self.exists('bin/buildout'):
-                # XXX We tend to have upgrade issues with setuptools. We used
-                # to always bootstrap but it's becoming a pain.
-                self.cmd('bin/python2.7 bootstrap.py')
+            self.cmd('bin/pip install zc.buildout=={}'.format(
+                MY_BUILDOUT_VERSION))
             self.cmd('bin/buildout -t 15')
 
             self.batou = self.cmd(
