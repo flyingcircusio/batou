@@ -5,7 +5,8 @@ Changelog
 0.2.14 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Install zc.buildout during bootstrapping phase using PIP to avoid
+  bootstrap.py problems.
 
 
 0.2.13 (2013-08-01)
