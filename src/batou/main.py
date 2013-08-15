@@ -1,0 +1,81 @@
+import argparse
+import batou.local
+import batou.remote
+import batou.secrets.edit
+import logging
+import os
+import sys
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-d', '--debug', action='store_true',
+        help='Enable debug mode.')
+
+    subparsers = parser.add_subparsers()
+
+    # INIT
+    p = subparsers.add_parser(
+        'init',
+        help="""\
+Initialize batou project in the given directory. If the given directory does
+not exist, it will be created.
+
+If no directory is given, the current directory is used.
+""")
+    p.add_argument('[DEST]')
+    p.set_defaults(func=lambda x: None)
+
+    # LOCAL
+    p = subparsers.add_parser(
+        'local', help=u'Deploy locally.')
+    p.add_argument(
+        'environment', help='Environment to deploy.',
+        type=lambda x: x.replace('.cfg', ''))
+    p.add_argument(
+        'hostname', help='Host to deploy.')
+    p.add_argument(
+        '-p', '--platform', default=None,
+        help='Alternative platform to choose. Empty for no platform.')
+    p.set_defaults(func=batou.local.main)
+
+    # REMOTE
+    p = subparsers.add_parser(
+        'remote', help=u'Deploy remotely.')
+    p.add_argument(
+        'environment', help='Environment to deploy.',
+        type=lambda x: x.replace('.cfg', ''))
+    p.set_defaults(func=batou.remote.main)
+
+    # SECRETS
+    p = subparsers.add_parser(
+        'secrets', help="""\
+Encrypted secrets file editor utility. Decrypts file,
+invokes the editor, and encrypts the file again. If called with a
+non-existent file name, a new encrypted file is created.
+
+        Relies on gpg being installed and configured correctly.
+""")
+    p.add_argument('--editor', '-e', metavar='EDITOR',
+                   default=os.environ.get('EDITOR', 'vi'),
+                   help='Invoke EDITOR to edit (default: $EDITOR or vi)')
+    p.add_argument(
+        'environment', help='Environment to edit secrets for.',
+        type=lambda x: x.replace('.cfg', ''))
+    p.set_defaults(func=batou.secrets.edit.main)
+
+    args = parser.parse_args()
+
+    # Consume global arguments
+    if args.debug:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+    logging.basicConfig(stream=sys.stdout, level=level, format='%(message)s')
+
+    # Pass over to function
+    func_args = dict(args._get_kwargs())
+    del func_args['func']
+    del func_args['debug']
+    args.func(**func_args)

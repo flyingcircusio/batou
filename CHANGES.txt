@@ -5,6 +5,10 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Provide a single main command together with a 'bootstrap' wrapper that you
+  can check into your project and that is maintained during updates
+  automatically.
+
 - Shorten URLs in the Build component to their basename.
 
 - Add 'assert_cmd' API to support simpler assertions for verify when needing to

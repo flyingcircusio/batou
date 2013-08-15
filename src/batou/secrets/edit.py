@@ -1,8 +1,6 @@
 """Securely edit encrypted secret files."""
 
 from .encryption import EncryptedConfigFile
-import argparse
-import os
 import subprocess
 import tempfile
 
@@ -60,27 +58,15 @@ class Editor(object):
                 self.cleartext = new_clearfile.read()
 
 
-def edit():
+def main(editor, environment):
     """Secrets editor console script.
 
     The main focus here is to avoid having unencrypted files accidentally
     ending up in the deployment repository.
 
     """
-    parser = argparse.ArgumentParser(
-        description=u"""Encrypted secrets file editor utility. Decrypts file,
-        invokes the editor, and encrypts the file again. If called with a
-        non-existent file name, a new encrypted file is created.""",
-        epilog='Relies on gpg being installed and configured correctly.')
-    parser.add_argument('--editor', '-e', metavar='EDITOR',
-                        default=os.environ.get('EDITOR', 'vi'),
-                        help='Invoke EDITOR to edit (default: $EDITOR or vi)')
-    parser.add_argument('filename', metavar='FILE',
-                        help='Encrypted secrets file to edit.')
-    args = parser.parse_args()
-
-    encrypted = args.filename
+    encrypted = 'secrets/{}.cfg'.format(environment)
 
     with EncryptedConfigFile(encrypted, write_lock=True) as sf:
-        editor = Editor(args.editor, sf)
+        editor = Editor(editor, sf)
         editor.main()
