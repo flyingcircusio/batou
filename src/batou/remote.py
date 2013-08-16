@@ -42,8 +42,11 @@ def check_clean_hg_repository():
     else:
         status = status.strip()
         if status.strip():
-            logger.error(
-                'Refusing to deploy remotely with a dirty working copy:')
+            logger.error("""\
+Your repository has uncommitted changes.
+
+I am refusing to deploy in this situation as the results will be unpredictable. Please push first.
+""")
             logger.error(status)
             sys.exit(1)
 
@@ -56,7 +59,11 @@ def check_clean_hg_repository():
         else:
             raise
     else:
-        logger.error('Refusing to deploy with outgoing changes.')
+        logger.error("""\
+Your repository has outgoing changes.
+
+I am refusing to deploy in this situation as the results will be unpredictable. Please push first.
+""")
         sys.exit(1)
 
 
