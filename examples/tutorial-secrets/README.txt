@@ -1,1 +1,0 @@
-The passphrase is "averysecretpassphrase".
