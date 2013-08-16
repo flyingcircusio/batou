@@ -19,12 +19,13 @@ develop = '{develop}'
 
 def cmd(c, quiet=False):
     try:
-        subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
+        stdout, stderr = subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
     except subprocess.CalledProcessError, e:
         if not quiet:
             print("{{}} returned with exit code {{}}".format(c, e.returncode))
             print(e.output)
         raise
+    return stdout, stderr
 
 base = os.path.dirname(__file__)
 os.chdir(base)
@@ -34,6 +35,8 @@ if not os.path.exists(base + '/.batou'):
     print('Preparing virtualenv in .batou ...')
     # Discover the right venv cmd. Or let batou figure that out later in a second phase?
     cmd('virtualenv --python=python2.7 .batou')
+
+cmd('.batou/bin/pip install pip>=1.2')
 
 try:
     cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
