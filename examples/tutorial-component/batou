@@ -19,13 +19,12 @@ develop = '../..'
 
 def cmd(c, quiet=False):
     try:
-        stdout, stderr = subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
+        subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
     except subprocess.CalledProcessError, e:
         if not quiet:
             print("{} returned with exit code {}".format(c, e.returncode))
             print(e.output)
         raise
-    return stdout, stderr
 
 base = os.path.dirname(__file__)
 os.chdir(base)
