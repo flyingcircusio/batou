@@ -178,7 +178,7 @@ class RemoteHost(object):
         self.rpc.lock()
         env = self.deployment.environment
 
-        remote_repository  self.rpc.ensure_repository()
+        remote_repository = self.rpc.ensure_repository()
         self.remote_base = os.path.join(
             remote_repository, self.deployment.deployment_base)
 
