@@ -50,6 +50,9 @@ def current_heads():
     target = target_directory()
     os.chdir(target)
     result = []
+    id = cmd('hg id -i')
+    if id == '000000000000':
+        return result
     heads = cmd('hg heads')
     for line in heads.split('\n'):
         if not line.startswith('changeset:'):
