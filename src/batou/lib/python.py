@@ -115,9 +115,10 @@ class Package(Component):
     def verify(self):
         # Is the right version installed according to PIP?
         try:
-            self.cmd('bin/python -c "import pkg_resources; '
-                     'pkg_resources.require(\'{}\')[0].version == \'{}\'"'
-                     .format(self.package, self.version), silent=True)
+            self.cmd(
+                'bin/python -c "import pkg_resources; '
+                'assert pkg_resources.require(' '\'{}\')[0].version == \'{}\'"'
+                .format(self.package, self.version), silent=False)
         except RuntimeError, e:
             logger.debug(e[3])
             raise UpdateNeeded()

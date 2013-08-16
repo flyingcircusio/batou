@@ -5,6 +5,8 @@ Changelog
 0.2.14 (unreleased)
 ===================
 
+- Fix Python package installtion version check.
+
 - Don't use `bin/buildout bootstrap` command anymore. PIP installs a sufficient
   `bin/buildout` so buildout can do the rest internally.
 
