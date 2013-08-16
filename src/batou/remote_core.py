@@ -1,6 +1,7 @@
 import logging
 import os
 import os.path
+import shutil
 import subprocess
 import traceback
 
@@ -80,20 +81,17 @@ def update_working_copy(branch):
     return id
 
 
-def build_batou(deployment_base, setuptools_version, buildout_version):
+def build_batou(deployment_base):
     target = target_directory()
     os.chdir(os.path.join(target, deployment_base))
-    if not os.path.exists('bin/python2.7'):
-        cmd('virtualenv --no-site-packages --python python2.7 .')
-    if not os.path.exists('bin/buildout'):
-        cmd('bin/pip install --force-reinstall setuptools=={}'.format(
-            setuptools_version))
-        # XXX this is a chance to install batou without buildout ...
-        # XXX would be nice to think this through regarding the sprint goal of
-        # making batou easier to handle for developers
-        cmd('bin/pip install --force-reinstall zc.buildout=={}'.
-            format(buildout_version))
-    cmd('bin/buildout -t 15')
+    # XXX make cleaning old format optional
+    for path in ['develop-eggs', 'bin', 'eggs',
+                 'include', 'lib', 'parts', '.installed.cfg']:
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        elif os.path.exists(path):
+            os.unlink(path)
+    cmd('./batou --help')
 
 
 def setup_deployment(deployment_base, env_name, host_name, overrides):

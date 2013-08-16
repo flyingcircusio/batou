@@ -1,13 +1,10 @@
 from . import remote_core
 from .environment import Environment
-from .log import setup_logging
 from .utils import notify, cmd
-import argparse
 import execnet
 import logging
 import os
 import os.path
-import pkg_resources
 import subprocess
 import sys
 import tempfile
@@ -17,28 +14,10 @@ import tempfile
 logger = logging.getLogger('batou.remote')
 
 
-SETUPTOOLS = pkg_resources.require('setuptools')[0].version
-ZCBUILDOUT = pkg_resources.require('zc.buildout')[0].version
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description=u'Deploy a batou environment remotely.')
-    parser.add_argument(
-        'environment', help='Environment to deploy.',
-        type=lambda x: x.replace('.cfg', ''))
-    parser.add_argument(
-        '-d', '--debug', action='store_true',
-        help='Enable debug mode.')
-    args = parser.parse_args()
-
-    setup_logging(
-        ['batou'],
-        logging.DEBUG if args.debug else logging.INFO)
-
+def main(environment):
     check_clean_hg_repository()
 
-    environment = Environment(args.environment)
+    environment = Environment(environment)
     environment.load()
     environment.load_secrets()
     environment.configure()
@@ -64,8 +43,12 @@ def check_clean_hg_repository():
     else:
         status = status.strip()
         if status.strip():
-            logger.error(
-                'Refusing to deploy remotely with a dirty working copy:')
+            logger.error("""\
+Your repository has uncommitted changes.
+
+I am refusing to deploy in this situation as the results will be unpredictable.
+Please push first.
+""")
             logger.error(status)
             sys.exit(1)
 
@@ -78,7 +61,12 @@ def check_clean_hg_repository():
         else:
             raise
     else:
-        logger.error('Refusing to deploy with outgoing changes.')
+        logger.error("""\
+Your repository has outgoing changes.
+
+I am refusing to deploy in this situation as the results will be unpredictable.
+Please push first.
+""")
         sys.exit(1)
 
 
@@ -198,12 +186,11 @@ class RemoteHost(object):
         self.remote_base = os.path.join(
             remote_base, self.deployment.deployment_base)
 
-        self.rpc.build_batou(
-            self.deployment.deployment_base, SETUPTOOLS, ZCBUILDOUT)
+        self.rpc.build_batou(self.deployment.deployment_base)
 
         # Now, replace the basic interpreter connection, with a "real" one that
         # has all our dependencies installed.
-        self.connect(self.remote_base + '/bin/py')
+        self.connect(self.remote_base + '/.batou/bin/python')
 
         self.rpc.setup_deployment(
             self.deployment.deployment_base,

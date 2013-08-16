@@ -80,24 +80,19 @@ changeset: 372:revision-b
 
 
 def test_build_batou_fresh_install(mock_remote_core):
-    remote_core.build_batou('.', '0.9', '2.0')
+    remote_core.build_batou('.')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
-    assert remote_core.cmd.call_count == 4
-    assert calls.next() == 'virtualenv --no-site-packages --python python2.7 .'
-    assert calls.next() == 'bin/pip install --force-reinstall setuptools==0.9'
-    assert calls.next() == 'bin/pip install --force-reinstall zc.buildout==2.0'
-    assert calls.next() == 'bin/buildout -t 15'
+    assert remote_core.cmd.call_count == 1
+    assert calls.next() == './batou --help'
 
 
 def test_build_batou_virtualenv_exists(mock_remote_core):
     os.mkdir(remote_core.target_directory() + '/bin')
     open(remote_core.target_directory() + '/bin/python2.7', 'w')
-    remote_core.build_batou('.', '0.9', '2.0')
+    remote_core.build_batou('.')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
-    assert remote_core.cmd.call_count == 3
-    assert calls.next() == 'bin/pip install --force-reinstall setuptools==0.9'
-    assert calls.next() == 'bin/pip install --force-reinstall zc.buildout==2.0'
-    assert calls.next() == 'bin/buildout -t 15'
+    assert remote_core.cmd.call_count == 1
+    assert calls.next() == './batou --help'
 
 
 def test_expand_deployment_base():
