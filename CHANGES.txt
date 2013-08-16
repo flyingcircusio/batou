@@ -5,6 +5,9 @@ Changelog
 0.2.14 (unreleased)
 ===================
 
+- Don't use `bin/buildout bootstrap` command anymore. PIP installs a sufficient
+  `bin/buildout` so buildout can do the rest internally.
+
 - Install zc.buildout during bootstrapping phase using PIP to avoid
   bootstrap.py problems.
 
