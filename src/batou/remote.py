@@ -162,8 +162,8 @@ class RemoteHost(object):
                 upstream=self.deployment.upstream)
         elif env.update_method == 'bundle':
             heads = self.rpc.current_heads()
-            bundle_file, _ = tempfile.mkstemp()
-            os.close(_)
+            fd, bundle_file = tempfile.mkstemp()
+            os.close(fd)
             bases = ' '.join('--base {}'.format(x) for x in heads)
             cmd('hg -qy bundle {} {}'.format(bases, bundle_file))
             rsync = execnet.RSync(bundle_file)
