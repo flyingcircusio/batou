@@ -157,6 +157,9 @@ class RemoteHost(object):
         env = self.deployment.environment
 
         remote_base = self.rpc.ensure_repository()
+        self.remote_base = os.path.join(
+            remote_base, self.deployment.deployment_base)
+
         if env.update_method == 'pull':
             self.rpc.pull_code(
                 upstream=self.deployment.upstream)
@@ -168,7 +171,7 @@ class RemoteHost(object):
             cmd('hg -qy bundle {} {}'.format(bases, bundle_file))
             rsync = execnet.RSync(bundle_file)
             rsync.add_target(
-                self.gateway, remote_base + '/batou-bundle.hg')
+                self.gateway, self.remote_base + '/batou-bundle.hg')
             rsync.send()
             os.unlink(bundle_file)
             self.rpc.unbundle_code()
@@ -182,9 +185,6 @@ class RemoteHost(object):
             raise RuntimeError(
                 'Working copy parents differ. Local: {} Remote: {}'.format(
                     local_id, remote_id))
-
-        self.remote_base = os.path.join(
-            remote_base, self.deployment.deployment_base)
 
         self.rpc.build_batou(self.deployment.deployment_base)
 
