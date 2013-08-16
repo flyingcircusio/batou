@@ -37,19 +37,47 @@ def cmd(c):
         [c], shell=True)
 
 
-def update_code(upstream):
-    # TODO Make choice of VCS flexible
+def ensure_repository():
     target = target_directory()
     if not os.path.exists(target):
         os.mkdir(target)
         cmd("hg init {}".format(target))
+
+
+def current_heads():
+    target = target_directory()
+    os.chdir(target)
+    result = []
+    heads = cmd('hg heads')
+    for line in heads.split('\n'):
+        if not line.startswith('changeset:'):
+            continue
+        line = line.split(':')
+        result.append(line[2])
+    return result
+
+
+def pull_code(upstream):
+    # TODO Make choice of VCS flexible
+    target = target_directory()
     os.chdir(target)
     # Phase 1: update working copy
     # XXX manage certificates
     cmd("hg pull {}".format(upstream))
-    cmd("hg up -C")
+
+
+def unbundle_code():
+    # TODO Make choice of VCS flexible
+    # XXX does this protect us from accidental new heads?
+    target = target_directory()
+    os.chdir(target)
+    cmd('hg -y batou-bundle.hg')
+
+
+def update_working_copy(branch):
+    cmd("hg up -C {}".format(branch))
     id = cmd("hg id -i")
-    return target, id
+    return id
 
 
 def build_batou(deployment_base, setuptools_version, buildout_version):
