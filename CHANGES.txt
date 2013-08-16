@@ -5,6 +5,9 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Provide a single main command together with a 'bootstrap' wrapper that you
+  can check into your project and that is maintained during updates
+  automatically.
 
 - Fix Python package installtion version check.
 

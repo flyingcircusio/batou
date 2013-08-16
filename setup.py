@@ -37,9 +37,7 @@ setup(
     },
     entry_points="""
         [console_scripts]
-            batou-remote = batou.remote:main
-            batou-local = batou.local:main
-            secretsedit = batou.secrets.edit:edit
+            batou = batou.main:main
     """,
     author='Christian Theune <ct@gocept.com>',
     author_email='ct@gocept.com',
