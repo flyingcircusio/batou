@@ -102,6 +102,7 @@ class Untar(Extractor):
 
     suffixes = ('.tar.gz', '.tar', '.tar.bz2', '.tgz')
     exclude = ('._*',)
+    _supports_strip = True
 
     def configure(self):
         super(Untar, self).configure()
@@ -170,7 +171,6 @@ class DMGVolume(object):
 
 class DMGExtractor(Extractor):
 
-    _supports_strip = False
     suffixes = ('.dmg',)
 
     def __enter__(self):

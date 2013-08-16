@@ -5,6 +5,23 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Removed re-imports from batou main module to support light-weight
+  self-installation and bootstrapping. I.e. 'from batou import Component' no
+  longer works.
+
+- Provide a single main command together with a 'bootstrap' wrapper that you
+  can check into your project and that is maintained during updates
+  automatically. It also provides fully automatic bootstrapping, installation,
+  upgrading and other maintenance.
+
+- Fix Python package installation version check.
+
+- Don't use `bin/buildout bootstrap` command anymore. PIP installs a sufficient
+  `bin/buildout` so buildout can do the rest internally.
+
+- Install zc.buildout during bootstrapping phase using PIP to avoid
+  bootstrap.py problems.
+
 - Shorten URLs in the Build component to their basename.
 
 - Add 'assert_cmd' API to support simpler assertions for verify when needing to
