@@ -52,7 +52,7 @@ def current_heads():
     result = []
     id = cmd('hg id -i').strip()
     if id == '000000000000':
-        return result
+        return [id]
     heads = cmd('hg heads')
     for line in heads.split('\n'):
         if not line.startswith('changeset:'):
