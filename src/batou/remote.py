@@ -10,6 +10,7 @@ import os.path
 import pkg_resources
 import subprocess
 import sys
+import tempfile
 
 # XXX reset
 
@@ -165,10 +166,34 @@ class RemoteHost(object):
     def start(self):
         logger.info('{}: bootstrapping'.format(self.host.fqdn))
         self.rpc.lock()
+        env = self.deployment.environment
 
-        remote_base, remote_id = self.rpc.update_code(
-            upstream=self.deployment.upstream)
-        # XXX safety-belt: compare id to local repository
+        remote_base = self.rpc.ensure_repository()
+        if env.update_method == 'pull':
+            self.rpc.pull_code(
+                upstream=self.deployment.upstream)
+        elif env.update_method == 'bundle':
+            heads = self.rpc.current_heads()
+            bundle_file, _ = tempfile.mkstemp()
+            os.close(_)
+            bases = ' '.join('--base {}'.format(x) for x in heads)
+            cmd('hg -qy bundle {} {}'.format(bases, bundle_file))
+            rsync = execnet.RSync(bundle_file)
+            rsync.add_target(
+                self.gateway, self.remote_base + '/batou-bundle.hg')
+            rsync.send()
+            os.unlink(bundle_file)
+            self.rpc.unbundle_code()
+        else:
+            raise ValueError(
+                'unsupported update method: {}'.format(env.update_method))
+
+        remote_id = self.rpc.update_working_copy(env.branch)
+        local_id = cmd('hg id -i')
+        if remote_id != local_id:
+            raise RuntimeError(
+                'Working copy parents differ. Local: {} Remote: {}'.format(
+                    local_id, remote_id))
 
         self.remote_base = os.path.join(
             remote_base, self.deployment.deployment_base)
@@ -182,9 +207,9 @@ class RemoteHost(object):
 
         self.rpc.setup_deployment(
             self.deployment.deployment_base,
-            self.deployment.environment.name,
+            env.name,
             self.host.fqdn,
-            self.deployment.environment.overrides)
+            env.overrides)
 
     def deploy_component(self, component):
         logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))

@@ -28,23 +28,54 @@ def mock_remote_core(monkeypatch, tmpdir):
 
 
 def test_update_code_existing_target(mock_remote_core):
-    remote_core.update_code('http://bitbucket.org/gocept/batou')
+    remote_core.ensure_repository()
+    remote_core.pull_code('http://bitbucket.org/gocept/batou')
+    remote_core.update_working_copy('default')
+
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
-    assert calls.next() == 'hg up -C'
+    assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'
 
 
 def test_update_code_new_target(mock_remote_core):
     remote_core.target_directory.return_value += '/foo'
 
-    remote_core.update_code('http://bitbucket.org/gocept/batou')
+    remote_core.ensure_repository()
+    remote_core.pull_code('http://bitbucket.org/gocept/batou')
+    remote_core.update_working_copy('default')
+
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 4
     assert calls.next() == 'hg init {}'.format(
         remote_core.target_directory())
     assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
-    assert calls.next() == 'hg up -C'
+    assert calls.next() == 'hg up -C default'
+    assert calls.next() == 'hg id -i'
+
+
+def test_bundle_shipping(mock_remote_core):
+    remote_core.target_directory.return_value += '/foo'
+
+    remote_core.ensure_repository()
+    remote_core.cmd.return_value = """\
+changeset: 371:revision-a
+nsummary:fdsa
+
+changeset: 372:revision-b
+"""
+    heads = remote_core.current_heads()
+    assert heads == ['revision-a', 'revision-b']
+    remote_core.unbundle_code()
+    remote_core.update_working_copy('default')
+
+    calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
+    assert remote_core.cmd.call_count == 5
+    assert calls.next() == 'hg init {}'.format(
+        remote_core.target_directory())
+    assert calls.next() == 'hg heads'
+    assert calls.next() == 'hg -y batou-bundle.hg'
+    assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'
 
 

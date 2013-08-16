@@ -26,6 +26,7 @@ class Environment(object):
     service_user = None
     host_domain = None
     branch = None
+    update_method = None
     platform = None
     vfs_sandbox = None
 
@@ -78,7 +79,8 @@ class Environment(object):
 
     def load_environment(self, config):
         environment = config.get('environment', {})
-        for key in ['service_user', 'host_domain', 'branch', 'platform']:
+        for key in ['service_user', 'host_domain', 'update_method',
+                    'branch', 'platform']:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
@@ -89,6 +91,8 @@ class Environment(object):
 
         if self.branch is None:
             self.branch = u'default'
+        if self.update_method is None:
+            self.update_method = 'pull'
 
         if self.service_user is None:
             self.service_user = pwd.getpwuid(os.getuid()).pw_name
