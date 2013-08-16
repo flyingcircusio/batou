@@ -33,7 +33,7 @@ os.chdir(base)
 if not os.path.exists(base + '/.batou'):
     print('Preparing virtualenv in .batou ...')
     # Discover the right venv cmd. Or let batou figure that out later in a second phase?
-    cmd('virtualenv-2.7 .batou')
+    cmd('virtualenv --python=python2.7 .batou')
 
 try:
     cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
