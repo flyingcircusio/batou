@@ -163,7 +163,7 @@ class RemoteHost(object):
 
         # Now, replace the basic interpreter connection, with a "real" one that
         # has all our dependencies installed.
-        self.connect(self.remote_base + '.batou/bin/python')
+        self.connect(self.remote_base + '/.batou/bin/python')
 
         self.rpc.setup_deployment(
             self.deployment.deployment_base,
