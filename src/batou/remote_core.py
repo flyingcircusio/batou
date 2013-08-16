@@ -81,7 +81,7 @@ def unbundle_code():
 
 def update_working_copy(branch):
     cmd("hg up -C {}".format(branch))
-    id = cmd("hg id -i")
+    id = cmd("hg id -i").strip()
     return id
 
 
