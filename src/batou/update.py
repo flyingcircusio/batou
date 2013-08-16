@@ -11,12 +11,13 @@ def update_bootstrap(version, develop):
         b.write(bootstrap.format(version=version, develop=develop))
 
 
-def main(version, develop):
+def main(version, develop, finish):
     if finish:
+        # This only happens if we're the new batou.
         update_bootstrap(version, develop)
     else:
-        if not 'batou' in version:
-            # Assume this is a raw version number, not a more complex install spec.
-            version = 'batou=={}'.format(version)
-        cmd('.batou/bin/pip install --egg {}'.format(version))
-        cmd('.batou/bin/batou update \'{}\' \'--develop={}\' --finish'.format(version, develop))
+        if version:
+            cmd('.batou/bin/pip install --egg batou=={}'.format(version))
+        else:
+            cmd('.batou/bin/pip install -e {}'.format(develop))
+        cmd('.batou/bin/batou update --version=\'{}\' \'--develop={}\' --finish'.format(version, develop))

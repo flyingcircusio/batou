@@ -73,8 +73,11 @@ non-existent file name, a new encrypted file is created.
     p = subparsers.add_parser(
         'update', help=u'Update the batou version.')
     p.add_argument(
-        'version', help='Version specification (pip install compatible).',
-        type=lambda x: x.replace('.cfg', ''))
+        '--version', help='Exact version to install.',
+        default='')
+    p.add_argument(
+        '--develop', help='Path to checkout of batou to install in edit mode.',
+        default='')
     p.add_argument(
         '--finish', help='(internal)', action='store_true')
     p.set_defaults(func=batou.update.main)
