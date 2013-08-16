@@ -1,5 +1,3 @@
-# Copyright (c) 2012 gocept gmbh & co. kg
-# See also LICENSE.txt
 from batou.lib.python import Package
 import mock
 import unittest
