@@ -16,6 +16,7 @@ import subprocess
 version = '{version}'
 develop = '{develop}'
 
+
 def cmd(c, quiet=False):
     try:
         subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
@@ -35,16 +36,24 @@ if not os.path.exists(base + '/.batou'):
     cmd('virtualenv-2.7 .batou')
 
 try:
-    cmd('.batou/bin/python -c \'import batou\'', quiet=True)
-except Exception:
-    print('Installing batou - this can take a while...')
+    cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
+except Exception, e:
+    missing = True
+else:
+    missing = False
+
+if missing or develop:
     if develop:
-        cmd('.batou/bin/pip install -e {{}}'.format(develop))
+        if missing:
+            print('Pre-installing batou - this can take a while...')
+        cmd('.batou/bin/pip install --no-deps -e {{}}'.format(develop))
     else:
-        cmd('.batou/bin/pip install --egg batou=={{}}'.format(version))
+        print('Pre-installing batou - this can take a while...')
+        cmd('.batou/bin/pip install --no-deps --egg batou=={{}}'.format(version))
+
 
 os.environ['BATOU_VERSION'] = version
 os.environ['BATOU_DEVELOP'] = develop
 
-# Pass control over to an actual batou. Good luck!
-os.execv('.batou/bin/batou', sys.argv)
+# Pass control over the bare-bone batou's bootstrapping code. Good luck!
+os.execv('.batou/bin/python', ['.batou/bin/python', '-c', 'import batou.bootstrap; batou.bootstrap.bootstrap()'] + sys.argv)
