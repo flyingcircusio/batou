@@ -199,7 +199,8 @@ class RemoteHost(object):
                 'unsupported update method: {}'.format(env.update_method))
 
         remote_id = self.rpc.update_working_copy(env.branch)
-        local_id = cmd('hg id -i')
+        local_id, _ = cmd('hg id -i')
+        local_id = local_id.strip()
         if remote_id != local_id:
             raise RuntimeError(
                 'Working copy parents differ. Local: {} Remote: {}'.format(
