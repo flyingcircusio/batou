@@ -9,8 +9,6 @@ import sys
 
 
 def main():
-    import pdb; pdb.set_trace() 
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-d', '--debug', action='store_true',
