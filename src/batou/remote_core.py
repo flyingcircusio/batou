@@ -57,7 +57,8 @@ def build_batou(deployment_base):
     target = target_directory()
     os.chdir(os.path.join(target, deployment_base))
     # XXX make cleaning old format optional
-    for path in ['develop-eggs', 'bin', 'eggs', 'include', 'lib', 'parts', '.installed.cfg']:
+    for path in ['develop-eggs', 'bin', 'eggs',
+                 'include', 'lib', 'parts', '.installed.cfg']:
         if os.path.isdir(path):
             shutil.rmtree(path)
         elif os.path.exists(path):

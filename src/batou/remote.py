@@ -45,7 +45,8 @@ def check_clean_hg_repository():
             logger.error("""\
 Your repository has uncommitted changes.
 
-I am refusing to deploy in this situation as the results will be unpredictable. Please push first.
+I am refusing to deploy in this situation as the results will be unpredictable.
+Please push first.
 """)
             logger.error(status)
             sys.exit(1)
@@ -62,7 +63,8 @@ I am refusing to deploy in this situation as the results will be unpredictable. 
         logger.error("""\
 Your repository has outgoing changes.
 
-I am refusing to deploy in this situation as the results will be unpredictable. Please push first.
+I am refusing to deploy in this situation as the results will be unpredictable.
+Please push first.
 """)
         sys.exit(1)
 
