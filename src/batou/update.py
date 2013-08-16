@@ -20,4 +20,5 @@ def main(version, develop, finish):
             cmd('.batou/bin/pip install --egg batou=={}'.format(version))
         else:
             cmd('.batou/bin/pip install -e {}'.format(develop))
-        cmd('.batou/bin/batou update --version=\'{}\' \'--develop={}\' --finish'.format(version, develop))
+        cmd('.batou/bin/batou update --version=\'{}\' '
+            '\'--develop={}\' --finish'.format(version, develop))

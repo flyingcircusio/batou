@@ -5,11 +5,16 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Removed re-imports from batou main module to support light-weight
+  self-installation and bootstrapping. I.e. 'from batou import Component' no
+  longer works.
+
 - Provide a single main command together with a 'bootstrap' wrapper that you
   can check into your project and that is maintained during updates
-  automatically.
+  automatically. It also provides fully automatic bootstrapping, installation,
+  upgrading and other maintenance.
 
-- Fix Python package installtion version check.
+- Fix Python package installation version check.
 
 - Don't use `bin/buildout bootstrap` command anymore. PIP installs a sufficient
   `bin/buildout` so buildout can do the rest internally.

@@ -15,7 +15,10 @@ BASE = os.path.dirname(__file__)
 def restart(ready):
     if ready:
         os.environ['BATOU_BOOTSTRAPPED'] = '1'
-    os.execv('.batou/bin/python', ['.batou/bin/python', '-c', 'import batou.bootstrap; batou.bootstrap.bootstrap()'] + sys.argv)
+    os.execv('.batou/bin/python',
+             ['.batou/bin/python', '-c',
+                 'import batou.bootstrap; '
+                 'batou.bootstrap.bootstrap()'] + sys.argv)
 
 
 def bootstrap():

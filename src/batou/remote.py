@@ -5,7 +5,6 @@ import execnet
 import logging
 import os
 import os.path
-import pkg_resources
 import subprocess
 import sys
 
@@ -153,8 +152,8 @@ class RemoteHost(object):
         self.remote_base = os.path.join(
             remote_base, self.deployment.deployment_base)
 
-        self.rpc.build_batou(
-            self.deployment.deployment_base, SETUPTOOLS, ZCBUILDOUT)
+        # XXX send requirements file over.
+        self.rpc.build_batou()
 
         # Now, replace the basic interpreter connection, with a "real" one that
         # has all our dependencies installed.
