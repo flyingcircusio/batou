@@ -152,12 +152,11 @@ class RemoteHost(object):
         self.remote_base = os.path.join(
             remote_base, self.deployment.deployment_base)
 
-        # XXX send requirements file over.
-        self.rpc.build_batou()
+        self.rpc.build_batou(self.deployment.deployment_base)
 
         # Now, replace the basic interpreter connection, with a "real" one that
         # has all our dependencies installed.
-        self.connect(self.remote_base + '/bin/py')
+        self.connect(self.remote_base + '.batou/bin/python')
 
         self.rpc.setup_deployment(
             self.deployment.deployment_base,
