@@ -1,13 +1,17 @@
 import argparse
+import batou.bootstrap
 import batou.local
 import batou.remote
 import batou.secrets.edit
+import batou.update
 import logging
 import os
 import sys
 
 
 def main():
+    batou.bootstrap.bootstrap()
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-d', '--debug', action='store_true',
@@ -64,6 +68,16 @@ non-existent file name, a new encrypted file is created.
         'environment', help='Environment to edit secrets for.',
         type=lambda x: x.replace('.cfg', ''))
     p.set_defaults(func=batou.secrets.edit.main)
+
+    # UPDATE
+    p = subparsers.add_parser(
+        'update', help=u'Update the batou version.')
+    p.add_argument(
+        'version', help='Version specification (pip install compatible).',
+        type=lambda x: x.replace('.cfg', ''))
+    p.add_argument(
+        '--finish', help='(internal)', action='store_true')
+    p.set_defaults(func=batou.update.main)
 
     args = parser.parse_args()
 
