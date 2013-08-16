@@ -168,7 +168,7 @@ class RemoteHost(object):
             cmd('hg -qy bundle {} {}'.format(bases, bundle_file))
             rsync = execnet.RSync(bundle_file)
             rsync.add_target(
-                self.gateway, self.remote_base + '/batou-bundle.hg')
+                self.gateway, remote_base + '/batou-bundle.hg')
             rsync.send()
             os.unlink(bundle_file)
             self.rpc.unbundle_code()
