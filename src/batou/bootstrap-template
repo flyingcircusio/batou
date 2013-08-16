@@ -1,9 +1,14 @@
 #!/usr/bin/env python
+#
+# This file is managed by batou. Don't edit directly. Use the './batou update'
+# command to adjust versions.
+#
 # This needs to be able to run with a lot of Python versions
 # I'd like to support this for Python 3.3, 3.2, 2.7, 2.6, and 2.5
 # XXX Gotta test that fact.
 # Also, this file is intended to be as small as possible getting batou working
 # somehow and then use that code to continue.
+
 import os
 import sys
 import subprocess
