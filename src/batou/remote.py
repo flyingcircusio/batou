@@ -118,7 +118,7 @@ class RPCWrapper(object):
             logger.debug('result: {}'.format(result))
             try:
                 result[0]
-            except TypeError:
+            except (TypeError, IndexError):
                 pass
             else:
                 if result[0] == 'batou-remote-core-error':
