@@ -178,9 +178,9 @@ class RemoteHost(object):
         self.rpc.lock()
         env = self.deployment.environment
 
-        remote_base = self.rpc.ensure_repository()
+        remote_repository  self.rpc.ensure_repository()
         self.remote_base = os.path.join(
-            remote_base, self.deployment.deployment_base)
+            remote_repository, self.deployment.deployment_base)
 
         if env.update_method == 'pull':
             self.rpc.pull_code(
@@ -191,7 +191,7 @@ class RemoteHost(object):
             os.close(fd)
             bases = ' '.join('--base {}'.format(x) for x in heads)
             cmd('hg -qy bundle {} {}'.format(bases, bundle_file))
-            self.rpc.send_file(bundle_file, self.remote_base + '/batou-bundle.hg')
+            self.rpc.send_file(bundle_file, self.remote_repository + '/batou-bundle.hg')
             os.unlink(bundle_file)
             self.rpc.unbundle_code()
         else:
