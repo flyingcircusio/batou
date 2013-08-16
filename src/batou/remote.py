@@ -14,10 +14,6 @@ import sys
 logger = logging.getLogger('batou.remote')
 
 
-SETUPTOOLS = pkg_resources.require('setuptools')[0].version
-ZCBUILDOUT = pkg_resources.require('zc.buildout')[0].version
-
-
 def main(environment):
     check_clean_hg_repository()
 
