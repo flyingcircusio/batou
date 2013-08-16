@@ -127,8 +127,8 @@ class RPCWrapper(object):
             return result
         return call
 
-    def sendfile(self, local, remote):
-        self.host.channel.send(('sendfile', [remote], {}))
+    def send_file(self, local, remote):
+        self.host.channel.send(('send_file', [remote], {}))
         with open(local, 'r') as f:
             while True:
                 data = f.read(64*1024)
