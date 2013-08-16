@@ -28,6 +28,7 @@ def bootstrap():
     if 'BATOU_BOOTSTRAPPED' in os.environ:
         import batou.main
         batou.main.main()
+        return
 
     # Ensure we have the right version of batou
     develop = os.environ['BATOU_DEVELOP']
