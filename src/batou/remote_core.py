@@ -62,8 +62,7 @@ def build_batou(deployment_base):
             shutil.rmtree(path)
         elif os.path.exists(path):
             os.unlink(path)
-    cmd('batou --help')
-    cmd('bin/buildout -t 15')
+    cmd('./batou --help')
 
 
 def setup_deployment(deployment_base, env_name, host_name, overrides):
