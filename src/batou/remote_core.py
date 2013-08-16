@@ -130,6 +130,15 @@ def setup_logging(loggers, level):
         logger.addHandler(ch)
 
 
+def send_file(name):
+    code = None
+    with open(name, 'w') as f:
+        while code != 'finish':
+            code, data = channel.receive()
+            f.write(data)
+    return 'OK'
+
+
 if __name__ == '__channelexec__':
     setup_logging(['batou'], logging.INFO)
     while not channel.isclosed():

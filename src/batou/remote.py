@@ -127,6 +127,27 @@ class RPCWrapper(object):
             return result
         return call
 
+    def sendfile(local, remote):
+        self.host.channel.send(('sendfile', [remote], {}))
+        with open(local, 'r') as f:
+            while True:
+                data = f.read(64*1024)
+                if not data:
+                    self.host.channel.send('finish', '')
+                else:
+                    self.host.channel.send(None, data)
+        result = self.host.channel.receive()
+        logger.debug('result: {}'.format(result))
+        try:
+            result[0]
+        except TypeError:
+            pass
+        else:
+            if result[0] == 'batou-remote-core-error':
+                logger.error(result[1])
+                raise RuntimeError('Remote exception encountered.')
+        assert result == 'OK'
+
 
 class RemoteHost(object):
 
@@ -169,10 +190,7 @@ class RemoteHost(object):
             os.close(fd)
             bases = ' '.join('--base {}'.format(x) for x in heads)
             cmd('hg -qy bundle {} {}'.format(bases, bundle_file))
-            rsync = execnet.RSync(bundle_file)
-            rsync.add_target(
-                self.gateway, self.remote_base + '/batou-bundle.hg')
-            rsync.send()
+            self.rpc.send_file(bundle_file)
             os.unlink(bundle_file)
             self.rpc.unbundle_code()
         else:
