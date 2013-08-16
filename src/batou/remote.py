@@ -134,6 +134,7 @@ class RPCWrapper(object):
                 data = f.read(64*1024)
                 if not data:
                     self.host.channel.send(('finish', ''))
+                    break
                 else:
                     self.host.channel.send((None, data))
         result = self.host.channel.receive()
