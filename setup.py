@@ -29,15 +29,18 @@ setup(
         'pytest-codecheckers',
         'pytest-cov',
         'pytest-timeout',
-        'zc.buildout'  # need buildout to find version to bootstrap remotely
     ],
     extras_require={
         'test': [
         ],
     },
     entry_points="""
-        [console_scripts]
-            batou = batou.main:main
+        [zc.buildout]
+            requirements = batou.buildout:Requirements
+        [zest.releaser.prereleaser.after]
+            update_requirements = batou.release:update_requirements
+        [zest.releaser.postreleaser.after]
+            update_requirements = batou.release:update_requirements
     """,
     author='Christian Theune <ct@gocept.com>',
     author_email='ct@gocept.com',

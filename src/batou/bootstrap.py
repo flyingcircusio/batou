@@ -8,30 +8,49 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# XXX pkg_resources?
+BASE = os.path.dirname(__file__)
+
+
+def restart(ready):
+    if ready:
+        os.environ['BATOU_BOOTSTRAPPED'] = '1'
+    os.execv('.batou/bin/python', ['.batou/bin/python', '-c', 'import batou.bootstrap; batou.bootstrap.bootstrap()'] + sys.argv)
+
+
 def bootstrap():
-    restart = False
-    # Assume that we've been started from a maybe-too-old environment that is
-    # barely working.
-    # This code doesn't get checked into individual projects and can thus be
-    # more elaborate on fixing the environment as soon as we got it running.
-    batou_pkg = pkg_resources.require('batou')[0]
+    while sys.argv[0] == '-c':
+        sys.argv.pop(0)
+
+    if 'BATOU_BOOTSTRAPPED' in os.environ:
+        import batou.main
+        batou.main.main()
+
+    # Ensure we have the right version of batou
     develop = os.environ['BATOU_DEVELOP']
-    if develop:
-        # In development mode the code for generating the bootstrap file might
-        # change without anyone calling ./batou update, so we rather update it
-        # automatically.
+    if develop and not 'BATOU_DEVELOP_UPDATED' in os.environ:
+        cmd('.batou/bin/pip install --no-deps -e {}'.format(develop))
         update_bootstrap(version=os.environ['BATOU_VERSION'],
                          develop=os.environ['BATOU_DEVELOP'])
-        if not os.path.samefile(develop+'/src', batou_pkg.location):
-            cmd('.batou/bin/pip install -e {}'.format(develop))
-            restart = True
-    else:
+        os.environ['BATOU_DEVELOP_UPDATED'] = '1'
+        restart(False)
+    elif not develop:
         expected = os.environ['BATOU_VERSION']
-        current = batou_pkg.version
+        current = open(BASE + '/version.txt').read().strip()
         if current != expected:
-            cmd('.batou/bin/pip install batou=={}'.format(expected))
-            restart = True
+            print "Updating to batou=={}".format(expected)
+            cmd('.batou/bin/pip install --no-deps batou=={}'.format(expected))
+            restart(False)
 
-    if restart:
-        logger.debug('Restarting after upgrade ...')
-        os.execv('.batou/bin/batou', sys.argv)
+    # Ensure we have all dependencies
+    for req in open(BASE + '/requirements.txt'):
+        req = req.strip()
+        if req.startswith('#'):
+            continue
+        try:
+            pkg_resources.require(req)
+        except:
+            print "Installing {}".format(req)
+            cmd('.batou/bin/pip install --egg --no-deps "{}"'.format(req))
+
+    restart(True)

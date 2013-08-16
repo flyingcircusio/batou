@@ -1,5 +1,4 @@
 import argparse
-import batou.bootstrap
 import batou.local
 import batou.remote
 import batou.secrets.edit
@@ -10,7 +9,7 @@ import sys
 
 
 def main():
-    batou.bootstrap.bootstrap()
+    import pdb; pdb.set_trace() 
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
