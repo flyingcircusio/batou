@@ -22,13 +22,6 @@ setup(
         'configobj',
         'setuptools',
         'execnet',
-        'mock',
-        'pytest',
-        'pytest-cache',
-        'pytest-capturelog',
-        'pytest-codecheckers',
-        'pytest-cov',
-        'pytest-timeout',
     ],
     extras_require={
         'test': [
