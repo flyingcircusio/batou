@@ -76,7 +76,7 @@ def unbundle_code():
     # XXX does this protect us from accidental new heads?
     target = target_directory()
     os.chdir(target)
-    cmd('hg -y batou-bundle.hg')
+    cmd('hg -y unbundle batou-bundle.hg')
 
 
 def update_working_copy(branch):
