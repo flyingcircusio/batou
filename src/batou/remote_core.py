@@ -43,6 +43,7 @@ def ensure_repository():
     if not os.path.exists(target):
         os.mkdir(target)
         cmd("hg init {}".format(target))
+    return target
 
 
 def current_heads():
