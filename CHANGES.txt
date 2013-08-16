@@ -5,6 +5,8 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Fix Python package installtion version check.
+
 - Shorten URLs in the Build component to their basename.
 
 - Add 'assert_cmd' API to support simpler assertions for verify when needing to
