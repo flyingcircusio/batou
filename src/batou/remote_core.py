@@ -50,7 +50,7 @@ def current_heads():
     target = target_directory()
     os.chdir(target)
     result = []
-    id = cmd('hg id -i')
+    id = cmd('hg id -i').strip()
     if id == '000000000000':
         return result
     heads = cmd('hg heads')
