@@ -27,6 +27,4 @@ class TestBuildout(unittest.TestCase):
         buildout.config_file_name = 'myown.cfg'
         buildout.update()
         buildout.cmd.assert_any_call(
-            'bin/buildout -t 3 -c "myown.cfg" bootstrap')
-        buildout.cmd.assert_any_call(
             'bin/buildout -t 3 -c "myown.cfg"')
