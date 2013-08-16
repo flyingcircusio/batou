@@ -1,8 +1,6 @@
 from . import remote_core
 from .environment import Environment
-from .log import setup_logging
 from .utils import notify, cmd
-import argparse
 import execnet
 import logging
 import os
@@ -20,24 +18,10 @@ SETUPTOOLS = pkg_resources.require('setuptools')[0].version
 ZCBUILDOUT = pkg_resources.require('zc.buildout')[0].version
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description=u'Deploy a batou environment remotely.')
-    parser.add_argument(
-        'environment', help='Environment to deploy.',
-        type=lambda x: x.replace('.cfg', ''))
-    parser.add_argument(
-        '-d', '--debug', action='store_true',
-        help='Enable debug mode.')
-    args = parser.parse_args()
-
-    setup_logging(
-        ['batou'],
-        logging.DEBUG if args.debug else logging.INFO)
-
+def main(environment):
     check_clean_hg_repository()
 
-    environment = Environment(args.environment)
+    environment = Environment(environment)
     environment.load()
     environment.load_secrets()
     environment.configure()

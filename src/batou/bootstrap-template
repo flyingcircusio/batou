@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+#
+# This file is managed by batou. Don't edit directly. Use the './batou update'
+# command to adjust versions.
+#
+# This needs to be able to run with a lot of Python versions
+# I'd like to support this for Python 3.3, 3.2, 2.7, 2.6, and 2.5
+# XXX Gotta test that fact.
+# Also, this file is intended to be as small as possible getting batou working
+# somehow and then use that code to continue.
+
+import os
+import sys
+import subprocess
+
+version = '{version}'
+develop = '{develop}'
+
+def cmd(c, quiet=False):
+    try:
+        subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
+    except subprocess.CalledProcessError, e:
+        if not quiet:
+            print("{{}} returned with exit code {{}}".format(c, e.returncode))
+            print(e.output)
+        raise
+
+base = os.path.dirname(__file__)
+os.chdir(base)
+
+# Do we have a virtualenv?
+if not os.path.exists(base + '/.batou'):
+    print('Preparing virtualenv in .batou ...')
+    # Discover the right venv cmd. Or let batou figure that out later in a second phase?
+    cmd('virtualenv-2.7 .batou')
+
+try:
+    cmd('.batou/bin/python -c \'import batou\'', quiet=True)
+except Exception:
+    print('Installing batou ...')
+    if develop:
+        cmd('.batou/bin/pip install -e {{}}'.format(develop))
+    else:
+        cmd('.batou/bin/pip install --egg batou=={{}}'.format(version))
+
+os.environ['BATOU_VERSION'] = version
+os.environ['BATOU_DEVELOP'] = develop
+
+# Pass control over to an actual batou. Good luck!
+os.execv('.batou/bin/batou', sys.argv)

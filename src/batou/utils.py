@@ -25,6 +25,7 @@ class MultiFile(object):
 
 @contextlib.contextmanager
 def locked(filename):
+    # XXX can we make this not leave files around?
     with open(filename, 'a+') as lockfile:
         try:
             fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)

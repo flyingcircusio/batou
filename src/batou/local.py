@@ -1,51 +1,29 @@
-from .utils import notify, locked
 from .environment import Environment
-import argparse
+from .utils import notify, locked
 import logging
 import sys
 
 
-def deploy(environment, platform, hostname):
-    environment = Environment(environment)
-    environment.load()
-    environment.platform = platform
-    environment.load_secrets()
-    environment.configure()
-    for root in environment.roots_in_order(host=hostname):
-        root.component.deploy()
+logger = logging.getLogger(__name__)
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description=u'Deploy components locally.')
-    parser.add_argument(
-        'environment', help='Environment to deploy.',
-        type=lambda x: x.replace('.cfg', ''))
-    parser.add_argument(
-        'hostname', help='Host to deploy.')
-    parser.add_argument(
-        '-p', '--platform', default=None,
-        help='Alternative platform to choose. Empty for no platform.')
-    parser.add_argument(
-        '-d', '--debug', action='store_true',
-        help='Enable debug mode.')
-    args = parser.parse_args()
-
-    if args.debug:
-        level = logging.DEBUG
-    else:
-        level = logging.INFO
-    logging.basicConfig(stream=sys.stdout, level=level, format='%(message)s')
-
+def main(environment, hostname, platform):
     with locked('.batou-lock'):
         try:
-            deploy(args.environment, args.platform, args.hostname)
-        except:
+            environment = Environment(environment)
+            environment.load()
+            environment.platform = platform
+            environment.load_secrets()
+            environment.configure()
+            for root in environment.roots_in_order(host=hostname):
+                root.component.deploy()
+        except Exception, e:
+            logger.exception(e)
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
-                       args.environment, args.hostname))
-            raise
+                       environment, hostname))
+            sys.exit(1)
         else:
             notify('Deployment finished',
                    '{}:{} was deployed successfully.'.format(
-                       args.environment, args.hostname))
+                       environment, hostname))
