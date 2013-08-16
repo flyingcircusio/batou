@@ -127,7 +127,7 @@ class RPCWrapper(object):
             return result
         return call
 
-    def sendfile(local, remote):
+    def sendfile(self, local, remote):
         self.host.channel.send(('sendfile', [remote], {}))
         with open(local, 'r') as f:
             while True:
@@ -190,7 +190,7 @@ class RemoteHost(object):
             os.close(fd)
             bases = ' '.join('--base {}'.format(x) for x in heads)
             cmd('hg -qy bundle {} {}'.format(bases, bundle_file))
-            self.rpc.send_file(bundle_file)
+            self.rpc.send_file(bundle_file, self.remote_base + '/batou-bundle.hg')
             os.unlink(bundle_file)
             self.rpc.unbundle_code()
         else:
