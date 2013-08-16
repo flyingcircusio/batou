@@ -69,10 +69,11 @@ non-existent file name, a new encrypted file is created.
     # UPDATE
     p = subparsers.add_parser(
         'update', help=u'Update the batou version.')
-    p.add_argument(
+    group = p.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         '--version', help='Exact version to install.',
         default='')
-    p.add_argument(
+    group.add_argument(
         '--develop', help='Path to checkout of batou to install in edit mode.',
         default='')
     p.add_argument(
