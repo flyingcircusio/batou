@@ -37,7 +37,7 @@ if not os.path.exists(base + '/.batou'):
 try:
     cmd('.batou/bin/python -c \'import batou\'', quiet=True)
 except Exception:
-    print('Installing batou ...')
+    print('Installing batou - this can take a while...')
     if develop:
         cmd('.batou/bin/pip install -e {{}}'.format(develop))
     else:

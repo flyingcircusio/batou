@@ -23,15 +23,17 @@ def bootstrap():
         update_bootstrap(version=os.environ['BATOU_VERSION'],
                          develop=os.environ['BATOU_DEVELOP'])
         if not os.path.samefile(develop+'/src', batou_pkg.location):
+            print "Updating to development version in {}".format(develop)
             cmd('.batou/bin/pip install -e {}'.format(develop))
             restart = True
     else:
         expected = os.environ['BATOU_VERSION']
         current = batou_pkg.version
         if current != expected:
+            print "Updating to batou=={}".format(expected)
             cmd('.batou/bin/pip install batou=={}'.format(expected))
             restart = True
 
     if restart:
-        logger.debug('Restarting after upgrade ...')
+        print "Restarting after upgrade ..."
         os.execv('.batou/bin/batou', sys.argv)
