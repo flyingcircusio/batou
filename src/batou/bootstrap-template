@@ -35,7 +35,7 @@ if not os.path.exists(base + '/.batou'):
     # Discover the right venv cmd. Or let batou figure that out later in a second phase?
     cmd('virtualenv --python=python2.7 .batou')
 
-cmd('.batou/bin/pip install pip>=1.2')
+cmd('.batou/bin/pip install "pip>=1.2"')
 
 try:
     cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
