@@ -9,6 +9,12 @@ class Configure(Component):
 
     namevar = 'path'
     args = ''
+    prefix = None
+    build_environment = None
+
+    def configure(self):
+        if self.prefix is None:
+            self.prefix = self.workdir
 
     def verify(self):
         with self.chdir(self.path):
@@ -19,14 +25,16 @@ class Configure(Component):
 
     def update(self):
         with self.chdir(self.path):
-            self.cmd(self.expand('./configure --prefix={{component.workdir}} '
-                                 '{{component.args}}'))
+            self.cmd(self.expand(
+                './configure --prefix={{component.prefix.path}} '
+                '{{component.args}}'), env=self.build_environment)
             self.touch('.batou.config.success')
 
 
 class Make(Component):
 
     namevar = 'path'
+    build_environment = None
 
     def verify(self):
         with self.chdir(self.path):
@@ -34,7 +42,7 @@ class Make(Component):
 
     def update(self):
         with self.chdir(self.path):
-            self.cmd('make install')
+            self.cmd('make install', env=self.build_environment)
             self.touch('.batou.make.success')
 
 
@@ -52,6 +60,8 @@ class Build(Component):
     checksum = None
     source = None
     configure_args = ''
+    prefix = None
+    build_environment = None
 
     def configure(self):
         download = Download(
@@ -62,8 +72,9 @@ class Build(Component):
         self += extract
 
         self += Configure(extract.target,
-                          args=self.configure_args)
-        self += Make(extract.target)
+                          args=self.configure_args, prefix=self.prefix,
+                          build_environment=self.build_environment)
+        self += Make(extract.target, build_environment=self.build_environment)
 
     @property
     def namevar_for_breadcrumb(self):
