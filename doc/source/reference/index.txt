@@ -1,9 +1,9 @@
-Guide
-=====
+Reference
+=========
 
-This guide is intended to help understanding basic concepts and as a reference
-to behaviour, features, and API of batou. It should answer all questions that
-you have when setting up your own deployments.
+This reference is intended to help understanding basic concepts and as a
+complete listing of all the feature, API , and behaviour of ``batou``. It
+should answer all questions that you have when setting up your own deployments.
 
 .. contents::
     :local:
@@ -13,6 +13,7 @@ Further reading:
 .. toctree::
     :maxdepth: 1
 
+    requirements
     components
     library
     environments
