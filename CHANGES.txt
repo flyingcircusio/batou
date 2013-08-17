@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b5 (unreleased)
+1.0b5 (2013-08-17)
 ==================
 
 - Improve MANIFEST so we actually package the init template and other generated
