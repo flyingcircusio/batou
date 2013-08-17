@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b4 (unreleased)
+1.0b4 (2013-08-17)
 ==================
 
 - Provide a simple project-creation command, both for pip-installed batou's as
