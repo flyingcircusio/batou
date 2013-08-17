@@ -5,7 +5,7 @@ Changelog
 1.0b7 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Improve project template: ignore the work/ directory by default.
 
 
 1.0b6 (2013-08-17)
