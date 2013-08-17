@@ -5,6 +5,8 @@ Changelog
 1.0b8 (unreleased)
 ==================
 
+- Remove superfluous mkdir call during remote bootstrap.
+
 - Make ``batou init`` print that it's working. Bootstrapping can take a while,
   so at least signal that something's going on.
 
