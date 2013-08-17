@@ -21,6 +21,8 @@ def main(destination):
             'project to have a reference outside its repository. '
             'Use at your own risk. ')
         develop = os.path.abspath(develop)
+    print('Bootstrapping new batou project in {}. This can take a while.'
+          .format(os.path.abspath(destination)))
     source = os.path.dirname(__file__) + '/init-template'
     shutil.copytree(source, destination)
     os.chdir(destination)
