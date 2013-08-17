@@ -37,7 +37,7 @@ the elegance of model-driven, idempotent, and convergent systems (like Puppet).
 batou wants to:
 
 * deploy services -- fast and reliably
-* describe services consisely
+* describe services concisely
 * work on multiple platforms (Linux, OS X)
 * work hand-in-hand with systems configured by other parties
 * make only few assumptions
