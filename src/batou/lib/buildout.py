@@ -7,8 +7,8 @@ import os.path
 
 class Buildout(Component):
 
-    timeout = 3
-    extends = ()   # Extends need to be aspects that have a path
+    timeout = None
+    extends = ()   # Extends need to be components that have a path
     use_default = True
     config = None
     additional_config = ()
@@ -21,6 +21,8 @@ class Buildout(Component):
     build_env = {}  # XXX not frozen. :/
 
     def configure(self):
+        if self.timeout is None:
+            self.timeout = self.environment.timeout
         if self.use_default and not self.config:
             # We expect that your definition directory has a buildout.cfg
             self.config = File('buildout.cfg',

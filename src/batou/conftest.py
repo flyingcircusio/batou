@@ -7,6 +7,7 @@ import pytest
 @pytest.fixture
 def root(tmpdir):
     environment = Environment('test', str(tmpdir))
+    environment._set_defaults()
     os.chdir(str(tmpdir))
 
     class MyComponent(Component):

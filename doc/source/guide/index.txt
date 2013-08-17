@@ -8,6 +8,17 @@ you have when setting up your own deployments.
 .. contents::
     :local:
 
+Further reading:
+
+.. toctree::
+    :maxdepth: 1
+
+    components
+    library
+    environments
+    commands
+
+
 General model
 -------------
 
@@ -157,19 +168,3 @@ details about component features and API
 - access to service, environment, and host objects
 - naming rules, multiple components in same definition directory vs. working directory
 multiple component
-
-
-Environments
-------------
-
-details about environment features
-
-Standard component library
---------------------------
-
-list of default components
-
-Runners
--------
-
-local, remote

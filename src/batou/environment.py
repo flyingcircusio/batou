@@ -29,6 +29,7 @@ class Environment(object):
     update_method = None
     platform = None
     vfs_sandbox = None
+    timeout = None
 
     def __init__(self, name, basedir='.'):
         self.name = name
@@ -80,7 +81,7 @@ class Environment(object):
     def load_environment(self, config):
         environment = config.get('environment', {})
         for key in ['service_user', 'host_domain', 'update_method',
-                    'branch', 'platform']:
+                    'branch', 'platform', 'timeout']:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
@@ -89,6 +90,14 @@ class Environment(object):
                 continue
             setattr(self, key, environment[key])
 
+        self._set_defaults()
+
+        if 'vfs' in config:
+            sandbox = config['vfs']['sandbox']
+            sandbox = getattr(batou.vfs, sandbox)(self, config['vfs'])
+            self.vfs_sandbox = sandbox
+
+    def _set_defaults(self):
         if self.branch is None:
             self.branch = u'default'
         if self.update_method is None:
@@ -100,10 +109,10 @@ class Environment(object):
         if self.platform is None and self.host_domain:
             self.platform = self.host_domain
 
-        if 'vfs' in config:
-            sandbox = config['vfs']['sandbox']
-            sandbox = getattr(batou.vfs, sandbox)(self, config['vfs'])
-            self.vfs_sandbox = sandbox
+        if self.timeout is None:
+            self.timeout = 3
+        else:
+            self.timeout = int(self.timeout)
 
     # API to instrument environment config loading
 

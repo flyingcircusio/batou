@@ -83,8 +83,13 @@ class Package(Component):
     namevar = 'package'
     version = None
     check_package_is_module = True
+    timeout = None
 
     pip_install_options = ('--egg', '--force-reinstall')
+
+    def configure(self):
+        if self.timeout is None:
+            self.timeout = self.environment.timeout
 
     def verify(self):
         # Is the right version installed according to PIP?
@@ -114,9 +119,9 @@ class Package(Component):
 
     def update(self):
         options = ' '.join(self.pip_install_options)
-        self.cmd('bin/pip --timeout=10 install {} '
+        self.cmd('bin/pip --timeout={} install {} '
                  '"{}=={}"'.format(
-                     options, self.package, self.version))
+                     self.timeout, options, self.package, self.version))
 
     @property
     def namevar_for_breadcrumb(self):

@@ -14,11 +14,13 @@ import tempfile
 logger = logging.getLogger('batou.remote')
 
 
-def main(environment):
+def main(environment, timeout):
     check_clean_hg_repository()
 
     environment = Environment(environment)
     environment.load()
+    if timeout is not None:
+        environment.timeout = timeout
     environment.load_secrets()
     environment.configure()
 

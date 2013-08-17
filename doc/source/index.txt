@@ -24,7 +24,7 @@ If you deploy this service it will look like this:
 
 .. code-block:: bash
 
-    $ bin/batou-local dev localhost
+    $ ./batou local dev localhost
     Updating Hello > File(hello) > Presence(hello)
     Updating Hello > File(hello) > Content(hello)
 
@@ -69,6 +69,9 @@ Learn more
     guide/index
     principles
 
+Presentations from conferences:
+
+* `EuroPython 2013 - batou <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_.
 
 Resources
 ---------
