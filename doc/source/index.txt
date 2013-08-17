@@ -87,11 +87,11 @@ Resources
 Contribute
 ----------
 
-We'd love if you want to contribute: whether by reporting bugs, sending us your
-feedback, or by hacking on batou.
+batou is developed as open source / free software. If you want to get in
+touch and contribute, you are more than welcome.
 
-Here are the tools we use to develop batou:
+* Use our `Redmine <http://projects.gocept.com/projects/batou>`_ to
+  report bugs, feature requests, or send us feedback.
 
-* `batou redmine project <http://projects.gocept.com/projects/batou>`_
-* `bitbucket repository <http://bitbucket.org/gocept/batou>`_ (pull requests welcome!)
-
+* Fork our `bitbucket repository <http://bitbucket.org/gocept/batou>`_ and send
+  us pull requests.
