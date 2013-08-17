@@ -1,6 +1,23 @@
 Environments
 ============
 
+::
+
+    [environment]
+    host_domain = gocept.net
+    service_user = myservice
+    platform = gocept.net
+    timeout = 3
+
+    [vfs]
+
+    [hosts]
+    localhost = pyramid
+
+    [component:pyramid]
+    listen = {{host.fqdn}}:8080
+
+
 host domain
 -----------
 
@@ -21,3 +38,16 @@ feature selection
 
 - dev
 - arbitrary, configurable per environment
+
+Timeout
+-------
+
+Environments can specify a timeout (in seconds) to be used when running a deployment.
+batou's internal functions pass this on to various calls like 'pip',
+'buildout', etc.
+
+Component authors are advised to reference this variable as a
+default for their own timeout parameters.
+
+Can be overriden during deployment by specifying '--timeout=X' for the 'local'
+and 'remote' commands.

@@ -41,9 +41,10 @@ class TestVirtualEnv(unittest.TestCase):
             'virtualenv-executable arguments .')
 
 
-def test_package_install():
+def test_package_install(root):
     package = Package('foo', version='1.2.5')
     package.cmd = mock.Mock()
+    root.component += package
     package.update()
     package.cmd.assert_called_with(
-        'bin/pip --timeout=10 install --egg --force-reinstall "foo==1.2.5"')
+        'bin/pip --timeout=3 install --egg --force-reinstall "foo==1.2.5"')

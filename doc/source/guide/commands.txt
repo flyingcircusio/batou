@@ -1,3 +1,13 @@
+batou-local
+===========
+
+debug mode
+-----------
+
+batch mode
+----------
+
+
 batou-remote
 ============
 

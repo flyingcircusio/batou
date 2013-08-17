@@ -39,6 +39,9 @@ If no directory is given, the current directory is used.
     p.add_argument(
         '-p', '--platform', default=None,
         help='Alternative platform to choose. Empty for no platform.')
+    p.add_argument(
+        '-t', '--timeout', default=None,
+        help='Override the environment\'s timeout setting')
     p.set_defaults(func=batou.local.main)
 
     # REMOTE
@@ -47,6 +50,9 @@ If no directory is given, the current directory is used.
     p.add_argument(
         'environment', help='Environment to deploy.',
         type=lambda x: x.replace('.cfg', ''))
+    p.add_argument(
+        '-t', '--timeout', default=None,
+        help='Override the environment\'s timeout setting')
     p.set_defaults(func=batou.remote.main)
 
     # SECRETS
