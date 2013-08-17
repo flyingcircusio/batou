@@ -5,6 +5,9 @@ Changelog
 1.0b7 (unreleased)
 ==================
 
+- Depend on Python2.7 to be available on the PATH during early bootstrap.
+  Otherwise our chances to get a 2.7 virtualenv are pretty small, too.
+
 - Improve project template: ignore the work/ directory by default.
 
 
