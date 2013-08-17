@@ -1,4 +1,5 @@
 import argparse
+import batou.init
 import batou.local
 import batou.remote
 import batou.secrets.edit
@@ -25,8 +26,8 @@ not exist, it will be created.
 
 If no directory is given, the current directory is used.
 """)
-    p.add_argument('[DEST]')
-    p.set_defaults(func=lambda x: None)
+    p.add_argument('destination')
+    p.set_defaults(func=batou.init.main)
 
     # LOCAL
     p = subparsers.add_parser(
