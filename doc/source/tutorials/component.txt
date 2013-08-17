@@ -29,7 +29,7 @@ As a starting point, we create a batou deployment similar to the one from the
 "hello world" tutorial, only this time, we deploy a program instead of a
 minimal text file. Start by preparing a directory for your deployment and
 install batou in it. When you're finished, you should have the
-``bin/batou-local`` script available.
+``./batou`` script available.
 
 
 Deploy the program
@@ -79,7 +79,7 @@ Finally, we are ready to run the deployment:
 
 .. code-block:: console
 
-  $ bin/batou-local tutorial localhost
+  $ ./batou local tutorial localhost
   Updating Tick > File(hello) > Presence(hello)
   Updating Tick > File(hello) > Content(hello)
   Updating Tick > File(hello) > Mode(hello)
@@ -175,7 +175,7 @@ Run batou next:
 
 .. code-block:: console
 
-  $ bin/batou-local tutorial localhost
+  $ ./batou local tutorial localhost
   Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
   Updating Supervisor > Buildout
 
@@ -256,7 +256,7 @@ working directory:
 
 .. code-block:: console
 
-  $ bin/batou-local tutorial localhost
+  $ ./batou local tutorial localhost
   Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
   Updating Supervisor > Buildout
   $ work/supervisor/bin/supervisord
@@ -327,7 +327,7 @@ controlled tick program are running immediately afterwards:
 
 .. code-block:: console
 
-  $ bin/batou-local tutorial localhost
+  $ ./batou local tutorial localhost
   Updating Supervisor
   $ work/supervisor/bin/supervisorctl
   tick                             RUNNING    pid 6021, uptime 0:00:17
@@ -341,7 +341,7 @@ changes. Change, say, the priority of the tick program by editing
 
 .. code-block:: console
 
-  $ bin/batou-local tutorial localhost
+  $ ./batou local tutorial localhost
   Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
   Updating Supervisor > Buildout
   Updating Supervisor

@@ -10,7 +10,7 @@ Platforms
 batou is being tested to run on Linux and Mac OS X.
 
 We do *not* support deploying to non-UNIX targets. We *may* support running
-:program:`batou-remote` on non-UNIX platforms in the future.
+:program:`batou remote` on non-UNIX platforms in the future.
 
 batou is written in Python and requires to be run with **Python 2.7**.
 
@@ -22,14 +22,16 @@ batou is written in Python and requires to be run with **Python 2.7**.
 Local deployments
 -----------------
 
-To run ``batou-local`` you will need:
+To run ``batou local`` you will need:
 
 * Python 2.7
+* virtualenv
+
 
 Remote deployments
 ------------------
 
-To run ``batou-remote`` you will need:
+To run ``batou remote`` you will need:
 
 On your local machine:
 

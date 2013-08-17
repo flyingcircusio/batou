@@ -138,8 +138,8 @@ Architecture
 Batou consists of:
 
 * a model to describe services in terms of "components" and "environments"
-* a utility to realize a specific configuration locally (``batou-local``)
-* a utility to deploy a whole environment remotely (``batou-remote``)
+* a command to realize a specific configuration locally (``batou local``)
+* a command to deploy a whole environment remotely (``batou remote``)
 * an extensible library of re-usable components
 
 Components are Python objects with an API to construct a component hierarchy
@@ -151,11 +151,11 @@ production, development, etc. For each environment you specify which hosts belon
 to it, how the services shall be distributed over those hosts, and possibly some
 customization of how components are configured in that environment.
 
-The ``batou-local`` utility deploys a given configuration (for a given host
+The ``batou local`` command deploys a given configuration (for a given host
 and environment) locally.
 
-The ``batou-remote`` utility deploys a given configuration for a complete
+The ``batou remote`` command deploys a given configuration for a complete
 environment. It does so by bootstrapping itself using SSH and Mercurial and
-then running ``batou-local`` on the remote side in  batch mode. It is able to
+then running ``batoucommandlocal`` on the remote side in  batch mode. It is able to
 coordinate the execution order of tasks between different hosts as required by
 the model.

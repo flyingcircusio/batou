@@ -60,8 +60,8 @@ running local deployments is in the ``bin`` directory:
 
 .. code-block:: console
 
-  $ ls -l bin/batou-local
-  -rwxr-xr-x 1 user user 672 Jul  4 15:18 bin/batou-local
+  $ ls -l ./batou
+  -rwxr-xr-x 1 user user 672 Jul  4 15:18 batou
 
 Define a component
 ------------------
@@ -108,12 +108,12 @@ Run deployments
 ---------------
 
 Now, we are all set to run a deployment. To deploy something locally we use the
-``batou-local`` tool. It is called with two arguments: the environment and the
-host you want to deploy:
+``./batou local`` sub-command. It is called with two arguments: the environment
+and the host you want to deploy:
 
 .. code-block:: console
 
-  $ bin/batou-local tutorial localhost
+  $ ./batou local tutorial localhost
   Updating Hello > File(hello) > Presence(hello)
   Updating Hello > File(hello) > Content(hello)
 
@@ -143,16 +143,17 @@ definition, then the next deployment run will clean it up:
 .. code-block:: console
 
   $ echo "asdf" > work/hello/hello 
-  $ bin/batou-local tutorial localhost
+  $ ./batou local tutorial localhost
   Updating Hello > File(hello) > Content(hello)
   $ cat work/hello/hello
   Hello world
 
 However, did you notice that compared to the first run batou does not change
 the presence of the file? This is the second feature - if nothing needs to be
-changed then running the ``batou-local`` utility will not make any changes:
+changed then running the ``./batou local`` sub-command will not make any
+changes:
 
 .. code-block:: console
 
-  $ bin/batou-local tutorial localhost
+  $ ./batou local tutorial localhost
   $
