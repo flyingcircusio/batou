@@ -5,6 +5,9 @@ Changelog
 1.0b4 (unreleased)
 ==================
 
+- Provide a simple project-creation command, both for pip-installed batou's as
+  well as spawning new projects from existing ones. Fixes #12730
+
 - Fix #12679: make timeouts configurable.
 
 - Removed re-imports from batou main module to support light-weight

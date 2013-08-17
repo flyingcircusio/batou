@@ -28,6 +28,8 @@ setup(
         ],
     },
     entry_points="""
+        [console_scripts]
+            batou-init = batou.init:console_main
         [zc.buildout]
             requirements = batou.buildout:Requirements
         [zest.releaser.prereleaser.after]
