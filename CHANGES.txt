@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b6 (unreleased)
+1.0b6 (2013-08-17)
 ==================
 
 - More MANIFEST inclusions: bootstrap-template.
