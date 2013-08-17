@@ -1,4 +1,5 @@
 syntax: glob
 
+.batou-lock
 .batou
 work

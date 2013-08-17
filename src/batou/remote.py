@@ -49,7 +49,7 @@ def check_clean_hg_repository():
 Your repository has uncommitted changes.
 
 I am refusing to deploy in this situation as the results will be unpredictable.
-Please push first.
+Please commit and push first.
 """)
             logger.error(status)
             sys.exit(1)
