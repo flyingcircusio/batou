@@ -1,4 +1,4 @@
-batou-local
+batou local
 ===========
 
 debug mode
@@ -8,7 +8,7 @@ batch mode
 ----------
 
 
-batou-remote
+batou remote
 ============
 
 Locking
