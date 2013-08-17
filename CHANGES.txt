@@ -5,7 +5,7 @@ Changelog
 1.0b6 (unreleased)
 ==================
 
-- Nothing changed yet.
+- More MANIFEST inclusions: bootstrap-template.
 
 
 1.0b5 (2013-08-17)
