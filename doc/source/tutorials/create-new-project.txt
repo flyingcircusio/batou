@@ -15,9 +15,10 @@ Install the batou egg into a global environment using ``pip`` or ``easy_install`
 
     $ pip install batou
 
-.. note:: You don't have to install batou globally to get access to
-    ``batou-init``. You can also use the embedded ``batou`` command from any
-    existing project to create new projects by calling ``./batou init``.
+.. note:: You only have to install batou globally to get access to
+    ``batou-init``. However, once you have at least one batou project you can also
+    use the embedded ``batou`` command to bootstrap more projects by calling the
+    ``init`` sub-command.
 
 
 Initializing
