@@ -24,9 +24,9 @@ def main(environment, hostname, platform, timeout):
             logger.exception(e)
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
-                       environment, hostname))
+                       environment.name, hostname))
             sys.exit(1)
         else:
             notify('Deployment finished',
                    '{}:{} was deployed successfully.'.format(
-                       environment, hostname))
+                       environment.name, hostname))
