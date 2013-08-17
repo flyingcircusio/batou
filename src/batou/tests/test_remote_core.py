@@ -32,7 +32,8 @@ def test_update_code_existing_target(mock_remote_core):
     remote_core.pull_code('http://bitbucket.org/gocept/batou')
     remote_core.update_working_copy('default')
 
-    calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
+    assert remote_core.cmd.call_count == 3
+    calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
     assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'
@@ -45,8 +46,8 @@ def test_update_code_new_target(mock_remote_core):
     remote_core.pull_code('http://bitbucket.org/gocept/batou')
     remote_core.update_working_copy('default')
 
-    calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 4
+    calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert calls.next() == 'hg init {}'.format(
         remote_core.target_directory())
     assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
@@ -69,12 +70,13 @@ changeset: 372:revision-b
     remote_core.unbundle_code()
     remote_core.update_working_copy('default')
 
-    calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
-    assert remote_core.cmd.call_count == 5
+    assert remote_core.cmd.call_count == 6
+    calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert calls.next() == 'hg init {}'.format(
         remote_core.target_directory())
+    assert calls.next() == 'hg id -i'
     assert calls.next() == 'hg heads'
-    assert calls.next() == 'hg -y batou-bundle.hg'
+    assert calls.next() == 'hg -y unbundle batou-bundle.hg'
     assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'
 

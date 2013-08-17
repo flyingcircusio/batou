@@ -91,7 +91,8 @@ class Package(Component):
         try:
             self.cmd(
                 'bin/python -c "import pkg_resources; '
-                'assert pkg_resources.require(' '\'{}\')[0].version == \'{}\'"'
+                'assert pkg_resources.require('
+                '\'{}\')[0].version == \'{}\'"'
                 .format(self.package, self.version), silent=True)
         except RuntimeError, e:
             logger.debug(e[3])

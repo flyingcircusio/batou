@@ -191,7 +191,8 @@ class RemoteHost(object):
             os.close(fd)
             bases = ' '.join('--base {}'.format(x) for x in heads)
             cmd('hg -qy bundle {} {}'.format(bases, bundle_file))
-            self.rpc.send_file(bundle_file, remote_repository + '/batou-bundle.hg')
+            self.rpc.send_file(
+                bundle_file, remote_repository + '/batou-bundle.hg')
             os.unlink(bundle_file)
             self.rpc.unbundle_code()
         else:
