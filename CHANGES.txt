@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b7 (unreleased)
+1.0b7 (2013-08-17)
 ==================
 
 - Depend on Python2.7 to be available on the PATH during early bootstrap.
