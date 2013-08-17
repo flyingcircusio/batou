@@ -2,5 +2,8 @@ include LICENSE.txt
 include README
 include HACKING.txt
 include CHANGES.txt
+include src/batou/version.txt
+include src/batou/requirements.txt
+recursive-include src/batou/init-template *
 recursive-include src/batou/tests/fixture *
 recursive-include src/batou/lib/resources *

@@ -5,8 +5,8 @@ Changelog
 1.0b5 (unreleased)
 ==================
 
-- Nothing changed yet.
-
+- Improve MANIFEST so we actually package the init template and other generated
+  files, like version.txt and requirements.txt.
 
 1.0b4 (2013-08-17)
 ==================
