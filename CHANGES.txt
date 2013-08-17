@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b8 (unreleased)
+1.0b8 (2013-08-17)
 ==================
 
 - Remove superfluous mkdir call during remote bootstrap.
