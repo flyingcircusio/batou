@@ -1,21 +1,19 @@
 Tutorials
 =========
 
+.. toctree::
+
+    create-new-project
+    component
+
 
 Creating a new project
 ----------------------
 
-This is shows how to setup and use new projects. 
+This is shows how to setup and use new projects.
 
 :doc:`Read the "Creating new projects" tutorial. <create-new-project>`
 
-
-Hello world!
-------------
-
-This tutorial is intendend to give you a working setup of a “Hello world” project with batou. It will not do anything useful but you will get in touch with core concepts and the tool to perform deployments locally.
-
-:doc:`Read the "Hello world!" tutorial <helloworld>`
 
 Using components
 ----------------

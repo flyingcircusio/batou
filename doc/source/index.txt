@@ -9,7 +9,8 @@ batou
 
 .. rubric:: multi-(component | host | environment | platform) deployment
 
-batou makes it easy to define and perform automated service deployments.  It is developed at `gocept <http://gocept.com>`_ and made available under the
+batou makes it easy to define and perform automated service deployments.  It is
+developed at `gocept <http://gocept.com>`_ and made available under the
 2-clause BSD license.
 
 The smallest service definition you could possibly make looks like this:
@@ -31,8 +32,9 @@ If you deploy this service it will look like this:
 Philosophy
 ----------
 
-batou tries to combine the simplicity of SSH-automation (as found in Fabric) with
-the elegance of model-driven, idempotent, and convergent systems (like Puppet).
+batou tries to combine the simplicity of SSH-automation (as found in Fabric)
+with the elegance of model-driven, idempotent, and convergent systems (like
+Puppet).
 
 batou wants to:
 
@@ -44,30 +46,26 @@ batou wants to:
 * have few dependencies on the target systems for basic operation
 * be useful for developers and admins
 
-batou does *not* want to:
+batou **does not want** to:
 
 * provision VMs or configure operating systems
 * add additional runtime complexity to services
 
-
 .. note::
 
     batou is still young and undergoing major changes every now and then.
-    However, all of the code is used in production projects on a daily basis.
+    However, it is used in production projects on a daily basis.
 
 Learn more
 ----------
 
 .. toctree::
-    :maxdepth: 1
-    :glob:
+    :maxdepth: 2
+    :titlesonly:
 
-    keyfeatures
-    introduction
-    requirements
     tutorials/index
-    guide/index
-    principles
+    reference/index
+    introduction/index
 
 Presentations from conferences:
 
