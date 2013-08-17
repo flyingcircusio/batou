@@ -71,7 +71,7 @@ Learn more
 
 Presentations from conferences:
 
-* `EuroPython 2013 - batou <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_.
+* `EuroPython 2013 - batou <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
 
 Resources
 ---------
