@@ -12,7 +12,7 @@ def project_path(*names):
     return os.path.join(os.path.dirname(__file__), *names)
 
 
-version = '1.0b6'
+version = open('src/batou/version.txt').read().strip()
 
 setup(
     name='batou',
