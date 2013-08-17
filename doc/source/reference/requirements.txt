@@ -56,8 +56,8 @@ Specific features
 Secrets
 ~~~~~~~
 
-To use the secrets management features you will need to have ``aespipe``
-installed on the local and remote machines.
+To use the secrets management features you will need to have ``gnupg``
+installed on your local machine.
 
 sudo
 ~~~~
