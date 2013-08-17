@@ -60,6 +60,10 @@ Changelog
 
 - Add ``exclude`` parameter to Directory component.
 
+- Add ``env`` parameter to ``Component.cmd()`` (and corresponding
+  ``build_environment`` parameter to the Build component) to allow
+  adding/overriding environment variables.
+
 
 1.0b3 (2013-07-09)
 ==================
