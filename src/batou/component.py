@@ -270,8 +270,9 @@ class Component(object):
         self.assert_no_subcomponent_changes()
 
     def cmd(self, cmd, silent=False, ignore_returncode=False,
-            communicate=True):
-        return batou.utils.cmd(cmd, silent, ignore_returncode, communicate)
+            communicate=True, env=None):
+        return batou.utils.cmd(
+            cmd, silent, ignore_returncode, communicate, env)
 
     def map(self, path):
         path = os.path.expanduser(path)
