@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.14 (unreleased)
+0.2.14 (2013-08-19)
 ===================
 
 - Fix Python package installtion version check.
