@@ -55,4 +55,6 @@ os.environ['BATOU_VERSION'] = version
 os.environ['BATOU_DEVELOP'] = develop
 
 # Pass control over the bare-bone batou's bootstrapping code. Good luck!
-os.execv('.batou/bin/python', ['.batou/bin/python', '-c', 'import batou.bootstrap; batou.bootstrap.bootstrap()'] + sys.argv)
+os.execv('.batou/bin/python',
+         ['.batou/bin/python', '-c',
+          'import batou.bootstrap; batou.bootstrap.bootstrap()'] + sys.argv)
