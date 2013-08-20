@@ -3,7 +3,8 @@ batou
 
 .. raw:: html
 
-    <a href="https://bitbucket.org/gocept/batou" style="float:right;border-bottom:none">
+    <a href="https://bitbucket.org/gocept/batou"
+       style="float:right;border-bottom:none">
       <img src="https://bitbucket.org/zgramana/bitbucket-ribbons/raw/988dffc5fbeb/png/bitbucket-ribbon-dark-gray.png" />
     </a>
 
