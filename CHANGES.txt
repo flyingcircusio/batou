@@ -5,7 +5,10 @@ Changelog
 1.0b9 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Update Package component so it ignores installed packages when installing.
+  This way, we actually install setuptools even when distribute is installed.
+  (Otherwise it's a no-op since distribute tells pip that setuptools is
+  already satisfied).
 
 
 1.0b8 (2013-08-17)

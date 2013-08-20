@@ -85,7 +85,9 @@ class Package(Component):
     check_package_is_module = True
     timeout = None
 
-    pip_install_options = ('--egg', '--force-reinstall')
+    # NOTE: this might cause dependencies to be updated without version pins.
+    # If this is a problem, introduce a class attribute `dependencies = True`.
+    pip_install_options = ('--egg', '--ignore-installed')
 
     def configure(self):
         if self.timeout is None:
@@ -112,7 +114,6 @@ class Package(Component):
                 self.cmd('bin/python -c "import {0};{0}.__file__"'.format(
                     base_package), silent=True)
             except RuntimeError:
-                self.pip_install_options += ('-I', '--no-deps')
                 raise UpdateNeeded()
 
     def update(self):
