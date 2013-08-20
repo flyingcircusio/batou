@@ -11,7 +11,8 @@
 		},
         {
             "path": ".",
-            "name": "root"
+            "name": "root",
+            "folder_exclude_patterns": ["*"]
         }
 	],
     "build_systems":
@@ -20,6 +21,11 @@
             "name": "Test",
             "cmd": ["bash", "-l", "-c", "bin/py.test"],
             "working_dir": "${project_path}"
+        },
+        {
+            "name": "Sphinx Build",
+            "cmd": ["bash", "-l", "-c", "make html; open build/html/index.html"],
+            "working_dir": "${project_path}/doc"
         }
     ]
 }
