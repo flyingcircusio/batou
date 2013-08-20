@@ -10,6 +10,9 @@ Changelog
   (Otherwise it's a no-op since distribute tells pip that setuptools is
   already satisfied).
 
+- Fix update process: wrong call to old '.batou/bin/batou' failed and early
+  bootstrapping would downgrade temporarily which is confusing and superfluous.
+  Fixes #12739.
 
 1.0b8 (2013-08-17)
 ==================

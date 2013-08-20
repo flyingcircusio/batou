@@ -12,13 +12,17 @@ def update_bootstrap(version, develop):
 
 
 def main(version, develop, finish):
+    # Record that we're updating. This will be called twice: first when the user
+    # asks for updating, which ensures that any subsequent calls won't downgrade
+    # in the first bootstrap phase.
+    # Second, we call the newly installed batou with '--finish' to update the
+    # early bootstrapping file itself.
+    update_bootstrap(version, develop)
     if finish:
-        # This only happens if we're the new batou.
-        update_bootstrap(version, develop)
+        return
+    if version:
+        cmd('.batou/bin/pip install --egg batou=={}'.format(version))
     else:
-        if version:
-            cmd('.batou/bin/pip install --egg batou=={}'.format(version))
-        else:
-            cmd('.batou/bin/pip install -e {}'.format(develop))
-        cmd('.batou/bin/batou update --version=\'{}\' '
-            '\'--develop={}\' --finish'.format(version, develop))
+        cmd('.batou/bin/pip install --egg -e {}'.format(develop))
+    cmd('./batou update --version=\'{}\' '
+        '\'--develop={}\' --finish'.format(version, develop))
