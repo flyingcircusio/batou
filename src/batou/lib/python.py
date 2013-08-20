@@ -110,15 +110,16 @@ class Package(Component):
     version = None
     check_package_is_module = True
 
-    pip_install_options = ('--egg', '--force-reinstall')
+    # NOTE: this might cause dependencies to be updated without version pins.
+    # If this is a problem, introduce a class attribute `dependencies = True`.
+    pip_install_options = ('--egg', '--ignore-installed')
 
     def verify(self):
-        # Is the right version installed according to PIP?
         try:
             self.cmd(
                 'bin/python -c "import pkg_resources; '
-                'assert pkg_resources.require(' '\'{}\')[0].version == \'{}\'"'
-                .format(self.package, self.version), silent=False)
+                'assert pkg_resources.require(\'{}\')[0].version == \'{}\'"'
+                .format(self.package, self.version), silent=True)
         except RuntimeError, e:
             logger.debug(e[3])
             raise UpdateNeeded()
@@ -134,7 +135,6 @@ class Package(Component):
                 self.cmd('bin/python -c "import {0};{0}.__file__"'.format(
                     base_package), silent=True)
             except RuntimeError:
-                self.pip_install_options += ('-I', '--no-deps')
                 raise UpdateNeeded()
 
     def update(self):
