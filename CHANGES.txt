@@ -10,8 +10,8 @@ Changelog
   (Otherwise it's a no-op since distribute tells pip that setuptools is
   already satisfied).
 
-- Add 'assert_cmd' API to support simpler assertions for verify when needing to
-  check the result of an external command.
+- Backport 'assert_cmd' API from 1.0 branch to support simpler assertions for
+  verify when needing to check the result of an external command.
 
 
 0.2.14 (2013-08-19)
