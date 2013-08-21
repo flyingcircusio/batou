@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.15 (unreleased)
+0.2.15 (2013-08-21)
 ===================
 
 - Update Package component so it ignores installed packages when installing.
