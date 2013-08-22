@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b9 (unreleased)
+1.0b9 (2013-08-22)
 ==================
 
 - Update Package component so it ignores installed packages when installing.
