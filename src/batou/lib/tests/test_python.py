@@ -1,4 +1,4 @@
-from batou.lib.python import Package, VirtualEnv
+from batou.lib.python import Package, VirtualEnv, PIP
 import mock
 import pytest
 import unittest
@@ -54,6 +54,8 @@ def test_package_install(root):
 def test_updates_old_distribute_to_setuptools(root):
     venv = VirtualEnv('2.7')
     venv.update()
+    pip = PIP('1.3')
+    pip.update()
     distribute = Package('distribute', version='0.6.34', timeout=10)
     distribute.update()
     setuptools = Package('setuptools', version='0.9.8', timeout=10)
