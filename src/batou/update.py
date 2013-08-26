@@ -12,11 +12,11 @@ def update_bootstrap(version, develop):
 
 
 def main(version, develop, finish):
-    # Record that we're updating. This will be called twice: first when the user
-    # asks for updating, which ensures that any subsequent calls won't downgrade
-    # in the first bootstrap phase.
-    # Second, we call the newly installed batou with '--finish' to update the
-    # early bootstrapping file itself.
+    # Record that we're updating. This will be called twice: first when the
+    # user asks for updating, which ensures that any subsequent calls won't
+    # downgrade in the first bootstrap phase. Second, we call the newly
+    # installed batou with '--finish' to update the early bootstrapping file
+    # itself.
     update_bootstrap(version, develop)
     if finish:
         return

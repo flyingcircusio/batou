@@ -41,6 +41,7 @@ def cmd(c):
 def ensure_repository():
     target = target_directory()
     if not os.path.exists(target):
+        os.mkdir(target)
         cmd("hg init {}".format(target))
     return target
 
