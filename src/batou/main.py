@@ -6,11 +6,15 @@ import batou.secrets.edit
 import batou.update
 import logging
 import os
+import pkg_resources
 import sys
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='batou v%s '
+        'multi-(host|component|environment|version|platform) deployment'
+        % pkg_resources.resource_string(__name__, 'version.txt'))
     parser.add_argument(
         '-d', '--debug', action='store_true',
         help='Enable debug mode.')
