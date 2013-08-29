@@ -1,6 +1,10 @@
 from batou.component import Component
+from batou.lib.download import Download
+from batou.lib.archive import Extract
 from batou import UpdateNeeded
+import sys
 import logging
+import os.path
 
 
 logger = logging.getLogger(__name__)
@@ -8,10 +12,19 @@ logger = logging.getLogger(__name__)
 
 class VirtualEnv(Component):
     """Manage a virtualenv installation.
+
+    This also manages a clean virtualenv installation to ensure we know
+    what we're dealing with.
+
+    There is some flexibility WRT asking for specific versions of
+    setuptools, distribute, etc.
+
+    It also upgrades the whole virtualenv if the virtualenv version itself
+    is upgraded.
+
     """
 
     namevar = 'version'
-    _clean = False
 
     # XXX unsure whether this factoring is OK.
     # Depending on the platform and or environment the python executable may
@@ -20,62 +33,40 @@ class VirtualEnv(Component):
     # Alternatively we could have (Unix) environment variables defined in the
     # (batou) environment definition. (Sounds like a good idea.)
 
+    def configure(self):
+        self.base = VirtualEnvBase()
+        self += self.base
+
+    def verify(self):
+        # Did we install an updated virtualenv package in between?
+        self.assert_file_is_current('bin/python', [self.base.venv_cmd])
+        # Is this Python (still) functional 'enough'?
+        self.assert_cmd('{} -c "import pkg_resources"'.format(self.python))
+
+    def update(self):
+        self.cmd('rm -rf bin/ lib/ include/')
+        self.cmd('{} {} --setuptools {}'.format(
+            sys.executable, self.venv_cmd, selfs.workdir))
+
     @property
     def python(self):
         """Path to the generated python executable."""
         return 'bin/python{}'.format(self.version)
 
-    def verify(self):
-        self.assert_file_is_current(self.python)
-        try:
-            # If the Python is broken enough, we have to clean it _a lot_
-            self.cmd('{} -c "import pkg_resources"'.format(self.python),
-                     silent=True)
-        except RuntimeError:
-            self._clean = True
-            raise UpdateNeeded()
 
-    def _detect_virtualenv(self):
-        # Prefer the virtualenv of the target version. There are some
-        # incompatibilities between Python and virtualenv versions.
-        possible_executables = [
-            ('virtualenv-{}'.format(self.version), '--no-site-packages'),
-            ('virtualenv', '--no-site-packages --python python{}'.format(
-                self.version))]
-        for executable, arguments in possible_executables:
-            try:
-                self.cmd('type {}'.format(executable), silent=True)
-            except RuntimeError:
-                pass
-            else:
-                break
-        else:
-            raise RuntimeError('Could not find virtualenv executable')
-        return '{} {}'.format(executable, arguments)
+class VirtualEnvBase(Component):
 
-    def update(self):
-        if self._clean:
-            self.cmd('rm -rf bin/ lib/ include/')
-        commandline = self._detect_virtualenv()
-        target = '.'
-        self.cmd('{} {}'.format(commandline, target))
-
-
-class PIP(Component):
-
-    namevar = 'version'
-    version = '1.3'
-
-    def verify(self):
-        try:
-            result, _ = self.cmd('bin/pip --version')
-        except RuntimeError:
-            raise UpdateNeeded()
-        if not result.startswith('pip {} '.format(self.version)):
-            raise UpdateNeeded()
-
-    def update(self):
-        self.cmd('bin/pip install --upgrade "pip=={}"'.format(self.version))
+    def configure(self):
+        # This will manage one central virtualenv base installation for all
+        # components to share.
+        self.workdir = self.environment.workdir_base + '/.virtualenv'
+        download = Download(
+            'https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.10.1.tar.gz',
+            checksum='md5:3a04aa2b32c76c83725ed4d9918e362e')
+        self += download
+        self += Extract(download.target, target='.')
+        extracted_dir = os.path.basename(download.target).rstrip('.tar.gz')
+        self.venv_cmd = self.workdir + '/' + extracted_dir + '/virtualenv.py'
 
 
 class Package(Component):
@@ -84,10 +75,6 @@ class Package(Component):
     version = None
     check_package_is_module = True
     timeout = None
-
-    # NOTE: this might cause dependencies to be updated without version pins.
-    # If this is a problem, introduce a class attribute `dependencies = True`.
-    pip_install_options = ('--egg', '--ignore-installed')
 
     def configure(self):
         if self.timeout is None:
@@ -117,10 +104,8 @@ class Package(Component):
                 raise UpdateNeeded()
 
     def update(self):
-        options = ' '.join(self.pip_install_options)
-        self.cmd('bin/pip --timeout={} install {} '
-                 '"{}=={}"'.format(
-                     self.timeout, options, self.package, self.version))
+        self.cmd('bin/easy_install  "{}=={}"'.format(
+                     self.package, self.version))
 
     @property
     def namevar_for_breadcrumb(self):

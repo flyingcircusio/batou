@@ -35,6 +35,10 @@ class Extract(Component):
         self += extractor
         self.target = extractor.target
 
+    @property
+    def namevar_for_breadcrumb(self):
+        return os.path.basename(self.archive)
+
 
 class Extractor(Component):
 
@@ -84,6 +88,11 @@ class Extractor(Component):
                 os.path.join(self.target, filename),
                 [self.archive], key='st_ctime')
 
+    @property
+    def namevar_for_breadcrumb(self):
+        return os.path.basename(self.archive)
+
+
 
 class Unzip(Extractor):
 
@@ -110,6 +119,7 @@ class Untar(Extractor):
                                 for x in self.exclude)
 
     def get_names_from_archive(self):
+        # XXX This does not work combined with strip ... :/
         stdout, stderr = self.cmd(self.expand(
             'tar tf {{component.archive}} {{component.exclude}}'))
         return stdout.splitlines()
