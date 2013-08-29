@@ -1,6 +1,6 @@
 from batou.component import Component
 from batou.lib.file import File
-from batou.lib.python import VirtualEnv, PIP, Package
+from batou.lib.python import VirtualEnv, Package
 import contextlib
 import os.path
 
@@ -41,7 +41,6 @@ class Buildout(Component):
 
         venv = VirtualEnv(self.python)
         self += venv
-        self += PIP('1.3')
         if self.distribute:
             self += Package(
                 'distribute', version=self.distribute,
@@ -52,8 +51,11 @@ class Buildout(Component):
         self += Package('zc.buildout', version=self.version)
 
     def verify(self):
+        self.assert_file_is_current('bin/buildout')
         # XXX we can't be sure that all config objects are files!
-        File('.installed.cfg').assert_component_is_current(
+        installed = File('.installed.cfg')
+        self |= installed
+        installed.assert_component_is_current(
             [File('bin/buildout')] + self.config)
         self.assert_file_is_current(
             '.batou.buildout.success', ['.installed.cfg'])

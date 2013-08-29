@@ -246,6 +246,7 @@ class Component(object):
     def assert_file_is_current(self, reference, requirements=[], **kw):
         from batou.lib.file import File
         reference = File(reference)
+        self |= reference
         reference.assert_component_is_current(
             [File(r) for r in requirements], **kw)
 
@@ -254,9 +255,16 @@ class Component(object):
             requirements = [requirements]
         reference = self.last_updated(**kw)
         if reference is None:
+            logger.debug('assert_component_is_current({}, ...): No reference'.
+                format(self._breadcrumb))
             raise batou.UpdateNeeded()
         for requirement in requirements:
-            if reference < requirement.last_updated(**kw):
+            self |= requirement
+            required = requirement.last_updated(**kw)
+            if reference < required:
+                logger.debug('assert_component_is_current({}, {}): {} < {}'.
+                    format(self._breadcrumb, requirement._breadcumb,
+                           reference, required))
                 raise batou.UpdateNeeded()
 
     def assert_no_subcomponent_changes(self):
