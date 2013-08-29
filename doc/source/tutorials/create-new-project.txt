@@ -30,13 +30,17 @@ a directory called ``pyramid``.
 
 .. code-block:: console
 
-    $ batou-init pyramid
-    $ cd pyramid
+    $ batou-init myprojects
+    Bootstrapping new batou project in /private/tmp/myproject. This can take a while.
+    $ cd myproject
     $ ls -lh
-    -rwxr-xr-x  1 user group 1.9K Aug 17 11:00 batou
-    drwxr-xr-x  2 user group  68B Aug 17 10:59 components
-    drwxr-xr-x  2 user group  68B Aug 17 10:59 environments
-    drwxr-xr-x  2 user group  68B Aug 17 10:59 secrets
+    .
+    |-- batou
+    |-- components
+    |   `-- example
+    |       `-- component.py
+    `-- environments
+        `-- dev.cfg
 
 The ``batou`` script is the new master command you will use for any further interaction with batou: your project does not depend on externally installed environment:
 
@@ -54,6 +58,8 @@ and share it with your fellow developers:
     $ hg stat
     ?   .hgignore
     ?   batou
+    ? components/example/component.py
+    ? environments/dev.cfg
     $ hg addremove
     $ hg ci
     $ hg push <url-to-your-repository-server>
