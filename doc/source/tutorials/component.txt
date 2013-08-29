@@ -40,10 +40,9 @@ Next, create a component named "tick" and a simple environment that uses it:
 .. code-block:: console
 
   $ mkdir -p components/tick
-  $ mkdir environments
 
-Configure the environment first as it is very simple and straightforward. Add
-a file ``environments/tutorial.cfg`` with the following content:
+Configure the environment first as it is very simple and straightforward. Edit
+the file ``environments/dev.cfg`` to contain the following content:
 
 .. code-block:: ini
 
@@ -51,13 +50,13 @@ a file ``environments/tutorial.cfg`` with the following content:
   localhost = tick
 
 The component directory needs to contain two files: the component definition
-and the program. Let's use a shell script like this for the program:
+and the program. Let's use a shell script like this for the program and put it in the file ``components/tick/tick.sh``:
 
 .. literalinclude:: ../../../examples/tutorial-component/components/tick/tick.sh
         :language: bash
 
 The component which deploys this program is similar to the one you know from
-the "hello world" tutorial:
+the "hello world" tutorial, this time in ```components/tick/component.py``:
 
 .. code-block:: python
 
@@ -79,7 +78,7 @@ Finally, we are ready to run the deployment:
 
 .. code-block:: console
 
-  $ ./batou local tutorial localhost
+  $ ./batou local dev localhost
   Updating Tick > File(hello) > Presence(hello)
   Updating Tick > File(hello) > Content(hello)
   Updating Tick > File(hello) > Mode(hello)
@@ -122,7 +121,7 @@ Create a directory for the ``supervisor`` component:
 We want to make use of zc.buildout for installing supervisor. This is done by
 employing the ``Buildout`` component from batou's standard component library
 and providing a ``buildout.cfg`` file. Create a file
-``components/supervisor/components.py`` with the following content:
+``components/supervisor/component.py`` with the following content:
 
 .. code-block:: python
 
@@ -133,7 +132,10 @@ and providing a ``buildout.cfg`` file. Create a file
   class Supervisor(Component):
 
       def configure(self):
-          self += Buildout('supervisor', python='2.7')
+          self += Buildout('supervisor',
+                           version='2.2',
+                           setuptools='0.9.8',
+                           python='2.7')
 
 By default, the buildout configuration is expected to sit next to the
 component definition. Create a file ``components/supervisor/buildout.cfg``
@@ -151,20 +153,19 @@ with this content:
   programs = 10 tick ../tick/tick.sh true
 
   [versions]
-  collective.recipe.supervisor = 0.17
+  collective.recipe.supervisor = 0.19
   meld3 = 0.6.8
-  setuptools = 0.6c12dev_r88846
-  distribute = 0.6.27
-  supervisor = 3.0a12
-  zc.buildout = 1.5.2
-  zc.recipe.egg = 1.3.2
+  setuptools = 0.9.8
+  supervisor = 3.0
+  zc.buildout = 2.2.0
+  zc.recipe.egg = 2.0
 
 The syntax of the programs lines passed to the supervisor buildout recipe is
 specific to that recipe; for the time being, we simply hard-code the path to
 our program.
 
 For the next batou run to include the supervisor component, we add it to the
-same host as our tick component in ``environments/tutorial.cfg``:
+same host as our tick component in ``environments/dev.cfg``:
 
 .. code-block:: ini
 
@@ -175,7 +176,7 @@ Run batou next:
 
 .. code-block:: console
 
-  $ ./batou local tutorial localhost
+  $ ./batou local dev localhost
   Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
   Updating Supervisor > Buildout
 
@@ -241,7 +242,11 @@ like this:
 
       def configure(self):
           self.programs = self.require('programs', self.host)
-          self += Buildout('supervisor', python='2.7')
+          self += Buildout('supervisor',
+                           version='2.2',
+                           setuptools='0.9.8',
+                           python='2.7')
+
 
 Change the file ``components/supervisor/buildout.cfg`` to replace the
 hard-coded program line for "tick" with a loop (in the Jinja templating
@@ -256,7 +261,7 @@ working directory:
 
 .. code-block:: console
 
-  $ ./batou local tutorial localhost
+  $ ./batou local dev localhost
   Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
   Updating Supervisor > Buildout
   $ work/supervisor/bin/supervisord
@@ -327,7 +332,7 @@ controlled tick program are running immediately afterwards:
 
 .. code-block:: console
 
-  $ ./batou local tutorial localhost
+  $ ./batou local dev localhost
   Updating Supervisor
   $ work/supervisor/bin/supervisorctl
   tick                             RUNNING    pid 6021, uptime 0:00:17
@@ -341,7 +346,7 @@ changes. Change, say, the priority of the tick program by editing
 
 .. code-block:: console
 
-  $ ./batou local tutorial localhost
+  $ ./batou local dev localhost
   Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
   Updating Supervisor > Buildout
   Updating Supervisor
@@ -353,3 +358,8 @@ changes. Change, say, the priority of the tick program by editing
 
 As you see, the supervisord process is still running without having been
 interrupted, but the tick program has been restarted.
+
+.. note::
+
+    You can safely delete the ``components/example`` directory as this is only
+    intended to give you a working sample environment after bootstrapping.
