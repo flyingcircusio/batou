@@ -11,8 +11,8 @@ batou
 .. rubric:: multi-(component | host | environment | platform) deployment
 
 batou makes it easy to define and perform automated service deployments.  It is
-developed at `gocept <http://gocept.com>`_ and made available under the
-2-clause BSD license.
+developed by the people running the `Flying Circus <http://flyingcircus.io>`_
+and made available under the 2-clause BSD license.
 
 The smallest service definition you could possibly make looks like this:
 
