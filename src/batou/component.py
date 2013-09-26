@@ -256,15 +256,15 @@ class Component(object):
         reference = self.last_updated(**kw)
         if reference is None:
             logger.debug('assert_component_is_current({}, ...): No reference'.
-                format(self._breadcrumb))
+                         format(self._breadcrumb))
             raise batou.UpdateNeeded()
         for requirement in requirements:
             self |= requirement
             required = requirement.last_updated(**kw)
             if reference < required:
                 logger.debug('assert_component_is_current({}, {}): {} < {}'.
-                    format(self._breadcrumb, requirement._breadcumb,
-                           reference, required))
+                             format(self._breadcrumb, requirement._breadcrumb,
+                                    reference, required))
                 raise batou.UpdateNeeded()
 
     def assert_no_subcomponent_changes(self):

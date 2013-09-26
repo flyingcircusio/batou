@@ -93,7 +93,6 @@ class Extractor(Component):
         return os.path.basename(self.archive)
 
 
-
 class Unzip(Extractor):
 
     suffixes = ('.zip',)

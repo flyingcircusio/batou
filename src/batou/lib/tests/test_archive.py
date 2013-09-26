@@ -23,7 +23,7 @@ def test_extracts_archive_to_target_directory(root):
         u' ', u'a\u0308sdf.txt', u'example.app']
 
     # ' ' is a symlink which stays one after copying:
-    assert os.path.islink(dmg.target+'/ ')
+    assert os.path.islink(dmg.target + '/ ')
     start_bin = dmg.target + '/example.app/MacOS/start.bin'
     with open(start_bin) as start_bin:
         assert start_bin.read() == 'I start the example app! ;)'

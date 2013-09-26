@@ -46,7 +46,7 @@ class VirtualEnv(Component):
     def update(self):
         self.cmd('rm -rf bin/ lib/ include/')
         self.cmd('{} {} --setuptools {}'.format(
-            sys.executable, self.venv_cmd, selfs.workdir))
+            sys.executable, self.venv_cmd, self.workdir))  # XXX self.version
 
     @property
     def python(self):
@@ -61,7 +61,8 @@ class VirtualEnvBase(Component):
         # components to share.
         self.workdir = self.environment.workdir_base + '/.virtualenv'
         download = Download(
-            'https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.10.1.tar.gz',
+            'https://pypi.python.org/packages/source'
+            '/v/virtualenv/virtualenv-1.10.1.tar.gz',
             checksum='md5:3a04aa2b32c76c83725ed4d9918e362e')
         self += download
         self += Extract(download.target, target='.')
@@ -105,7 +106,7 @@ class Package(Component):
 
     def update(self):
         self.cmd('bin/easy_install  "{}=={}"'.format(
-                     self.package, self.version))
+            self.package, self.version))
 
     @property
     def namevar_for_breadcrumb(self):
