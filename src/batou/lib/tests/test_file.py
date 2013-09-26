@@ -277,7 +277,7 @@ def test_content_does_not_allow_both_content_and_source(root):
 
 def test_mode_ensures_mode_for_files(root):
     path = 'path'
-    open('work/mycomponent/'+path, 'w').close()
+    open('work/mycomponent/' + path, 'w').close()
     mode = Mode(path, mode=0o000)
     root.component += mode
     root.component.deploy()
@@ -353,7 +353,7 @@ def test_symlink_creates_new_link(root):
     symlink = Symlink(link, source=link_to)
     root.component += symlink
     root.component.deploy()
-    assert os.readlink('work/mycomponent/'+link) == symlink.source
+    assert os.readlink('work/mycomponent/' + link) == symlink.source
 
 
 def test_symlink_updates_existing_link(root):
@@ -367,7 +367,7 @@ def test_symlink_updates_existing_link(root):
     link_to2 = 'link_to2'
     symlink.source = link_to2
     root.component.deploy()
-    assert os.readlink('work/mycomponent/'+link) == link_to2
+    assert os.readlink('work/mycomponent/' + link) == link_to2
 
 
 def test_file_creates_subcomponent_for_presence(root):
