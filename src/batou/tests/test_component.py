@@ -174,24 +174,28 @@ def test_adding_subcomponents_configures_them_immediately(root):
 
 
 # AFIC = assert file is current
-def test_afic_raises_if_nonexisting_file():
+def test_afic_raises_if_nonexisting_file(root):
     component = Component()
+    root.component += component
     with pytest.raises(batou.UpdateNeeded):
         component.assert_file_is_current('idonotexist')
 
 
-def test_afic_doesnt_raise_if_file_exists_but_no_reference_is_given():
+def test_afic_doesnt_raise_if_file_exists_but_no_reference_is_given(root):
     component = Component()
+    root.component += component
     component.assert_file_is_current(__file__)
 
 
-def test_afic_raises_if_file_isolder_than_reference(tmpdir):
+def test_afic_raises_if_file_isolder_than_reference(tmpdir, root):
     component = Component()
+    root.component += component
     with pytest.raises(batou.UpdateNeeded):
         component.assert_file_is_current(__file__, [str(tmpdir)])
 
 
 # ANSC = assert no subcomponent changes
+
 def test_ansc_raises_if_subcomponent_changed(root):
     c2 = Component()
     root.component += c2
@@ -206,46 +210,51 @@ def test_ansc_does_not_raise_if_no_subcomponent_changed(root):
     c2.changed = False
     root.component.assert_no_subcomponent_changes()
 
+
 # ACIC = assert component is current
 
-
-def test_acic_raises_if_no_reference():
+def test_acic_raises_if_no_reference(root):
     c = Component()
     c.last_updated = Mock(return_value=None)
+    root.component += c
     c2 = Component()
     c2.last_updated = Mock(return_value=21)
     with pytest.raises(batou.UpdateNeeded):
         c.assert_component_is_current(c2)
 
 
-def test_acic_raises_if_older_reference():
+def test_acic_raises_if_older_reference(root):
     c = Component()
     c.last_updated = Mock(return_value=20)
+    root.component += c
     c2 = Component()
     c2.last_updated = Mock(return_value=21)
     with pytest.raises(batou.UpdateNeeded):
         c.assert_component_is_current(c2)
 
 
-def test_acic_does_not_raise_if_current():
+def test_acic_does_not_raise_if_current(root):
     c = Component()
     c.last_updated = Mock(return_value=21)
+    root.component += c
     c2 = Component()
     c2.last_updated = Mock(return_value=21)
     c.assert_component_is_current(c2)
 
 
-def test_acic_does_not_raise_if_newer():
+def test_acic_does_not_raise_if_newer(root):
     c = Component()
     c.last_updated = Mock(return_value=22)
+    root.component += c
     c2 = Component()
     c2.last_updated = Mock(return_value=21)
     c.assert_component_is_current(c2)
 
 
-def test_acic_accepts_multiple_components():
+def test_acic_accepts_multiple_components(root):
     c = Component()
     c.last_updated = Mock(return_value=20)
+    root.component += c
     c2 = Component()
     c2.last_updated = Mock(return_value=21)
     with pytest.raises(batou.UpdateNeeded):
