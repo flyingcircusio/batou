@@ -45,8 +45,8 @@ class VirtualEnv(Component):
 
     def update(self):
         self.cmd('rm -rf bin/ lib/ include/')
-        self.cmd('{} {} --setuptools {}'.format(
-            sys.executable, self.base.venv_cmd, self.workdir))  # XXX self.version
+        self.cmd('{} {} --setuptools --python=python{} {}'.format(
+            sys.executable, self.base.venv_cmd, self.version, self.workdir))
 
     @property
     def python(self):
