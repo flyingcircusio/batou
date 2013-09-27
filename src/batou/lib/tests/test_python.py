@@ -9,7 +9,7 @@ def test_package_install(root):
     root.component += package
     package.update()
     package.cmd.assert_called_with(
-        'bin/pip --timeout=3 install --egg --ignore-installed "foo==1.2.5"')
+        'bin/easy_install "foo==1.2.5"')
 
 
 @pytest.mark.timeout(20)

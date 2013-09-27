@@ -105,7 +105,7 @@ class Package(Component):
                 raise UpdateNeeded()
 
     def update(self):
-        self.cmd('bin/easy_install  "{}=={}"'.format(
+        self.cmd('bin/easy_install "{}=={}"'.format(
             self.package, self.version))
 
     @property
