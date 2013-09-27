@@ -5,7 +5,12 @@ Changelog
 1.0b10 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Package our own virtualenv instead of depending on the system-installed one.
+  This should alleviate troubles due to old virtualenv versions that package
+  ``distribute``, which causes conflicts with recent ``setuptools`` versions
+  (#12874).
+
+- Update supervisor version to 3.0.
 
 
 1.0b9 (2013-08-22)
