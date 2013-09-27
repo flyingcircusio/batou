@@ -77,6 +77,10 @@ class Package(Component):
     check_package_is_module = True
     timeout = None
 
+    # NOTE: this might cause dependencies to be updated without version pins.
+    # If this is a problem, introduce a class attribute `dependencies = True`.
+    pip_install_options = ('--egg', '--ignore-installed')
+
     def configure(self):
         if self.timeout is None:
             self.timeout = self.environment.timeout
@@ -105,8 +109,10 @@ class Package(Component):
                 raise UpdateNeeded()
 
     def update(self):
-        self.cmd('bin/easy_install "{}=={}"'.format(
-            self.package, self.version))
+        options = ' '.join(self.pip_install_options)
+        self.cmd('bin/pip --timeout={} install {} '
+                 '"{}=={}"'.format(
+                     self.timeout, options, self.package, self.version))
 
     @property
     def namevar_for_breadcrumb(self):
