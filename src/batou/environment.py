@@ -2,12 +2,12 @@ from .component import load_components_from_file
 from .host import Host
 from .resources import Resources
 from .secrets import add_secrets_to_environment_override
+from ConfigParser import RawConfigParser
 from batou import NonConvergingWorkingSet, UnusedResource
 from batou.component import RootComponent
 from batou.utils import revert_graph, topological_sort
 import batou.c
 import batou.vfs
-import configobj
 import glob
 import logging
 import os
@@ -16,6 +16,46 @@ import pwd
 
 
 logger = logging.getLogger(__name__)
+
+
+class ConfigSection(dict):
+    def as_list(self, option):
+        result = self[option]
+        if ',' in result:
+            result = [x.strip() for x in result.split(',')]
+        elif '\n' in result:
+            result = (x.strip() for x in result.split('\n'))
+            result = [x for x in result if x]
+        else:
+            result = [result]
+        return result
+
+
+class Config(object):
+    def __init__(self, path):
+        config = RawConfigParser()
+        config.optionxform = lambda s: s
+        config.read(path)
+        self.config = config
+
+    def __contains__(self, section):
+        return self.config.has_section(section)
+
+    def __getitem__(self, section):
+        if section not in self:
+            raise KeyError(section)
+        return ConfigSection(
+            (x, self.config.get(section, x))
+            for x in self.config.options(section))
+
+    def __iter__(self):
+        return iter(self.config.sections())
+
+    def get(self, section, default=None):
+        try:
+            return self[section]
+        except KeyError:
+            return default
 
 
 class Environment(object):
@@ -58,7 +98,7 @@ class Environment(object):
         if not os.path.isfile(config_file):
             raise ValueError('No such environment "{}"'.format(self.name))
 
-        config = configobj.ConfigObj(config_file)
+        config = Config(config_file)
 
         self.load_environment(config)
         for hostname in config.get('hosts', {}):
