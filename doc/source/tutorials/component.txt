@@ -133,8 +133,8 @@ and providing a ``buildout.cfg`` file. Create a file
 
       def configure(self):
           self += Buildout('supervisor',
-                           version='2.2',
-                           setuptools='0.9.8',
+                           version='2.2.1',
+                           setuptools='1.1.6',
                            python='2.7')
 
 By default, the buildout configuration is expected to sit next to the
@@ -155,10 +155,10 @@ with this content:
   [versions]
   collective.recipe.supervisor = 0.19
   meld3 = 0.6.8
-  setuptools = 0.9.8
+  setuptools = 1.1.6
   supervisor = 3.0
-  zc.buildout = 2.2.0
-  zc.recipe.egg = 2.0
+  zc.buildout = 2.2.1
+  zc.recipe.egg = 2.0.1
 
 The syntax of the programs lines passed to the supervisor buildout recipe is
 specific to that recipe; for the time being, we simply hard-code the path to
@@ -243,8 +243,8 @@ like this:
       def configure(self):
           self.programs = self.require('programs', self.host)
           self += Buildout('supervisor',
-                           version='2.2',
-                           setuptools='0.9.8',
+                           version='2.2.1',
+                           setuptools='1.1.6',
                            python='2.7')
 
 
