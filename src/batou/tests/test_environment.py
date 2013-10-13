@@ -89,3 +89,15 @@ def test_get_root_raises_keyerror_on_nonassigned_component():
     e = Environment(u'foo')
     with pytest.raises(KeyError):
         e.get_root('asdf', 'localhost')
+
+
+def test_multiple_components():
+    e = Environment(u'test-multiple-components')
+    e.load()
+    components = dict(
+        (host, list(sorted(c.name for c in e.roots_in_order(host=host))))
+        for host in sorted(e.hosts.keys()))
+    assert components == dict(
+        localhost=['component1', 'component2'],
+        otherhost=['component3', 'component4'],
+        thishost=['component5', 'component6'])
