@@ -19,7 +19,6 @@ setup(
     version=version,
     install_requires=[
         'Jinja2',
-        'configobj',
         'setuptools',
         'execnet',
     ],
