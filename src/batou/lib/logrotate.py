@@ -28,9 +28,7 @@ class Logrotate(Component):
         self.logfiles = self.require(RotatedLogfile.key, host=self.host)
 
         self.logrotate_conf = File(
-            'logrotate.conf',
-            source=self.logrotate_template,
-            is_template=True)
+            'logrotate.conf', source=self.logrotate_template)
         self += self.logrotate_conf
 
 

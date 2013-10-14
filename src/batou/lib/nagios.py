@@ -69,8 +69,7 @@ class NagiosServer(Component):
         self += File(
             self.expand('nagios-server-{{environment.service_user}}.cfg'),
             source=self.nagios_cfg,
-            mode=0o644,
-            is_template=True)
+            mode=0o644)
 
 
 class NRPEHost(Component):
@@ -90,5 +89,4 @@ class NRPEHost(Component):
             self.expand('/etc/nagios/nrpe/local/'
                         '{{environment.service_user}}.cfg'),
             source=self.nrpe_cfg,
-            is_template=True,
             mode=0o644)

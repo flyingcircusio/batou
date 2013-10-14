@@ -150,8 +150,7 @@ class Supervisor(Component):
         self.program_config_dir = Directory('etc/supervisor.d', leading=True)
         self += self.program_config_dir
         self += File('etc/supervisord.conf',
-                     source=self.supervisor_conf,
-                     is_template=True)
+                     source=self.supervisor_conf)
         self.logdir = Directory('var/log', leading=True)
         self += self.logdir
 
@@ -174,8 +173,7 @@ class Supervisor(Component):
                      source=os.path.join(
                          os.path.dirname(__file__),
                          'resources',
-                         'check_supervisor.py.in'),
-                     is_template=True)
+                         'check_supervisor.py.in'))
 
         self += ServiceCheck(
             'Supervisor programs',

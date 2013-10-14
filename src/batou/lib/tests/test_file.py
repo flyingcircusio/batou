@@ -155,8 +155,7 @@ def test_content_passed_by_string_template(root):
     path = 'path'
     root.component.foobar = 'asdf'
     p = Content(path,
-                content='{{component.foobar}}',
-                is_template=True)
+                content='{{component.foobar}}')
     root.component += p
     with open(p.path, 'w') as f:
         # The content component assumes there's a file already in place. So
@@ -165,6 +164,22 @@ def test_content_passed_by_string_template(root):
     root.component.deploy()
     with open(p.path) as f:
         assert f.read() == 'asdf'
+
+
+def test_content_passed_by_string_notemplate(root):
+    path = 'path'
+    root.component.foobar = 'asdf'
+    p = Content(path,
+                content='{{component.foobar}}',
+                is_template=False)
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == '{{component.foobar}}'
 
 
 def test_content_passed_by_file(root):
@@ -198,6 +213,20 @@ def test_content_passed_by_file_template(root):
     root.component.deploy()
     with open(p.path) as f:
         assert f.read() == 'asdf'
+
+
+def test_content_from_file_as_template_guessed(root):
+    path = 'path'
+    with open(path, 'w') as f:
+        f.write('content from source file {{component.foo}}')
+    p = File(path)
+    root.component.foo = 'bar'
+    root.component += p
+    assert p.source == root.defdir + '/path'
+    root.component.deploy()
+    with open(p.path) as f:
+        # Actually, as source and target are the same: nothing happened.
+        assert f.read() == 'content from source file bar'
 
 
 def test_content_passed_by_file_using_path_as_default(root):

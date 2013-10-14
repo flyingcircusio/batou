@@ -36,9 +36,7 @@ class CronTab(Component):
         self.jobs = self.require(CronJob.key, host=self.host)
         self.jobs.sort(key=lambda job: job.command + ' ' + job.args)
         self.crontab = File(
-            'crontab',
-            source=self.crontab_template,
-            is_template=True)
+            'crontab', source=self.crontab_template)
         self += self.crontab
 
 
