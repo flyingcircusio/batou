@@ -67,7 +67,7 @@ the "hello world" tutorial, this time in ```components/tick/component.py``:
   class Tick(Component):
 
       def configure(self):
-          self += File('tick.sh', source='tick.sh', mode=0755)
+          self += File('tick.sh', mode=0755)
 
 However, it differs in two ways: Firstly, since we deal with a multi-line
 program which we store in a separate file, the File component is passed the

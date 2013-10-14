@@ -20,8 +20,4 @@ class UserInit(Component):
         init_source = os.path.join(
             os.path.dirname(__file__), 'resources', 'init.sh')
         self += File(
-            target,
-            source=init_source,
-            is_template=True,
-            mode=0o755,
-            leading=True)
+            target, source=init_source, mode=0o755, leading=True)

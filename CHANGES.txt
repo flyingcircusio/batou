@@ -5,6 +5,18 @@ Changelog
 1.0b11 (unreleased)
 ===================
 
+- #12283: Recognize files as 'is_template' by default. Auto-detect source files
+  in the definition directory if they have the same basename. This is what you
+  want in 99% of all cases. Explicitly stating either the 'content' or 'source'
+  parameter disables auto-detection.
+
+  Now you can write this:
+
+  File('foo')
+
+  and have `components/x/foo` recognized as the source file and handled as a
+  template.
+
 - Use ConfigParser instead of configobj which is effectively unmaintained
   (see https://twitter.com/voidspace/status/380699699042213889) and support
   lists separated by newlines in addition to commas.

@@ -26,9 +26,7 @@ class Buildout(Component):
         if self.use_default and not self.config:
             # We expect that your definition directory has a buildout.cfg
             self.config = File('buildout.cfg',
-                               source='buildout.cfg',
-                               template_context=self.parent,
-                               is_template=True)
+                               template_context=self.parent)
         if isinstance(self.config, File):
             self.config_file_name = self.config.path
         if isinstance(self.config, Component):

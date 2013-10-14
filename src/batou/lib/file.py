@@ -34,7 +34,7 @@ class File(Component):
     # Content oriented parameters
     content = None
     source = ''
-    is_template = False
+    is_template = True
     template_context = None
     template_args = None  # dict, actually
 
@@ -63,8 +63,17 @@ class File(Component):
             raise ValueError(
                 'Ensure must be one of: file, directory, '
                 'symlink not %s' % self.ensure)
+        # variation: content or source explicitly given
 
-        if self.content or self.source or self.is_template:
+        # no content or source given but file with same name
+        # exists
+        if not self.content and not self.source:
+            guess_source = (
+                self.root.defdir + '/' + os.path.basename(self.path))
+            if os.path.exists(guess_source):
+                self.source = guess_source
+
+        if self.content or self.source:
             if self.template_args is None:
                 self.template_args = dict()
             if not self.template_context:
@@ -211,7 +220,7 @@ class FileComponent(Component):
 class Content(FileComponent):
 
     content = None
-    is_template = False
+    is_template = File.is_template
     source = ''
     template_context = None
     template_args = None  # dict, actually
