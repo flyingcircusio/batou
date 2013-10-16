@@ -163,7 +163,7 @@ def topological_sort(graph):
 
 
 def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
-        env=None):
+        env=None, acceptable_returncodes=[0]):
     if not isinstance(cmd, basestring):
         # We use `shell=True`, so the command needs to be a single string and
         # we need to pay attention to shell quoting.
@@ -189,7 +189,7 @@ def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
         # XXX See #12550
         return process
     stdout, stderr = process.communicate()
-    if process.returncode:
+    if process.returncode not in acceptable_returncodes:
         if not silent:
             print("STDOUT")
             print("=" * 72)

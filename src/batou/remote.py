@@ -55,13 +55,10 @@ Please commit and push first.
             sys.exit(1)
 
     try:
-        cmd('hg -q outgoing -l 1', silent=True)
-    except RuntimeError, e:
-        if e.args[1] == 1 and not e.args[2] and not e.args[3]:
-            # this means there' snothing outgoing
-            pass
-        else:
-            raise
+        cmd('hg -q outgoing -l 1', acceptable_returncodes=[0, 1])
+    except RuntimeError:
+        # this means there' snothing outgoing
+        pass
     else:
         logger.error("""\
 Your repository has outgoing changes.
@@ -192,7 +189,8 @@ class RemoteHost(object):
             fd, bundle_file = tempfile.mkstemp()
             os.close(fd)
             bases = ' '.join('--base {}'.format(x) for x in heads)
-            cmd('hg -qy bundle {} {}'.format(bases, bundle_file))
+            cmd('hg -qy bundle {} {}'.format(bases, bundle_file),
+                acceptable_returncodes=[0, 1])
             self.rpc.send_file(
                 bundle_file, remote_repository + '/batou-bundle.hg')
             os.unlink(bundle_file)

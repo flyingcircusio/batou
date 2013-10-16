@@ -207,6 +207,15 @@ def test_cmd_quotes_spacey_args(popen):
 
 
 @mock.patch('subprocess.Popen')
+def test_cmd_ignores_specified_returncodes(popen):
+    popen.return_value.returncode = 4
+    popen.return_value.communicate.return_value = '', ''
+    with pytest.raises(RuntimeError):
+        cmd('asdf')
+    cmd('asdf', acceptable_returncodes=[0, 4])
+
+
+@mock.patch('subprocess.Popen')
 def test_cmd_returns_process_if_no_communicate(popen):
     process = mock.Mock()
     popen.return_value = process
