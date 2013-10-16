@@ -5,6 +5,9 @@ Changelog
 1.0b11 (unreleased)
 ===================
 
+- #12910: Remote deployments failed when using bundles for transfers if no
+  changes needed bundling.
+
 - #12766: Allow bootstrapping a batou project in an existing directory to
   support migration from 0.2.
 
