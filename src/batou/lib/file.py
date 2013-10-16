@@ -67,10 +67,10 @@ class File(Component):
 
         # no content or source given but file with same name
         # exists
-        if not self.content and not self.source:
+        if self.ensure == 'file' and not self.content and not self.source:
             guess_source = (
                 self.root.defdir + '/' + os.path.basename(self.path))
-            if os.path.exists(guess_source):
+            if os.path.isfile(guess_source):
                 self.source = guess_source
 
         if self.content or self.source:
