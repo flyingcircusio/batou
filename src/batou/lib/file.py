@@ -37,6 +37,7 @@ class File(Component):
     is_template = True
     template_context = None
     template_args = None  # dict, actually
+    encoding = 'ascii'
 
     # Unix attributes
     owner = None
@@ -83,6 +84,7 @@ class File(Component):
                               is_template=self.is_template,
                               template_context=self.template_context,
                               template_args=self.template_args,
+                              encoding=self.encoding,
                               content=self.content)
             self += content
             self.content = content.content
@@ -225,6 +227,11 @@ class Content(FileComponent):
     template_context = None
     template_args = None  # dict, actually
 
+    # If content is given as unicode (always the case with templates)
+    # then require it to be encodable. We start guess ASCII and allow
+    # overrides.
+    encoding = 'ascii'
+
     _delayed = False
 
     def configure(self):
@@ -264,13 +271,14 @@ class Content(FileComponent):
             self.template_context = self.parent
         self.content = self.expand(
             self.content, self.template_context, args=self.template_args)
+        if isinstance(self.content, unicode):
+            self.content = self.content.encode(self.encoding)
 
     def verify(self):
         if self._delayed:
             with open(self.source, 'r') as f:
                 self.content = f.read()
             self._render()
-
         with open(self.path, 'r') as target:
             current = target.read()
             if current != self.content:

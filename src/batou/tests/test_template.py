@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from batou.template import TemplateEngine
 import collections
 import jinja2
@@ -13,7 +14,8 @@ sample_dict = dict(
     host=mock.Mock(),
     config=dict(),
     servers=[Server('s1', '1.2.3.4'), Server('s2', '2.3.4.5')],
-    hello='world')
+    hello='world',
+    hello2=u'wörld')
 
 fixture = '%s/fixture/template' % os.path.dirname(__file__)
 
@@ -48,3 +50,8 @@ def test_jinja2_unknown_variable_should_fail():
     tmpl = TemplateEngine.get('jinja2')
     with pytest.raises(jinja2.UndefinedError):
         tmpl.expand('unknown variable {{foo}}', {})
+
+
+def test_jinja2_umlaut_variables():
+    tmpl = TemplateEngine.get('jinja2')
+    assert u'hello wörld' == tmpl.expand('hello {{hello2}}', sample_dict)

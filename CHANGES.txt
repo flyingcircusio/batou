@@ -5,6 +5,9 @@ Changelog
 1.0b11 (unreleased)
 ===================
 
+- #12847: Clean up unicode handling for File and Content components and
+  templating.
+
 - #12910: Remote deployments failed when using bundles for transfers if no
   changes needed bundling.
 
