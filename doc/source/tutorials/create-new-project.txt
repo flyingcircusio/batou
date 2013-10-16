@@ -13,7 +13,7 @@ Install the batou egg into a global environment using ``pip`` or ``easy_install`
 
 .. code-block:: console
 
-    $ pip install "batou>=1.0dev9"
+    $ pip install "batou>=1.0b10"
 
 .. note:: You only have to install batou globally to get access to
     ``batou-init``. However, once you have at least one batou project you can also
@@ -30,10 +30,10 @@ a directory called ``pyramid``.
 
 .. code-block:: console
 
-    $ batou-init myprojects
-    Bootstrapping new batou project in /private/tmp/myproject. This can take a while.
+    $ batou-init myproject
+    Bootstrapping new batou project in myproject. This can take a while.
     $ cd myproject
-    $ ls -lh
+    $ tree
     .
     |-- batou
     |-- components
