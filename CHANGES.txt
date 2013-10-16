@@ -5,6 +5,9 @@ Changelog
 1.0b11 (unreleased)
 ===================
 
+- #12766: Allow bootstrapping a batou project in an existing directory to
+  support migration from 0.2.
+
 - #12283: Recognize files as 'is_template' by default. Auto-detect source files
   in the definition directory if they have the same basename. This is what you
   want in 99% of all cases. Explicitly stating either the 'content' or 'source'
