@@ -5,15 +5,11 @@ import logging
 import os.path
 import pkg_resources
 import shutil
-import sys
 
 logger = logging.getLogger(__name__)
 
 
 def main(destination):
-    if os.path.exists(destination):
-        print('{} exists already.'.format(destination))
-        sys.exit(1)
     develop = os.environ['BATOU_DEVELOP']
     if develop:
         logger.warn(
@@ -23,10 +19,15 @@ def main(destination):
         develop = os.path.abspath(develop)
     print('Bootstrapping new batou project in {}. This can take a while.'
           .format(os.path.abspath(destination)))
-    source = os.path.dirname(__file__) + '/init-template'
-    shutil.copytree(source, destination)
-    os.chdir(destination)
-    cmd('hg -y init .')
+    if os.path.exists(destination):
+        print('{} exists already. Not copying template structure.'.format(
+              destination))
+        os.chdir(destination)
+    else:
+        source = os.path.dirname(__file__) + '/init-template'
+        shutil.copytree(source, destination)
+        os.chdir(destination)
+        cmd('hg -y init .')
     update_bootstrap(os.environ['BATOU_VERSION'], develop)
     os.chmod('batou', 0o755)
     # Need to clean up to avoid inheriting info that we're bootstrapped
