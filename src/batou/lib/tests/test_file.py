@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from batou.lib.file import Content, Mode, Symlink, File
 from batou.lib.file import Presence, Directory, FileComponent
 from batou.lib.file import ensure_path_nonexistent
@@ -164,6 +166,26 @@ def test_content_passed_by_string_template(root):
     root.component.deploy()
     with open(p.path) as f:
         assert f.read() == 'asdf'
+
+
+def test_content_with_unicode_has_ascii_default(root):
+    path = 'path'
+    root.component.foobar = u'äsdf'
+    p = File(path,
+             content=u'örks {{component.foobar}}')
+
+    with pytest.raises(UnicodeEncodeError):
+        root.component |= p
+
+    p = File(path,
+             content=u'örks {{component.foobar}}',
+             encoding='utf-8')
+    root.component += p
+    root.component.deploy()
+    with open(p.path) as f:
+        result = f.read().decode('utf-8')
+        # XXX pytest reporting breaks if this fails. :(
+        assert result == u'örks äsdf'
 
 
 def test_content_passed_by_string_notemplate(root):
