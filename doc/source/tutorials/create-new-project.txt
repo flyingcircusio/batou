@@ -13,7 +13,7 @@ Install the batou egg into a global environment using ``pip`` or ``easy_install`
 
 .. code-block:: console
 
-    $ pip install "batou>=1.0b10"
+    $ pip install "batou>=1.0b11"
 
 .. note:: You only have to install batou globally to get access to
     ``batou-init``. However, once you have at least one batou project you can also
