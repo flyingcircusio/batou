@@ -5,7 +5,10 @@ Changelog
 1.0b11 (unreleased)
 ===================
 
-- #12912: Fix untested and broken Ownership management.
+- #12911: Ensure that we can configure file owners when they don't 
+  exist during configure phase yet.
+
+- #12912: Fix untested and broken file ownership management.
 
 - #12847: Clean up unicode handling for File and Content components and
   templating.
