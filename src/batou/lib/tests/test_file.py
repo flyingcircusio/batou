@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from batou.lib.file import Content, Mode, Symlink, File
-from batou.lib.file import Presence, Directory, FileComponent
 from batou.lib.file import ensure_path_nonexistent
-from mock import Mock
+from batou.lib.file import Presence, Directory, FileComponent
+from mock import Mock, patch
 from stat import S_IMODE
+import getpass
 import os
 import pytest
 
@@ -469,3 +470,25 @@ def test_directory_does_not_copy_excluded_files(root):
     root.component += p
     root.component.deploy()
     assert len(os.listdir('work/mycomponent/target')) == 1
+
+
+@patch('os.chown')
+def test_owner_lazy(chown, root):
+    with open('asdf', 'w'):
+        pass
+    file = File('asdf', owner=getpass.getuser())
+    root.component += file
+    root.component.deploy()
+    assert not os.chown.called
+
+
+@patch('os.chown')
+@patch('os.stat')
+def test_owner_calls_chown(chown, stat, root):
+    os.stat.return_value = Mock()
+    os.stat.return_value.st_uid = 0
+    os.stat.return_value.st_mode = 0
+    file = File('asdf', owner=getpass.getuser())
+    root.component += file
+    root.component.deploy()
+    assert os.chown.called

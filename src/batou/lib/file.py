@@ -297,7 +297,7 @@ class Owner(FileComponent):
     def configure(self):
         super(Owner, self).configure()
         if isinstance(self.owner, str):
-            self.owner = pwd.getpwnam(self.owner)
+            self.owner = pwd.getpwnam(self.owner).pw_uid
 
     def verify(self):
         current = os.stat(self.path).st_uid
