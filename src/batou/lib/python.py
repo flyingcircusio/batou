@@ -61,7 +61,7 @@ class VirtualEnvBase(Component):
         # components to share.
         self.workdir = self.environment.workdir_base + '/.virtualenv'
         download = Download(
-            'https://pypi.python.org/packages/source'
+            'http://pypi.gocept.com/packages/source'
             '/v/virtualenv/virtualenv-1.10.1.tar.gz',
             checksum='md5:3a04aa2b32c76c83725ed4d9918e362e')
         self += download
