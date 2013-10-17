@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b11 (unreleased)
+1.0b11 (2013-10-17)
 ===================
 
 - #12897: Use non-SSL pypi mirror for downloading virtualenv to fix tests
