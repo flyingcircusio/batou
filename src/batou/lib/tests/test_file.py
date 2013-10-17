@@ -492,3 +492,10 @@ def test_owner_calls_chown(chown, stat, root):
     root.component += file
     root.component.deploy()
     assert os.chown.called
+
+
+def test_owner_is_configurable_when_user_doesnt_exist_yet(root):
+    file = File('asdf', owner='foobar')
+    # This is a regression test against #12911 and ensures that we can
+    # configure a file component's owner even if the owner doesn't exist yet.
+    root.component += file
