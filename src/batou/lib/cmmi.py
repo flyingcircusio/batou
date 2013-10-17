@@ -26,7 +26,7 @@ class Configure(Component):
     def update(self):
         with self.chdir(self.path):
             self.cmd(self.expand(
-                './configure --prefix={{component.prefix.path}} '
+                './configure --prefix={{component.prefix}} '
                 '{{component.args}}'), env=self.build_environment)
             self.touch('.batou.config.success')
 
