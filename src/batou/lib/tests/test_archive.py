@@ -9,6 +9,7 @@ import pytest
 sys  # Make pyflakes happy
 
 
+@pytest.mark.slow
 def test_extracts_archive_to_target_directory(root):
     # XXX why doesn't skipif work correctly?!?
     if sys.platform != 'darwin':
