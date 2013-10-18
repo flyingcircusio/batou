@@ -5,6 +5,9 @@ Changelog
 1.0b12 (unreleased)
 ===================
 
+- Support continuing remote bootstrapping if we failed after creating the
+  initial remote directory but were unable to use Mercurial.
+
 - #12898: build.Configure component was broken when using the default 
   prefix.
 
