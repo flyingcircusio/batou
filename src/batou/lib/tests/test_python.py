@@ -13,6 +13,7 @@ def test_package_install(root):
         'bin/pip --timeout=3 install --egg --ignore-installed "foo==1.2.5"')
 
 
+@pytest.mark.slow
 @pytest.mark.timeout(60)
 def test_updates_old_distribute_to_setuptools(root):
     class Playground(Component):
