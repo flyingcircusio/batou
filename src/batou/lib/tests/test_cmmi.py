@@ -81,6 +81,7 @@ def cmmi_tar(tmpdir):
     return fixture
 
 
+@pytest.mark.slow
 def test_runs_cmmi(root, cmmi_tar):
     c = Build(cmmi_tar.path, checksum='md5:' + cmmi_tar.checksum)
     root.component += c
