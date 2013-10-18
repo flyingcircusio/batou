@@ -32,11 +32,12 @@ def test_update_code_existing_target(mock_remote_core):
     remote_core.pull_code('http://bitbucket.org/gocept/batou')
     remote_core.update_working_copy('default')
 
-    assert remote_core.cmd.call_count == 3
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
+    assert calls.next().startswith('hg init /')
     assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
     assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'
+    assert remote_core.cmd.call_count == 4
 
 
 def test_update_code_new_target(mock_remote_core):
