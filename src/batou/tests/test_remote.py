@@ -10,4 +10,4 @@ def test_remote_deployment_initializable(sample_service):
     env = Environment('test-with-env-config')
     env.load()
     env.configure()
-    RemoteDeployment(env)
+    RemoteDeployment(env, False)
