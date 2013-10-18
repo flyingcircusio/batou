@@ -6,6 +6,8 @@ import shutil
 
 class Clone(Component):
 
+    # XXX This API is the wrong way around, should be like SVN and Mercurial,
+    # whose namevar is ``url`` and they have a kw parameter ``target``.
     namevar = 'target'
     update_unpinned = False
 
