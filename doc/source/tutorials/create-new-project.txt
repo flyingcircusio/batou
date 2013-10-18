@@ -1,0 +1,81 @@
+Creating a new project
+======================
+
+This tutorial explains how new batou projects are created. It will show you how
+to create a completely new project and what a developer needs to do when he
+gets his copy of a new project.
+
+
+Installing batou
+----------------
+
+Install the batou egg into a global environment using ``pip`` or ``easy_install``. We'll use pip in our example:
+
+.. code-block:: console
+
+    $ pip install "batou>=1.0b11"
+
+.. note:: You only have to install batou globally to get access to
+    ``batou-init``. However, once you have at least one batou project you can also
+    use the embedded ``batou`` command to bootstrap more projects by calling the
+    ``init`` sub-command.
+
+
+Initializing
+------------
+
+batou provides the ``batou-init`` script to create new project directories.
+Lets say your new project is called "pyramid" and you want it to be created in
+a directory called ``pyramid``.
+
+.. code-block:: console
+
+    $ batou-init myproject
+    Bootstrapping new batou project in myproject. This can take a while.
+    $ cd myproject
+    $ tree
+    .
+    |-- batou
+    |-- components
+    |   `-- example
+    |       `-- component.py
+    `-- environments
+        `-- dev.cfg
+
+The ``batou`` script is the new master command you will use for any further interaction with batou: your project does not depend on externally installed environment:
+
+.. code-block:: console
+
+    $ ./batou
+    usage: batou [-h] [-d] {init,local,remote,secrets,update} ...
+    batou: error: too few arguments
+
+This directory is also now a Mercurial repository so you can version everything
+and share it with your fellow developers:
+
+.. code-block:: console
+
+    $ hg stat
+    ?   .hgignore
+    ?   batou
+    ? components/example/component.py
+    ? environments/dev.cfg
+    $ hg addremove
+    $ hg ci
+    $ hg push <url-to-your-repository-server>
+
+Using an existing project for the first time
+--------------------------------------------
+
+If you clone an existing project for the first time, you can simply call the
+embedded ``batou`` command and batou will install itself and run your command:
+
+.. code-block:: console
+
+    $ hg clone <url-to-your-repository-server> myproject
+    $ cd myproject
+    $ ./batou local dev localhost
+    Preparing virtualenv in .batou ...
+    Pre-installing batou - this can take a while...
+    ...
+

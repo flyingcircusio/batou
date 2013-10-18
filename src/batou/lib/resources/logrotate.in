@@ -1,0 +1,19 @@
+{% for logfile in component.logfiles %}
+
+{{logfile.path}}  {
+{%- for arg in logfile.args %}
+{{arg}}
+{%- endfor %}
+{%- if logfile.prerotate %}
+prerotate
+{{logfile.prerotate}}
+endscript
+{%- endif %}
+{%- if logfile.postrotate %}
+postrotate
+{{logfile.postrotate}}
+endscript
+{%- endif %}
+}
+
+{% endfor %}

@@ -1,0 +1,96 @@
+batou
+=====
+
+.. raw:: html
+
+    <a href="https://bitbucket.org/gocept/batou"
+       style="float:right;border-bottom:none">
+      <img src="https://bitbucket.org/zgramana/bitbucket-ribbons/raw/988dffc5fbeb/png/bitbucket-ribbon-dark-gray.png" />
+    </a>
+
+.. rubric:: multi-(component | host | environment | platform) deployment
+
+batou makes it easy to define and perform automated service deployments.  It is
+developed by the people running the `Flying Circus <http://flyingcircus.io>`_
+and made available under the 2-clause BSD license.
+
+The smallest service definition you could possibly make looks like this:
+
+.. literalinclude:: ../../examples/tutorial-helloworld/components/hello/component.py
+    :language: python
+
+.. literalinclude:: ../../examples/tutorial-helloworld/environments/tutorial.cfg
+    :language: ini
+
+If you deploy this service it will look like this:
+
+.. code-block:: bash
+
+    $ ./batou local dev localhost
+    Updating Hello > File(hello) > Presence(hello)
+    Updating Hello > File(hello) > Content(hello)
+
+Philosophy
+----------
+
+batou tries to combine the simplicity of SSH-automation (as found in Fabric)
+with the elegance of model-driven, idempotent, and convergent systems (like
+Puppet).
+
+batou wants to:
+
+* deploy services -- fast and reliably
+* describe services concisely
+* work on multiple platforms (Linux, OS X)
+* work hand-in-hand with systems configured by other parties
+* make only few assumptions
+* have few dependencies on the target systems for basic operation
+* be useful for developers and admins
+
+batou **does not want** to:
+
+* provision VMs or configure operating systems
+* add additional runtime complexity to services
+
+.. note::
+
+    batou is still young and undergoing major changes every now and then.
+    However, it is used in production projects on a daily basis.
+
+Learn more
+----------
+
+.. toctree::
+    :maxdepth: 2
+    :titlesonly:
+
+    tutorials/index
+    reference/index
+    introduction/index
+
+Presentations from conferences:
+
+* `EuroPython 2013 - batou <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
+
+Resources
+---------
+
+.. toctree::
+    :maxdepth: 1
+
+    support
+    changes
+    legal
+
+
+Contribute
+----------
+
+batou is developed as open source / free software. If you want to get in
+touch and contribute, you are more than welcome.
+
+* Use our `Redmine <http://projects.gocept.com/projects/batou>`_ to
+  report bugs, feature requests, or send us feedback.
+
+* Fork our `bitbucket repository <http://bitbucket.org/gocept/batou>`_ and send
+  us pull requests.

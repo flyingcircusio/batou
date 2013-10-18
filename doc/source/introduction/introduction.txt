@@ -1,0 +1,161 @@
+In-depth introduction
+=====================
+
+.. contents::
+    :local:
+
+Motivation
+----------
+
+The operations team at gocept runs web applications. Service deployment
+(read: installing and updating those applications) is a major task for us that
+we think about a lot.
+
+Nowadays we consider service deployments to target a "platform" instead of
+"servers": provisioning and system configuration are solved well by other
+tools. Also, developers should not have to think about "buying that server"
+when coming up with their requirements for the target runtime environment.
+
+A platform, for us, means that we can rely on machines, the operating system,
+and other basic infrastructure to be already available.
+
+There are grey areas between provisioning, system configuration, and service
+deployment. That's why a deployment tool should have some flexibility to adapt
+depending on the platform that a service uses.
+
+A typical (web) project consists of many components that make up the runtime
+environment, the application itself being only one of them. An example of a
+project that we typically deal with looks like this:
+
+.. image:: production-architecture.png
+
+This "environment" consists of 27 virtual machines running a good number of
+runtime components that need to be configured. The actual application (in this
+case a Plone site running in a Zope server) is only one moving part of many.
+
+The diagram only shows the active components that need to be configured. Many
+more are "passive" and not visible here: maintenance jobs, secrets, process
+supervision, log rotation, monitoring ... 
+
+All of those components require hard-earned knowledge to configure them
+properly – which is why we want to re-use this knowledge as much as possible.
+For example, we rely on the knowledge of system administrators by letting them
+pre-install, larger things like PostgreSQL and take care of their maintenance.
+Deploying the service then only requires us to create the database and user.
+Another example is nginx: we also want to benefit from a system-installed
+package but need to add our own virtual host definitions and need to be able to
+reload the process with user privileges.
+
+When running a service like the above, you typically also want to run a copy
+for testing purposes. The testing environment will be structurally similar but
+should use less resources to minimze cost:
+
+.. image:: staging-architecture.png
+    :width: 400px
+
+We further see that there are even more circumstances that need their own
+environments, such as developers running the application (or some part of it)
+on their own machine.
+
+.. image:: dev-architecture.png
+    :width: 400px
+
+In addition to these environments we need to ponder that:
+
+* we need more development environments when new developers arrive,
+* we need to merge changes to the config to all of the environments,
+* we need to consider both initial installation and sub-sequent updates.
+
+These are the basic requirements that led us to developing batou.
+
+Name
+----
+
+The name "batou" is taken from the animated movie "Ghost in the Shell". Batou
+is a member of the police force hunting down the "puppet master".
+
+We chose the name as a pun on the fact that we have a history with and are
+happy users of `Puppet <http://puppetlabs.com>`_ but were also looking for a
+complementary tool.
+
+History
+-------
+
+Looking back we see that there's a long history of automating deployments:
+
+* FTPing PHP scripts from a developer machine to a server (late nineties)
+* Running shell scripts to automate Zope instance configuration (2001)
+* Using Zope's built-in instance configuration mechanism and more shell scripts (2003)
+* Using zc.buildout to automate Python environment configuration (2006)
+* Using Fabric to automate zc.buildout deployment (2010)
+
+Around 2008 we started making operations a major part of our business. In 2010
+we got a big customer for whom we needed all the setup that is shown in the
+diagrams above and started thinking harder about automating this deployment
+properly.
+
+On the system configuration level we were already using puppet. However, system
+configuration and service deployment are two different animals: with puppet we
+manage many machines that are similar (system configuration) whereas the
+service deployment wants to individualize some of those machines for a specific
+purpose.
+
+Comparison with other tools
+---------------------------
+
+**Puppet** is a system configuration tool and thus is designed around
+assumptions that are detrimental to the goals of service deployment: no
+orchestration, pull principle, root access. Also: check out Puppet Labs' `Fully
+automated provisioning
+<http://www.puppetlabs.com/wp-content/uploads/2010/03/FullyAutomatedProvisioning_Whitepaper7.pdf>`_
+whitepaper which explicitly points to tools like Fabric, Capistrano,
+ControlTier and others.
+
+**Fabric + zc.buildout** was our basis when we started automating complex
+setups. We used it to check out a Mercurial repository that contains a
+buildout definition, run buildout on it, and do some additional shell stuff
+around it. Give that to a list of hosts and you're good. We encountered two
+substantial problems with this approach, though: we ended up with a single
+large buildout and pretty complex Fabric code, both of which became
+unmaintainable after a while. However, in general we did have a "single
+command" deployment that worked very well – most of the time.
+
+What we were missing was the declarative modelling that we enjoyed with Puppet
+on the system configuration level. Also, we wanted to be able to do more
+fine-grained deployment and not be limited to a "per host" command execution
+order.
+
+**Salt** seems to try solving the same problem as Fabric and MCollective: a
+scalable approach to Remote Command Execution. We have not looked deeply at
+Salt and it might be an interesting alternative to batou's SSH + Mercurial
+usage. However, it seems to require additional runtime components in the target
+environment which are not as widely available as SSH.
+
+
+Architecture
+------------
+
+Batou consists of:
+
+* a model to describe services in terms of "components" and "environments"
+* a command to realize a specific configuration locally (``batou local``)
+* a command to deploy a whole environment remotely (``batou remote``)
+* an extensible library of re-usable components
+
+Components are Python objects with an API to construct a component hierarchy
+(making the model recursive) as well as to perform actions on the target system in
+a manner that makes it easy to achieve convergency and idempotency.
+
+Environments represent different installations of a service: staging,
+production, development, etc. For each environment you specify which hosts belong
+to it, how the services shall be distributed over those hosts, and possibly some
+customization of how components are configured in that environment.
+
+The ``batou local`` command deploys a given configuration (for a given host
+and environment) locally.
+
+The ``batou remote`` command deploys a given configuration for a complete
+environment. It does so by bootstrapping itself using SSH and Mercurial and
+then running ``batoucommandlocal`` on the remote side in  batch mode. It is able to
+coordinate the execution order of tasks between different hosts as required by
+the model.

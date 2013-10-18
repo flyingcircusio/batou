@@ -1,0 +1,173 @@
+Component library
+=================
+
+.. contents::
+    :local:
+
+File
+----
+
+The File component has been developed with Puppet's file type in mind. It accepts a very similar parameter set
+and has almost identical features.
+
+You can use it to manage files, directories, and symlinks and you can specify content (literally or as Jinja templates). You can also manage the Unix attributes and control whether leading directories should be managed or not.
+
+.. code-block:: python
+
+    class File(Component):
+
+        namevar = 'path'
+
+        ensure = 'file'  # or: directory, symlink
+
+        # Content oriented parameters
+        content = None
+        source = ''
+        is_template = False
+        template_context = None
+        template_args = None  # dict, actually
+
+        # Unix attributes
+        owner = None
+        group = None
+        mode = None
+
+        # Symlink parameters
+        link_to = ''
+
+        # Leading directory creation
+        leading = False
+
+.. code-block:: python
+
+    from batou.lib.file import File
+
+    self += File('target', source='existingfile', is_template=True)
+
+
+SyncDirectory
+-------------
+
+This is a wrapper around ``rsync`` that allows adding new and changed files to
+a directory (but no deletions).
+
+.. code-block:: python
+
+    from batou.lib.file import SyncDirectory
+
+    SyncDirectory(‘src’, ‘extracted-package/src’)
+
+Download
+--------
+
+A wrapper around ``wget`` for downloading resources. Checks the integrity of
+the download (and re-downloads if necessary) based on an MD5 checksum.
+
+.. code-block:: python
+
+    from batou.lib.download import Download
+
+    Download(‘http://example.com/foobar.tar.gz’,
+             checksum=’md5:ac033ac2b8e619d42ec6df844b8c5737')
+
+The checksum parameter supports all hash functions provided by Python's
+`hashlib` module.
+
+supervisor
+----------
+
+Installs and manages a ``supervisord`` instance. Can be used as a top level component in your projects and provides a hook component to register programs.
+
+.. code-block:: python
+
+    components/supervisor/component.py
+    from batou.lib.supervisor import Supervisor
+
+.. code-block:: python
+
+    components/app/component.py
+    class App(Component):
+        def configure(self):
+            self += batou.lib.supervisor.Program(‘x’, ‘bin/x’)
+
+.. code-block:: ini
+
+    environments/prod.cfg
+    [hosts]
+    test01 = app, supervisor
+
+secrets
+-------
+
+This component helps you deploy your secrets (database passwords, SSL certificates) securely.
+
+Each environment needs an INI-style configuration directory that is encrypted with a passphrase using ``aespipe``. The encrypted file is then checked in along with the batou project. The ``secret`` component can be used as a top-level component and accessed using the ``secrets`` key. It only needs to be activated on a single host in the environment. o
+
+The component also automatically asks the user for the passphrase when deploying and transparently decrypts for local and remote deployments.
+
+It also provides a wrapper script (``secretsedit``) which allows you to securely edit the encrypted files with your favorite editor.
+
+.. code-block:: ini
+
+    components/secrets/production.cfg.aes
+    [postgres]
+    password = verysecret
+
+.. code-block:: python
+
+    components/app/component.py
+    class App(Component):
+        def configure(self):
+            secrets = self.require_one(‘secrets’)
+            postgresql_password = secrets.get(‘postgres’, ‘password’)
+
+.. code-block:: bash
+
+    $ bin/secretsedit components/secrets/production.cfg.aes
+
+
+virtualenv
+----------
+
+Creates a virtualenv in the working directory with the specific version of Python. Existing virtualenvs will be updated if needed. 
+
+.. code-block:: python
+
+    from batou.lib.python import VirtualEnv
+
+    VirtualEnv(‘2.7’)
+
+
+zc.buildout
+-----------
+
+Manages a buildout configuration. Automatically creates a virtualenv,
+bootstraps the buildout and runs it if needed.  Automatically picks up a
+``buildout.cfg`` file in the component's definition directory and treats it as
+a template.
+
+.. code-block:: ini
+
+    # components/zodb/buildout.cfg
+    [buildout]
+    parts = zodb
+    [zodb]
+    recipe = zc.recipe.egg
+    eggs = ZODB3
+
+.. code-block:: python
+
+    # components/zodb/component.py
+    class ZODB(Component):
+        def configure(self):
+            self += Buildout(‘zodb’, python=’2.7’)
+
+
+archive
+-------
+
+cmmi
+----
+
+cron
+----
