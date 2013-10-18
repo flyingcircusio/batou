@@ -82,7 +82,7 @@ anatomy:
 
     class CompressedFile(Component):
 
-        namevar = path
+        namevar = 'path'
         content = ''
 
         def configure(self):
