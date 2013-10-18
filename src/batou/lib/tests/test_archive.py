@@ -6,9 +6,9 @@ import pytest
 import sys
 
 
-@pytest.mark.skipif(sys.platform != 'darwin', reason='only runs on OS X')
 @pytest.mark.slow
-def test_extracts_archive_to_target_directory(root):
+@pytest.mark.skipif(sys.platform != 'darwin', reason='only runs on OS X')
+def test_dmg_extracts_archive_to_target_directory(root):
     dmg = DMGExtractor(
         resource_filename('batou.lib.tests', 'example.dmg'),
         target='example')
@@ -25,7 +25,7 @@ def test_extracts_archive_to_target_directory(root):
         assert start_bin.read() == 'I start the example app! ;)'
 
 
-def test_does_not_support_strip(root):
+def test_dmg_does_not_support_strip(root):
     dmg = DMGExtractor(
         resource_filename('batou.lib.tests', 'example.dmg'),
         strip=1,
