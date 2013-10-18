@@ -6,6 +6,13 @@ import pytest
 import sys
 
 
+def test_unknown_extension_raises():
+    extract = Extract('example.unknown')
+    extract.workdir = ''
+    with pytest.raises(ValueError):
+        extract.configure()
+
+
 def test_untar_extracts_archive_to_target_directory(root):
     extract = Extract(
         resource_filename('batou.lib.tests', 'example.tar.gz'),
