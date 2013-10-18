@@ -1,18 +1,18 @@
-# Copyright (c) 2012 gocept gmbh & co. kg
-# See also LICENSE.txt
-
+from ..buildout import Buildout
+from ..file import File
 import mock
+import os.path
+import pkg_resources
+import pytest
 
 
 def buildout(**kw):
-    from ..buildout import Buildout
     buildout = Buildout(**kw)
     buildout.cmd = mock.Mock()
     return buildout
 
 
 def test_update_should_pass_config_file_name(root):
-    from ..file import File
     b = buildout(
         python='2.7',
         config=File('myown.cfg'))
@@ -33,3 +33,18 @@ def test_update_should_pass_custom_timeout(root):
     assert b.cmd.call_count == 1
     calls = iter(x[1][0] for x in b.cmd.mock_calls)
     assert calls.next() == 'bin/buildout -t 40 -c "buildout.cfg"'
+
+
+@pytest.mark.slow
+@pytest.mark.timeout(60)
+def test_runs_buildout_successfully(root):
+    b = Buildout(
+        python='2.7', version='2.2', setuptools='1.0',
+        config=File('buildout.cfg', source=pkg_resources.resource_filename(
+            __name__, 'buildout-example.cfg')))
+    root.component += b
+    root.component.deploy()
+    assert os.path.isdir(os.path.join(
+        root.environment.workdir_base, 'mycomponent/parts'))
+    assert os.path.isfile(os.path.join(
+        root.environment.workdir_base, 'mycomponent/bin/py'))
