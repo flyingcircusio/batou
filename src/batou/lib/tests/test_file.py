@@ -450,6 +450,7 @@ def test_file_prohibits_unknown_ensure_parameter(root):
         root.component += File('file', ensure='pipe')
 
 
+@pytest.mark.slow
 def test_directory_copies_all_files(root):
     os.mkdir('source')
     open('source/one', 'w').close()
@@ -459,6 +460,7 @@ def test_directory_copies_all_files(root):
     assert sorted(os.listdir('work/mycomponent/target')) == ['one', 'two']
 
 
+@pytest.mark.slow
 def test_directory_does_not_copy_excluded_files(root):
     os.mkdir('source')
     open('source/one', 'w').close()
