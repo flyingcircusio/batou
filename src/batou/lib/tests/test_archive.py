@@ -2,17 +2,12 @@
 from batou.lib.archive import DMGExtractor
 from pkg_resources import resource_filename
 import os
-import sys
 import pytest
+import sys
 
 
-sys  # Make pyflakes happy
-
-
+@pytest.mark.skipif(sys.platform != 'darwin', reason='only runs on OS X')
 def test_extracts_archive_to_target_directory(root):
-    # XXX why doesn't skipif work correctly?!?
-    if sys.platform != 'darwin':
-        pytest.skip('only runs on OS X')
     dmg = DMGExtractor(
         resource_filename('batou.lib.tests', 'example.dmg'),
         target='example')
