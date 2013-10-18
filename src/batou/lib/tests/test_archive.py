@@ -15,7 +15,7 @@ def test_unknown_extension_raises():
 
 def test_untar_extracts_archive_to_target_directory(root):
     extract = Extract(
-        resource_filename('batou.lib.tests', 'example.tar.gz'),
+        resource_filename(__name__, 'example.tar.gz'),
         target='example')
     root.component += extract
     root.component.deploy()
@@ -24,7 +24,7 @@ def test_untar_extracts_archive_to_target_directory(root):
 
 def test_untar_can_strip_paths_off_archived_files(root):
     extract = Extract(
-        resource_filename('batou.lib.tests', 'example.tar.gz'),
+        resource_filename(__name__, 'example.tar.gz'),
         target='example', strip=1)
     root.component += extract
     root.component.deploy()
@@ -33,7 +33,7 @@ def test_untar_can_strip_paths_off_archived_files(root):
 
 def test_zip_extracts_archive_to_target_directory(root):
     extract = Extract(
-        resource_filename('batou.lib.tests', 'example.zip'),
+        resource_filename(__name__, 'example.zip'),
         target='example')
     root.component += extract
     root.component.deploy()
@@ -44,7 +44,7 @@ def test_zip_extracts_archive_to_target_directory(root):
 @pytest.mark.skipif(sys.platform != 'darwin', reason='only runs on OS X')
 def test_dmg_extracts_archive_to_target_directory(root):
     extract = Extract(
-        resource_filename('batou.lib.tests', 'example.dmg'),
+        resource_filename(__name__, 'example.dmg'),
         target='example')
     root.component += extract
     root.component.deploy()
@@ -61,7 +61,7 @@ def test_dmg_extracts_archive_to_target_directory(root):
 
 def test_dmg_does_not_support_strip(root):
     extract = Extract(
-        resource_filename('batou.lib.tests', 'example.dmg'),
+        resource_filename(__name__, 'example.dmg'),
         strip=1,
         target='example')
     with pytest.raises(ValueError) as e:
