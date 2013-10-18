@@ -245,10 +245,10 @@ class Component(object):
 
     def assert_file_is_current(self, reference, requirements=[], **kw):
         from batou.lib.file import File
-        reference = File(reference)
+        reference = File(reference, is_template=False)
         self |= reference
         reference.assert_component_is_current(
-            [File(r) for r in requirements], **kw)
+            [File(r, is_template=False) for r in requirements], **kw)
 
     def assert_component_is_current(self, requirements=[], **kw):
         if isinstance(requirements, Component):
