@@ -58,6 +58,10 @@ If no directory is given, the current directory is used.
     p.add_argument(
         '-t', '--timeout', default=None,
         help='Override the environment\'s timeout setting')
+    p.add_argument(
+        '-D', '--dirty', action='store_true',
+        help='Allow deploying with dirty working copy or outgoing changes.')
+
     p.set_defaults(func=batou.remote.main)
 
     # SECRETS

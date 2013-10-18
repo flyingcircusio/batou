@@ -14,13 +14,13 @@ import tempfile
 logger = logging.getLogger('batou.remote')
 
 
-def main(environment, timeout):
-    check_clean_hg_repository()
-
+def main(environment, timeout, dirty):
     environment = Environment(environment)
     environment.load()
     if timeout is not None:
         environment.timeout = timeout
+    if not dirty:
+        check_clean_hg_repository()
     environment.load_secrets()
     environment.configure()
 
@@ -57,7 +57,7 @@ Please commit and push first.
     try:
         cmd('hg -q outgoing -l 1', acceptable_returncodes=[0, 1])
     except RuntimeError:
-        # this means there' snothing outgoing
+        # this means there's nothing outgoing
         pass
     else:
         logger.error("""\
