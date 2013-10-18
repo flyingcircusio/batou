@@ -24,7 +24,7 @@ def main(environment, timeout, dirty):
     environment.load_secrets()
     environment.configure()
 
-    deployment = RemoteDeployment(environment)
+    deployment = RemoteDeployment(environment, dirty)
     try:
         deployment()
     except Exception, e:
@@ -71,8 +71,9 @@ Please push first.
 
 class RemoteDeployment(object):
 
-    def __init__(self, environment):
+    def __init__(self, environment, dirty):
         self.environment = environment
+        self.dirty = dirty
 
         self.upstream = cmd('hg show paths')[0].split('\n')[0].strip()
         assert self.upstream.startswith('paths.default')
@@ -201,6 +202,8 @@ class RemoteHost(object):
 
         remote_id = self.rpc.update_working_copy(env.branch)
         local_id, _ = cmd('hg id -i')
+        if self.deployment.dirty:
+            local_id = local_id.replace('+', '')
         local_id = local_id.strip()
         if remote_id != local_id:
             raise RuntimeError(
