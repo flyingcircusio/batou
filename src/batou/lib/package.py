@@ -13,7 +13,7 @@ class DPKG(Component):
 
     def verify(self):
         stdout, stderr = self.cmd('LANG=C dpkg --get-selections')
-        for line in stdout.splitlines().splitlines():
+        for line in stdout.splitlines():
             candidate, status = line.split()
             if candidate == self.package and status == 'install':
                 break
