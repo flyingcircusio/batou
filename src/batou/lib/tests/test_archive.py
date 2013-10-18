@@ -7,6 +7,7 @@ import sys
 
 
 @pytest.mark.skipif(sys.platform != 'darwin', reason='only runs on OS X')
+@pytest.mark.slow
 def test_extracts_archive_to_target_directory(root):
     dmg = DMGExtractor(
         resource_filename('batou.lib.tests', 'example.dmg'),
