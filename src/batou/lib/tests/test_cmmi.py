@@ -18,6 +18,7 @@ def test_configure_defaults_prefix_to_workdir(root):
         ' --prefix={}'.format(root.component.workdir) in
         configure.cmd.call_args[0][0])
 
+
 def test_configure_accepts_custom_prefix(root):
     configure = Configure('.', prefix='/asdf')
     configure.cmd = mock.Mock()
