@@ -1,7 +1,7 @@
 #!/bin/bash
 while true; do
-    x=$(find source -mtime -5s)
-    if [[ "$x" != "" ]]; then 
+    x=$(find source -mmin 0.1)
+    if [[ "$x" != "" ]]; then
         make html
     fi
     sleep 2;
