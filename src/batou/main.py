@@ -6,11 +6,13 @@ import batou.secrets.edit
 import batou.update
 import logging
 import os
+import os.path
 import pkg_resources
 import sys
 
 
 def main():
+    os.chdir(os.path.dirname(sys.argv[0]))
     parser = argparse.ArgumentParser(
         description='batou v%s '
         'multi-(host|component|environment|version|platform) deployment'
