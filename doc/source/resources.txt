@@ -1,0 +1,9 @@
+Resources: exchanging information between components
+====================================================
+
+provide/require/require_one
+---------------------------
+
+hook components
+---------------
+

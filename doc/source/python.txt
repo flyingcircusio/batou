@@ -1,0 +1,12 @@
+Managing python installations
+=============================
+
+virtualenv
+----------
+
+packages
+--------
+
+buildout
+--------
+

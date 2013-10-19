@@ -65,71 +65,28 @@ Guide
    create-new-project
    component-tutorial
 
+   component-configure
+   component-update
+   resources
+   environment
 
-* Component.configure()
-    * root components vs. sub-components
-    * c
-    * data access (host, environment, root)
-    * +=
+   local
+   remote
 
+   templating
+   file
+   download
+   cmmi
+   supervisor
+   python
 
-* Component.verify() and Component.update()
-    * verify/update
-    * convenience methods (cmd, assert, last_updated, touch, chdir)
-    * how the workdir gets determined
-    * -> refactor into sub-components if too complicated
+   network
+   secrets
+   platform
 
-* Ressources: exchanging information between components
+   update
+   component-advanced
 
-    * provide/require/require_one
-    * hook components
-
-* Environments
-    * component/host assignment
-    * general parameters
-    * vfs mapping (reference)
-    * top-level attribute overrides
-    * Timeout
-
-* Local deployments
-* Remote deployments
-
-* Templating
-
-* managing files
-    * File
-    * Archives
-    * VFS mapping
-
-* Downloads and VCS checkouts
-    * download + hashing
-    * git, mercurial, svn
-
-* Building software
-    * Build, CMMI
-
-* Managing programs
-    * crontab, cronjob
-    * supervisor, program, eventlistener
-
-* Managing python environments
-    * virtualenv
-    * packages
-    * buildout
-
-* Network addresses
-* Secrets
-* Platform varations
-* Features
-
-* Updating batou in existing projects
-
-* Components III: Advanced component concepts and API
-    * context manager
-    * last_updated
-    * |=
-    * workdir overriding
-    * batou.c
 
 Resources
 ---------
