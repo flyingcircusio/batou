@@ -10,70 +10,129 @@ batou
 
 .. rubric:: multi-(component | host | environment | platform) deployment
 
-batou makes it easy to define and perform automated service deployments.  It is
-developed by the people running the `Flying Circus <http://flyingcircus.io>`_
-and made available under the 2-clause BSD license.
+batou makes it easy to define and perform automated service deployments. It tries to combine the simplicity of Fabric's SSH automation with the reliability of convergence/idempotence-oriented systems like Puppet.
 
-The smallest service definition you could possibly make looks like this:
+It is developed by the people running the `Flying Circus
+<http://flyingcircus.io>`_ and made available under the 2-clause BSD license.
 
-.. literalinclude:: ../../examples/tutorial-helloworld/components/hello/component.py
-    :language: python
+Services are described by components:
 
-.. literalinclude:: ../../examples/tutorial-helloworld/environments/tutorial.cfg
-    :language: ini
+.. code-block:: python
 
-If you deploy this service it will look like this:
+    from batou.component import Component
+    from batou.lib.python import VirtualEnv, Package
+    from batou.lib.supervisor import Program
+
+    class MyApp(Component):
+
+        def configure(self):
+            self += VirtualEnv('2.7')
+            self += Package('myapp')
+            self += Program('myapp',
+                command='bin/myapp')
+
+Environments map components to hosts:
+
+.. code-block:: ini
+    
+    [hosts]
+    prod00 = nginx, haproxy
+    prod01 = database
+    prod10 = myapp, supervisor
+    prod11 = myapp, supervisor
+
+Local deployments take care of a single host:
 
 .. code-block:: bash
 
     $ ./batou local dev localhost
-    Updating Hello > File(hello) > Presence(hello)
-    Updating Hello > File(hello) > Content(hello)
 
-Philosophy
-----------
+Remote deployments cover a whole environment:
 
-batou tries to combine the simplicity of SSH-automation (as found in Fabric)
-with the elegance of model-driven, idempotent, and convergent systems (like
-Puppet).
+.. code-block:: bash
 
-batou wants to:
+    $ ./batou remote production
 
-* deploy services -- fast and reliably
-* describe services concisely
-* work on multiple platforms (Linux, OS X)
-* work hand-in-hand with systems configured by other parties
-* make only few assumptions
-* have few dependencies on the target systems for basic operation
-* be useful for developers and admins
 
-batou **does not want** to:
+Guide
+-----
 
-* provision VMs or configure operating systems
-* add additional runtime complexity to services
+* Introduction
+* Installation
+    * Before you install (requirements)
+* tutorials/create-new-project
+* tutorials/component
 
-.. note::
+* Component.configure()
+    * root components vs. sub-components
+    * c
+    * data access (host, environment, root)
+    * +=
 
-    batou is still young and undergoing major changes every now and then.
-    However, it is used in production projects on a daily basis.
 
-Learn more
-----------
+* Component.verify() and Component.update()
+    * verify/update
+    * convenience methods (cmd, assert, last_updated, touch, chdir)  
+    * how the workdir gets determined
+    * -> refactor into sub-components if too complicated
 
-.. toctree::
-    :maxdepth: 2
-    :titlesonly:
+* Ressources: exchanging information between components
 
-    tutorials/index
-    reference/index
-    introduction/index
+    * provide/require/require_one
+    * hook components
+
+* Environments
+    * component/host assignment
+    * general parameters
+    * vfs mapping (reference)
+    * top-level attribute overrides
+
+* Local deployments
+* Remote deployments
+
+* Templating
+
+* managing files
+    * File
+    * Archives
+    * VFS mapping
+
+* Downloads and VCS checkouts
+    * download + hashing
+    * git, mercurial, svn
+
+* Building software
+    * Build, CMMI
+
+* Managing programs
+    * crontab, cronjob
+    * supervisor, program, eventlistener
+
+* Managing python environments
+    * virtualenv
+    * packages
+    * buildout
+
+* Network addresses
+* Secrets
+* Platform varations
+* Features
+
+* Updating batou in existing projects
+
+* Components III: Advanced component concepts and API
+    * context manager
+    * last_updated
+    * |=
+    * workdir overriding
+    * batou.c
+
+Resources
+---------
 
 Presentations from conferences:
 
 * `EuroPython 2013 - batou <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
-
-Resources
----------
 
 .. toctree::
     :maxdepth: 1
