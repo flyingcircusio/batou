@@ -1,7 +1,10 @@
 """Securely edit encrypted secret files."""
 
 from .encryption import EncryptedConfigFile
+from batou.lib.file import ensure_path_nonexistent
+import os
 import subprocess
+import sys
 import tempfile
 
 
@@ -66,6 +69,16 @@ def main(editor, environment):
 
     """
     encrypted = 'secrets/{}.cfg'.format(environment)
+
+    if not os.path.exists('environments/{}.cfg'.format(environment)):
+        print "Environment '{}' does not exist. Typo?"
+        print "Existing environments:"
+        print "\n".join(os.listdir('environments'))
+        sys.exit(1)
+
+    if not os.path.isdir('secrets'):
+        ensure_path_nonexistent('secrets')
+        os.mkdir('secrets')
 
     with EncryptedConfigFile(encrypted, write_lock=True) as sf:
         editor = Editor(editor, sf)
