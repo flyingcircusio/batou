@@ -15,7 +15,7 @@ the concepts behind components as well as the practical steps to take in order
 to put them into action.
 
 In order to successfully follow the tutorial, you should have installed and
-used the very basics of batou before. Working through the "hello world"
+used the very basics of batou before. Working through the :doc:`create-new-project`
 tutorial would be adequate as a prerequisite.
 
 .. contents::
