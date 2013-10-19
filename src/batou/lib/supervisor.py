@@ -142,8 +142,8 @@ class Supervisor(Component):
         buildout_cfg = File('buildout.cfg',
                             source=self.buildout_cfg)
         self += Buildout('buildout',
-                         version='2.2.0',
-                         setuptools='1.1',
+                         version='2.2.1',
+                         setuptools='1.1.6',
                          config=buildout_cfg,
                          python='2.7')
 
