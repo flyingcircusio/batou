@@ -91,9 +91,6 @@ Guide
 Resources
 ---------
 
-Presentations from conferences:
-
-* `EuroPython 2013 - batou <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
 
 .. toctree::
     :maxdepth: 1
@@ -102,6 +99,10 @@ Presentations from conferences:
     changes
     legal
 
+Presentations from conferences:
+
+* `EuroPython 2013 - batou (talk slides) <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
+* `PyConDE 2013 - batou (talk video, German) <ttp://pyvideo.org/video/2436/batou-multicomponenthostenvironment-depl>`_
 
 Contribute
 ----------
