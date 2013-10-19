@@ -25,7 +25,7 @@ from a file of the same name in the component's directory (i.e.
 Jinja, with the file's parent component made available as ``component``.
 
 
-.. py:class:: File(path)
+.. py:class:: batou.lib.File(path)
 
 Creates a file. The main parameter for File is the target path, and it accepts
 the following additional parameters:
@@ -92,7 +92,7 @@ XXX explain detailed factoring of Presence and Content
 Directory
 ---------
 
-.. py:class:: Directory(path)
+.. py:class:: batou.lib.file.Directory(path)
 
     Creates a directory. The main parameter is the target path.
 
@@ -126,7 +126,7 @@ production system is not actually in use anymore. In most cases, a few stray
 files do not matter, but in case they do, the deployment code has to explicitly
 state that something should **not** be present anymore.
 
-.. py:class:: Purge(pattern)
+.. py:class:: batou.lib.file.Purge(pattern)
 
     Ensures that a set of files (given as a glob pattern) does not exist.
 
@@ -137,7 +137,7 @@ Extracting archive files
 batou can extract archive files in Tar, Zip, and DMG (on OSX target machines)
 format:
 
-.. py:class:: Extract(archive)
+.. py:class:: batou.lib.archive.Extract(archive)
 
 The main parameter is the archive filename (relative to the component's
 directory). The archive format is determined according to the file name

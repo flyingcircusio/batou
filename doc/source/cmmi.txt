@@ -1,3 +1,35 @@
-Building software (TBD)
-=======================
+Building software
+=================
 
+batou has some support for downloading and compiling software packages, aka the
+``configure``-``make``-``make install`` (CMMI) dance. Example usage:
+
+.. code-block:: python
+
+    self += Build(
+        'http://python.org/ftp/python/3.3.2/Python-3.3.2.tar.bz2',
+        checksum='md5:7dffe775f3bea68a44f762a3490e5e28',
+        configure_args='--with-libs=-lssl')
+
+
+.. py:class:: batou.lib.cmmi.Build(url)
+
+    Download archive from ``url`, extract it and run CMMI on it.
+
+.. py:attribute:: checksum
+
+    Checksum for download (see :py:class:`batou.lib.download.Download.checksum`
+    for details)
+
+.. py:attribute:: prefix
+
+    Path to use as prefix for the installation (passed to ``configure
+    --prefix``) [Default: workdir of parent component]
+
+.. py:attribute:: configure_args
+
+    String of additional arguments to pass to ``configure``.
+
+.. py:attribute:: build_environment
+
+    Dict of variables to add to the environment during all CMMI invocations.
