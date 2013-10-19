@@ -1,11 +1,14 @@
-Requirements
+Installation
 ============
+
+Requirements
+------------
 
 Batou wants to have as little requirements as possible. However, for the sake
 of simplicity we prefer to make some basic choices.
 
 Platforms
----------
+~~~~~~~~~
 
 batou is being tested to run on Linux and Mac OS X.
 
@@ -20,7 +23,7 @@ batou is written in Python and requires to be run with **Python 2.7**.
 
 
 Local deployments
------------------
+~~~~~~~~~~~~~~~~~
 
 To run ``batou local`` you will need:
 
@@ -29,7 +32,7 @@ To run ``batou local`` you will need:
 
 
 Remote deployments
-------------------
+~~~~~~~~~~~~~~~~~~
 
 To run ``batou remote`` you will need:
 
@@ -48,21 +51,3 @@ On the remote machine:
 
 To allow batou bootstrapping itself you will be using a simple buildout that
 allows you to require additional dependencies in a controlled fashion.
-
-
-Specific features
------------------
-
-Secrets
-~~~~~~~
-
-To use the secrets management features you will need to have ``gnupg``
-installed on your local machine.
-
-sudo
-~~~~
-
-batou can change into a "service user" on the target machine, allowing you to
-separate your login users from the actual user your service runs in. To make
-this work we expect you to configure ``sudo`` so that your login user can
-change to the service user without being asked for a password.

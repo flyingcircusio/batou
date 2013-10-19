@@ -34,7 +34,7 @@ Services are described by components:
 Environments map components to hosts:
 
 .. code-block:: ini
-    
+
     [hosts]
     prod00 = nginx, haproxy
     prod01 = database
@@ -57,11 +57,14 @@ Remote deployments cover a whole environment:
 Guide
 -----
 
-* Introduction
-* Installation
-    * Before you install (requirements)
-* tutorials/create-new-project
-* tutorials/component
+.. toctree::
+   :maxdepth: 2
+
+   introduction
+   installation
+   create-new-project
+   component-tutorial
+
 
 * Component.configure()
     * root components vs. sub-components
@@ -72,7 +75,7 @@ Guide
 
 * Component.verify() and Component.update()
     * verify/update
-    * convenience methods (cmd, assert, last_updated, touch, chdir)  
+    * convenience methods (cmd, assert, last_updated, touch, chdir)
     * how the workdir gets determined
     * -> refactor into sub-components if too complicated
 
@@ -86,6 +89,7 @@ Guide
     * general parameters
     * vfs mapping (reference)
     * top-level attribute overrides
+    * Timeout
 
 * Local deployments
 * Remote deployments
