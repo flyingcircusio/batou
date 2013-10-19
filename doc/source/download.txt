@@ -1,0 +1,16 @@
+Downloads and VCS checkouts
+===========================
+
+
+download + checksum
+-------------------
+
+git
+---
+
+mercurial
+---------
+
+svn
+---
+

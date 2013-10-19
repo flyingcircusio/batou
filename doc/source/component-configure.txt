@@ -1,0 +1,12 @@
+Component.configure()
+=====================
+
+root components vs. sub-components
+----------------------------------
+
+configure()
+-----------
+
+data access (host, environment, root)
+-------------------------------------
+

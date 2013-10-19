@@ -1,0 +1,15 @@
+Managing files
+==============
+
+File
+----
+
+Directory
+---------
+
+Archives
+--------
+
+VFS mapping
+-----------
+
