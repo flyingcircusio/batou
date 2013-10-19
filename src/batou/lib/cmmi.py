@@ -58,7 +58,6 @@ class Build(Component):
 
     namevar = 'uri'
     checksum = None
-    source = None
     configure_args = ''
     prefix = None
     build_environment = None
