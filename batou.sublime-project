@@ -24,7 +24,7 @@
         },
         {
             "name": "Sphinx Build",
-            "cmd": ["bash", "-l", "-c", "make html; open build/html/index.html"],
+            "cmd": ["bash", "-l", "-c", "make html"],
             "working_dir": "${project_path}/doc"
         }
     ]
