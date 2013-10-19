@@ -22,6 +22,16 @@ batou is written in Python and requires to be run with **Python 2.7**.
     whatever other Python is available or build your own.
 
 
+Initialization
+~~~~~~~~~~~~~~
+
+To run ``batou-init`` you will need:
+
+* Python 2.7
+* virtualenv
+* Mercurial
+
+
 Local deployments
 ~~~~~~~~~~~~~~~~~
 
@@ -29,7 +39,6 @@ To run ``batou local`` you will need:
 
 * Python 2.7
 * virtualenv
-
 
 Remote deployments
 ~~~~~~~~~~~~~~~~~~
