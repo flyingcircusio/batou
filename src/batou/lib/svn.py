@@ -4,7 +4,7 @@ from batou.lib.file import Directory
 import os.path
 
 
-class Subversion(Component):
+class Checkout(Component):
 
     namevar = 'url'
     target = '.'
@@ -31,3 +31,6 @@ class Subversion(Component):
                 self.cmd(self.expand('svn revert -R .'))
                 self.cmd(self.expand('svn switch {{component.url}}'))
                 self.cmd(self.expand('svn up -r {{component.revision}}'))
+
+
+Subversion = Checkout  # BBB

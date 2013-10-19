@@ -21,7 +21,7 @@ additional services and infrastructure support.
 
 They also:
 
-* implement the **configure, verify, update cyle**
+* implement the **configure, verify, update cycle**
 * (re)use other components to construct a **hierarchy** for breaking complex
    tasks into smaller pieces
 * explicitly determine execution **order** of lower-level components within
