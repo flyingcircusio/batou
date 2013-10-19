@@ -1,16 +1,99 @@
-Downloads and VCS checkouts (TBD)
-=================================
+Downloads and VCS checkouts
+===========================
+
+Downloading files
+-----------------
+
+batou supports downloading files via HTTP(S) or FTP, for example:
+
+.. code-block:: python
+
+    self += Download(
+        'http://python.org/ftp/python/3.3.2/Python-3.3.2.tar.bz2',
+        checksum='md5:7dffe775f3bea68a44f762a3490e5e28')
 
 
-download + checksum
--------------------
+.. py:class:: batou.lib.download.Download(url)
 
-git
----
+    Download from the given URL (uses ``wget`` internally).
 
-mercurial
+.. py:attribute:: checksum
+
+    Checksum of the file to be verified (**required**). Must be given in the
+    format ``algorithm:value``, where ``algorithm`` must be a function of the
+    `hashlib`_ stdlib module.
+
+.. _`hashlib`: http://docs.python.org/2/library/hashlib.html
+
+.. py:attribute:: target
+
+    Filename to save the download as. [Default: last component of the URL]
+
+
+
+Mercurial
 ---------
 
-svn
+.. code-block:: python
+
+    self += Clone('https://bitbucket.org/gocept/batou', revision='tip')
+
+
+.. py:class:: batou.lib.mercurial.Clone(url)
+
+    Clone a Mercurial repository from the given URL.
+
+
+.. py:attribute:: revision
+
+    Which revision to clone (**required**)
+
+.. py:attribute:: target
+
+    Path to clone into (Default: workdir of parent component)
+
+
+Git
 ---
 
+.. code-block:: python
+
+    self += Clone('https://github.com/Pylons/pyramid', revision='tip')
+
+
+.. py:class:: batou.lib.git.Clone(url)
+
+    Clone a Git repository from the given URL.
+
+.. py:attribute:: target
+
+    Path to clone into (Default: workdir of parent component)
+
+.. py:attribute:: update_unpinned
+
+    Update the clone on each batou run. If False, the repository is cloned once
+    and then never updated again. [Default: False]
+
+.. note:: :py:class:`git.Clone` does not support specifying a revision yet.
+
+
+Subversion
+----------
+
+
+.. code-block:: python
+
+    self += Checkout('https://svn.zope.org/repos/main/zopetoolkit/trunk', revision='130345')
+
+
+.. py:class:: batou.lib.svn.Checkout(url)
+
+    Check out a Subversion repository from the given URL.
+
+.. py:attribute:: revision
+
+    Which revision to check out (**required**)
+
+.. py:attribute:: target
+
+    Path to clone into (Default: workdir of parent component)
