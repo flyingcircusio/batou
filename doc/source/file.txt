@@ -1,0 +1,171 @@
+Managing files
+==============
+
+File
+----
+
+The File component has been developed with `Puppet`_'s file type in mind. It
+accepts a very similar parameter set and has almost identical features.
+
+You can use it to manage files, directories, and symlinks, and you can specify
+content (literally or as Jinja templates). You can also manage the Unix
+attributes and control whether leading directories should be managed or not.
+
+.. _`Puppet`: http://docs.puppetlabs.com/puppet/
+
+The most basic usage is simply:
+
+.. code-block:: python
+
+    self += File('myfile')
+
+This example creates a file at ``work/mycomponent/myfile``, taking the contents
+from a file of the same name in the component's directory (i.e.
+``components/mycomponent/myfile``). By default, the source file is run through
+Jinja, with the file's parent component made available as ``component``.
+
+
+.. py:class:: batou.lib.File(path)
+
+Creates a file. The main parameter for File is the target path, and it accepts
+the following additional parameters:
+
+.. py:attribute:: source
+
+   Filename of the source file to be used as the File's content
+   (absolute path or relative to the component's directory).
+   [Default: same as target path]
+
+.. py:attribute:: content
+
+    Literal file contents as a string.
+
+.. py:attribute:: is_template
+
+    Process file contents as Jinja template. [Default: True]
+
+.. py:attribute:: template_context
+
+    Object to make available as ``component`` to the Jinja template.
+    [Default: File's parent component]
+
+.. py:attribute:: template_args
+
+    Dict of additional arguments to make available to the Jinja template.
+
+.. py:attribute:: encoding
+
+    Encoding for the file contents [Default: ascii]
+
+.. py:attribute:: owner
+
+    Unix owner username.
+
+.. py:attribute:: group
+
+    Unix group name.
+
+.. py:attribute:: mode
+
+    Unix permission mode (octal number, e.g. 0o755)
+
+.. py:attribute:: leading
+
+    Create leading directories that were given in the target ``path``.
+    [Default: False]
+
+.. py:attribute:: ensure
+
+    Type of object to be created: 'file', 'directory', or 'symlink'.
+    This is useful for complex situations (e.g. creating a symlink with
+    special ownership), for simple situations it's probably more readable
+    to use :py:class:`Directory` or :py:class:`Symlink`.
+
+.. py:attribute:: link_to
+
+    Source of symlink (for :py:attr:`ensure` = 'smylink')
+
+
+XXX explain detailed factoring of Presence and Content
+
+
+Directory
+---------
+
+.. py:class:: batou.lib.file.Directory(path)
+
+    Creates a directory. The main parameter is the target path.
+
+.. py:attribute:: source
+
+    Path to a source directory whose contents are to be synchronized to the
+    target path (uses rsync internally).
+
+.. py:attribute:: exclude
+
+    List of file names or patterns that should **not** be synchronized to the
+    target path (passed to rsync as ``--exclude`` argument, see the `rsync
+    documentation`_ for details).
+
+.. _`rsync documentation`: https://www.samba.org/ftp/rsync/rsync.html
+
+
+.. py:class:: Symlink(target, source)
+
+    Creates a symlink at ``target`` by linking to ``source``.
+
+
+Removing files
+--------------
+
+Removal of obsolete things is a difficult topic in the converging paradigm. If
+in the past we created a file ``foo``, but now it is not used anymore, the code
+that originally said, "please manage ``foo``", will not be there anymore. This
+means that nobody knows that the file ``foo`` that is still lying around on the
+production system is not actually in use anymore. In most cases, a few stray
+files do not matter, but in case they do, the deployment code has to explicitly
+state that something should **not** be present anymore.
+
+.. py:class:: batou.lib.file.Purge(pattern)
+
+    Ensures that a set of files (given as a glob pattern) does not exist.
+
+
+Extracting archive files
+------------------------
+
+batou can extract archive files in Tar, Zip, and DMG (on OSX target machines)
+format:
+
+.. py:class:: batou.lib.archive.Extract(archive)
+
+The main parameter is the archive filename (relative to the component's
+directory). The archive format is determined according to the file name
+extension ('.tar.gz', '.tar', '.tar.bz2', '.tgz' use ``tar``, '.zip' uses
+``unzip`` and '.dmg' uses ``hdiutil``). The following additional parameters are
+supported:
+
+.. py:attribute:: target
+
+    Target directory to extract the archive into. Directory is created if
+    it does not exist (compare :py:attr:`create_target_dir`).
+    [Default: base name of the archive file]
+
+.. py:attribute:: create_target_dir
+
+    Extract into the directory given in :py:attr:`target`. Set to False to
+    extract directly into the work directory.
+    [Default: True]
+
+.. py:attribute:: strip
+
+    Only for tar archives: number of directories contained in the archive to
+    strip off (see the `tar documentation`_ for details) [Default: 0]
+
+.. _`tar documentation`: https://www.gnu.org/software/tar/manual/html_node/transform.html#SEC113
+
+
+VFS mapping (TBD)
+-----------------
+
+XXX writeme

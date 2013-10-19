@@ -1,0 +1,16 @@
+Environments (TBD)
+==================
+
+component/host assignment
+-------------------------
+
+general parameters
+------------------
+
+timeout, ssh user, ...
+
+vfs mapping (reference)
+-----------------------
+
+top-level attribute overrides
+-----------------------------

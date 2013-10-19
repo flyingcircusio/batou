@@ -1,0 +1,116 @@
+batou
+=====
+
+.. raw:: html
+
+    <a href="https://bitbucket.org/gocept/batou"
+       style="float:right;border-bottom:none">
+      <img src="https://bitbucket.org/zgramana/bitbucket-ribbons/raw/988dffc5fbeb/png/bitbucket-ribbon-dark-gray.png" />
+    </a>
+
+.. rubric:: multi-(component | host | environment | platform) deployment
+
+batou makes it easy to define and perform automated service deployments. It tries to combine the simplicity of Fabric's SSH automation with the reliability of convergence/idempotence-oriented systems like Puppet.
+
+It is developed by the people running the `Flying Circus
+<http://flyingcircus.io>`_ and made available under the 2-clause BSD license.
+
+Services are described by components:
+
+.. code-block:: python
+
+    from batou.component import Component
+    from batou.lib.python import VirtualEnv, Package
+    from batou.lib.supervisor import Program
+
+    class MyApp(Component):
+
+        def configure(self):
+            self += VirtualEnv('2.7')
+            self += Package('myapp')
+            self += Program('myapp',
+                command='bin/myapp')
+
+Environments map components to hosts:
+
+.. code-block:: ini
+
+    [hosts]
+    prod00 = nginx, haproxy
+    prod01 = database
+    prod10 = myapp, supervisor
+    prod11 = myapp, supervisor
+
+Local deployments take care of a single host:
+
+.. code-block:: bash
+
+    $ ./batou local dev localhost
+
+Remote deployments cover a whole environment:
+
+.. code-block:: bash
+
+    $ ./batou remote production
+
+
+Guide
+-----
+
+.. toctree::
+   :maxdepth: 2
+
+   introduction
+   installation
+   create-new-project
+   component-tutorial
+
+   component-configure
+   component-update
+   resources
+   environment
+
+   local
+   remote
+
+   templating
+   file
+   download
+   cmmi
+   supervisor
+   python
+
+   network
+   secrets
+   platform
+
+   update
+   component-advanced
+
+
+Resources
+---------
+
+Presentations from conferences:
+
+* `EuroPython 2013 - batou <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
+
+.. toctree::
+    :maxdepth: 1
+
+    support
+    changes
+    legal
+
+
+Contribute
+----------
+
+batou is developed as open source / free software. If you want to get in
+touch and contribute, you are more than welcome.
+
+* Use our `Redmine <http://projects.gocept.com/projects/batou>`_ to
+  report bugs, feature requests, or send us feedback.
+
+* Fork our `bitbucket repository <http://bitbucket.org/gocept/batou>`_ and send
+  us pull requests.

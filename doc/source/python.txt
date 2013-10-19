@@ -1,0 +1,12 @@
+Managing python installations (TBD)
+===================================
+
+virtualenv
+----------
+
+packages
+--------
+
+buildout
+--------
+

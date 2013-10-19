@@ -1,0 +1,16 @@
+Downloads and VCS checkouts (TBD)
+=================================
+
+
+download + checksum
+-------------------
+
+git
+---
+
+mercurial
+---------
+
+svn
+---
+

@@ -1,0 +1,214 @@
+=========
+Changelog
+=========
+
+1.0b12 (unreleased)
+===================
+
+- Create the 'secrets' directory if it doesn't exist, yet. Also, disallow editing secret files for non-existing environments.
+
+- Support continuing remote bootstrapping if we failed after creating the
+  initial remote directory but were unable to use Mercurial.
+
+- #12898: build.Configure component was broken when using the default 
+  prefix.
+
+
+1.0b11 (2013-10-17)
+===================
+
+- #12897: Use non-SSL pypi mirror for downloading virtualenv to fix tests
+  failing randomly on machines that (for some reason) can't validate PyPI's
+  certificate.
+
+- #12911: Ensure that we can configure file owners when they don't 
+  exist during configure phase yet.
+
+- #12912: Fix untested and broken file ownership management.
+
+- #12847: Clean up unicode handling for File and Content components and
+  templating.
+
+- #12910: Remote deployments failed when using bundles for transfers if no
+  changes needed bundling.
+
+- #12766: Allow bootstrapping a batou project in an existing directory to
+  support migration from 0.2.
+
+- #12283: Recognize files as 'is_template' by default. Auto-detect source files
+  in the definition directory if they have the same basename. This is what you
+  want in 99% of all cases. Explicitly stating either the 'content' or 'source'
+  parameter disables auto-detection.
+
+  Now you can write this:
+
+  File('foo')
+
+  and have `components/x/foo` recognized as the source file and handled as a
+  template.
+
+- Use ConfigParser instead of configobj which is effectively unmaintained
+  (see https://twitter.com/voidspace/status/380699699042213889) and support
+  lists separated by newlines in addition to commas.
+
+
+1.0b10 (2013-09-27)
+===================
+
+- Package our own virtualenv instead of depending on the system-installed one.
+  This should alleviate troubles due to old virtualenv versions that package
+  ``distribute``, which causes conflicts with recent ``setuptools`` versions
+  (#12874).
+
+- Update supervisor version to 3.0.
+
+
+1.0b9 (2013-08-22)
+==================
+
+- Update Package component so it ignores installed packages when installing.
+  This way, we actually install setuptools even when distribute is installed.
+  (Otherwise it's a no-op since distribute tells pip that setuptools is
+  already satisfied).
+
+- Fix update process: wrong call to old '.batou/bin/batou' failed and early
+  bootstrapping would downgrade temporarily which is confusing and superfluous.
+  Fixes #12739.
+
+1.0b8 (2013-08-17)
+==================
+
+- Remove superfluous mkdir call during remote bootstrap.
+
+- Make ``batou init`` print that it's working. Bootstrapping can take a while,
+  so at least signal that something's going on.
+
+
+1.0b7 (2013-08-17)
+==================
+
+- Depend on Python2.7 to be available on the PATH during early bootstrap.
+  Otherwise our chances to get a 2.7 virtualenv are pretty small, too.
+
+- Improve project template: ignore the work/ directory by default.
+
+
+1.0b6 (2013-08-17)
+==================
+
+- More MANIFEST inclusions: bootstrap-template.
+
+
+1.0b5 (2013-08-17)
+==================
+
+- Improve MANIFEST so we actually package the init template and other generated
+  files, like version.txt and requirements.txt.
+
+1.0b4 (2013-08-17)
+==================
+
+- Provide a simple project-creation command, both for pip-installed batou's as
+  well as spawning new projects from existing ones. Fixes #12730
+
+- Fix #12679: make timeouts configurable.
+
+- Removed re-imports from batou main module to support light-weight
+  self-installation and bootstrapping. I.e. 'from batou import Component' no
+  longer works.
+
+- Provide a single main command together with a 'bootstrap' wrapper that you
+  can check into your project and that is maintained during updates
+  automatically. It also provides fully automatic bootstrapping, installation,
+  upgrading and other maintenance.
+
+- Fix Python package installation version check.
+
+- Don't use `bin/buildout bootstrap` command anymore. PIP installs a sufficient
+  `bin/buildout` so buildout can do the rest internally.
+
+- Install zc.buildout during bootstrapping phase using PIP to avoid
+  bootstrap.py problems.
+
+- Shorten URLs in the Build component to their basename.
+
+- Add 'assert_cmd' API to support simpler assertions for verify when needing to
+  check the result of an external command.
+
+- Switch to asking pip installing eggs instead of flat installations as
+  namespaces seem to collide otherwise.
+
+- Remove non-functional deprecated 'md5sum' attribute.
+
+- Components are context managers now. If you provide __enter__ it will be
+  called before verify() and if you provide __exit__ this will be called after
+  update (always - even if update isn't actually called). This allows you to
+  manage temporary state on the target system more gracefully. See the
+  DMGExtractor for an example.
+
+- Major refactoring of internal data structures to simplify and improve test
+  coverage. Some breakage to be expected:
+
+  * Components do not have a 'service' attribute any longer. If you need access
+    to the service base directory use 'environment.base_dir'.
+
+- Another attempt at getting convergency for package installation: actually
+  leverage pkg_resources to check what version of a package is installed. PIP
+  does not necessarily list or freeze setuptools, even if forced to reinstall.
+
+- Remove superfluous '--update' from pip calls that would temporarily install
+  the incorrect package version.
+
+- Improve convenience of the 'secrets-edit' wrapper script to allow
+  re-encrypting without re-entering the editor.
+
+- Consistently switch to using setuptools.
+
+- Fix #12399: incorrect stat attributes for Owner and Group
+
+- Add ``exclude`` parameter to Directory component.
+
+- Add ``env`` parameter to ``Component.cmd()`` (and corresponding
+  ``build_environment`` parameter to the Build component) to allow
+  adding/overriding environment variables.
+
+
+1.0b3 (2013-07-09)
+==================
+
+- Enable logging in the remote core to see what's going on on the remote side.
+
+- Try to better format exceptions from the remote side.
+
+- Try harder to get virtualenv back into a working state.
+
+- Allow remote deployments from root of repository.
+
+- Make PIP management more robust.
+
+1.0b2 (2013-07-09)
+==================
+
+- Add component to manage PIP within a virtual env.
+
+- Add component to manage packages with PIP within a virtual env.
+
+- Restructure buildout component to make it more robust regarding
+  setuptools/distribute preparation. Also remove usage of bootstrap completely
+  as we rely on virtualenv anyway.
+
+
+1.0b1 (2013-07-09)
+==================
+
+- Apply semantic versioning: initial development is over, so this is 1.0 now.
+
+- Major revamp of secrets management:
+
+  - switch to GPG (instead of aespipe)
+
+  - turn secrets into a core feature, removing the need for a special component
+
+- Add '--single' to suppress parallel bootstrapping.
+
+

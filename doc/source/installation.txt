@@ -1,0 +1,62 @@
+Installation
+============
+
+Requirements
+------------
+
+Batou wants to have as little requirements as possible. However, for the sake
+of simplicity we prefer to make some basic choices.
+
+Platforms
+~~~~~~~~~
+
+batou is being tested to run on Linux and Mac OS X.
+
+We do *not* support deploying to non-UNIX targets. We *may* support running
+:program:`batou remote` on non-UNIX platforms in the future.
+
+batou is written in Python and requires to be run with **Python 2.7**.
+
+.. note:: Even though batou itself uses Python 2.7 -- it makes no assumptions
+    about the components you deploy. If you deploy Python applications you can use
+    whatever other Python is available or build your own.
+
+
+Initialization
+~~~~~~~~~~~~~~
+
+To run ``batou-init`` you will need:
+
+* Python 2.7
+* virtualenv
+* Mercurial
+
+
+Local deployments
+~~~~~~~~~~~~~~~~~
+
+To run ``batou local`` you will need:
+
+* Python 2.7
+* virtualenv
+
+Remote deployments
+~~~~~~~~~~~~~~~~~~
+
+To run ``batou remote`` you will need:
+
+On your local machine:
+
+* Python 2.7
+* Mercurial
+* SSH client
+
+On the remote machine:
+
+* Python 2.7
+* Mercurial
+* SSH server
+* virtualenv
+
+To allow batou bootstrapping itself you will be using a simple buildout that
+allows you to require additional dependencies in a controlled fashion.

@@ -1,0 +1,314 @@
+Introduction
+============
+
+This reference is intended to help understanding basic concepts and as a
+complete listing of all the feature, API , and behaviour of ``batou``. It
+should answer all questions that you have when setting up your own deployments.
+
+
+General model
+-------------
+
+A deployment (or "service") is split into two parts: the components and
+environments.
+
+.. image:: general-model.png
+    :width: 400px
+
+**Components** define the general parts that your service consists of: frontend
+configuration, your application itself, database configuration, cronjobs, and
+additional services and infrastructure support.
+
+They also:
+
+* implement the **configure, verify, update cycle**
+* (re)use other components to construct a **hierarchy** for breaking complex
+   tasks into smaller pieces
+* explicitly determine execution **order** of lower-level components within
+  their level of the hierarchy
+* can exchange information between each other using the **resource
+  API** - a simple in-memory key-value store, modelling dependencies between
+  components and determining higher-level execution order
+* should generally not have *any* specific hard-coded information
+  about hostnames, public addresses, etc.
+
+**Environments** define individual installations of your service by mapping the
+service's components to hosts. A service can define any number of environments.
+You need at least one environment to actually perform any deployment.
+
+They also:
+
+* can override any attributes on top-level components
+* determine the type of the **platform** that is deployed to, activating
+  platform-specific components in addition to the services' general model
+
+
+When **deploying locally** all components of the specific host/environment
+combination will be configured in your **working directory**.
+
+When **deploying remotely** all components of all hosts of the specified
+environment will be configured on the target machines' working directories.
+
+
+Components
+----------
+
+Components are *the* essential part of batou's model: they describe a part of
+your service in the "configure/verify/update" idiom and by creating more complex
+parts from a tree of sub-components.
+
+Here's a sample component that we can use to explain most of a component's
+anatomy:
+
+.. code-block:: python
+
+    from batou.component import Component
+    from batou.lib.file import File
+
+
+    class CompressedFile(Component):
+
+        namevar = 'path'
+        content = ''
+
+        def configure(self):
+            self.path = self.map(self.path)
+            self.raw_path = self.path + '.raw'
+            self += File(raw_path, content=self.content)
+
+        def verify(self):
+            self.assert_file_is_current(self.path, [self.raw_path])
+
+        def update(self):
+            self.cmd('gzip -c {} > {}'.format(self.raw_path, self.path))
+
+First, you can see that **components are written as Python classes**. The
+object-oriented model fits well into Python's OO mechanisms: the class receives
+parameters for each instance of the component and encapsulates data and
+behaviour.
+
+Instances of components can either be sub-components (like the usage of the
+'File' component in the example) or they are instances as referred to by the
+environment's host/component mapping (also known as "root components").
+
+A component has a **namevar** attribute which determines the name of the first
+parameter when used as a sub-component. This allows specifying one single,
+"natural" argument for components, like the filename for the 'File' component.
+
+Components have three methods: **configure, verify, and update**. All the
+methods are optional, but in most cases you will implement at least the
+``configure`` method.
+
+``configure()``
+~~~~~~~~~~~~~~~
+
+
+The ``configure`` method is used to compute the desired target state for your
+deployment.
+
+This computation will leverage input from the framework by using instance
+attributes that will be set by parent components or environment-specific
+overrides. In turn, you can use the ``+=`` operator to attach sub-components.
+Sub-components will be processed in the order they are added to their parent.
+
+``configure`` **will be called by the framework multiple times and in many
+locations**: on your local computer, at all target systems, and over and over
+again while batou tries to determine the correct order to deploy the root
+components.
+
+This has a couple of implications that you need to be aware of when writing
+code in the ``configure`` method:
+
+* Do not rely upon any state that you expect on the target machine to exist.
+  Corollary: do not open files outside of the definition directory of your
+  component.
+* Do not make changes to the system.
+* Only access "globally" available data: from the batou API and global
+  network resources (e.g. DNS).
+* Avoid making changes to global resources in the Python interpreter (e.g.
+  module-level mutables) or at least be aware that this state will not be reset
+  automatically by batou when doing repeated runs of your configure code.
+
+Generally speaking, **treat the configure method as if it would run "in empty
+space" with no actual environment except from batou's API**.
+
+While running ``configure`` batou will change its working directory to the
+definition directory of the root component that is currently being configured.
+This means you can (and should) treat all paths relative to this location and
+generally not have to use anything outside this directory.
+
+Finally, we encourage you to delegate **dealing with files** to the pre-defined
+``File`` component. In case that you need to directly handle paths , ensure
+that you **always use** ``map()`` to avoid cluttering developers' environments
+and to support sandboxing and platform-specific remapping.
+
+``verify()`` and ``update()``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These methods complement the pure "etherical" nature of the ``configure()`` method:
+
+* they are both executed exactly once on the target system
+* verify determines whether the target system is curently in compliance with the target state
+* update modifies the target system to remedy any non-compliance with the target state
+
+details about component features and API
+- access to service, environment, and host objects
+- naming rules, multiple components in same definition directory vs. working directory
+multiple component
+
+
+Motivation
+----------
+
+The operations team at gocept runs web applications. Service deployment
+(read: installing and updating those applications) is a major task for us that
+we think about a lot.
+
+Nowadays we consider service deployments to target a "platform" instead of
+"servers": provisioning and system configuration are solved well by other
+tools. Also, developers should not have to think about "buying that server"
+when coming up with their requirements for the target runtime environment.
+
+A platform, for us, means that we can rely on machines, the operating system,
+and other basic infrastructure to be already available.
+
+There are grey areas between provisioning, system configuration, and service
+deployment. That's why a deployment tool should have some flexibility to adapt
+depending on the platform that a service uses.
+
+A typical (web) project consists of many components that make up the runtime
+environment, the application itself being only one of them. An example of a
+project that we typically deal with looks like this:
+
+.. image:: production-architecture.png
+
+This "environment" consists of 27 virtual machines running a good number of
+runtime components that need to be configured. The actual application (in this
+case a Plone site running in a Zope server) is only one moving part of many.
+
+The diagram only shows the active components that need to be configured. Many
+more are "passive" and not visible here: maintenance jobs, secrets, process
+supervision, log rotation, monitoring ...
+
+All of those components require hard-earned knowledge to configure them
+properly – which is why we want to re-use this knowledge as much as possible.
+For example, we rely on the knowledge of system administrators by letting them
+pre-install, larger things like PostgreSQL and take care of their maintenance.
+Deploying the service then only requires us to create the database and user.
+Another example is nginx: we also want to benefit from a system-installed
+package but need to add our own virtual host definitions and need to be able to
+reload the process with user privileges.
+
+When running a service like the above, you typically also want to run a copy
+for testing purposes. The testing environment will be structurally similar but
+should use less resources to minimze cost:
+
+.. image:: staging-architecture.png
+    :width: 400px
+
+We further see that there are even more circumstances that need their own
+environments, such as developers running the application (or some part of it)
+on their own machine.
+
+.. image:: dev-architecture.png
+    :width: 400px
+
+In addition to these environments we need to ponder that:
+
+* we need more development environments when new developers arrive,
+* we need to merge changes to the config to all of the environments,
+* we need to consider both initial installation and sub-sequent updates.
+
+These are the basic requirements that led us to developing batou.
+
+Name
+----
+
+The name "batou" is taken from the animated movie "Ghost in the Shell". Batou
+is a member of the police force hunting down the "puppet master".
+
+We chose the name as a pun on the fact that we have a history with and are
+happy users of `Puppet <http://puppetlabs.com>`_ but were also looking for a
+complementary tool.
+
+History
+-------
+
+Looking back we see that there's a long history of automating deployments:
+
+* FTPing PHP scripts from a developer machine to a server (late nineties)
+* Running shell scripts to automate Zope instance configuration (2001)
+* Using Zope's built-in instance configuration mechanism and more shell scripts (2003)
+* Using zc.buildout to automate Python environment configuration (2006)
+* Using Fabric to automate zc.buildout deployment (2010)
+
+Around 2008 we started making operations a major part of our business. In 2010
+we got a big customer for whom we needed all the setup that is shown in the
+diagrams above and started thinking harder about automating this deployment
+properly.
+
+On the system configuration level we were already using puppet. However, system
+configuration and service deployment are two different animals: with puppet we
+manage many machines that are similar (system configuration) whereas the
+service deployment wants to individualize some of those machines for a specific
+purpose.
+
+Comparison with other tools
+---------------------------
+
+**Puppet** is a system configuration tool and thus is designed around
+assumptions that are detrimental to the goals of service deployment: no
+orchestration, pull principle, root access. Also: check out Puppet Labs' `Fully
+automated provisioning
+<http://www.puppetlabs.com/wp-content/uploads/2010/03/FullyAutomatedProvisioning_Whitepaper7.pdf>`_
+whitepaper which explicitly points to tools like Fabric, Capistrano,
+ControlTier and others.
+
+**Fabric + zc.buildout** was our basis when we started automating complex
+setups. We used it to check out a Mercurial repository that contains a
+buildout definition, run buildout on it, and do some additional shell stuff
+around it. Give that to a list of hosts and you're good. We encountered two
+substantial problems with this approach, though: we ended up with a single
+large buildout and pretty complex Fabric code, both of which became
+unmaintainable after a while. However, in general we did have a "single
+command" deployment that worked very well – most of the time.
+
+What we were missing was the declarative modelling that we enjoyed with Puppet
+on the system configuration level. Also, we wanted to be able to do more
+fine-grained deployment and not be limited to a "per host" command execution
+order.
+
+**Salt** seems to try solving the same problem as Fabric and MCollective: a
+scalable approach to Remote Command Execution. We have not looked deeply at
+Salt and it might be an interesting alternative to batou's SSH + Mercurial
+usage. However, it seems to require additional runtime components in the target
+environment which are not as widely available as SSH.
+
+
+Architecture
+------------
+
+Batou consists of:
+
+* a model to describe services in terms of "components" and "environments"
+* a command to realize a specific configuration locally (``batou local``)
+* a command to deploy a whole environment remotely (``batou remote``)
+* an extensible library of re-usable components
+
+Components are Python objects with an API to construct a component hierarchy
+(making the model recursive) as well as to perform actions on the target system in
+a manner that makes it easy to achieve convergency and idempotency.
+
+Environments represent different installations of a service: staging,
+production, development, etc. For each environment you specify which hosts belong
+to it, how the services shall be distributed over those hosts, and possibly some
+customization of how components are configured in that environment.
+
+The ``batou local`` command deploys a given configuration (for a given host
+and environment) locally.
+
+The ``batou remote`` command deploys a given configuration for a complete
+environment. It does so by bootstrapping itself using SSH and Mercurial and
+then running ``batoucommandlocal`` on the remote side in  batch mode. It is able to
+coordinate the execution order of tasks between different hosts as required by
+the model.
