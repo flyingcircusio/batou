@@ -1,5 +1,5 @@
-Component.verify() and Component.update()
-=========================================
+Component.verify() and Component.update() (TBD)
+===============================================
 
 verify/update
 -------------

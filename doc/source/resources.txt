@@ -1,5 +1,5 @@
-Resources: exchanging information between components
-====================================================
+Resources: exchanging information between components (TBD)
+==========================================================
 
 provide/require/require_one
 ---------------------------
