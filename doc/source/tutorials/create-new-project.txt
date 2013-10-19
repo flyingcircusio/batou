@@ -25,8 +25,8 @@ Initializing
 ------------
 
 batou provides the ``batou-init`` script to create new project directories.
-Lets say your new project is called "pyramid" and you want it to be created in
-a directory called ``pyramid``.
+Lets say your new project is called "myproject" and you want it to be created in
+a directory called ``myproject``.
 
 .. code-block:: console
 
