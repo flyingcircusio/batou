@@ -32,8 +32,8 @@ install batou in it. When you're finished, you should have the
 ``./batou`` script available.
 
 
-Deploy the program
-------------------
+Deploy a program
+-----------------
 
 Next, create a component named "tick" and a simple environment that uses it:
 
@@ -105,8 +105,8 @@ In the next step, we will concern ourselves with installing supervisor to run
 our program for us.
 
 
-Deploy the supervisor software
-------------------------------
+Deploy supervisor
+-----------------
 
 As a second component, deploy now a supervisor instance that will daemonise
 the program from the previous step as a long-running process, and control that
@@ -202,8 +202,8 @@ path to ``tick.sh`` work):
   $ cd ../../
 
 
-Have batou configure supervisor's programs
-------------------------------------------
+Configure supervisor programs
+-----------------------------
 
 Rather than having to hard-code the program(s) supervisor should control
 within its buildout configuration, you can use batou to do that for you. Batou
@@ -290,8 +290,8 @@ the same supervisor configuration that you had before, only automatically:
       10 tick …/work/tick/tick.sh true
   …
 
-Have batou manage the supervisor service
-----------------------------------------
+Manage supervisor as a service
+------------------------------
 
 So far, you are using batou to install and configure the components of your
 deployment, the tick program and supervisor to run it for you. However, you
