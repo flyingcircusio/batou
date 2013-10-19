@@ -6,12 +6,21 @@ import shutil
 
 class Clone(Component):
 
-    # XXX This API is the wrong way around, should be like SVN and Mercurial,
-    # whose namevar is ``url`` and they have a kw parameter ``target``.
-    namevar = 'target'
+    # BBB the namevar used to be target, but all other VCS components have url
+    namevar = 'url_or_target'
+    url = None
+    target = '.'
+    source = None  # BBB
+
     update_unpinned = False
 
     def configure(self):
+        if self.source is None:
+            self.url = self.url_or_target
+        else:
+            self.url = self.source
+            self.target = self.url_or_target
+
         self.git_dir = '{}/.git'.format(self.target)
 
     def verify(self):
@@ -26,7 +35,7 @@ class Clone(Component):
             # Clean any non-git residuals
             shutil.rmtree(self.target)
         if not os.path.exists(self.target):
-            self.cmd('git clone {0} {1}'.format(self.source, self.target))
+            self.cmd('git clone {0} {1}'.format(self.url, self.target))
         with self.chdir(self.target):
             self.cmd('git pull')
             self.cmd('git submodule update --init --recursive')
