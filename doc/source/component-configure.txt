@@ -1,5 +1,5 @@
-Component.configure()
-=====================
+Component.configure() TBD
+=========================
 
 root components vs. sub-components
 ----------------------------------

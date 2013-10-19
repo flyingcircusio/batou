@@ -1,3 +1,8 @@
-Updating batou in existing projects
-===================================
+Updating batou in existing projects (TBD)
+=========================================
+
+
+- updating using `batou update`
+
+- updating from 0.2
 
