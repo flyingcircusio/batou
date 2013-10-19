@@ -10,7 +10,7 @@ class Django(Component):
     def configure(self):
         self.address = Address(self.host.fqdn, '8080')
         self += VirtualEnv('2.7')
-        self += Package('Django',
+        self += Package('django',
                         version='1.5.4')
         self += SyncDirectory('mysite', source='mysite')
         self += Program(
