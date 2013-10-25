@@ -5,7 +5,8 @@ Changelog
 1.0b12 (unreleased)
 ===================
 
-- Create the 'secrets' directory if it doesn't exist, yet. Also, disallow editing secret files for non-existing environments.
+- Create the 'secrets' directory if it doesn't exist, yet. Also, disallow
+  editing secret files for non-existing environments.
 
 - Support continuing remote bootstrapping if we failed after creating the
   initial remote directory but were unable to use Mercurial.
