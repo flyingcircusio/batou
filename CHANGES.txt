@@ -5,6 +5,10 @@ Changelog
 1.0b12 (unreleased)
 ===================
 
+- Added ``branch`` argument to ``mercurial.Clone``. Setting a branch
+  automatically updates to the branch head on deploy. This is mostly useful for
+  development environments.
+
 - Create the 'secrets' directory if it doesn't exist, yet. Also, disallow
   editing secret files for non-existing environments.
 

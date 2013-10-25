@@ -10,6 +10,7 @@ class Clone(Component):
     namevar = 'url'
     target = '.'
     revision = None
+    branch = None
 
     _revision_pattern = re.compile('parent: \d+:([a-f0-9]+) ')
 
@@ -20,7 +21,11 @@ class Clone(Component):
         with self.chdir(self.target):
             if not os.path.exists('.hg'):
                 raise UpdateNeeded()
-            if self.current_revision != self.revision:
+            if self.revision and self.current_revision != self.revision:
+                raise UpdateNeeded()
+            if (self.branch and (
+                    self.current_branch != self.branch) or
+                    self.has_incoming_changesets):
                 raise UpdateNeeded()
 
     @property
@@ -30,6 +35,22 @@ class Clone(Component):
         if not match:
             return None
         return match.group(1)
+
+    @property
+    def current_branch(self):
+        stdout, stderr = self.cmd('hg branch')
+        return stdout.strip()
+
+    @property
+    def has_incoming_changesets(self):
+        try:
+            self.cmd('hg incoming -q -l1', silent=True)
+        except RuntimeError, e:
+            returncode = e.args[1]
+            if returncode == 1:
+                return False
+            raise
+        return True
 
     def update(self):
         with self.chdir(self.target):
