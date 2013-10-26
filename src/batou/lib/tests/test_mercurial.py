@@ -4,7 +4,7 @@ import os.path
 import pytest
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def repos_path(root):
     repos_path = os.path.join(root.environment.workdir_base, 'upstream')
     cmd('mkdir {dir}; cd {dir}; hg init;'
