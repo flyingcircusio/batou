@@ -32,3 +32,20 @@ def test_setting_branch_updates_on_incoming_changes(root, repos_path):
     root.component.deploy()
     assert os.path.isfile(
         os.path.join(root.environment.workdir_base, 'mycomponent/clone/bar'))
+
+
+@pytest.mark.slow
+def test_set_revision_does_not_pull_when_revision_matches(root, repos_path):
+    clone = batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='default')
+    root.component += clone
+    root.component.deploy()
+    revision = clone.current_revision
+    clone.revision = revision
+    clone.branch = None
+    cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
+        dir=repos_path))
+    root.component.deploy()
+    stdout, stderr = cmd('cd {workdir}/clone; LANG=C hg incoming'.format(
+        workdir=root.workdir))
+    assert 'changeset:   1' in stdout
