@@ -35,6 +35,18 @@ def test_setting_branch_updates_on_incoming_changes(root, repos_path):
 
 
 @pytest.mark.slow
+def test_branch_does_switch_branch(root, repos_path):
+    cmd('cd {dir}; hg branch bar; hg ci -m "commit branch"'.format(
+        dir=repos_path))
+    root.component += batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='bar')
+    root.component.deploy()
+    stdout, stderr = cmd('cd {workdir}/clone; hg branch'.format(
+        workdir=root.workdir))
+    assert 'bar' == stdout.strip()
+
+
+@pytest.mark.slow
 def test_set_revision_does_not_pull_when_revision_matches(root, repos_path):
     clone = batou.lib.mercurial.Clone(
         repos_path, target='clone', branch='default')
