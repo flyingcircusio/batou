@@ -15,6 +15,8 @@ class Clone(Component):
     _revision_pattern = re.compile('parent: \d+:([a-f0-9]+) ')
 
     def configure(self):
+        assert self.revision or self.branch
+        self.target = self.map(self.target)
         self += Directory(self.target)
 
     def verify(self):
@@ -29,8 +31,15 @@ class Clone(Component):
                 raise UpdateNeeded()
 
     @property
+    def revision_or_branch(self):
+        # Mercurial often takes either a revision or a branch.
+        return self.revision or self.branch
+
+    @property
     def current_revision(self):
-        stdout, stderr = self.cmd('LANG=C hg summary | grep parent:')
+        stdout, stderr = self.cmd(
+            self.expand('LANG=C hg --cwd {{component.target}} summary | '
+                        'grep parent:'))
         match = self._revision_pattern.search(stdout)
         if not match:
             return None
@@ -56,10 +65,10 @@ class Clone(Component):
         with self.chdir(self.target):
             if not os.path.exists('.hg'):
                 self.cmd(self.expand(
-                    'hg clone -u {{component.revision}} {{component.url}} .'))
+                    'hg clone -u {{component.revision_or_branch}} {{component.url}} .'))
             else:
                 self.cmd('hg pull')
-                self.cmd(self.expand('hg up --clean {{component.revision}}'))
+                self.cmd(self.expand('hg up --clean {{component.revision_or_branch}}'))
 
     def last_updated(self):
         with self.chdir(self.target):
