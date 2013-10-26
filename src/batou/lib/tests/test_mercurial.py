@@ -27,7 +27,8 @@ def test_setting_branch_updates_on_incoming_changes(root, repos_path):
     root.component += batou.lib.mercurial.Clone(
         repos_path, target='clone', branch='default')
     root.component.deploy()
-    cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(dir=repos_path))
+    cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
+        dir=repos_path))
     root.component.deploy()
     assert os.path.isfile(
         os.path.join(root.environment.workdir_base, 'mycomponent/clone/bar'))
