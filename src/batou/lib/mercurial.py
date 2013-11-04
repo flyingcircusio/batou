@@ -15,7 +15,7 @@ class Clone(Component):
     _revision_pattern = re.compile('parent: \d+:([a-f0-9]+) ')
 
     def configure(self):
-        assert self.revision or self.branch
+        assert self.revision_or_branch
         self.target = self.map(self.target)
         self += Directory(self.target)
 
