@@ -5,7 +5,7 @@ Changelog
 1.0b13 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Added some documentation.
 
 
 1.0b12 (2013-11-04)
