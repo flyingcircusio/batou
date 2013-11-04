@@ -65,10 +65,12 @@ class Clone(Component):
         with self.chdir(self.target):
             if not os.path.exists('.hg'):
                 self.cmd(self.expand(
-                    'hg clone -u {{component.revision_or_branch}} {{component.url}} .'))
+                    'hg clone -u {{component.revision_or_branch}} '
+                    '{{component.url}} .'))
             else:
                 self.cmd('hg pull')
-                self.cmd(self.expand('hg up --clean {{component.revision_or_branch}}'))
+                self.cmd(self.expand(
+                    'hg up --clean {{component.revision_or_branch}}'))
 
     def last_updated(self):
         with self.chdir(self.target):
