@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b12 (unreleased)
+1.0b12 (2013-11-04)
 ===================
 
 - Added ``branch`` argument to ``mercurial.Clone``. Setting a branch
