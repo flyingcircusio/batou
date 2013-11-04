@@ -55,11 +55,8 @@ Please commit and push first.
             sys.exit(1)
 
     try:
-        cmd('hg -q outgoing -l 1', acceptable_returncodes=[0, 1])
+        cmd('hg -q outgoing -l 1', acceptable_returncodes=[1])
     except RuntimeError:
-        # this means there's nothing outgoing
-        pass
-    else:
         logger.error("""\
 Your repository has outgoing changes.
 
