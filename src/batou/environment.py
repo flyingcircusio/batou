@@ -88,8 +88,8 @@ class Environment(object):
 
     def load(self):
         # Scan all components
-        for filename in glob.glob(
-                os.path.join(self.base_dir, 'components/*/component.py')):
+        for filename in sorted(glob.glob(
+                os.path.join(self.base_dir, 'components/*/component.py'))):
             self.components.update(load_components_from_file(filename))
 
         # Load environment configuration
