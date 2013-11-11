@@ -5,6 +5,9 @@ Changelog
 1.0b13 (unreleased)
 ===================
 
+- Load components in alphabetical order. This enables importing from other
+  components (when naming the directories appropriately).
+
 - Added some documentation.
 
 
