@@ -47,13 +47,23 @@ def bootstrap():
             restart(False)
 
     # Ensure we have all dependencies
-    for req in open(BASE + '/requirements.txt'):
+    requirements = open(BASE + '/requirements.txt').readlines()
+    if os.path.exists('./requirements.txt'):
+        requirements.extend(open('./requirements.txt').readlines())
+    for req in requirements:
         req = req.strip()
         if req.startswith('#'):
             continue
-        try:
-            pkg_resources.require(req)
-        except:
+        if req.startswith('-e'):
+            needed = True
+        else:
+            try:
+                pkg_resources.require(req)
+            except:
+                needed = True
+            else:
+                needed = False
+        if needed:
             print "Installing {}".format(req)
             cmd('.batou/bin/pip install --egg --no-deps "{}"'.format(req))
 
