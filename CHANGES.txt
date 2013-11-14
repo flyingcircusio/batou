@@ -11,6 +11,8 @@ Changelog
 - Load components in alphabetical order. This enables importing from other
   components (when naming the directories appropriately).
 
+- Raise an error if a cron job is configured without a timing value.
+
 - Added some documentation.
 
 
