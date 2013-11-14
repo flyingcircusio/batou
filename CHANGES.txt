@@ -5,6 +5,9 @@ Changelog
 1.0b13 (unreleased)
 ===================
 
+- Introduce a plugin mechanism: if a local ``requirements.txt`` file is
+  present, install its contents into the ``.batou`` virtualenv.
+
 - Load components in alphabetical order. This enables importing from other
   components (when naming the directories appropriately).
 
