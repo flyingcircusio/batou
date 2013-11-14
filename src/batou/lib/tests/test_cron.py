@@ -5,8 +5,8 @@ import os.path
 
 def test_collects_cronjobs_into_crontab(root):
     root.environment.vfs_sandbox = batou.vfs.Developer(root.environment, None)
-    root.component += CronJob('command1')
-    root.component += CronJob('command2')
+    root.component += CronJob('command1', timing='* * * * *')
+    root.component += CronJob('command2', timing='* * * * *')
     root.component += CronTab()
     root.component.deploy()
     crontab = open(os.path.join(
