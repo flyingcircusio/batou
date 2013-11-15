@@ -14,6 +14,9 @@ class CronJob(HookComponent):
     logger = None
 
     def format(self):
+        if self.timing is None:
+            raise ValueError('Required timing value missing from cron job %r.'
+                             % self.command)
         line = self.expand(
             '{{component.timing}} {{component.command}} {{component.args}}')
         if self.logger:
