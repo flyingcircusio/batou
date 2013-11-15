@@ -87,6 +87,9 @@ class Address(object):
         self.connect = NetLoc(connect, str(port))
         self.listen = NetLoc(resolve(connect), str(port))
 
+    def __str__(self):
+        return str(self.connect)
+
 
 class NetLoc(object):
     """A network location specified by host and port."""
