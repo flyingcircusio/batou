@@ -22,14 +22,15 @@ class RotatedLogfile(HookComponent):
 
 class Logrotate(Component):
 
-    logrotate_template = pkg_resources.resource_filename(
+    common_config = ''
+    logrotate_template = pkg_resources.resource_string(
         __name__, 'resources/logrotate.in')
 
     def configure(self):
         self.logfiles = self.require(RotatedLogfile.key, host=self.host)
 
-        self.logrotate_conf = File(
-            'logrotate.conf', source=self.logrotate_template)
+        config = self.common_config + self.logrotate_template
+        self.logrotate_conf = File('logrotate.conf', content=config)
         self += self.logrotate_conf
 
 
