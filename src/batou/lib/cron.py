@@ -43,8 +43,7 @@ class CronTab(Component):
         self += self.crontab
 
 
-@platform('gocept.net', CronTab)
-class GoceptNetCrontab(Component):
+class InstallCrontab(Component):
 
     def configure(self):
         self.crontab = self.parent.crontab
@@ -61,3 +60,13 @@ class GoceptNetCrontab(Component):
 
     def update(self):
         self.cmd(self.expand('crontab {{component.crontab.path}}'))
+
+
+@platform('gocept.net', CronTab)
+class FCInstallCrontab(InstallCrontab):
+    pass
+
+
+@platform('debian', CronTab)
+class DebianInstallCrontab(InstallCrontab):
+    pass
