@@ -7,3 +7,30 @@ platform
 
 feature
 -------
+
+
+Flying Circus
+-------------
+
+
+Generic Debian system
+---------------------
+
+batou has some support to interface with a Debian operating system (the
+principle should work for other distributions just as well, but since some
+paths might be distribution-specific, it's better to be specific).
+
+Setting the platform to ``debian`` in an environment includes the following
+functionality:
+
+* Install a generated crontab as the service user's crontab
+* Start supervisor after reboot (via cronjob)
+
+Note: There are some features that batou's ``@platform`` mechanism does not
+support yet, but which you can access by importing ``Supervisor`` and
+``Logrotate`` from ``batou.lib.debian`` instead of their usual module:
+
+* Set a useable path for supervisord's pidfile
+* Set up sensible logrotate configuration defaults
+* Add our own logrotate cronjob, so we don't need to write to
+  ``/etc/logrotate.d``

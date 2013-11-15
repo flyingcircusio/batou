@@ -15,6 +15,8 @@ Changelog
 
 - Raise an error if a cron job is configured without a timing value.
 
+- Add platform support for Debian (crontab, logrotate, supervisor).
+
 - Added some documentation.
 
 
