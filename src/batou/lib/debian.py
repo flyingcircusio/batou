@@ -1,5 +1,6 @@
 from batou.component import Component, platform
 from batou.lib.cron import CronJob
+import batou.lib.logrotate
 import batou.lib.service
 import batou.lib.supervisor
 
@@ -18,3 +19,31 @@ class RebootCronjob(Component):
 class Supervisor(batou.lib.supervisor.Supervisor):
 
     pidfile = 'var/supervisord.pid'
+
+
+class Logrotate(batou.lib.logrotate.Logrotate):
+
+    common_config = """\
+daily
+rotate 14
+create
+dateext
+compress
+notifempty
+nomail
+noolddir
+missingok
+sharedscripts
+"""
+
+
+@platform('debian', Logrotate)
+class LogrotateCronjob(Component):
+
+    def configure(self):
+        self.directory = self.parent.workdir
+        self += CronJob(
+            self.expand(
+                '/usr/sbin/logrotate -s {{component.directory}}/state'
+                ' {{component.directory}}/logrotate.conf'),
+            timing='45 2 * * *')
