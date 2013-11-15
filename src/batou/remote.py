@@ -189,10 +189,12 @@ class RemoteHost(object):
             bases = ' '.join('--base {}'.format(x) for x in heads)
             cmd('hg -qy bundle {} {}'.format(bases, bundle_file),
                 acceptable_returncodes=[0, 1])
+            have_changes = os.stat(bundle_file).st_size > 0
             self.rpc.send_file(
                 bundle_file, remote_repository + '/batou-bundle.hg')
             os.unlink(bundle_file)
-            self.rpc.unbundle_code()
+            if have_changes:
+                self.rpc.unbundle_code()
         else:
             raise ValueError(
                 'unsupported update method: {}'.format(env.update_method))
