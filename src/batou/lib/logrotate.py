@@ -1,6 +1,7 @@
-import os
 from batou.component import HookComponent, Component, platform
 from batou.lib.file import File
+import os.path
+import pkg_resources
 
 
 class RotatedLogfile(HookComponent):
@@ -21,8 +22,8 @@ class RotatedLogfile(HookComponent):
 
 class Logrotate(Component):
 
-    logrotate_template = os.path.join(
-        os.path.dirname(__file__), 'resources', 'logrotate.in')
+    logrotate_template = pkg_resources.resource_filename(
+        __name__, 'resources/logrotate.in')
 
     def configure(self):
         self.logfiles = self.require(RotatedLogfile.key, host=self.host)
