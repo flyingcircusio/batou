@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b13 (unreleased)
+1.0b13 (2013-11-19)
 ===================
 
 - Introduce a plugin mechanism: if a local ``requirements.txt`` file is
