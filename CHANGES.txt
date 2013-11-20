@@ -39,7 +39,7 @@ Changelog
 - Support continuing remote bootstrapping if we failed after creating the
   initial remote directory but were unable to use Mercurial.
 
-- #12898: build.Configure component was broken when using the default 
+- #12898: build.Configure component was broken when using the default
   prefix.
 
 
@@ -50,7 +50,7 @@ Changelog
   failing randomly on machines that (for some reason) can't validate PyPI's
   certificate.
 
-- #12911: Ensure that we can configure file owners when they don't 
+- #12911: Ensure that we can configure file owners when they don't
   exist during configure phase yet.
 
 - #12912: Fix untested and broken file ownership management.
