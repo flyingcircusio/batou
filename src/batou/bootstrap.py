@@ -1,9 +1,10 @@
 from batou.update import update_bootstrap
 from batou.utils import cmd
+import logging
 import os
 import pkg_resources
+import re
 import sys
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -54,13 +55,26 @@ def bootstrap():
         req = req.strip()
         if req.startswith('#'):
             continue
+
+        egg = None
         if req.startswith('-e'):
-            needed = True
+            if '#egg=' in req:
+                egg = req.split('#egg=', 1)[-1]
+            # icky heuristic to determine it's not a VCS url
+            elif '+' not in req:
+                # XXX we just *assume* that the local directory has the same
+                # name as the egg contained therein
+                path = re.split('-e *', req, 1)[1]
+                egg = os.path.basename(path)
         else:
+            egg = req
+
+        needed = True
+        if egg:
             try:
-                pkg_resources.require(req)
+                pkg_resources.require(egg)
             except:
-                needed = True
+                pass
             else:
                 needed = False
         if needed:
