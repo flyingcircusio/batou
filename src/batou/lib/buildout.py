@@ -39,6 +39,9 @@ class Buildout(Component):
 
         venv = VirtualEnv(self.python)
         self += venv
+        if not (self.distribute or self.setuptools):
+            raise ValueError(
+                'Either setuptools or distribute version must be specified')
         if self.distribute:
             self += Package(
                 'distribute', version=self.distribute,
@@ -46,7 +49,11 @@ class Buildout(Component):
         if self.setuptools:
             self += Package('setuptools', version=self.setuptools)
 
-        self += Package('zc.buildout', version=self.version)
+        # Install without dependencies (that's just setuptools anyway), since
+        # that could cause pip to pull in the latest version of setuptools,
+        # regardless of the version we wanted to be installed above.
+        self += Package(
+            'zc.buildout', version=self.version, dependencies=False)
 
     def verify(self):
         self.assert_file_is_current('bin/buildout')
