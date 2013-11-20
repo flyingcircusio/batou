@@ -5,7 +5,8 @@ Changelog
 1.0b14 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Make Buildout component install zc.buildout without dependencies (which is
+  just setuptools), since that can break the version pinning of setuptools.
 
 
 1.0b13 (2013-11-19)

@@ -14,7 +14,7 @@ def buildout(**kw):
 
 def test_update_should_pass_config_file_name(root):
     b = buildout(
-        python='2.7',
+        python='2.7', setuptools='1.0',
         config=File('myown.cfg'))
     root.component += b
     b.update()
@@ -26,7 +26,7 @@ def test_update_should_pass_config_file_name(root):
 
 def test_update_should_pass_custom_timeout(root):
     b = buildout(
-        python='2.7',
+        python='2.7', setuptools='1.0',
         timeout=40)
     b.update()
 

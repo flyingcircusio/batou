@@ -76,14 +76,15 @@ class Package(Component):
     version = None
     check_package_is_module = True
     timeout = None
+    dependencies = True
 
-    # NOTE: this might cause dependencies to be updated without version pins.
-    # If this is a problem, introduce a class attribute `dependencies = True`.
     pip_install_options = ('--egg', '--ignore-installed')
 
     def configure(self):
         if self.timeout is None:
             self.timeout = self.environment.timeout
+        if not self.dependencies:
+            self.pip_install_options += ('--no-deps',)
 
     def verify(self):
         try:
