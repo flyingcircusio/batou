@@ -87,6 +87,7 @@ useful for example to share component code between multiple deployments. If you
 place a ``requirements.txt`` file in your project's top-level directory (i.e.,
 next to the ``batou`` script), these requirements will be installed along with
 batou. (See the `pip documentation`_ for details on the file format. Note for
-example that you can not only name thirdparty packages but also local paths.)
+example that you can not only name thirdparty packages but also local paths,
+e.g. ``-e./my_local_egg')
 
 .. _`pip documentation`: http://www.pip-installer.org/en/latest/logic.html#requirements-file-format

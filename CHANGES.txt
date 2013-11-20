@@ -8,6 +8,9 @@ Changelog
 - Make Buildout component install zc.buildout without dependencies (which is
   just setuptools), since that can break the version pinning of setuptools.
 
+- Check whether packages required via a ``-e`` expression in the local
+  ``requirements.txt`` are already installed.
+
 
 1.0b13 (2013-11-19)
 ===================
