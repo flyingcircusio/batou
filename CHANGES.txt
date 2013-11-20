@@ -8,6 +8,9 @@ Changelog
 - Make Buildout component install zc.buildout without dependencies (which is
   just setuptools), since that can break the version pinning of setuptools.
 
+- Remove cleanup code that removes batou-0.2-style virtualenv directories (bin,
+  lib, include etc.) from remote deployments.
+
 
 1.0b13 (2013-11-19)
 ===================
