@@ -11,6 +11,9 @@ Changelog
 - Check whether packages required via a ``-e`` expression in the local
   ``requirements.txt`` are already installed.
 
+- #12946: Make full path to python executable configurable for virtualenv
+  (and buildout) component.
+
 - Add mailto setting to crontab component.
 
 

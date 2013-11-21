@@ -14,6 +14,8 @@ class Buildout(Component):
     additional_config = ()
     config_file_name = 'buildout.cfg'
 
+    python = None
+    executable = None
     distribute = None
     setuptools = None
     version = None
@@ -37,7 +39,7 @@ class Buildout(Component):
         for component in self.config:
             self += component
 
-        venv = VirtualEnv(self.python)
+        venv = VirtualEnv(self.python, executable=self.executable)
         self += venv
         if not (self.distribute or self.setuptools):
             raise ValueError(
