@@ -25,6 +25,7 @@ class VirtualEnv(Component):
     """
 
     namevar = 'version'
+    executable = None
 
     # XXX unsure whether this factoring is OK.
     # Depending on the platform and or environment the python executable may
@@ -36,6 +37,8 @@ class VirtualEnv(Component):
     def configure(self):
         self.base = VirtualEnvBase()
         self += self.base
+        if not self.executable:
+            self.executable = 'python{}'.format(self.version)
 
     def verify(self):
         # Did we install an updated virtualenv package in between?
@@ -45,8 +48,8 @@ class VirtualEnv(Component):
 
     def update(self):
         self.cmd('rm -rf bin/ lib/ include/')
-        self.cmd('{} {} --setuptools --python=python{} {}'.format(
-            sys.executable, self.base.venv_cmd, self.version, self.workdir))
+        self.cmd('{} {} --setuptools --python={} {}'.format(
+            sys.executable, self.base.venv_cmd, self.executable, self.workdir))
 
     @property
     def python(self):
