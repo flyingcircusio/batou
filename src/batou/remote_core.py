@@ -1,7 +1,6 @@
 import logging
 import os
 import os.path
-import shutil
 import subprocess
 import traceback
 
@@ -42,7 +41,7 @@ def ensure_repository():
     target = target_directory()
     if not os.path.exists(target):
         os.mkdir(target)
-    if not os.path.exists(target+'/.hg'):
+    if not os.path.exists(target + '/.hg'):
         cmd("hg init {}".format(target))
     return target
 
