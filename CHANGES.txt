@@ -11,6 +11,8 @@ Changelog
 - Check whether packages required via a ``-e`` expression in the local
   ``requirements.txt`` are already installed.
 
+- Add mailto setting to crontab component.
+
 
 1.0b13 (2013-11-19)
 ===================
