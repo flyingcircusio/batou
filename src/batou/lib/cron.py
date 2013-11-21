@@ -34,6 +34,7 @@ class CronTab(Component):
 
     crontab_template = os.path.join(
         os.path.dirname(__file__), 'resources', 'crontab')
+    mailto = None
 
     def configure(self):
         self.jobs = self.require(CronJob.key, host=self.host)
