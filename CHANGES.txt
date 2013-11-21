@@ -8,8 +8,16 @@ Changelog
 - Make Buildout component install zc.buildout without dependencies (which is
   just setuptools), since that can break the version pinning of setuptools.
 
+- Check whether packages required via a ``-e`` expression in the local
+  ``requirements.txt`` are already installed.
+
+- #12946: Make full path to python executable configurable for virtualenv
+  (and buildout) component.
+
 - Remove cleanup code that removes batou-0.2-style virtualenv directories (bin,
   lib, include etc.) from remote deployments.
+
+- Add mailto setting to crontab component.
 
 
 1.0b13 (2013-11-19)

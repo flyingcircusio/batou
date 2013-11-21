@@ -17,6 +17,11 @@ The basic building block for Python-based components is creation of virtualenvs
     Creates a virtualenv for the given Python version in the working directory
     of the parent component. (Requires that ``pythonX.Y`` is in the ``PATH``)
 
+.. py:attribute:: executable
+
+    Full path to the python executable to create the virtualenv for (used
+    instead of ``pythonX.Y``).
+
 batou uses its own copy of `virtualenv`_ (version 1.10.1 at this time) to
 ensure everything works as expected and to avoid problems with
 incompatibilities or unexpected behaviours of whatever version might be
@@ -86,6 +91,11 @@ files makes it necessary. A typical usage example:
 .. py:attribute:: python
 
     Python version (**required**)
+
+.. py:attribute:: executable
+
+    Full path to the python executable to create the virtualenv for (used
+    instead of ``pythonX.Y``).
 
 .. py:attribute:: version
 
