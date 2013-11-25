@@ -19,6 +19,8 @@ Changelog
 
 - Add mailto setting to crontab component.
 
+- Added some documentation.
+
 
 1.0b13 (2013-11-19)
 ===================
