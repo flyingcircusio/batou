@@ -58,5 +58,14 @@ On the remote machine:
 * SSH server
 * virtualenv
 
+Optional requirements
+~~~~~~~~~~~~~~~~~~~~~
+
+Depending on the actual components you are going to install, you may need on
+your local or remote machine, resp.:
+
+* rsync if using the ``batou.lib.file.Directory`` component
+* wget if using the ``batou.lib.download.Download`` component
+
 To allow batou bootstrapping itself you will be using a simple buildout that
 allows you to require additional dependencies in a controlled fashion.
