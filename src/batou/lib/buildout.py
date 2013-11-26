@@ -14,6 +14,8 @@ class Buildout(Component):
     additional_config = ()
     config_file_name = 'buildout.cfg'
 
+    python = None
+    executable = None
     distribute = None
     setuptools = None
     version = None
@@ -37,8 +39,11 @@ class Buildout(Component):
         for component in self.config:
             self += component
 
-        venv = VirtualEnv(self.python)
+        venv = VirtualEnv(self.python, executable=self.executable)
         self += venv
+        if not (self.distribute or self.setuptools):
+            raise ValueError(
+                'Either setuptools or distribute version must be specified')
         if self.distribute:
             self += Package(
                 'distribute', version=self.distribute,
@@ -46,7 +51,11 @@ class Buildout(Component):
         if self.setuptools:
             self += Package('setuptools', version=self.setuptools)
 
-        self += Package('zc.buildout', version=self.version)
+        # Install without dependencies (that's just setuptools anyway), since
+        # that could cause pip to pull in the latest version of setuptools,
+        # regardless of the version we wanted to be installed above.
+        self += Package(
+            'zc.buildout', version=self.version, dependencies=False)
 
     def verify(self):
         self.assert_file_is_current('bin/buildout')

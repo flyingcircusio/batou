@@ -1,7 +1,6 @@
 import logging
 import os
 import os.path
-import shutil
 import subprocess
 import traceback
 
@@ -42,7 +41,7 @@ def ensure_repository():
     target = target_directory()
     if not os.path.exists(target):
         os.mkdir(target)
-    if not os.path.exists(target+'/.hg'):
+    if not os.path.exists(target + '/.hg'):
         cmd("hg init {}".format(target))
     return target
 
@@ -89,13 +88,6 @@ def update_working_copy(branch):
 def build_batou(deployment_base):
     target = target_directory()
     os.chdir(os.path.join(target, deployment_base))
-    # XXX make cleaning old format optional
-    for path in ['develop-eggs', 'bin', 'eggs',
-                 'include', 'lib', 'parts', '.installed.cfg']:
-        if os.path.isdir(path):
-            shutil.rmtree(path)
-        elif os.path.exists(path):
-            os.unlink(path)
     cmd('./batou --help')
 
 

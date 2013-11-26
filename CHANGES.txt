@@ -5,7 +5,21 @@ Changelog
 1.0b14 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Make Buildout component install zc.buildout without dependencies (which is
+  just setuptools), since that can break the version pinning of setuptools.
+
+- Check whether packages required via a ``-e`` expression in the local
+  ``requirements.txt`` are already installed.
+
+- #12946: Make full path to python executable configurable for virtualenv
+  (and buildout) component.
+
+- Remove cleanup code that removes batou-0.2-style virtualenv directories (bin,
+  lib, include etc.) from remote deployments.
+
+- Add mailto setting to crontab component.
+
+- Added some documentation.
 
 
 1.0b13 (2013-11-19)
@@ -39,7 +53,7 @@ Changelog
 - Support continuing remote bootstrapping if we failed after creating the
   initial remote directory but were unable to use Mercurial.
 
-- #12898: build.Configure component was broken when using the default 
+- #12898: build.Configure component was broken when using the default
   prefix.
 
 
@@ -50,7 +64,7 @@ Changelog
   failing randomly on machines that (for some reason) can't validate PyPI's
   certificate.
 
-- #12911: Ensure that we can configure file owners when they don't 
+- #12911: Ensure that we can configure file owners when they don't
   exist during configure phase yet.
 
 - #12912: Fix untested and broken file ownership management.
