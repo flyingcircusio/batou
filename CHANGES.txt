@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b14 (unreleased)
+1.0b14 (2013-11-26)
 ===================
 
 - Make Buildout component install zc.buildout without dependencies (which is
