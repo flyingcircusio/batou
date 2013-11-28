@@ -12,13 +12,16 @@ class CronJob(HookComponent):
     args = ''
     timing = None
     logger = None
+    user = None
 
     def format(self):
         if self.timing is None:
             raise ValueError('Required timing value missing from cron job %r.'
                              % self.command)
+        self.user = ' %s' % self.user if self.user else ''
         line = self.expand(
-            '{{component.timing}} {{component.command}} {{component.args}}')
+            '{{component.timing}}{{component.user}}'
+            ' {{component.command}} {{component.args}}')
         if self.logger:
             line += self.expand(' 2>&1 | logger -t {{component.logger}}')
         return line
@@ -37,10 +40,13 @@ class CronTab(Component):
     mailto = None
     filename = 'crontab'
     key = CronJob.key
+    user = None
 
     def configure(self):
         self.jobs = self.require(self.key, host=self.host)
         self.jobs.sort(key=lambda job: job.command + ' ' + job.args)
+        for job in self.jobs:
+            job.user = self.user
         self.crontab = File(
             self.filename, source=self.crontab_template)
         self += self.crontab

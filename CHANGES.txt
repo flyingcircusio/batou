@@ -8,6 +8,9 @@ Changelog
 - Support multiple crontabs by making ``key`` and ``filename`` configurable
   for the ``cron.CronTab`` component.
 
+- Support system-crontabs by adding ``user`` setting to the ``cron.CronTab``
+  component.
+
 
 1.0b14 (2013-11-26)
 ===================
