@@ -1,7 +1,7 @@
 from batou import UpdateNeeded
 from batou.component import Component, HookComponent, platform
 from batou.lib.file import File
-import os
+import pkg_resources
 
 
 class CronJob(HookComponent):
@@ -12,13 +12,16 @@ class CronJob(HookComponent):
     args = ''
     timing = None
     logger = None
+    user = None
 
     def format(self):
         if self.timing is None:
             raise ValueError('Required timing value missing from cron job %r.'
                              % self.command)
+        self.user = ' %s' % self.user if self.user else ''
         line = self.expand(
-            '{{component.timing}} {{component.command}} {{component.args}}')
+            '{{component.timing}}{{component.user}}'
+            ' {{component.command}} {{component.args}}')
         if self.logger:
             line += self.expand(' 2>&1 | logger -t {{component.logger}}')
         return line
@@ -32,15 +35,20 @@ def ignore_comments(data):
 
 class CronTab(Component):
 
-    crontab_template = os.path.join(
-        os.path.dirname(__file__), 'resources', 'crontab')
+    crontab_template = pkg_resources.resource_filename(
+        __name__, 'resources/crontab')
     mailto = None
+    filename = 'crontab'
+    key = CronJob.key
+    user = None
 
     def configure(self):
-        self.jobs = self.require(CronJob.key, host=self.host)
+        self.jobs = self.require(self.key, host=self.host)
         self.jobs.sort(key=lambda job: job.command + ' ' + job.args)
+        for job in self.jobs:
+            job.user = self.user
         self.crontab = File(
-            'crontab', source=self.crontab_template)
+            self.filename, source=self.crontab_template)
         self += self.crontab
 
 
