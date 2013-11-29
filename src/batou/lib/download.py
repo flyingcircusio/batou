@@ -3,6 +3,10 @@ import batou
 import batou.utils
 import os.path
 import urlparse
+try:
+    from urllib.request import urlretrieve
+except ImportError:
+    from urllib import urlretrieve
 
 
 class Download(Component):
@@ -30,8 +34,8 @@ class Download(Component):
             raise batou.UpdateNeeded()
 
     def update(self):
-        self.cmd('wget -q -O {target} {uri}'.format(
-                 target=self.target, uri=self.uri))
+        path, headers = urlretrieve(self.uri, self.target)
+        assert path == self.target
         target_checksum = batou.utils.hash(self.target, self.checksum_function)
         assert self.checksum == target_checksum, '''\
 Checksum mismatch!

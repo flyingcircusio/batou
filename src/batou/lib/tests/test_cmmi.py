@@ -1,11 +1,11 @@
 from StringIO import StringIO
 from batou.lib.cmmi import Build, Configure
-from batou.lib.download import Download
 from datetime import datetime
 import hashlib
 import mock
 import os.path
 import pytest
+import shutil
 import sys
 import tarfile
 import time
@@ -86,9 +86,10 @@ def test_runs_cmmi(root, cmmi_tar):
     c = Build(cmmi_tar.path, checksum='md5:' + cmmi_tar.checksum)
     root.component += c
 
-    def copy(self, command):
-        super(Download, self).cmd('cp %s %s' % (self.uri, self.target))
-    with mock.patch('batou.lib.download.Download.cmd', new=copy):
+    def copy(uri, target):
+        shutil.copyfile(uri, target)
+        return target, []
+    with mock.patch('batou.lib.download.urlretrieve', new=copy):
         root.component.deploy()
 
     assert os.path.isfile(os.path.join(
