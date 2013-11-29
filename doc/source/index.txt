@@ -46,7 +46,7 @@ Local deployments take care of a single host:
 
 .. code-block:: bash
 
-    $ ./batou local dev localhost
+    $ ./batou local
 
 Remote deployments cover a whole environment:
 

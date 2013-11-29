@@ -16,7 +16,8 @@ def main():
     parser = argparse.ArgumentParser(
         description='batou v%s '
         'multi-(host|component|environment|version|platform) deployment'
-        % pkg_resources.resource_string(__name__, 'version.txt'))
+        % pkg_resources.resource_string(__name__, 'version.txt'),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         '-d', '--debug', action='store_true',
         help='Enable debug mode.')
@@ -39,16 +40,22 @@ If no directory is given, the current directory is used.
     p = subparsers.add_parser(
         'local', help=u'Deploy locally.')
     p.add_argument(
-        'environment', help='Environment to deploy.',
-        type=lambda x: x.replace('.cfg', ''))
-    p.add_argument(
-        'hostname', help='Host to deploy.')
-    p.add_argument(
         '-p', '--platform', default=None,
         help='Alternative platform to choose. Empty for no platform.')
     p.add_argument(
         '-t', '--timeout', default=None,
         help='Override the environment\'s timeout setting')
+    p.add_argument(
+        'environment', help='Environment to deploy.',
+        nargs='?',
+        default='dev',
+        type=lambda x: x.replace('.cfg', ''))
+    p.add_argument(
+        'hostname',
+        nargs='?',
+        default='localhost',
+        help='Host to deploy.')
+
     p.set_defaults(func=batou.local.main)
 
     # REMOTE
