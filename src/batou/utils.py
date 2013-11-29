@@ -7,6 +7,11 @@ import os
 import socket
 import subprocess
 import sys
+import time
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class MultiFile(object):
@@ -165,6 +170,10 @@ def topological_sort(graph):
     return sorted
 
 
+class CmdExecutionError(RuntimeError):
+    pass
+
+
 def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
         env=None, acceptable_returncodes=[0]):
     if not isinstance(cmd, basestring):
@@ -194,6 +203,7 @@ def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
     stdout, stderr = process.communicate()
     if process.returncode not in acceptable_returncodes:
         if not silent:
+            print("$ {}".format(cmd))
             print("STDOUT")
             print("=" * 72)
             print(stdout)
@@ -201,10 +211,24 @@ def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
             print("=" * 72)
             print(stderr)
         if not ignore_returncode:
-            raise RuntimeError(
+            raise CmdExecutionError(
                 'Command "{}" returned unsuccessfully.'.format(cmd),
                 process.returncode, stdout, stderr)
     return stdout, stderr
+
+
+class Timer(object):
+
+    def __init__(self, note):
+        self.duration = 0
+        self.note = note
+
+    def __enter__(self):
+        self.started = time.time()
+
+    def __exit__(self, exc1, exc2, exc3):
+        self.duration = time.time() - self.started
+        logger.debug(self.note + ' took %fs' % self.duration)
 
 
 def hash(path, function='md5'):
