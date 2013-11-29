@@ -26,8 +26,9 @@ Services are described by components:
     class MyApp(Component):
 
         def configure(self):
-            self += VirtualEnv('2.7')
-            self += Package('myapp')
+            venv = VirtualEnv('2.7')
+            self += venv
+            venv += Package('myapp')
             self += Program('myapp',
                 command='bin/myapp')
 
