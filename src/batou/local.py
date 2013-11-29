@@ -1,5 +1,5 @@
 from .environment import Environment
-from .utils import notify, locked
+from .utils import notify, locked, CmdExecutionError
 import logging
 import sys
 
@@ -20,6 +20,12 @@ def main(environment, hostname, platform, timeout):
             environment.configure()
             for root in environment.roots_in_order(host=hostname):
                 root.component.deploy()
+        except CmdExecutionError, e:
+            # this has already been reported by the component itself.
+            notify('Deployment failed',
+                   '{}:{} encountered an error.'.format(
+                       environment.name, hostname))
+            sys.exit(1)
         except Exception, e:
             logger.exception(e)
             notify('Deployment failed',

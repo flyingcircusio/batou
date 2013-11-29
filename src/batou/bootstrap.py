@@ -22,7 +22,7 @@ def restart(ready):
                  'batou.bootstrap.bootstrap()'] + sys.argv)
 
 
-def bootstrap():
+def bootstrap(activate=True):
     while sys.argv[0] == '-c':
         sys.argv.pop(0)
 
@@ -81,4 +81,5 @@ def bootstrap():
             print "Installing {}".format(req)
             cmd('.batou/bin/pip install --egg --no-deps "{}"'.format(req))
 
-    restart(True)
+    if activate:
+        restart(True)

@@ -131,7 +131,9 @@ class Component(object):
             os.makedirs(self.workdir)
         with self.chdir(self.workdir), self:
             try:
-                self.verify()
+                with batou.utils.Timer(
+                        '{} verify()'.format(self._breadcrumbs)):
+                    self.verify()
             except batou.UpdateNeeded:
                 logger.info('Updating {}'.format(self._breadcrumbs))
                 self.update()
