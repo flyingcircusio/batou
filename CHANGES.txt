@@ -5,6 +5,9 @@ Changelog
 1.0b15 (unreleased)
 ===================
 
+- Try to fix #13049 - will only work once the dev version is already at least
+  at b15. Not sure whether it really does the job, though. Hard to test.
+
 - Make environment and host arguments for running ``batou local`` optional.
   ``dev`` and ``localhost`` are the defaults now. Fixes #13034
 
