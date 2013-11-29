@@ -5,6 +5,10 @@ Changelog
 1.0b15 (unreleased)
 ===================
 
+- Allow specifying secrets with [component:xy] in addition to [xy] to make it
+  easier to discover when used to the environment overrides. Both options are
+  supported now. Fixes #13003
+
 - Refactor Python virtualenv and package management. Provide explicit knowledge
   about Python versions 2.4, 2.5, 2.6, 2.7, 3.1, 3.2, and 3.3 to use compatible
   virtualenv/pip/setuptools versions and commands. Fixes #12941
