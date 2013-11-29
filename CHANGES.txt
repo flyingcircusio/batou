@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b15 (unreleased)
+1.0b15 (2013-11-29)
 ===================
 
 - Try to fix #13049 - will only work once the dev version is already at least
