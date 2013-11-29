@@ -29,9 +29,10 @@ class DownloadTest(unittest.TestCase):
     def test_update_should_raise_AssertionError_on_checksum_mismatch(self):
         download = Download('url', checksum='foobar:1234')
         download.configure()
-        with mock.patch('batou.lib.download.Download.cmd'), \
+        with mock.patch('batou.lib.download.urlretrieve') as retrieve, \
                 mock.patch('batou.utils.hash') as buh,\
                 self.assertRaises(AssertionError) as err:
+            retrieve.return_value = 'url', []
             buh.return_value = '4321'
             download.update()
         self.assertEqual('Checksum mismatch!\nexpected: 1234\ngot: 4321',
@@ -39,7 +40,7 @@ class DownloadTest(unittest.TestCase):
 
 
 @pytest.mark.slow
-def test_runs_wget_to_download_file(root):
+def test_downloads_file(root):
     root.component += Download(
         'https://pypi.python.org/packages/source/b/batou/batou-0.2.zip',
         checksum='md5:d91efa30c92d1574e1f7d9869bdf566d')

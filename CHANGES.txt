@@ -11,6 +11,9 @@ Changelog
 - Support system-crontabs by adding ``user`` setting to the ``cron.CronTab``
   component.
 
+- Use ``urllib`` module instead of ``wget`` command for cross platform
+  compatibility.
+
 
 1.0b14 (2013-11-26)
 ===================
