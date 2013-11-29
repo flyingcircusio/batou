@@ -1,6 +1,6 @@
 from batou.component import Component
 from batou.lib.file import File
-from batou.lib.python import VirtualEnv
+from batou.lib.python import VirtualEnv, Package
 import contextlib
 import os.path
 
@@ -47,18 +47,18 @@ class Buildout(Component):
                 'Either setuptools or distribute version must be specified')
 
         if self.distribute:
-            venv.package('distribute',
-                         version=self.distribute,
-                         check_package_is_module=False)
+            venv += Package('distribute',
+                            version=self.distribute,
+                            check_package_is_module=False)
 
         if self.setuptools:
-            venv.package('setuptools',
-                         version=self.setuptools)
+            venv += Package('setuptools',
+                            version=self.setuptools)
 
         # Install without dependencies (that's just setuptools anyway), since
         # that could cause pip to pull in the latest version of setuptools,
         # regardless of the version we wanted to be installed above.
-        venv.package(
+        venv += Package(
             'zc.buildout',
             version=self.version,
             dependencies=False)

@@ -19,14 +19,13 @@ The basic building block for Python-based components is creation of virtualenvs
 
 .. py:attribute:: executable
 
-    Full path to the python executable to create the virtualenv for (used
-    instead of ``pythonX.Y``).
+    Full path to the Python executable to create the virtualenv for (default: ``pythonX.Y`` based on the version attribute).
 
-batou uses its own copy of `virtualenv`_ (version 1.10.1 at this time) to
-ensure everything works as expected and to avoid problems with
-incompatibilities or unexpected behaviours of whatever version might be
-installed already on the system. (This virtualenv installation is shared by all
-components for creating new virtualenvs, it is installed to
+batou downloads a compatible version of  `virtualenv`_ (depending on the Python
+version you need) to ensure everything works as expected and to avoid problems
+with incompatibilities or unexpected behaviours of whatever version might be
+installed already on the system. (virtualenv base installations are shared by
+all components for creating new virtualenvs, it is installed to
 ``work/.virtualenv``).
 
 .. _`virtualenv`: http://virtualenv.org/
@@ -36,30 +35,35 @@ Installing packages
 -------------------
 
 Python packages are installed from a package index such as `PyPI`_. batou uses
-`pip`_ for this purpose (but that actually is an implementation detail).
+`pip`_ or easy_install for this purpose (but that actually is an implementation detail and depends on the specifics of the Python and virtualenv version).
+
+Packages must be added to a virtual environment.
 
 .. _`PyPI`: https://pypi.python.org/
 .. _`pip`: http://www.pip-installer.org/
 
 .. code-block:: python
 
-    self += Package('Sphinx', version='1.1.3')
+    venv = VirtualEnv('2.7')
+    self += venv
+    venv += Package('Sphinx', version='1.1.3')
 
 
 .. py:class:: batou.lib.python.Package(package)
 
     Install the Python package with the given name into the virtualenv of the
-    parent component. Using :py:class:`Package` requires that a
-    :py:class:`~batou.lib.python.VirtualEnv` be present already.
+    parent component. Using :py:class:`Package` requires that it is 
+    added to a :py:class:`~batou.lib.python.VirtualEnv` instance.
 
 .. py:attribute:: version
 
     The version of the package to install (**required**).
 
-.. py:attribute:: pip_install_options
+.. py:attribute:: install_options
 
-    List of options that are passed to pip on the command line.
-    [Default: ``('--egg', '--ignore-installed')``]
+    List of options that are passed to pip/easy_install on the command line.
+
+    [Default: depends on the Python/virtualenv version in use]
 
 .. py:attribute:: check_package_is_module
 
@@ -68,6 +72,22 @@ Python packages are installed from a package index such as `PyPI`_. batou uses
     against https://github.com/pypa/pip/issues/3, but should be pretty safe to
     disable if it causes trouble for specific packages (``distribute`` is a
     notable example, since it installs a Python module named ``setuptools``).
+
+    [Default: True]
+
+.. py:attribute:: timeout
+
+    A timeout (in seconds) that the installer should use to limit stalling
+    network activity.
+
+    Only works when using ``pip``.
+
+    [Default: equal to the environment's timeout setting]
+
+.. py:attribute:: dependencies
+
+    Whether only the package itself or its dependencies should be installed.
+
     [Default: True]
 
 

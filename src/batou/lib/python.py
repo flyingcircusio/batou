@@ -32,12 +32,6 @@ class VirtualEnv(Component):
     # search path.
     executable = None
 
-    def package(self, name, **kw):
-        """Configure this virtualenv to install a certain package."""
-        p = Package(name, **kw)
-        self += p
-        return p
-
     @property
     def python(self):
         """Path to the generated python executable."""
@@ -155,7 +149,7 @@ class VirtualEnvPy2_5(VirtualEnvPyBase):
 
     def configure(self):
         super(VirtualEnvPy2_5, self).configure()
-        self.parent.package(
+        self.parent += Package(
             'ssl',
             version='1.16',
             install_options=('--insecure',))
@@ -179,11 +173,11 @@ class VirtualEnvPy2_7(VirtualEnvPyBase):
 
 class VirtualEnvPy3_1(VirtualEnvPyBase):
 
-    venv_version = '1.10.1'
-    venv_checksum = 'md5:3a04aa2b32c76c83725ed4d9918e362e'
+    venv_version = '1.9.1'
+    venv_checksum = 'md5:07e09df0adfca0b2d487e39a4bf2270a'
 
-    installer = 'easy_install'
-    install_options = ()
+    installer = 'pip'
+    install_options = ('--ignore-installed', '--egg')
 
 
 class VirtualEnvPy3_2(VirtualEnvPyBase):
@@ -246,9 +240,8 @@ class Package(Component):
 
     def configure(self):
         if not isinstance(self.parent, VirtualEnv):
-            raise TypeError('Using Package() directly is not supported '
-                            ' any longer. Please switch to '
-                            'VirtualEnv.package()')
+            raise TypeError(
+                'Package() must be added to a virtual environment')
         if self.timeout is None:
             self.timeout = self.environment.timeout
 
