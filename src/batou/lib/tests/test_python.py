@@ -8,7 +8,7 @@ import pytest
 
 
 @pytest.mark.slow
-@pytest.mark.timeout(120)
+@pytest.mark.timeout(240)
 def test_package_venv_installations(root):
     # this is a really nasty test ...
     base_dir = os.path.join(
