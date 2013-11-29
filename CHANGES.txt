@@ -12,9 +12,6 @@ Changelog
 - Support multiple crontabs by making ``key`` and ``filename`` configurable
   for the ``cron.CronTab`` component.
 
-- Support system-crontabs by adding ``user`` setting to the ``cron.CronTab``
-  component.
-
 - Use ``urllib`` module instead of ``wget`` command for cross platform
   compatibility.
 
