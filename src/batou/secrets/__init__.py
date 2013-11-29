@@ -33,5 +33,6 @@ def add_secrets_to_environment_override(environment):
         for section in f.config.sections():
             if section == 'batou':
                 continue
-            o = environment.overrides.setdefault(section, {})
+            o = environment.overrides.setdefault(
+                section.replace('component:', ''), {})
             o.update(f.config.items(section))
