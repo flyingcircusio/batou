@@ -71,9 +71,9 @@ def main(editor, environment):
     encrypted = 'secrets/{}.cfg'.format(environment)
 
     if not os.path.exists('environments/{}.cfg'.format(environment)):
-        print "Environment '{}' does not exist. Typo?"
+        print "Environment '{}' does not exist. Typo?".format(environment)
         print "Existing environments:"
-        print "\n".join(os.listdir('environments'))
+        print "\n".join(os.listdir('environments')).replace('.cfg', '')
         sys.exit(1)
 
     if not os.path.isdir('secrets'):
