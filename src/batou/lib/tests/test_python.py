@@ -1,18 +1,18 @@
 from batou.component import Component
 from batou.lib.python import VirtualEnv, Package
 from batou.update import update_bootstrap
-import os
-import pytest
-import sys
 from batou.utils import cmd
+import os
+import os.path
+import pytest
 
 
 @pytest.mark.slow
 @pytest.mark.timeout(120)
 def test_package_venv_installations(root):
     # this is a really nasty test ...
-    bin_dir = os.path.dirname(sys.executable)
-    base_dir = os.path.dirname(bin_dir)
+    base_dir = os.path.join(
+        os.path.dirname(__file__), '../../../../')
 
     # copy the "venv" example
     cmd('cp -a {}/examples/venvs/* .'.format(base_dir))
