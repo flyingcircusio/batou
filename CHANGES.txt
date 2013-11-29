@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b16 (unreleased)
+1.0b16 (2013-11-29)
 ===================
 
 - Improve the bootstrap/upgrade fix for #13049: the bootstrap template needed a
