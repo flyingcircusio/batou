@@ -15,6 +15,7 @@ class Clone(Component):
     target = '.'
     revision = None
     branch = None
+    vcs_update = True
 
     _revision_pattern = re.compile('parent: \d+:([a-f0-9]+) ')
 
@@ -27,6 +28,9 @@ class Clone(Component):
         with self.chdir(self.target):
             if not os.path.exists('.hg'):
                 raise UpdateNeeded()
+
+            if not self.vcs_update:
+                return
 
             if self.has_changes:
                 logger.error(
