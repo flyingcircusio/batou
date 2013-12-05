@@ -61,3 +61,52 @@ def test_set_revision_does_not_pull_when_revision_matches(root, repos_path):
     stdout, stderr = cmd('cd {workdir}/clone; LANG=C hg incoming'.format(
         workdir=root.workdir))
     assert 'changeset:   1' in stdout
+
+
+@pytest.mark.slow
+def test_has_changes_counts_only_changes_to_tracked_files(root, repos_path):
+    clone = batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='default')
+    root.component += clone
+    root.component.deploy()
+    assert not clone.has_changes
+    cmd('touch {}/clone/bar'.format(root.workdir))
+    assert not clone.has_changes
+    cmd('cd {}/clone; hg add bar'.format(root.workdir))
+    assert clone.has_changes
+
+
+@pytest.mark.slow
+def test_clean_clone_updates_on_incoming_changes(root, repos_path):
+    root.component += batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='default')
+    root.component.deploy()
+    cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
+        dir=repos_path))
+    root.component.deploy()
+    assert os.path.isfile(root.component.map('clone/bar'))
+
+
+@pytest.mark.slow
+def test_clone_with_changes_does_not_update(root, repos_path):
+    root.component += batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='default')
+    root.component.deploy()
+    cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
+        dir=repos_path))
+    cmd('cd {dir}/clone; touch baz; hg addremove'.format(dir=root.workdir))
+    root.component.deploy()
+    assert not os.path.exists(root.component.map('clone/bar'))
+
+
+@pytest.mark.slow
+def test_clone_with_outgoing_changesets_does_not_update(root, repos_path):
+    root.component += batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='default')
+    root.component.deploy()
+    cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
+        dir=repos_path))
+    cmd('cd {dir}/clone; touch baz; hg addremove; hg ci -m "commit"'.format(
+        dir=root.workdir))
+    root.component.deploy()
+    assert not os.path.exists(root.component.map('clone/bar'))

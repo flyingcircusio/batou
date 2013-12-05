@@ -5,7 +5,8 @@ Changelog
 1.0b17 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Mercurial clone: refuse to update if there are uncommitted changes or
+  outgoing changesets.
 
 
 1.0b16 (2013-11-29)
