@@ -8,6 +8,9 @@ Changelog
 - Mercurial clone: refuse to update if there are uncommitted changes or
   outgoing changesets.
 
+- Mercurial clone: added an option to avoid updating existing clones, which is
+  often desirable during development.
+
 
 1.0b16 (2013-11-29)
 ===================

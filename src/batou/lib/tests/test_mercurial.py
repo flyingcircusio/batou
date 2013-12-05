@@ -110,3 +110,14 @@ def test_clone_with_outgoing_changesets_does_not_update(root, repos_path):
         dir=root.workdir))
     root.component.deploy()
     assert not os.path.exists(root.component.map('clone/bar'))
+
+
+@pytest.mark.slow
+def test_clean_clone_vcs_update_false_does_not_update(root, repos_path):
+    root.component += batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='default', vcs_update=False)
+    root.component.deploy()
+    cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
+        dir=repos_path))
+    root.component.deploy()
+    assert not os.path.exists(root.component.map('clone/bar'))
