@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b17 (unreleased)
+1.0b17 (2013-12-06)
 ===================
 
 - Mercurial clone: refuse to update if there are uncommitted changes or
