@@ -1,8 +1,12 @@
 from batou import UpdateNeeded
 from batou.component import Component
 from batou.lib.file import Directory
+import logging
 import os.path
 import re
+
+
+logger = logging.getLogger(__name__)
 
 
 class Clone(Component):
@@ -11,6 +15,7 @@ class Clone(Component):
     target = '.'
     revision = None
     branch = None
+    vcs_update = True
 
     _revision_pattern = re.compile('parent: \d+:([a-f0-9]+) ')
 
@@ -23,6 +28,20 @@ class Clone(Component):
         with self.chdir(self.target):
             if not os.path.exists('.hg'):
                 raise UpdateNeeded()
+
+            if not self.vcs_update:
+                return
+
+            if self.has_changes:
+                logger.error(
+                    'Hg clone at {} has changes, refused to update.'.format(
+                        self.target))
+                return
+            if self.has_outgoing_changesets:
+                logger.error('Hg clone at {} has outgoing changesets, '
+                             'refused to update.'.format(self.target))
+                return
+
             if self.revision and self.current_revision != self.revision:
                 raise UpdateNeeded()
             if (self.branch and (
@@ -60,6 +79,24 @@ class Clone(Component):
                 return False
             raise
         return True
+
+    @property
+    def has_outgoing_changesets(self):
+        try:
+            with self.chdir(self.target):
+                self.cmd('hg outgoing -q -l1', silent=True)
+        except RuntimeError, e:
+            returncode = e.args[1]
+            if returncode == 1:
+                return False
+            raise
+        return True
+
+    @property
+    def has_changes(self):
+        with self.chdir(self.target):
+            stdout, stderr = self.cmd('hg status -q')
+        return bool(stdout.strip())
 
     def update(self):
         with self.chdir(self.target):
