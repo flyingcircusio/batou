@@ -5,7 +5,10 @@ Changelog
 1.0b18 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Improve update code: existing installations would not update cleanly to a new
+  version due to wrong use of pkg_resources API.
+
+  Existing installations need to be cleaned manually. :/
 
 
 1.0b17 (2013-12-06)
