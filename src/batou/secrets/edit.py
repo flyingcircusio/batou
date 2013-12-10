@@ -27,7 +27,7 @@ class Editor(object):
                 print "Your changes are still available. You can try:"
                 print "\tedit (opens editor with current data again)"
                 print "\tencrypt (tries to encrypt current data again)"
-                print "\tquit (quits and looses your changes)"
+                print "\tquit (quits and loses your changes)"
                 cmd = raw_input("> ").strip()
             else:
                 break

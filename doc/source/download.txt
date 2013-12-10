@@ -59,6 +59,12 @@ Mercurial
 
     Path to clone into (Default: workdir of parent component)
 
+.. py:attribute:: vcs_update
+
+    Whether to update the clone with incoming changesets (Default: True).
+    Leaving clones of source code unchanged is often desirable during
+    development.
+
 
 Git
 ---
