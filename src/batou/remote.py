@@ -72,7 +72,7 @@ class RemoteDeployment(object):
         self.environment = environment
         self.dirty = dirty
 
-        self.upstream = cmd('hg show paths')[0].split('\n')[0].strip()
+        self.upstream = cmd('hg showconfig paths')[0].split('\n')[0].strip()
         assert self.upstream.startswith('paths.default')
         self.upstream = self.upstream.split('=')[1]
 
