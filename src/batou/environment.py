@@ -64,6 +64,7 @@ class Environment(object):
     """
 
     service_user = None
+    connect_method = None
     host_domain = None
     branch = None
     update_method = None
@@ -120,8 +121,8 @@ class Environment(object):
 
     def load_environment(self, config):
         environment = config.get('environment', {})
-        for key in ['service_user', 'host_domain', 'update_method',
-                    'branch', 'platform', 'timeout']:
+        for key in ['service_user', 'connect_method', 'host_domain',
+                    'update_method', 'branch', 'platform', 'timeout']:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
@@ -143,6 +144,8 @@ class Environment(object):
         if self.update_method is None:
             self.update_method = 'pull'
 
+        if self.connect_method is None:
+            self.connect_method = 'ssh+sudo'
         if self.service_user is None:
             self.service_user = pwd.getpwuid(os.getuid()).pw_name
 

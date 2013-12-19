@@ -163,10 +163,16 @@ class RemoteHost(object):
             logger.info('{}: reconnecting'.format(self.host.fqdn))
             self.gateway.exit()
 
+        if self.deployment.environment.connect_method == 'ssh+sudo':
+            sudo = 'sudo -u {} '.format(
+                self.deployment.environment.service_user)
+        else:
+            sudo = ''
+
         self.gateway = execnet.makegateway(
-            "ssh={}//python=sudo -u {} {}".format(
+            "ssh={}//python={} {}".format(
                 self.host.fqdn,
-                self.deployment.environment.service_user,
+                sudo,
                 interpreter))
         self.channel = self.gateway.remote_exec(remote_core)
 
