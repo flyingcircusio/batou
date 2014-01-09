@@ -7,7 +7,41 @@ component/host assignment
 general parameters
 ------------------
 
-timeout, ssh user, ...
+General environment parameters are set in the ``[enviornment]`` config section.
+Example::
+
+	[enviornment]
+	service_user = website
+	host_domain = gocept.net
+	plattform = gocept
+	branch = production
+
+service_user
+	The deployment is run as this user on remote machines. This currently means
+	a `sudo` do the service user.
+
+connect_method
+	?
+
+host_domain
+	All hosts in the ``[hosts]`` section are postfixed with this domain. This
+	is handy do make the host/component assignment less verbose
+
+update_method
+	`bundle|pull`, sets how the remote deployment repository is updated. `pull`,
+	the default, uses `hg clone` and/or `hg pull` on the remote site. The 
+	`bundle` method will copy the necessary changes via the batou ssh link.
+
+branch
+	For remote deployments, use this and only this branch. batou will complain 
+	if the local branch does not match the set branch in the enviornment.
+
+platform
+	Set the platform for this environment. See :ref:`plattforms`.
+
+timeout
+	Set the ssh connection timeout in seconds.
+
 
 vfs mapping (reference)
 -----------------------
