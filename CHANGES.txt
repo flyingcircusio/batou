@@ -8,6 +8,11 @@ Changelog
 - Introduce environment option ``connect_mode``, either 'ssh+sudo' (default) or
   plain 'ssh'.
 
+- Mercurial clone: allow updates to reset uncommitted changes to a clone
+  unconditionally (unless configured not to update clones in the first place).
+
+- Added documentation.
+
 
 1.0b17 (2013-12-06)
 ===================
