@@ -108,7 +108,7 @@ class Unzip(Extractor):
 
 class Untar(Extractor):
 
-    suffixes = ('.tar.gz', '.tar', '.tar.bz2', '.tgz')
+    suffixes = ('.tar.gz', '.tar', '.tar.bz2', '.tgz', 'tar.xz')
     exclude = ('._*',)
     _supports_strip = True
 
