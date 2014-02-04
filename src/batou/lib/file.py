@@ -230,7 +230,7 @@ class Content(FileComponent):
     # If content is given as unicode (always the case with templates)
     # then require it to be encodable. We start guess ASCII and allow
     # overrides.
-    encoding = 'ascii'
+    encoding = 'utf-8'
 
     _delayed = False
 
@@ -252,7 +252,7 @@ class Content(FileComponent):
 
             if os.path.exists(self.source):
                 with open(self.source, 'r') as f:
-                    self.content = f.read()
+                    self.content = f.read().decode(self.encoding)
             else:
                 # Delay reading to the verification phase as we might be on the
                 # local side of the remoting utility.
@@ -277,10 +277,10 @@ class Content(FileComponent):
     def verify(self):
         if self._delayed:
             with open(self.source, 'r') as f:
-                self.content = f.read()
+                self.content = f.read().decode(self.encoding)
             self._render()
         with open(self.path, 'r') as target:
-            current = target.read()
+            current = target.read().decode(self.encoding)
             if current != self.content:
                 for line in difflib.unified_diff(current.splitlines(),
                                                  self.content.splitlines()):
