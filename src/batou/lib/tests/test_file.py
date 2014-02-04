@@ -221,6 +221,54 @@ def test_content_passed_by_file(root):
         assert f.read() == 'content from source file'
 
 
+def test_content_passed_by_file_handles_encoding(root):
+    source = 'source'
+    with open(source, 'w') as f:
+        f.write(u'cöntent from source file'.encode('latin-1'))
+    path = 'path'
+    p = Content(path, source=source, encoding='latin-1')
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read().decode('latin-1') == u'cöntent from source file'
+
+
+def test_content_passed_by_file_handles_encoding_on_verify(root):
+    source = 'source'
+    path = 'path'
+    p = Content(path, source=source, encoding='latin-1')
+    root.component += p
+    with open(source, 'w') as f:
+        f.write(u'cöntent from source file'.encode('latin-1'))
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read().decode('latin-1') == u'cöntent from source file'
+
+
+def test_content_passed_by_file_defaults_to_utf8(root):
+    source = 'source'
+    with open(source, 'w') as f:
+        f.write(u'cöntent from source file'.encode('utf-8'))
+    path = 'path'
+    p = Content(path, source=source)
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read().decode('utf-8') == u'cöntent from source file'
+
+
 def test_content_passed_by_file_template(root):
     source = 'source'
     with open(source, 'w') as f:
@@ -236,6 +284,41 @@ def test_content_passed_by_file_template(root):
     root.component.deploy()
     with open(p.path) as f:
         assert f.read() == 'asdf'
+
+
+def test_content_passed_by_file_template_handles_encoding(root):
+    source = 'source'
+    with open(source, 'w') as f:
+        f.write(
+            u'cöntent from source file {{component.foo}}'.encode('latin-1'))
+    path = 'path'
+    p = Content(path, source=source, encoding='latin-1')
+    root.component.foo = u'foo'
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read().decode('latin-1') == u'cöntent from source file foo'
+
+
+def test_content_passed_by_file_template_defaults_to_utf8(root):
+    source = 'source'
+    with open(source, 'w') as f:
+        f.write(u'cöntent from source file {{component.foo}}'.encode('utf-8'))
+    path = 'path'
+    p = Content(path, source=source)
+    root.component.foo = u'foo'
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read().decode('utf-8') == u'cöntent from source file foo'
 
 
 def test_content_from_file_as_template_guessed(root):

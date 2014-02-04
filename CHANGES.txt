@@ -11,6 +11,9 @@ Changelog
 - Mercurial clone: allow updates to reset uncommitted changes to a clone
   unconditionally (unless configured not to update clones in the first place).
 
+- File component: apply character encoding when reading and writing files.
+  (#13165)
+
 - Archive: recognize ``.tar.xz`` files and extract them with ``tar``.
 
 - Added documentation.
