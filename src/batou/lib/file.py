@@ -37,7 +37,7 @@ class File(Component):
     is_template = True
     template_context = None
     template_args = None  # dict, actually
-    encoding = 'ascii'
+    encoding = 'utf-8'
 
     # Unix attributes
     owner = None
@@ -228,8 +228,8 @@ class Content(FileComponent):
     template_args = None  # dict, actually
 
     # If content is given as unicode (always the case with templates)
-    # then require it to be encodable. We start guess ASCII and allow
-    # overrides.
+    # then require it to be encodable. We assume UTF-8 as a sensible default
+    # for most use casesq and allow overrides.
     encoding = 'utf-8'
 
     _delayed = False
