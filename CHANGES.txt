@@ -46,6 +46,23 @@ Changelog
   about Python versions 2.4, 2.5, 2.6, 2.7, 3.1, 3.2, and 3.3 to use compatible
   virtualenv/pip/setuptools versions and commands. Fixes #12941
 
+  NOTE: The API for batou.lib.python.Package has changed in
+  backwards-incompatible ways:
+
+  Package() needs to be added to a VirtualEnv component. Before::
+
+    self += VirtualEnv(...)
+    self += Package(...)
+
+  Now::
+
+    venv = VirtualEnv(...)
+    self += venv
+    venv += Package(...)
+
+  Package parameter ``pip_install_options`` has been renamed to
+  ``install_options``.
+
 - Use ``urllib`` module instead of ``wget`` command for cross platform
   compatibility.
 
