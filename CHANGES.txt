@@ -10,8 +10,6 @@ Changelog
 
 - Archive: recognize ``.tar.xz`` files and extract them with ``tar``.
 
-- Added documentation.
-
 
 1.0b17 (2013-12-06)
 ===================
