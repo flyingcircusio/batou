@@ -1,5 +1,6 @@
 from StringIO import StringIO
-from batou.lib.cmmi import Build, Configure
+from batou.lib.cmmi import Build, Configure, Make
+from batou.lib.file import File
 from datetime import datetime
 import hashlib
 import mock
@@ -35,6 +36,26 @@ def test_configure_accepts_custom_prefix(root):
     assert configure.prefix == '/asdf'
     root.component.deploy()
     assert ' --prefix=/asdf' in configure.cmd.call_args[0][0]
+
+
+def test_configure_verifies_against_success_file(root):
+    root.component += File('foo/config.status', content='', leading=True)
+    configure = Configure('foo')
+    configure.cmd = mock.Mock()
+    root.component += configure
+    root.component.deploy()
+    root.component.deploy()
+    assert 1 == configure.cmd.call_count
+
+
+def test_make_verifies_against_success_file(root):
+    root.component += File('foo/Makefile', content='', leading=True)
+    make = Make('foo')
+    make.cmd = mock.Mock()
+    root.component += make
+    root.component.deploy()
+    root.component.deploy()
+    assert 1 == make.cmd.call_count
 
 
 CONFIGURE_TEMPLATE = """#!%s
