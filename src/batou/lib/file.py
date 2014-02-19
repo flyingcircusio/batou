@@ -108,6 +108,12 @@ class File(Component):
         return getattr(os.stat(self.path), key)
 
 
+class BinaryFile(File):
+
+    is_template = False
+    encoding = None
+
+
 class Presence(Component):
 
     namevar = 'path'
@@ -229,7 +235,7 @@ class Content(FileComponent):
 
     # If content is given as unicode (always the case with templates)
     # then require it to be encodable. We assume UTF-8 as a sensible default
-    # for most use casesq and allow overrides.
+    # for most use cases and allow overrides.
     encoding = 'utf-8'
 
     _delayed = False
@@ -252,7 +258,9 @@ class Content(FileComponent):
 
             if os.path.exists(self.source):
                 with open(self.source, 'r') as f:
-                    self.content = f.read().decode(self.encoding)
+                    self.content = f.read()
+                if self.encoding:
+                    self.content = self.content.decode(self.encoding)
             else:
                 # Delay reading to the verification phase as we might be on the
                 # local side of the remoting utility.
@@ -277,10 +285,14 @@ class Content(FileComponent):
     def verify(self):
         if self._delayed:
             with open(self.source, 'r') as f:
-                self.content = f.read().decode(self.encoding)
+                self.content = f.read()
+            if self.encoding:
+                self.content = self.content.decode(self.encoding)
             self._render()
         with open(self.path, 'r') as target:
-            current = target.read().decode(self.encoding)
+            current = target.read()
+            if self.encoding:
+                current = current.decode(self.encoding)
             if current != self.content:
                 for line in difflib.unified_diff(current.splitlines(),
                                                  self.content.splitlines()):
