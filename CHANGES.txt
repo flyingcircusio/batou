@@ -10,6 +10,9 @@ Changelog
 
 - Archive: recognize ``.tar.xz`` files and extract them with ``tar``.
 
+- Fix bug in CMMI verify that would always raise UpdateNeeded due to a path
+  mismatch (#13145).
+
 
 1.0b17 (2013-12-06)
 ===================
