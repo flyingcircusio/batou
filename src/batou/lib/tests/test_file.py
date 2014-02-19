@@ -169,11 +169,12 @@ def test_content_passed_by_string_template(root):
         assert f.read() == 'asdf'
 
 
-def test_content_with_unicode_has_ascii_default(root):
+def test_content_with_unicode_requires_encoding(root):
     path = 'path'
     root.component.foobar = u'äsdf'
     p = File(path,
-             content=u'örks {{component.foobar}}')
+             content=u'örks {{component.foobar}}',
+             encoding='ascii')
 
     with pytest.raises(UnicodeEncodeError):
         root.component |= p
