@@ -88,36 +88,36 @@ def test_clean_clone_updates_on_incoming_changes(root, repos_path):
 
 
 @pytest.mark.slow
-def test_clone_with_changes_does_not_update(root, repos_path):
+def test_changes_lost_on_update_with_incoming(root, repos_path):
     root.component += batou.lib.mercurial.Clone(
         repos_path, target='clone', branch='default')
     root.component.deploy()
     cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
         dir=repos_path))
-    cmd('cd {dir}/clone; touch baz; hg addremove'.format(dir=root.workdir))
+    cmd('cd {dir}/clone; echo foobar >foo'.format(dir=root.workdir))
     root.component.deploy()
-    assert not os.path.exists(root.component.map('clone/bar'))
+    assert os.path.exists(root.component.map('clone/bar'))
+    assert not open(root.component.map('clone/foo')).read()
 
 
 @pytest.mark.slow
-def test_clone_with_outgoing_changesets_does_not_update(root, repos_path):
+def test_changes_lost_on_update_without_incoming(root, repos_path):
     root.component += batou.lib.mercurial.Clone(
         repos_path, target='clone', branch='default')
     root.component.deploy()
-    cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
-        dir=repos_path))
-    cmd('cd {dir}/clone; touch baz; hg addremove; hg ci -m "commit"'.format(
-        dir=root.workdir))
+    cmd('cd {dir}/clone; echo foobar >foo'.format(dir=root.workdir))
     root.component.deploy()
-    assert not os.path.exists(root.component.map('clone/bar'))
+    assert not open(root.component.map('clone/foo')).read()
 
 
 @pytest.mark.slow
-def test_clean_clone_vcs_update_false_does_not_update(root, repos_path):
+def test_clean_clone_vcs_update_false_leaves_changes_intact(root, repos_path):
     root.component += batou.lib.mercurial.Clone(
         repos_path, target='clone', branch='default', vcs_update=False)
     root.component.deploy()
-    cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
-        dir=repos_path))
+    cmd('cd {dir}; echo foobar >foo; touch bar; hg addremove; '
+        'hg ci -m "commit"'.format(dir=repos_path))
+    cmd('cd {dir}/clone; echo asdf >foo'.format(dir=root.workdir))
     root.component.deploy()
+    assert 'asdf\n' == open(root.component.map('clone/foo')).read()
     assert not os.path.exists(root.component.map('clone/bar'))
