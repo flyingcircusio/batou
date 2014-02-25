@@ -32,15 +32,16 @@ class Clone(Component):
             if not self.vcs_update:
                 return
 
-            if self.has_changes:
-                logger.error(
-                    'Hg clone at {} has changes, refused to update.'.format(
-                        self.target))
-                return
             if self.has_outgoing_changesets:
-                logger.error('Hg clone at {} has outgoing changesets, '
-                             'refused to update.'.format(self.target))
-                return
+                logger.info(
+                    'Hg clone at {} has outgoing changesets.'.format(
+                        self.target))
+
+            if self.has_changes:
+                logger.warning(
+                    'Hg clone at {} is dirty, going to lose changes.'.format(
+                        self.target))
+                raise UpdateNeeded()
 
             if self.revision and self.current_revision != self.revision:
                 raise UpdateNeeded()

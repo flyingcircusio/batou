@@ -16,6 +16,9 @@ Changelog
 - File component: apply character encoding when reading and writing files.
   (#13165)
 
+- Mercurial clone: changed update behaviour yet again: unless configured
+  differently, always achieve target state, even by losing uncommitted changes.
+
 
 1.0b17 (2013-12-06)
 ===================
