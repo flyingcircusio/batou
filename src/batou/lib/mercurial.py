@@ -104,10 +104,11 @@ class Clone(Component):
                 self.cmd(self.expand(
                     'hg clone -u {{component.revision_or_branch}} '
                     '{{component.url}} .'))
-            else:
-                self.cmd('hg pull')
-                self.cmd(self.expand(
-                    'hg up --clean {{component.revision_or_branch}}'))
+                return
+            self.cmd(self.expand(
+                'hg pull --rev {{component.revision_or_branch}}'))
+            self.cmd(self.expand(
+                'hg update --clean --rev {{component.revision_or_branch}}'))
 
     def last_updated(self):
         with self.chdir(self.target):
