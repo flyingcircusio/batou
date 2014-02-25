@@ -445,10 +445,8 @@ def test_mode_ensures_mode_for_directories(root):
     assert not mode.changed
 
 
+@pytest.mark.skipif(not hasattr(os, 'lchmod'), reason='requires lchmod')
 def test_mode_ensures_mode_for_symlinks(root):
-    # XXX why doesn't skipIf work correctly?!?
-    if not hasattr(os, 'lchmod'):
-        pytest.skip('requires lchmod')
     # This test is only relevant on platforms that support managing the mode of
     # symlinks.
     link_to = 'link_to'
@@ -468,9 +466,8 @@ def test_mode_ensures_mode_for_symlinks(root):
     assert not mode.changed
 
 
+@pytest.mark.skipif(hasattr(os, 'lchmod'), reason='requires no lchmod')
 def test_mode_does_not_break_on_platforms_without_lchmod(root):
-    if hasattr(os, 'lchmod'):
-        pytest.skip('requires not having lchmod')
     # This test is only relevant on platforms without lchmod. We basically
     # ensure that deploying the component doesn't break but it's a noop
     # anyway.

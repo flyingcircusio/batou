@@ -17,11 +17,11 @@ class Configure(Component):
             self.prefix = self.workdir
 
     def verify(self):
-        with self.chdir(self.path):
-            # This is guesswork. Unfortunately CMMI doesn't work any better.
-            self.assert_file_is_current('config.status')
-            self.assert_file_is_current(
-                '.batou.config.success', ['configure'])
+        # This is guesswork. Unfortunately CMMI doesn't work any better.
+        self.assert_file_is_current(self.path + '/config.status')
+        self.assert_file_is_current(
+            self.path + '/.batou.config.success',
+            [self.path + '/configure'])
 
     def update(self):
         with self.chdir(self.path):
@@ -37,8 +37,8 @@ class Make(Component):
     build_environment = None
 
     def verify(self):
-        with self.chdir(self.path):
-            self.assert_file_is_current('.batou.make.success', ['Makefile'])
+        self.assert_file_is_current(
+            self.path + '/.batou.make.success', [self.path + '/Makefile'])
 
     def update(self):
         with self.chdir(self.path):
