@@ -64,15 +64,25 @@ def test_set_revision_does_not_pull_when_revision_matches(root, repos_path):
 
 
 @pytest.mark.slow
-def test_has_changes_counts_only_changes_to_tracked_files(root, repos_path):
+def test_has_changes_counts_changes_to_tracked_files(root, repos_path):
     clone = batou.lib.mercurial.Clone(
         repos_path, target='clone', branch='default')
     root.component += clone
     root.component.deploy()
     assert not clone.has_changes
     cmd('touch {}/clone/bar'.format(root.workdir))
-    assert not clone.has_changes
     cmd('cd {}/clone; hg add bar'.format(root.workdir))
+    assert clone.has_changes
+
+
+@pytest.mark.slow
+def test_has_changes_counts_untracked_files_as_changes(root, repos_path):
+    clone = batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='default')
+    root.component += clone
+    root.component.deploy()
+    assert not clone.has_changes
+    cmd('touch {}/clone/bar'.format(root.workdir))
     assert clone.has_changes
 
 
@@ -98,6 +108,17 @@ def test_changes_lost_on_update_with_incoming(root, repos_path):
     root.component.deploy()
     assert os.path.exists(root.component.map('clone/bar'))
     assert not open(root.component.map('clone/foo')).read()
+
+
+@pytest.mark.slow
+def test_untracked_files_are_removed_on_update(root, repos_path):
+    root.component += batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='default')
+    root.component.deploy()
+    cmd('cd {dir}/clone; mkdir bar; echo foobar >bar/baz'.format(
+        dir=root.workdir))
+    root.component.deploy()
+    assert not os.path.exists(root.component.map('clone/bar/baz'))
 
 
 @pytest.mark.slow

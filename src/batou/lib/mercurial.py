@@ -96,7 +96,7 @@ class Clone(Component):
     @property
     def has_changes(self):
         with self.chdir(self.target):
-            stdout, stderr = self.cmd('hg status -q')
+            stdout, stderr = self.cmd('hg status')
         return bool(stdout.strip())
 
     def update(self):
@@ -108,8 +108,16 @@ class Clone(Component):
                 return
             self.cmd(self.expand(
                 'hg pull --rev {{component.revision_or_branch}}'))
+            for filepath in self.untracked_files:
+                os.unlink(os.path.join(self.target, filepath))
             self.cmd(self.expand(
                 'hg update --clean --rev {{component.revision_or_branch}}'))
+
+    @property
+    def untracked_files(self):
+        stdout, stderr = self.cmd('hg status -q -u')
+        items = (line.split(None, 1) for line in stdout.splitlines())
+        return [filepath for status, filepath in items if status == '?']
 
     def last_updated(self):
         with self.chdir(self.target):
