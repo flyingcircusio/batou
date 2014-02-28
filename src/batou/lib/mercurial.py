@@ -4,6 +4,8 @@ from batou.lib.file import Directory
 import logging
 import os.path
 import re
+import shutil
+import tempfile
 
 
 logger = logging.getLogger(__name__)
@@ -16,6 +18,8 @@ class Clone(Component):
     revision = None
     branch = None
     vcs_update = True
+
+    _bundle_dir = None
 
     _revision_pattern = re.compile('parent: \d+:([a-f0-9]+) ')
 
@@ -72,8 +76,11 @@ class Clone(Component):
 
     @property
     def has_incoming_changesets(self):
+        self._bundle_dir = tempfile.mkdtemp(prefix='batou-hg-bundle-')
         try:
-            self.cmd('hg incoming -q -l1', silent=True)
+            self.cmd(self.expand(
+                'hg incoming -q -l1 '
+                '--bundle {{component._bundle_dir}}/bundle'), silent=True)
         except RuntimeError, e:
             returncode = e.args[1]
             if returncode == 1:
@@ -106,8 +113,16 @@ class Clone(Component):
                     'hg clone -u {{component.revision_or_branch}} '
                     '{{component.url}} .'))
                 return
-            self.cmd(self.expand(
-                'hg pull --rev {{component.revision_or_branch}}'))
+
+            if self._bundle_dir is None:
+                self.cmd(self.expand(
+                    'hg pull --rev {{component.revision_or_branch}}'))
+            else:
+                bundle = os.path.join(self._bundle_dir, 'bundle')
+                if os.path.exists(bundle):
+                    self.cmd('hg unbundle {}'.format(bundle))
+                shutil.rmtree(self._bundle_dir)
+
             for filepath in self.untracked_files:
                 os.unlink(os.path.join(self.target, filepath))
             self.cmd(self.expand(
