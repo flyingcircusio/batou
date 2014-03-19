@@ -19,6 +19,14 @@ Changelog
 
     self.cmd(self.expand('rm -rf {{component.workdir}}'))
 
+- Allow unnamed access to the last added/ored component using the 
+  'self._' attribute:
+
+  def configure(self):
+      self += Download(...)
+      self += Extract(self._.target)
+
+
 1.0b17 (2013-12-06)
 ===================
 
