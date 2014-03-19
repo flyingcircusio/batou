@@ -173,6 +173,20 @@ def test_adding_subcomponents_configures_them_immediately(root):
     assert my.configured
 
 
+def test_adding_subcomponents_makes_them_available_as_underscore(root):
+    c = Component()
+    assert root.component._ is None
+    root.component += c
+    assert root.component._ is c
+
+
+def test_oring_subcomponents_makes_them_available_as_underscore(root):
+    c = Component()
+    assert root.component._ is None
+    root.component |= c
+    assert root.component._ is c
+
+
 # AFIC = assert file is current
 def test_afic_raises_if_nonexisting_file(root):
     component = Component()
@@ -261,19 +275,29 @@ def test_acic_accepts_multiple_components(root):
         c.assert_component_is_current([c2, c2])
 
 
+def test_cmd_expands_jinja():
+    c = Component()
+    c.foo = 'asdf'
+    c.prepare(Mock())
+    assert ('asdf\n', '') == c.cmd('echo "{{component.foo}}"')
+
+
 def test_cmd_returns_output():
     c = Component()
+    c.prepare(Mock())
     assert ('1\n', '') == c.cmd('echo 1')
 
 
 def test_cmd_raises_if_error():
     c = Component()
+    c.prepare(Mock())
     with pytest.raises(RuntimeError):
         c.cmd('non-existing-command')
 
 
 def test_cmd_returns_output_if_ignore_returncode():
     c = Component()
+    c.prepare(Mock())
     out, err = c.cmd('echo important output && false', silent=True,
                      ignore_returncode=True)
     assert 'important output\n' == out
@@ -355,6 +379,7 @@ def test_component_manages_working_dir(root):
 
 def test_cmd_execution_failed_gives_command_in_exception():
     c = Component()
+    c.prepare(Mock())
     with pytest.raises(RuntimeError) as e:
         c.cmd('asdf')
     assert str(e.value[0]) == 'Command "asdf" returned unsuccessfully.'
@@ -363,6 +388,7 @@ def test_cmd_execution_failed_gives_command_in_exception():
 
 def test_cmd_should_not_stop_if_process_expects_input():
     c = Component()
+    c.prepare(Mock())
     stdout, stderr = c.cmd('cat')
     # The assertion is, that the test doesn't get stuck .
 
@@ -395,11 +421,13 @@ def test_require_one_convenience_raises_if_more_results():
 
 def test_assert_cmd_when_succesful():
     c = Component()
+    c.prepare(Mock())
     c.assert_cmd('true')
 
 
 def test_assert_cmd_when_unsuccessful():
     c = Component()
+    c.prepare(Mock())
     with pytest.raises(UpdateNeeded):
         c.assert_cmd('false')
 

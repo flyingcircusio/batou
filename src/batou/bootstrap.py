@@ -42,7 +42,11 @@ def bootstrap(activate=True):
     elif not develop:
         expected = os.environ['BATOU_VERSION']
         req = pkg_resources.Requirement.parse('batou=={}'.format(expected))
-        if pkg_resources.working_set.find(req) is None:
+        try:
+            need_update = pkg_resources.working_set.find(req) is None
+        except pkg_resources.VersionConflict:
+            need_update = True
+        if need_update:
             print "Updating to batou=={}".format(expected)
             cmd('.batou/bin/pip install --no-deps batou=={}'.format(expected))
             restart(False)
