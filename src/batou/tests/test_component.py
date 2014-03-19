@@ -173,6 +173,20 @@ def test_adding_subcomponents_configures_them_immediately(root):
     assert my.configured
 
 
+def test_adding_subcomponents_makes_them_available_as_underscore(root):
+    c = Component()
+    assert root.component._ is None
+    root.component += c
+    assert root.component._ is c
+
+
+def test_oring_subcomponents_makes_them_available_as_underscore(root):
+    c = Component()
+    assert root.component._ is None
+    root.component |= c
+    assert root.component._ is c
+
+
 # AFIC = assert file is current
 def test_afic_raises_if_nonexisting_file(root):
     component = Component()

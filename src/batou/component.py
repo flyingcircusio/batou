@@ -54,6 +54,10 @@ class Component(object):
 
     workdir = None
 
+    # Keeps track of the last added component so you can
+    # avoid giving temporary names to components.
+    _ = None
+
     changed = False
     _prepared = False
 
@@ -195,6 +199,7 @@ class Component(object):
         """
         if component is not None and not component._prepared:
             component.prepare(self.root, self)
+        self._ = component
         return self
 
     @property
