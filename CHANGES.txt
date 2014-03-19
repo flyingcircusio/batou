@@ -10,6 +10,14 @@ Changelog
 
   Existing installations need to be cleaned manually. :/
 
+- Component.cmd() now performs expand() on the given command by
+  default. Saves typing:
+
+    self.cmd('rm -rf {{component.workdir}}')
+
+  instead of 
+
+    self.cmd(self.expand('rm -rf {{component.workdir}}'))
 
 1.0b17 (2013-12-06)
 ===================

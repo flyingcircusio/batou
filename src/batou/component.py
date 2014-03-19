@@ -280,7 +280,9 @@ class Component(object):
         self.assert_no_subcomponent_changes()
 
     def cmd(self, cmd, silent=False, ignore_returncode=False,
-            communicate=True, env=None):
+            communicate=True, env=None, expand=True):
+        if expand:
+            cmd = self.expand(cmd)
         return batou.utils.cmd(
             cmd, silent, ignore_returncode, communicate, env)
 
