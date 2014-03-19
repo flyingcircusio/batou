@@ -8,16 +8,36 @@ Changelog
 - Introduce environment option ``connect_mode``, either 'ssh+sudo' (default) or
   plain 'ssh'.
 
+- Improve update code: existing installations would not update cleanly to a new
+  version due to wrong use of pkg_resources API.
+  Existing installations need to be cleaned manually. :/
+
 - Archive: recognize ``.tar.xz`` files and extract them with ``tar``.
 
 - Fix bug in CMMI verify that would always raise UpdateNeeded due to a path
   mismatch (#13145).
+
+- Component.cmd() now performs expand() on the given command by
+  default. Saves typing:
+
+    self.cmd('rm -rf {{component.workdir}}')
+
+  instead of 
+
+    self.cmd(self.expand('rm -rf {{component.workdir}}'))
 
 - File component: apply character encoding when reading and writing files.
   (#13165)
 
 - Mercurial clone: changed update behaviour yet again: unless configured
   differently, always achieve target state, even by losing uncommitted changes.
+
+- Allow unnamed access to the last added/ored component using the 
+  'self._' attribute:
+
+  def configure(self):
+      self += Download(...)
+      self += Extract(self._.target)
 
 
 1.0b17 (2013-12-06)

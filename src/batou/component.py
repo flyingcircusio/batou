@@ -54,6 +54,10 @@ class Component(object):
 
     workdir = None
 
+    # Keeps track of the last added component so you can
+    # avoid giving temporary names to components.
+    _ = None
+
     changed = False
     _prepared = False
 
@@ -195,6 +199,7 @@ class Component(object):
         """
         if component is not None and not component._prepared:
             component.prepare(self.root, self)
+        self._ = component
         return self
 
     @property
@@ -280,7 +285,9 @@ class Component(object):
         self.assert_no_subcomponent_changes()
 
     def cmd(self, cmd, silent=False, ignore_returncode=False,
-            communicate=True, env=None):
+            communicate=True, env=None, expand=True):
+        if expand:
+            cmd = self.expand(cmd)
         return batou.utils.cmd(
             cmd, silent, ignore_returncode, communicate, env)
 
