@@ -39,6 +39,11 @@ Changelog
       self += Download(...)
       self += Extract(self._.target)
 
+- Added class decorator ``batou.component.deploy_once`` for making sure to
+  deploy a component only once even though it may by a subcomponent of
+  multiple parents. Applied this to ``batou.lib.mercurial.Clone`` which may be
+  shared between multiple buildout components.
+
 
 1.0b17 (2013-12-06)
 ===================

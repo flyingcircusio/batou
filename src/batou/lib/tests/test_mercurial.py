@@ -29,6 +29,7 @@ def test_setting_branch_updates_on_incoming_changes(root, repos_path):
     root.component.deploy()
     cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
         dir=repos_path))
+    del root.component._.__already_deployed__
     root.component.deploy()
     assert os.path.isfile(
         os.path.join(root.environment.workdir_base, 'mycomponent/clone/bar'))
@@ -93,6 +94,7 @@ def test_clean_clone_updates_on_incoming_changes(root, repos_path):
     root.component.deploy()
     cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
         dir=repos_path))
+    del root.component._.__already_deployed__
     root.component.deploy()
     assert os.path.isfile(root.component.map('clone/bar'))
 
@@ -105,6 +107,7 @@ def test_changes_lost_on_update_with_incoming(root, repos_path):
     cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
         dir=repos_path))
     cmd('cd {dir}/clone; echo foobar >foo'.format(dir=root.workdir))
+    del root.component._.__already_deployed__
     root.component.deploy()
     assert os.path.exists(root.component.map('clone/bar'))
     assert not open(root.component.map('clone/foo')).read()
@@ -117,6 +120,7 @@ def test_untracked_files_are_removed_on_update(root, repos_path):
     root.component.deploy()
     cmd('cd {dir}/clone; mkdir bar; echo foobar >bar/baz'.format(
         dir=root.workdir))
+    del root.component._.__already_deployed__
     root.component.deploy()
     assert not os.path.exists(root.component.map('clone/bar/baz'))
 
@@ -127,6 +131,7 @@ def test_changes_lost_on_update_without_incoming(root, repos_path):
         repos_path, target='clone', branch='default')
     root.component.deploy()
     cmd('cd {dir}/clone; echo foobar >foo'.format(dir=root.workdir))
+    del root.component._.__already_deployed__
     root.component.deploy()
     assert not open(root.component.map('clone/foo')).read()
 

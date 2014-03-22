@@ -17,3 +17,24 @@ batou.c
 -------
 
 ordered alphabetically (significant for imports)
+
+deploy_once
+-----------
+
+Sometimes, a component is shared as a subcomponent by multiple parents. In
+such cases, it may be unhelpful to deploy the subcomponent along with each
+parent, which would be what ordinarily happens in a batou run.
+
+One example of this is a VCS clone that contributes as additional
+configuration to multiple buildouts (implying that it is added to each as a
+subcomponent). Deploying the VCS clone as part of each buildout's deployment
+is not desirable: Verifying and updating the VCS clone incurs network access,
+which is expensive in terms of performance, and any deployment after the first
+either makes no change to the working directory or, if it does, may apply a
+change that conflicts with some previously completed buildouts using the
+clone.
+
+Therefore, the ``batou.component.deploy_once`` class decorator may be applied
+to a component that should not be deployed more than once per host during any
+given batou run. The decorator is already applied to
+``batou.lib.mercurial.Clone``.

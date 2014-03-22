@@ -1,5 +1,5 @@
 from batou import UpdateNeeded
-from batou.component import Component
+from batou.component import Component, deploy_once
 from batou.lib.file import Directory
 import logging
 import os.path
@@ -9,6 +9,7 @@ import re
 logger = logging.getLogger(__name__)
 
 
+@deploy_once
 class Clone(Component):
 
     namevar = 'url'

@@ -1,4 +1,4 @@
-from batou.component import Component, RootComponent, platform
+from batou.component import Component, RootComponent, platform, deploy_once
 from batou import UpdateNeeded
 from mock import Mock
 import batou
@@ -468,3 +468,26 @@ def test_root_overrides_existing_attribute(root):
     root.environment.overrides = {'mycomponent': {'asdf': 1}}
     root.prepare()
     assert root.component.asdf == 1
+
+
+def test_deploy_once_avoids_multiple_deployment_of_shared_subcomponents(root):
+    @deploy_once
+    class SampleComponent(Component):
+        count_verify = 0
+        count_update = 0
+
+        def verify(self):
+            self.count_verify += 1
+            raise UpdateNeeded
+
+        def update(self):
+            self.count_update += 1
+
+    s = SampleComponent()
+    for i in range(3):
+        root.component += Component()
+        root.component._ += s
+
+    root.component.deploy()
+    assert s.count_verify == 1
+    assert s.count_update == 1

@@ -3,6 +3,7 @@ import batou.c
 import batou.template
 import batou.utils
 import contextlib
+import functools
 import logging
 import os
 import os.path
@@ -409,3 +410,34 @@ class RootComponent(object):
     def __repr__(self):
         return '<%s "%s" object at %s>' % (
             self.__class__.__name__, self.name, id(self))
+
+
+def deploy_once(cls):
+    """Class decorator for components to make sure to deploy only once.
+
+    This is meant to be applied to components which are used as subcomponents
+    to multiple parents but should not be deployed more than once regardless.
+
+    Reasons for such a requirement might include that verification or update
+    are expensive, or that verification and update depend on external state
+    but should be consistent throughout a batou run.
+
+    An example of both at the same time is a VCS clone that is shared between
+    multiple buildouts for dependency modelling. Deployment incurs network
+    access, and if new changes appear upstream during a batou run, they might
+    conflict with already completed buildout runs that used an older revision.
+
+    """
+
+    deploy = cls.deploy
+
+    @functools.wraps(deploy)
+    def wrapped_deploy(self):
+        if getattr(self, '__already_deployed__', False):
+            return
+        deploy(self)
+        self.__already_deployed__ = True
+
+    cls.deploy = wrapped_deploy
+
+    return cls
