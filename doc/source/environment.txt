@@ -1,19 +1,19 @@
 Environments (TBD)
 ==================
 
-component/host assignment
+Component/host assignment
 -------------------------
 
-general parameters
+General parameters
 ------------------
 
-General environment parameters are set in the ``[enviornment]`` config section.
+General environment parameters are set in the ``[environment]`` config section.
 Example::
 
-	[enviornment]
+	[environment]
 	service_user = website
 	host_domain = gocept.net
-	plattform = gocept
+	platform = gocept
 	branch = production
 
 service_user
@@ -33,11 +33,12 @@ update_method
 	`bundle` method will copy the necessary changes via the batou ssh link.
 
 branch
-	For remote deployments, use this and only this branch. batou will complain 
-	if the local branch does not match the set branch in the enviornment.
+	For remote deployments, use this and only this branch. batou will
+	complain if the local branch does not match the set branch in the
+	environment.
 
 platform
-	Set the platform for this environment. See :ref:`plattforms`.
+	Set the platform for this environment. See :ref:`platforms`.
 
 timeout
 	Set the ssh connection timeout in seconds.
