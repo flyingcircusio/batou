@@ -32,7 +32,7 @@ components and they are special in the following sense:
 * they provide the granularity for automatic ordering of components during
 * they get assigned to the ``batou.c`` namespace to make them referencable from the other   
   :file:`component.py` files.
-* they are instanciated once per host that they are assigned to in an environment
+* they are instantiated once per host that they are assigned to in an environment
 
 A component class that is defined outside of a :file:`component.py` file can be
 used as a top-level component by simply importing it into a :file:`component.py`
@@ -93,7 +93,7 @@ The composition operator ``+=``
 
 Using sub-components happens in two steps:
 
-1. instanciating a Component
+1. instantiating a Component
 2. assigning an instance using the ``+=`` operator.
 
 A typical example using the :class:`File` component:
@@ -104,7 +104,8 @@ A typical example using the :class:`File` component:
        file = File('foo/bar', content='asdf')
        self += file
 
-The sub-component's :func:`configure` method will be called when the composition happens, not when the component is instanciated.
+The sub-component's :func:`configure` method will be called when the
+composition happens, not when the component is instantiated.
 
 This also gives you flexibility to initialize components and then pass them around or stick them on another component.
 

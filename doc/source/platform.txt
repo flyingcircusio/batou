@@ -1,5 +1,5 @@
 
-.. _plattforms:
+.. _platforms:
 
 Platform varations (TBD)
 ========================
