@@ -141,9 +141,9 @@ format:
 
 The main parameter is the archive filename (relative to the component's
 directory). The archive format is determined according to the file name
-extension ('.tar.gz', '.tar', '.tar.bz2', '.tgz' use ``tar``, '.zip' uses
-``unzip`` and '.dmg' uses ``hdiutil``). The following additional parameters are
-supported:
+extension ('.tar', '.tar.gz', '.tgz', '.tar.bz2', '.tar.xz' use ``tar``,
+'.zip' uses ``unzip`` and '.dmg' uses ``hdiutil``). The following additional
+parameters are supported:
 
 .. py:attribute:: target
 
