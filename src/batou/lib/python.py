@@ -221,6 +221,12 @@ class VirtualEnvDownload(Component):
         extracted_dir = os.path.basename(download.target).rstrip('.tar.gz')
         self.venv_cmd = self.workdir + '/' + extracted_dir + '/virtualenv.py'
 
+    def verify(self):
+        self.assert_no_subcomponent_changes()
+
+    def update(self):
+        self.touch(self.venv_cmd)
+
 
 class Package(Component):
     """Install a package into a virtual python environment.
