@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b18 (unreleased)
+1.0b18 (2014-03-31)
 ===================
 
 - Introduce environment option ``connect_mode``, either 'ssh+sudo' (default) or
