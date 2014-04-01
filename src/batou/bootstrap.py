@@ -70,6 +70,9 @@ def bootstrap(activate=True):
                 # name as the egg contained therein
                 path = re.split('-e *', req, 1)[1]
                 egg = os.path.basename(path)
+        elif req.startswith('-f'):
+            find_links = re.split('-f *', req, 1)[1]
+            continue
         else:
             egg = req
 
@@ -83,7 +86,12 @@ def bootstrap(activate=True):
                 needed = False
         if needed:
             print "Installing {}".format(req)
-            cmd('.batou/bin/pip install --egg --no-deps "{}"'.format(req))
+            if find_links:
+                cmd('.batou/bin/pip install '
+                    '--no-deps --find-links {} "{}"'.format(find_links, req))
+                find_links = ''
+            else:
+                cmd('.batou/bin/pip install --egg --no-deps "{}"'.format(req))
 
     if activate:
         restart(True)
