@@ -2,13 +2,12 @@ from batou.component import Component
 from batou.lib.file import File
 from batou.lib.python import VirtualEnv, Package
 import contextlib
-import os.path
+import os
 
 
 class Buildout(Component):
 
     timeout = None
-    extends = ()   # Extends need to be components that have a path
     use_default = True
     config = None
     additional_config = ()
