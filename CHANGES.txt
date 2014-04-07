@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b19 (unreleased)
+1.0b19 (2014-04-07)
 ===================
 
 - Allow specifying alternate find-links in requirements.txt
