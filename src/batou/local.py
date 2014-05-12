@@ -20,14 +20,14 @@ def main(environment, hostname, platform, timeout):
             environment.configure()
             for root in environment.roots_in_order(host=hostname):
                 root.component.deploy()
-        except CmdExecutionError, e:
+        except CmdExecutionError:
             # this has already been reported by the component itself.
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
                        environment.name, hostname))
             sys.exit(1)
-        except Exception, e:
-            logger.exception(e)
+        except Exception:
+            logger.error('', exc_info=True)
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
                        environment.name, hostname))
