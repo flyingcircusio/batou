@@ -104,13 +104,14 @@ def test_aggressive_consumer_raises_unsatisfiedrequirement(env):
     assert set([consumer]) == e.value.args[0]
 
 
-@mock.patch('batou.environment.logger.exception')
+@mock.patch('batou.environment.logger.error')
 def test_broken_component_logs_real_exception(exception_log, env):
     env.add_root('broken', 'host')
     with pytest.raises(NonConvergingWorkingSet):
         env.configure()
     assert exception_log.called
-    assert isinstance(exception_log.call_args[0][0], KeyError)
+    assert isinstance(
+        exception_log.call_args_list[0][1]['exc_info'][1], KeyError)
 
 
 def test_consumer_retrieves_value_from_provider_with_same_host(env):

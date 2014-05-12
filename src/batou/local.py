@@ -1,5 +1,6 @@
 from .environment import Environment
 from .utils import notify, locked, CmdExecutionError
+from batou import NonConvergingWorkingSet
 import logging
 import sys
 
@@ -20,7 +21,7 @@ def main(environment, hostname, platform, timeout):
             environment.configure()
             for root in environment.roots_in_order(host=hostname):
                 root.component.deploy()
-        except CmdExecutionError:
+        except (CmdExecutionError, NonConvergingWorkingSet):
             # this has already been reported by the component itself.
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
