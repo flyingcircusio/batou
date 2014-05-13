@@ -27,8 +27,8 @@ def main(environment, timeout, dirty):
     deployment = RemoteDeployment(environment, dirty)
     try:
         deployment()
-    except Exception, e:
-        logger.exception(e)
+    except Exception:
+        logger.error('', exc_info=True)
     else:
         notify('Deployment finished',
                '{} was deployed successfully.'.format(environment.name))

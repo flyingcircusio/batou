@@ -13,6 +13,7 @@ import logging
 import os
 import os.path
 import pwd
+import sys
 
 
 logger = logging.getLogger(__name__)
@@ -201,8 +202,8 @@ class Environment(object):
                 try:
                     self.resources.reset_component_resources(root)
                     root.prepare()
-                except Exception, e:
-                    exceptions.append(e)
+                except Exception:
+                    exceptions.append((root, sys.exc_info()))
                     retry.add(root)
                     continue
 
@@ -219,14 +220,20 @@ class Environment(object):
                 # give up.
 
                 # Report all exceptions we got in the last run.
-                for e in exceptions:
-                    logger.exception(e)
+                for root, e in exceptions:
+                    logger.error('', exc_info=e)
 
                 # If any resources were required but not provided at least
                 # once we report this as well.
                 if self.resources.unsatisfied:
                     logger.error('Unsatisfied resources: %s' %
                                  ', '.join(self.resources.unsatisfied))
+
+                if exceptions:
+                    logger.error('\nThe following exceptions occurred '
+                                 '(see tracebacks above):')
+                for root, e in exceptions:
+                    logger.error('%s: %r', root.name, e[1])
                 raise NonConvergingWorkingSet(retry)
 
             working_set = retry
