@@ -154,8 +154,6 @@ class VirtualEnvPy2_5(VirtualEnvPyBase):
         self.parent += Package(
             'ssl',
             version='1.16',
-            env={'ARCHFLAGS': '-Wno-error=unused-command-line-argument-'
-                              'hard-error-in-future'},
             install_options=('--insecure',))
 
 
