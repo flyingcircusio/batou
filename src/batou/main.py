@@ -111,7 +111,13 @@ non-existent file name, a new encrypted file is created.
         level = logging.DEBUG
     else:
         level = logging.INFO
-    logging.basicConfig(stream=sys.stdout, level=level, format='%(message)s')
+
+    console = logging.StreamHandler(sys.stdout)
+    console.setLevel(level)
+    #console.setFormatter(logging.Formatter(fmt='%(message)s'))
+    logger = logging.getLogger('batou')
+    logger.setLevel(level)
+    logger.addHandler(console)
 
     # Pass over to function
     func_args = dict(args._get_kwargs())

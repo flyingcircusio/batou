@@ -29,7 +29,8 @@ os.chdir(base)
 # Do we have a virtualenv?
 if not os.path.exists(base + '/.batou'):
     print('Preparing virtualenv in .batou ...')
-    # Discover the right venv cmd. Or let batou figure that out later in a second phase?
+    # Discover the right venv cmd. Or let batou figure that out later in a
+    # second phase?
     cmd('virtualenv --python=python2.7 .batou')
 
 cmd('.batou/bin/pip install "pip>=1.2"')
@@ -45,10 +46,12 @@ if missing or develop:
     if develop:
         if missing:
             print('Pre-installing batou - this can take a while...')
-        cmd('.batou/bin/pip install --no-deps -e {}'.format(develop))
+        cmd('.batou/bin/pip install --ignore-installed '
+            '--no-deps -e {}'.format(develop))
     else:
         print('Pre-installing batou - this can take a while...')
-        cmd('.batou/bin/pip install --no-deps --egg batou=={}'.format(version))
+        cmd('.batou/bin/pip install --ignore-installed '
+            '--no-deps --egg batou=={}'.format(version))
 
 
 os.environ['BATOU_VERSION'] = version
