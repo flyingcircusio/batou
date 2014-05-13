@@ -7,7 +7,9 @@ Changelog
 
 - Allow specifying alternate find-links in requirements.txt
 
-- Removed remnants of the buildout component's ``extends`` option.
+- Remove remnants of the buildout component's ``extends`` option.
+
+- Improve error logging.
 
 
 1.0b18 (2014-03-31)
