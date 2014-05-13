@@ -5,6 +5,9 @@ Changelog
 1.0b19 (unreleased)
 ===================
 
+- Start using python-requests for HTTP/S downloads to support authentication
+  (and other goodies).
+
 - Allow specifying alternate find-links in requirements.txt
 
 - Remove remnants of the buildout component's ``extends`` option.
@@ -32,7 +35,7 @@ Changelog
 
     self.cmd('rm -rf {{component.workdir}}')
 
-  instead of 
+  instead of
 
     self.cmd(self.expand('rm -rf {{component.workdir}}'))
 
@@ -42,7 +45,7 @@ Changelog
 - Mercurial clone: changed update behaviour yet again: unless configured
   differently, always achieve target state, even by losing uncommitted changes.
 
-- Allow unnamed access to the last added/ored component using the 
+- Allow unnamed access to the last added/ored component using the
   'self._' attribute:
 
   def configure(self):

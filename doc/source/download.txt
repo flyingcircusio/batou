@@ -15,7 +15,12 @@ batou supports downloading files via HTTP(S) or FTP, for example:
 
 .. py:class:: batou.lib.download.Download(url)
 
-    Download from the given URL (uses ``urllib`` internally).
+    Download from the given URL (uses ``urllib`` or ``requests`` internally).
+
+.. py:attribute:: requests_kwargs
+
+    Keyword arguments to pass to ``requests`` get method, e.g. to support
+    authentication.
 
 .. py:attribute:: checksum
 
