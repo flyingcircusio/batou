@@ -112,7 +112,8 @@ class VirtualEnvPyBase(Component):
         options = ' '.join(options)
         self.cmd('bin/pip --timeout={} install {} '
                  '"{}=={}"'.format(
-                     pkg.timeout, options, pkg.package, pkg.version))
+                     pkg.timeout, options, pkg.package, pkg.version),
+                 env=pkg.env if pkg.env else {})
 
     def easy_install(self, pkg):
         # this old installation of pip doesn't support eggs and completely
@@ -126,7 +127,8 @@ class VirtualEnvPyBase(Component):
         # XXX does not implement timeout. could we just do this on
         # 'cmd' instead?
         self.cmd('bin/easy_install {} '
-                 '"{}=={}"'.format(options, pkg.package, pkg.version))
+                 '"{}=={}"'.format(options, pkg.package, pkg.version),
+                 env=pkg.env if pkg.env else {})
 
 
 class VirtualEnvPy2_4(VirtualEnvPyBase):
@@ -152,6 +154,8 @@ class VirtualEnvPy2_5(VirtualEnvPyBase):
         self.parent += Package(
             'ssl',
             version='1.16',
+            env={'ARCHFLAGS': '-Wno-error=unused-command-line-argument-'
+                              'hard-error-in-future'},
             install_options=('--insecure',))
 
 
@@ -240,6 +244,7 @@ class Package(Component):
     check_package_is_module = True
     timeout = None
     dependencies = True
+    env = None
 
     # Additional options to pass to the installer. Installer depends on venv.
     install_options = ()
