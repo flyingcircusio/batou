@@ -2,7 +2,13 @@
 Changelog
 =========
 
-1.0b19 (unreleased)
+1.0b20 (unreleased)
+===================
+
+- Nothing changed yet.
+
+
+1.0b19 (2014-04-07)
 ===================
 
 - Start using python-requests for HTTP/S downloads to support authentication
