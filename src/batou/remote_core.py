@@ -53,7 +53,7 @@ def current_heads():
     id = cmd('hg id -i').strip()
     if id == '000000000000':
         return [id]
-    heads = cmd('hg heads')
+    heads = cmd('LANG=C hg heads')
     for line in heads.split('\n'):
         if not line.startswith('changeset:'):
             continue
