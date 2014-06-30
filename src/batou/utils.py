@@ -264,6 +264,10 @@ class Attribute(object):
         if isinstance(conversion, str):
             conversion = getattr(self, 'convert_{}'.format(conversion))
         self.conversion = conversion
+        if (default is not ATTRIBUTE_NODEFAULT and
+                isinstance(default, basestring) and
+                self.conversion is not None):
+            default = self.conversion(default)
         self.default = default
         self.instances = weakref.WeakKeyDictionary()
 
