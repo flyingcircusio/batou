@@ -69,6 +69,7 @@ def test_dev_environment_is_loaded(env):
     zeo.prepare()
     assert isinstance(zeo.component, Component)
     assert zeo.name == 'zeo'
+    assert zeo.component.port == 9001
 
 
 def test_component_has_features_set(env):
@@ -86,4 +87,4 @@ def test_load_environment_with_overrides(env):
     env.overrides['zeo'] = {'port': '9002'}
     env.configure()
     zeo = env.get_root('zeo', 'localhost').component
-    assert zeo.port == '9002'
+    assert zeo.port == 9002
