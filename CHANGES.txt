@@ -11,6 +11,8 @@ Changelog
   If we're not the configured ``service_user`` after the plain ssh connect,
   run sudo.
 
+- Yield nonzero returncode on remote exceptions.
+
 
 1.0b23 (2014-06-30)
 ===================

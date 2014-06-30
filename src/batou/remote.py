@@ -29,6 +29,7 @@ def main(environment, timeout, dirty):
         deployment()
     except Exception:
         logger.error('', exc_info=True)
+        sys.exit(1)
     else:
         notify('Deployment finished',
                '{} was deployed successfully.'.format(environment.name))
