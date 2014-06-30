@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b21 (unreleased)
+1.0b21 (2014-06-30)
 ===================
 
 - Fix bug in bundle shipping that made batou depend on the locale (#13465).
