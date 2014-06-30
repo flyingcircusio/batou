@@ -1,4 +1,4 @@
-from batou.component import Component, RootComponent, platform
+from batou.component import Component, RootComponent, platform, Attribute
 from batou import UpdateNeeded
 from mock import Mock
 import batou
@@ -468,3 +468,20 @@ def test_root_overrides_existing_attribute(root):
     root.environment.overrides = {'mycomponent': {'asdf': 1}}
     root.prepare()
     assert root.component.asdf == 1
+
+
+def test_attribute_split_list(root):
+    class Foo(Component):
+        a = Attribute('list', '')
+        b = Attribute('list', '1,2')
+        c = Attribute('list', '3')
+        d = Attribute('list', '  3, 3,')
+        e = Attribute('list', [])
+    f = Foo()
+    root.component += f
+    root.prepare()
+    assert f.a == []
+    assert f.b == ['1', '2']
+    assert f.c == ['3']
+    assert f.d == ['3', '3']
+    assert f.e == []

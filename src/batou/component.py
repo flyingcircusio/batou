@@ -467,3 +467,9 @@ class Attribute(object):
 
     def convert_literal(self, value):
         return ast.literal_eval(value)
+
+    def convert_list(self, value):
+        l = value.split(',')
+        l = [x.strip() for x in l]
+        l = filter(None, l)
+        return l
