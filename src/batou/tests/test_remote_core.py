@@ -76,7 +76,7 @@ changeset: 372:revision-b
     assert calls.next() == 'hg init {}'.format(
         remote_core.target_directory())
     assert calls.next() == 'hg id -i'
-    assert calls.next() == 'hg heads'
+    assert calls.next() == 'LANG=C hg heads'
     assert calls.next() == 'hg -y unbundle batou-bundle.hg'
     assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'

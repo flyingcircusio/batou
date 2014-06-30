@@ -5,10 +5,12 @@ Changelog
 1.0b21 (unreleased)
 ===================
 
-- Introduce batou.utils.Attribute() as a type conversion marker to avoid imperative
-  conversions in the configure() method.
+- Fix bug in bundle shipping that made batou depend on the locale (#13465).
 
-- Add mysql components.
+- Add MySQL components.
+
+- Introduce batou.utils.Attribute() to avoid imperative type conversions in
+  configure().
 
 1.0b20 (2014-05-13)
 ===================
