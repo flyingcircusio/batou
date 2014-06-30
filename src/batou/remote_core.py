@@ -1,6 +1,7 @@
 import logging
 import os
 import os.path
+import pwd
 import subprocess
 import traceback
 
@@ -113,6 +114,10 @@ def deploy(root):
 def target_directory():
     # XXX make configurable?
     return os.path.expanduser('~/deployment')
+
+
+def whoami():
+    return pwd.getpwuid(os.getuid()).pw_name
 
 
 def setup_logging(loggers, level):

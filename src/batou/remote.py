@@ -163,18 +163,17 @@ class RemoteHost(object):
             logger.info('{}: reconnecting'.format(self.host.fqdn))
             self.gateway.exit()
 
-        if self.deployment.environment.connect_method == 'ssh+sudo':
-            sudo = 'sudo -u {} '.format(
-                self.deployment.environment.service_user)
-        else:
-            sudo = ''
-
         self.gateway = execnet.makegateway(
-            "ssh={}//python={} {}".format(
-                self.host.fqdn,
-                sudo,
-                interpreter))
+            "ssh={}//python={}".format(self.host.fqdn, interpreter))
         self.channel = self.gateway.remote_exec(remote_core)
+
+        if self.rpc.whoami() != self.deployment.environment.service_user:
+            self.gateway = execnet.makegateway(
+                "ssh={}//python=sudo -u {} {}".format(
+                    self.host.fqdn,
+                    self.deployment.environment.service_user,
+                    interpreter))
+            self.channel = self.gateway.remote_exec(remote_core)
 
     def start(self):
         logger.info('{}: bootstrapping'.format(self.host.fqdn))

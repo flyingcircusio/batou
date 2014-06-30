@@ -7,6 +7,10 @@ Changelog
 
 - Actually fix unzipping.
 
+- Remove environment option ``connect_method``, and use autodetection instead:
+  If we're not the configured ``service_user`` after the plain ssh connect,
+  run sudo.
+
 
 1.0b23 (2014-06-30)
 ===================
@@ -51,8 +55,8 @@ Changelog
 1.0b18 (2014-03-31)
 ===================
 
-- Introduce environment option ``connect_mode``, either 'ssh+sudo' (default) or
-  plain 'ssh'.
+- Introduce environment option ``connect_method``, either 'ssh+sudo' (default)
+  or plain 'ssh'.
 
 - Improve update code: existing installations would not update cleanly to a new
   version due to wrong use of pkg_resources API.
