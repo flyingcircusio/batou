@@ -11,6 +11,10 @@ Changelog
   If we're not the configured ``service_user`` after the plain ssh connect,
   run sudo.
 
+- Refactor attributes and overrides: attributes allow template expansion now
+  and also converting default values. The Attribute class has moved to the
+  batou component module.
+
 - Yield nonzero returncode on remote exceptions.
 
 

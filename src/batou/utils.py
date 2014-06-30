@@ -1,5 +1,4 @@
 from collections import defaultdict
-import ast
 import contextlib
 import fcntl
 import hashlib
@@ -10,7 +9,6 @@ import socket
 import subprocess
 import sys
 import time
-import weakref
 
 
 logger = logging.getLogger(__name__)
@@ -238,50 +236,3 @@ def hash(path, function='md5'):
     for line in open(path):
         h.update(line)
     return h.hexdigest()
-
-
-ATTRIBUTE_NODEFAULT = object()
-
-
-class Attribute(object):
-    """An attribute descriptor is used to provide:
-
-    - declare overrideability for components
-    - provide type-conversion from overrides that are strings
-    - provide a default.
-
-    The default is not passed through the type conversion.
-
-    Conversion can be given as a string to indicate a built-in conversion:
-
-        literal - interprets the string as a Python literal
-
-    If conversion is a function the function will be used for the conversion.
-
-    """
-
-    def __init__(self, conversion=None, default=ATTRIBUTE_NODEFAULT):
-        if isinstance(conversion, str):
-            conversion = getattr(self, 'convert_{}'.format(conversion))
-        self.conversion = conversion
-        if (default is not ATTRIBUTE_NODEFAULT and
-                isinstance(default, basestring) and
-                self.conversion is not None):
-            default = self.conversion(default)
-        self.default = default
-        self.instances = weakref.WeakKeyDictionary()
-
-    def __get__(self, obj, objtype=None):
-        if obj in self.instances:
-            return self.instances[obj]
-        if self.default is not ATTRIBUTE_NODEFAULT:
-            return self.default
-        raise AttributeError()
-
-    def __set__(self, obj, value):
-        if isinstance(value, basestring) and self.conversion:
-            value = self.conversion(value)
-        self.instances[obj] = value
-
-    def convert_literal(self, value):
-        return ast.literal_eval(value)
