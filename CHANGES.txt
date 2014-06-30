@@ -5,7 +5,7 @@ Changelog
 1.0b24 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Actually fix unzipping.
 
 
 1.0b23 (2014-06-30)
