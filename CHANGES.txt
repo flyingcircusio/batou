@@ -20,6 +20,8 @@ Changelog
 - Add convenience converter for attributes "list" to handle comma separated
   lists of strings.
 
+- Force safety of Nagios service description field: prohibit "," as its not
+  safe for Nagios business processes.
 
 1.0b23 (2014-06-30)
 ===================

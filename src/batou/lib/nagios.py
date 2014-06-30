@@ -22,6 +22,11 @@ class Service(HookComponent):
     # dependencies are a list of (host_object, check_description)
     depend_on = ()
 
+    def configure(self):
+        # ","" are not safe for being referenced in business processes.
+        self.description = self.description.replace(',', '_')
+        super(Service, self).configure()
+
     @property
     def check_command(self):
         result = self.command
