@@ -17,6 +17,9 @@ Changelog
 
 - Yield nonzero returncode on remote exceptions.
 
+- Add convenience converter for attributes "list" to handle comma separated
+  lists of strings.
+
 
 1.0b23 (2014-06-30)
 ===================
