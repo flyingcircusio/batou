@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b22 (unreleased)
+1.0b22 (2014-06-30)
 ===================
 
 - Fix uncaught import-error on mysql module.
