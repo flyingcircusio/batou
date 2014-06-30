@@ -5,8 +5,10 @@ Changelog
 1.0b21 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Introduce batou.utils.Attribute() as a type conversion marker to avoid imperative
+  conversions in the configure() method.
 
+- Add mysql components.
 
 1.0b20 (2014-05-13)
 ===================
