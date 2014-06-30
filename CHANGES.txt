@@ -5,7 +5,7 @@ Changelog
 1.0b23 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Allow unzip to overwrite existing files if the archive has newer copies.
 
 
 1.0b22 (2014-06-30)
