@@ -1,4 +1,5 @@
-from batou import Component, UpdateNeeded
+from batou import UpdateNeeded
+from batou.component import Component
 import os
 import tempfile
 
