@@ -109,6 +109,11 @@ def test_deploy_component(monkeypatch):
     assert remote_core.deployment.deploy.call_count == 1
 
 
+def test_whoami():
+    # Smoke test
+    assert remote_core.whoami() != ''
+
+
 class DummyChannel(object):
 
     _closed = False
