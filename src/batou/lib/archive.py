@@ -103,7 +103,7 @@ class Unzip(Extractor):
 
     def update(self):
         self.cmd(self.expand(
-            'unzip {{component.archive}} -d {{component.target}}'))
+            'unzip -f {{component.archive}} -d {{component.target}}'))
 
 
 class Untar(Extractor):
