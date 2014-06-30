@@ -1,3 +1,4 @@
+import ast
 import batou
 import batou.c
 import batou.template
@@ -8,6 +9,7 @@ import os
 import os.path
 import sys
 import types
+import weakref
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +80,7 @@ class Component(object):
 
     # Configuration phase
 
-    def prepare(self, root, parent=None):
+    def prepare(self, root, parent=None, overrides={}):
         # XXX why can parent be None? Can the root be the last parent?
         # Can't the direct access to root be removed here?
         self.root = root
@@ -88,9 +90,18 @@ class Component(object):
         else:
             self.workdir = root.workdir
         self.sub_components = []
+        self._overrides(overrides)
         self.configure()
         self += self.get_platform()
         self._prepared = True
+
+    def _overrides(self, overrides={}):
+        for key, value in overrides.items():
+            if not hasattr(self, key):
+                raise KeyError(
+                    'Invalid override attribute "{}" for component {}'.format(
+                        key, self))
+            setattr(self, key, value)
 
     def configure(self):
         """Configure the component.
@@ -393,19 +404,66 @@ class RootComponent(object):
         self.component = self.environment.components[self.name]()
         if self.features:
             self.component.features = self.features
-        self._overrides()
-        self.component.prepare(self)
 
-    def _overrides(self):
-        if self.name not in self.environment.overrides:
-            return
-        for key, value in self.environment.overrides[self.name].items():
-            if not hasattr(self.component, key):
-                raise KeyError(
-                    'Invalid override attribute "{}" for component {}'.format(
-                        key, self.component))
-            setattr(self.component, key, value)
+        overrides = {}
+        if self.name in self.environment.overrides:
+            overrides.update(self.environment.overrides[self.name].items())
+
+        self.component.prepare(self, overrides=overrides)
 
     def __repr__(self):
         return '<%s "%s" object at %s>' % (
             self.__class__.__name__, self.name, id(self))
+
+
+# Overridable component attributes
+
+ATTRIBUTE_NODEFAULT = object()
+
+
+class Attribute(object):
+    """An attribute descriptor is used to provide:
+
+    - declare overrideability for components
+    - provide type-conversion from overrides that are strings
+    - provide a default.
+
+    The default is not passed through the type conversion.
+
+    Conversion can be given as a string to indicate a built-in conversion:
+
+        literal - interprets the string as a Python literal
+
+    If conversion is a function the function will be used for the conversion.
+
+    The obj is expected to be a "Component" so that 'expand' can be accessed.
+
+    """
+
+    def __init__(self,
+                 conversion=None,
+                 default=ATTRIBUTE_NODEFAULT,
+                 expand=True):
+        if isinstance(conversion, str):
+            conversion = getattr(self, 'convert_{}'.format(conversion))
+        self.conversion = conversion
+        self.default = default
+        self.expand = True
+        self.instances = weakref.WeakKeyDictionary()
+
+    def __get__(self, obj, objtype=None):
+        if obj not in self.instances:
+            if self.default is ATTRIBUTE_NODEFAULT:
+                raise AttributeError()
+            self.__set__(obj, self.default)
+        return self.instances[obj]
+
+    def __set__(self, obj, value):
+        if isinstance(value, basestring) and self.expand:
+            value = obj.expand(value)
+        if isinstance(value, basestring) and self.conversion:
+            value = self.conversion(value)
+        self.instances[obj] = value
+
+    def convert_literal(self, value):
+        return ast.literal_eval(value)
