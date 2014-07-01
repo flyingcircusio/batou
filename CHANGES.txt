@@ -23,6 +23,9 @@ Changelog
 - Force safety of Nagios service description field: prohibit "," as its not
   safe for Nagios business processes.
 
+- Allow specifying custom rsync options for SyncDir: the '--inplace' option
+  is a good idea in most cases, but not all. Fixes #11846.
+
 1.0b23 (2014-06-30)
 ===================
 
