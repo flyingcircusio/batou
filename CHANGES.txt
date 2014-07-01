@@ -26,6 +26,9 @@ Changelog
 - Allow specifying custom rsync options for SyncDir: the '--inplace' option
   is a good idea in most cases, but not all. Fixes #11846.
 
+- Make supervisor restart/reload more robust towards non-running supervisors
+  with lying PID files. Fixes #12744.
+
 1.0b23 (2014-06-30)
 ===================
 

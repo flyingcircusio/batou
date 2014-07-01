@@ -189,12 +189,19 @@ class RunningSupervisor(Component):
     def verify(self):
         self.assert_file_is_current(
             self.parent.pidfile, ['bin/supervisord', 'etc/supervisord.conf'])
+        if not self.is_running():
+            raise UpdateNeeded()
 
-    def update(self):
+    def is_running(self):
         pid, err = self.cmd('bin/supervisorctl pid', silent=True)
         try:
             int(pid) > 0
         except ValueError:
+            return False
+        return True
+
+    def update(self):
+        if not self.is_running():
             self.cmd('bin/supervisord')
         else:
             self.reload_supervisor()
