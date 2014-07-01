@@ -27,6 +27,9 @@
             "cmd": ["bash", "-l", "-c", "make html"],
             "working_dir": "${project_path}/doc"
         }
-    ]
+    ],
+    "SublimeLinter": {
+        "@python": 2
+    }
 }
 
