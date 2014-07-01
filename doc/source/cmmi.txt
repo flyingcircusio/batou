@@ -14,9 +14,10 @@ batou has some support for downloading and compiling software packages, aka the
 
 .. py:class:: batou.lib.cmmi.Build(url)
 
-    Download archive from ``url`, extract it and run CMMI on it.
+    Download archive from ``url``, extract it and run CMMI on it.
 
 .. py:attribute:: checksum
+   :noindex:
 
     Checksum for download (see :py:class:`batou.lib.download.Download.checksum`
     for details)
