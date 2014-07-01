@@ -52,7 +52,7 @@ the file ``environments/dev.cfg`` to contain the following content:
 The component directory needs to contain two files: the component definition
 and the program. Let's use a shell script like this for the program and put it in the file ``components/tick/tick.sh``:
 
-.. literalinclude:: ../../../examples/tutorial-component/components/tick/tick.sh
+.. literalinclude:: ../../examples/tutorial-component/components/tick/tick.sh
         :language: bash
 
 The component which deploys this program is similar to the one you know from
@@ -217,7 +217,7 @@ store, so you need to choose the name of a key, such as "programs".
 Add a line to the file ``components/tick/component.py`` so that it ends up
 with the following content:
 
-.. literalinclude:: ../../../examples/tutorial-component/components/tick/component.py
+.. literalinclude:: ../../examples/tutorial-component/components/tick/component.py
   :language: python
 
 Secondly, the supervisor component needs to make use of the provided
@@ -252,7 +252,7 @@ Change the file ``components/supervisor/buildout.cfg`` to replace the
 hard-coded program line for "tick" with a loop (in the Jinja templating
 language):
 
-.. literalinclude:: ../../../examples/tutorial-component/components/supervisor/buildout.cfg
+.. literalinclude:: ../../examples/tutorial-component/components/supervisor/buildout.cfg
   :language: ini
 
 After updating your local deployment, you can now run supervisor as before to
@@ -315,7 +315,7 @@ successful run of the supervisor buildout and any programs supervisor is to
 control. Also, add instructions for starting or restarting ``supervisord``.
 Update the file ``components/supervisor/component.py`` to read:
 
-.. literalinclude:: ../../../examples/tutorial-component/components/supervisor/component.py
+.. literalinclude:: ../../examples/tutorial-component/components/supervisor/component.py
   :language: python
 
 To see how batou manages the supervisor service, first make sure that
