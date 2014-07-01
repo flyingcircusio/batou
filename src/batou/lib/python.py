@@ -93,8 +93,9 @@ class VirtualEnvPyBase(Component):
         # not for distribute, which installs a setuptools package.
         if pkg.check_package_is_module:
             try:
-                self.cmd('bin/python -c "import {0};{0}.__file__"'.format(
-                    pkg.package), silent=True)
+                self.cmd('bin/python -c "import pkg_resources; '
+                         'import {0};{0}.__file__"'.format(pkg.package),
+                         silent=True)
             except RuntimeError:
                 raise UpdateNeeded()
 
