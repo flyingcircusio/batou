@@ -294,8 +294,6 @@ class Content(FileComponent):
             self._render()
         with open(self.path, 'r') as target:
             current = target.read()
-            if self.encoding:
-                current = current.decode(self.encoding)
             if current != self.content:
                 for line in difflib.unified_diff(current.splitlines(),
                                                  self.content.splitlines()):

@@ -29,6 +29,9 @@ Changelog
 - Make supervisor restart/reload more robust towards non-running supervisors
   with lying PID files. Fixes #12744.
 
+- Remove harmful decoding step in File verify that caused wrong results.
+
+
 1.0b23 (2014-06-30)
 ===================
 
