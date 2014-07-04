@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b24 (unreleased)
+1.0b24 (2014-07-04)
 ===================
 
 - Actually fix unzipping.
