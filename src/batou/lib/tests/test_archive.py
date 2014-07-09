@@ -40,6 +40,22 @@ def test_zip_extracts_archive_to_target_directory(root):
     assert os.listdir(unicode(extract.target)) == [u'foo']
 
 
+def test_zip_overwrites_existing_files(root):
+    extract = Extract(
+        resource_filename(__name__, 'example.zip'),
+        target='example')
+    root.component += extract
+
+    target = '%s/mycomponent/example/foo/bar' % root.environment.workdir_base
+    os.makedirs(target)
+    filename = target + '/qux'
+    open(filename, 'w').write('foo')
+    # Bypass verify (which would do nothing since the just written files
+    # are newer than the zip file). XXX The API is a little kludgy here.
+    extract.sub_components[0].update()
+    assert '' == open(filename).read()
+
+
 @pytest.mark.slow
 @pytest.mark.skipif(sys.platform != 'darwin', reason='only runs on OS X')
 def test_dmg_extracts_archive_to_target_directory(root):
