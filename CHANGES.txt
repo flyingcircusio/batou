@@ -5,14 +5,11 @@ Changelog
 1.0b25 (unreleased)
 ===================
 
-- Nothing changed yet.
-
+- Improve gpg handling: don't do '--no-tty' any longer as we actually only run
+  the gpg code in terminal environments usually.
 
 1.0b24 (2014-07-04)
 ===================
-
-- Improve gpg handling: don't do '--no-tty' any longer as we actually only run
-  the gpg code in terminal environments usually.
 
 - Actually fix unzipping.
 
