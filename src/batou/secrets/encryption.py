@@ -19,7 +19,7 @@ class EncryptedConfigFile(object):
     _cleartext = None
 
     # Additional GPG parameters. Used for testing.
-    gpg_opts = ''
+    gpg_opts = '--quiet --batch'
 
     def __init__(self, encrypted_file, write_lock=False):
         """Context manager that opens an encrypted file.
@@ -76,7 +76,7 @@ class EncryptedConfigFile(object):
 
     def _decrypt(self):
         self.cleartext = subprocess.check_output(
-            ['gpg --quiet --no-tty {} --decrypt {}'.format
+            ['gpg {} --decrypt {}'.format
                 (self.gpg_opts, self.encrypted_file)],
             shell=True)
 
@@ -90,7 +90,7 @@ class EncryptedConfigFile(object):
         os.rename(self.encrypted_file, self.encrypted_file+'.old')
         try:
             gpg = subprocess.Popen(
-                ['gpg --quiet --no-tty {} --batch --encrypt {} -o {}'.format(
+                ['gpg {} --encrypt {} -o {}'.format(
                     self.gpg_opts, recipients, self.encrypted_file)],
                 stdin=subprocess.PIPE,
                 shell=True)

@@ -5,6 +5,9 @@ Changelog
 1.0b24 (unreleased)
 ===================
 
+- Improve gpg handling: don't do '--no-tty' any longer as we actually only run
+  the gpg code in terminal environments usually.
+
 - Actually fix unzipping.
 
 - Remove environment option ``connect_method``, and use autodetection instead:
