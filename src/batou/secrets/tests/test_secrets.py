@@ -1,4 +1,5 @@
-from batou.secrets.encryption import EncryptedConfigFile, NEW_FILE_TEMPLATE
+from batou.secrets.encryption import EncryptedConfigFile as BaseEncConfigFile
+from batou.secrets.encryption import EncryptedConfigFile as NEW_FILE_TEMPLATE
 import ConfigParser
 import os
 import os.path
@@ -13,10 +14,11 @@ cleartext_file = os.path.join(FIXTURE, 'cleartext.cfg')
 encrypted_file = os.path.join(FIXTURE, 'encrypted.cfg')
 
 
-class EncryptedConfigFile(EncryptedConfigFile):
+class EncryptedConfigFile(BaseEncConfigFile):
 
     gpg_homedir = os.path.join(FIXTURE, 'gnupg')
-    gpg_opts = '--homedir {}'.format(gpg_homedir)
+    gpg_opts = (BaseEncConfigFile.gpg_opts +
+                ' --homedir {}'.format(gpg_homedir))
 
 
 def test_decrypt():
@@ -35,7 +37,7 @@ def test_caches_cleartext():
 def test_decrypt_missing_key():
     secrets = EncryptedConfigFile(
         encrypted_file)
-    secrets.gpg_opts = '--homedir /tmp'
+    secrets.gpg_opts = BaseEncConfigFile.gpg_opts + ' --homedir /tmp'
     with pytest.raises(subprocess.CalledProcessError):
         f = secrets.__enter__()
         f.read()
