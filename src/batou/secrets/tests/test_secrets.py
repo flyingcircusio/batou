@@ -1,5 +1,5 @@
 from batou.secrets.encryption import EncryptedConfigFile as BaseEncConfigFile
-from batou.secrets.encryption import EncryptedConfigFile as NEW_FILE_TEMPLATE
+from batou.secrets.encryption import NEW_FILE_TEMPLATE
 import ConfigParser
 import os
 import os.path
