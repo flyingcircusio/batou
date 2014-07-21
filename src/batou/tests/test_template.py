@@ -36,6 +36,8 @@ def test_abstract_engine():
 def test_jinja2_template_str():
     tmpl = TemplateEngine.get('jinja2')
     assert 'hello world' == tmpl.expand('hello {{hello}}', sample_dict)
+    assert ('hello world\n\n   ' ==
+            tmpl.expand('hello {{hello}}\n\n   ', sample_dict))
 
 
 def test_jinja2_template_file():
