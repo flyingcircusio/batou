@@ -19,7 +19,7 @@ class EncryptedConfigFile(object):
     _cleartext = None
 
     # Additional GPG parameters. Used for testing.
-    gpg_opts = '--quiet --batch'
+    gpg_opts = ''
 
     def __init__(self, encrypted_file, write_lock=False):
         """Context manager that opens an encrypted file.
