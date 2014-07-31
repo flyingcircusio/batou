@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b25 (unreleased)
+1.0b25 (2014-07-31)
 ===================
 
 - Improve gpg handling: don't do --no-tty or --batch any longer as we actually
