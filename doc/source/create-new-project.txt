@@ -79,6 +79,27 @@ embedded ``batou`` command and batou will install itself and run your command:
     Pre-installing batou - this can take a while...
     ...
 
+After running batou every installed component will automatically receive
+a "working directory":
+
+.. code-block:: console
+
+    $ tree
+    .
+    |-- batou
+    |-- components
+    |   `-- example
+    |       `-- component.py
+    |-- environments
+    |   `-- dev.cfg
+    `-- work
+        `-- example
+            `-- hello
+
+Batou initially creates the working directory for your component and ensures that everything you express happens relative to the working directory. So you do not have to care much about the details and have everything installed ending up reasonably separated.
+
+Your component is free to do whatever it wants in the working directory: download, compile, configure, start programs, store data -- batou does not remove anything in the working directories on its own.
+
 Installing additional packages into batou's environment
 -------------------------------------------------------
 
