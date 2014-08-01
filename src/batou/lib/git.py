@@ -1,41 +1,123 @@
-from batou.component import Component
 from batou import UpdateNeeded
+from batou.component import Component
+from batou.lib.file import Directory
+import logging
 import os.path
-import shutil
+
+
+logger = logging.getLogger(__name__)
 
 
 class Clone(Component):
 
-    # BBB the namevar used to be target, but all other VCS components have url
-    namevar = 'url_or_target'
-    url = None
+    namevar = 'url'
     target = '.'
-    source = None  # BBB
-
-    update_unpinned = False
+    revision = None
+    branch = None
+    vcs_update = True
 
     def configure(self):
-        if self.source is None:
-            self.url = self.url_or_target
-        else:
-            self.url = self.source
-            self.target = self.url_or_target
-
-        self.git_dir = '{}/.git'.format(self.target)
+        assert self.revision_or_branch
+        assert not (self.revision and self.branch)
+        self.target = self.map(self.target)
+        self += Directory(self.target)
 
     def verify(self):
-        if not os.path.exists(self.git_dir):
+        if not os.path.exists(self.target):
             raise UpdateNeeded()
-        if self.update_unpinned:
-            raise UpdateNeeded()
+        # if the path does exist but isn't a directory, just let the error
+        # bubble for now, the message will at least tell something useful
+        with self.chdir(self.target):
+            if not os.path.exists('.git'):
+                raise UpdateNeeded()
+
+            if not self.vcs_update:
+                return
+
+            if self.has_outgoing_changesets:
+                logger.info(
+                    'Git clone at {} has outgoing changesets.'.format(
+                        self.target))
+
+            if self.has_changes:
+                logger.warning(
+                    'Git clone at {} is dirty, going to lose changes.'.format(
+                        self.target))
+                raise UpdateNeeded()
+
+            if self.revision and self.current_revision != self.revision:
+                raise UpdateNeeded()
+            if (self.branch and (
+                    self.current_branch != self.branch) or
+                    self.has_incoming_changesets):
+                raise UpdateNeeded()
+
+    @property
+    def revision_or_branch(self):
+        return self.revision or self.branch
+
+    @property
+    def current_revision(self):
+        try:
+            with self.chdir(self.target):
+                stdout, stderr = self.cmd('LANG=C git show -s --format=%H')
+        except RuntimeError:
+            return None
+        return stdout.strip()
+
+    @property
+    def current_branch(self):
+        with self.chdir(self.target):
+            stdout, stderr = self.cmd('git rev-parse --abbrev-ref HEAD')
+        return stdout.strip()
+
+    @property
+    def has_incoming_changesets(self):
+        with self.chdir(self.target):
+            stdout, stderr = self.cmd('git fetch --dry-run')
+            return stderr.strip()
+
+    @property
+    def has_outgoing_changesets(self):
+        with self.chdir(self.target):
+            stdout, stderr = self.cmd('LANG=C git status')
+        return 'Your branch is ahead of' in stdout
+
+    @property
+    def has_changes(self):
+        with self.chdir(self.target):
+            stdout, stderr = self.cmd('git status --porcelain')
+        return bool(stdout.strip())
 
     def update(self):
-        if (os.path.exists(self.target) and not
-                os.path.isdir(self.git_dir)):
-            # Clean any non-git residuals
-            shutil.rmtree(self.target)
-        if not os.path.exists(self.target):
-            self.cmd('git clone {0} {1}'.format(self.url, self.target))
+        just_cloned = False
+        if not os.path.exists(self.expand('{{component.target}}/.git')):
+            self.cmd(self.expand(
+                'git clone {{component.url}} {{component.target}}'))
+            just_cloned = True
         with self.chdir(self.target):
-            self.cmd('git pull')
+            for filepath in self.untracked_files:
+                os.unlink(os.path.join(self.target, filepath))
+            if not just_cloned:
+                self.cmd('git pull --no-rebase')
+            self.cmd(self.expand(
+                'git checkout --force {{component.revision_or_branch}}'))
+
+            # XXX We should re-think submodule support; e.g. which revision
+            # shall the submodules be updated to?
             self.cmd('git submodule update --init --recursive')
+
+    @property
+    def untracked_files(self):
+        stdout, stderr = self.cmd(
+            'git status --porcelain --untracked-files=all')
+        items = (line.split(None, 1) for line in stdout.splitlines())
+        return [filepath for status, filepath in items if status == '??']
+
+    def last_updated(self):
+        with self.chdir(self.target):
+            if not os.path.exists('.git'):
+                return None
+            stdout, stderr = self.cmd('git show -s --format=%ct')
+            timestamp = stdout.strip()
+            return float(timestamp)

@@ -5,7 +5,14 @@ Changelog
 1.0b26 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Enhance git Clone component to support the full suite of functionality the
+  mercurial one has (incoming/outgoing/local changes etc.).
+
+  NOTE: This changes ``batou.lib.git.Clone`` in backward-incompatible ways:
+  1. The namevar is now only the ``url``. The previously also accepted usage
+     of passing the ``target`` as the namevar no longer works.
+  2. ``update_unpinned`` is gone, use the ``branch``/``revision``/``vcs_update``
+     mechanism instead.
 
 
 1.0b25 (2014-07-31)
@@ -13,6 +20,7 @@ Changelog
 
 - Improve gpg handling: don't do --no-tty or --batch any longer as we actually
   only run the gpg code in (local) terminal environments usually.
+
 
 1.0b24 (2014-07-04)
 ===================
