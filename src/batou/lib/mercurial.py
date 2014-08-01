@@ -21,6 +21,7 @@ class Clone(Component):
 
     def configure(self):
         assert self.revision_or_branch
+        assert not (self.revision and self.branch)
         self.target = self.map(self.target)
         self += Directory(self.target)
 
