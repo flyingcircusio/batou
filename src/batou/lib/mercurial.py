@@ -20,8 +20,9 @@ class Clone(Component):
     _revision_pattern = re.compile('parent: \d+:([a-f0-9]+) ')
 
     def configure(self):
-        assert self.revision_or_branch
-        assert not (self.revision and self.branch)
+        if (not self.revision_or_branch) or (self.revision and self.branch):
+            raise ValueError(
+                'Clone(%s) needs exactly one of revision or branch' % self.url)
         self.target = self.map(self.target)
         self += Directory(self.target)
 
