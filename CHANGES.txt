@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b26 (unreleased)
+1.0b26 (2014-08-05)
 ===================
 
 - Enhance git Clone component to support the full suite of functionality the
