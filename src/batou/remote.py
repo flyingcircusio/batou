@@ -22,7 +22,6 @@ def main(environment, timeout, dirty):
     if not dirty:
         check_clean_hg_repository()
     environment.load_secrets()
-    environment.configure()
 
     deployment = RemoteDeployment(environment, dirty)
     try:
@@ -94,9 +93,12 @@ class RemoteDeployment(object):
         for remote in remotes.values():
             remote.start()
 
-        for root in self.environment.roots_in_order():
-            remote = remotes[root.host]
-            remote.deploy_component(root)
+        ref_remote = remotes.values()[0]
+        roots = ref_remote.roots_in_order()
+
+        for host, component in roots:
+            remote = remotes[host]
+            remote.deploy_component(component)
 
         for remote in remotes.values():
             remote.gateway.exit()
@@ -230,3 +232,6 @@ class RemoteHost(object):
     def deploy_component(self, component):
         logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
         self.rpc.deploy(component.name)
+
+    def roots_in_order(self):
+        return self.rpc.roots_in_order()

@@ -111,6 +111,13 @@ def deploy(root):
     deployment.deploy(root)
 
 
+def roots_in_order():
+    result = []
+    for root in deployment.environment.roots_in_order():
+        result.append((root.host.name, root.name))
+    return result
+
+
 def target_directory():
     # XXX make configurable?
     return os.path.expanduser('~/deployment')
