@@ -114,7 +114,7 @@ def deploy(root):
 def roots_in_order():
     result = []
     for root in deployment.environment.roots_in_order():
-        result.append((root.host.name, root.name))
+        result.append((root.host.fqdn, root.name))
     return result
 
 
