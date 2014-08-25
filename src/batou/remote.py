@@ -231,8 +231,8 @@ class RemoteHost(object):
             env.overrides)
 
     def deploy_component(self, component):
-        logger.info('Deploying {}/{}'.format(self.host.fqdn, component.name))
-        self.rpc.deploy(component.name)
+        logger.info('Deploying {}/{}'.format(self.host.fqdn, component))
+        self.rpc.deploy(component)
 
     def roots_in_order(self):
         return self.rpc.roots_in_order()
