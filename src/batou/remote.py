@@ -97,6 +97,7 @@ class RemoteDeployment(object):
         roots = ref_remote.roots_in_order()
 
         for host, component in roots:
+            host = self.environment.hosts[host]
             remote = remotes[host]
             remote.deploy_component(component)
 
