@@ -1,5 +1,5 @@
 syntax: glob
-*.sublime-workspace
+*.sublime-*
 *.egg-info
 *.pyc
 *.swo
