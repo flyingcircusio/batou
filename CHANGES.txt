@@ -2,7 +2,14 @@
 Changelog
 =========
 
-1.0b26 (unreleased)
+1.0b27 (unreleased)
+===================
+
+- Do not configure environments locally when running remote deployments. Use
+  order as determined by one reference remote host. #13530
+
+
+1.0b26 (2014-08-05)
 ===================
 
 - Enhance git Clone component to support the full suite of functionality the
