@@ -18,6 +18,7 @@ class Service(HookComponent):
     args = ''
     notes_url = ''
     servicegroups = 'direct'
+    contact_groups = None
 
     # dependencies are a list of (host_object, check_description)
     depend_on = ()
