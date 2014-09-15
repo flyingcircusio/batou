@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b27 (unreleased)
+1.0b27 (2014-09-15)
 ===================
 
 - Do not configure environments locally when running remote deployments. Use
