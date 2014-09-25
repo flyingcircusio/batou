@@ -5,7 +5,8 @@ Changelog
 1.0b28 (unreleased)
 ===================
 
-- Nothing changed yet.
+- batou bootstrap script is more roboust now for cases where the virtualenv becomes
+  broken.
 
 
 1.0b27 (2014-09-15)

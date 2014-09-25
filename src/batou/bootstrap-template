@@ -7,6 +7,7 @@
 # somehow and then use that code to continue.
 
 import os
+import shutil
 import sys
 import subprocess
 
@@ -23,17 +24,33 @@ def cmd(c, quiet=False):
             print(e.output)
         raise
 
-base = os.path.dirname(__file__)
-os.chdir(base)
 
-# Do we have a virtualenv?
-if not os.path.exists(base + '/.batou'):
+def install_venv():
     print('Preparing virtualenv in .batou ...')
     # Discover the right venv cmd. Or let batou figure that out later in a
     # second phase?
     cmd('virtualenv --python=python2.7 .batou')
 
-cmd('.batou/bin/pip install "pip>=1.2"')
+
+def install_pip():
+    cmd('.batou/bin/pip install "pip>=1.2"')
+
+
+base = os.path.dirname(__file__)
+os.chdir(base)
+
+# Do we have a virtualenv?
+if not os.path.exists(base + '/.batou'):
+    install_venv()
+
+try:
+    install_pip()
+except Exception:
+    # Hum. This venv is probably broken. Remove and restart."
+    shutil.rmtree('.batou')
+    install_venv()
+    install_pip()
+
 
 try:
     cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
