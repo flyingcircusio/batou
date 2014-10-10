@@ -25,6 +25,7 @@ Changelog
   mercurial one has (incoming/outgoing/local changes etc.).
 
   NOTE: This changes ``batou.lib.git.Clone`` in backward-incompatible ways:
+
   1. The namevar is now only the ``url``. The previously also accepted usage
      of passing the ``target`` as the namevar no longer works.
   2. ``update_unpinned`` is gone, use the ``branch``/``revision``/``vcs_update``
