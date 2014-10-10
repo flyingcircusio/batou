@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b28 (unreleased)
+1.0b28 (2014-10-10)
 ===================
 
 - batou bootstrap script is more roboust now for cases where the virtualenv becomes
