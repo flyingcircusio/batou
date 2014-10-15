@@ -71,6 +71,7 @@ class Environment(object):
     platform = None
     vfs_sandbox = None
     timeout = None
+    target_directory = None
 
     def __init__(self, name, basedir='.'):
         self.name = name
@@ -121,7 +122,7 @@ class Environment(object):
 
     def load_environment(self, config):
         environment = config.get('environment', {})
-        for key in ['service_user', 'host_domain',
+        for key in ['service_user', 'host_domain', 'target_directory',
                     'update_method', 'branch', 'platform', 'timeout']:
             if key not in environment:
                 continue
@@ -146,6 +147,9 @@ class Environment(object):
 
         if self.service_user is None:
             self.service_user = pwd.getpwuid(os.getuid()).pw_name
+
+        if self.target_directory is None:
+            self.target_directory = '~/deployment'
 
         if self.platform is None and self.host_domain:
             self.platform = self.host_domain

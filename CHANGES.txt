@@ -5,7 +5,8 @@ Changelog
 1.0b29 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Make target directory on remote side configurable via
+  Environment.target_directory (default is ``~/deployment``).
 
 
 1.0b28 (2014-10-10)
