@@ -224,6 +224,11 @@ class RemoteHost(object):
         # has all our dependencies installed.
         self.connect(self.remote_base + '/.batou/bin/python')
 
+        # Since we reconnected, any state on the remote side has been lost, so
+        # we need to set the target directory again (which we only can know
+        # about locally). XXX This is quite convoluted.
+        self.rpc.ensure_repository(env.target_directory)
+
         self.rpc.setup_deployment(
             self.deployment.deployment_base,
             env.name,
