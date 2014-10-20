@@ -71,6 +71,8 @@ Mercurial
     development.
 
 
+.. _download-git:
+
 Git
 ---
 
@@ -94,6 +96,8 @@ Git
 
 .. note:: :py:class:`git.Clone` does not support specifying a revision yet.
 
+
+.. _download-subversion:
 
 Subversion
 ----------
