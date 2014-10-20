@@ -8,6 +8,8 @@ Changelog
 - Make target directory on remote side configurable via
   Environment.target_directory (default is ``~/deployment``).
 
+- Improve installation documentation w.r.t more specific instructions for
+  various Linux distributions (deb- and rpm-based).
 
 1.0b28 (2014-10-10)
 ===================
