@@ -5,7 +5,8 @@ Changelog
 1.0b29 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Improve installation documentation w.r.t more specific instructions for
+  various Linux distributions (deb- and rpm-based).
 
 
 1.0b28 (2014-10-10)
