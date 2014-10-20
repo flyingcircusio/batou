@@ -88,6 +88,7 @@ the following additional parameters:
 
 XXX explain detailed factoring of Presence and Content
 
+.. _file-directory:
 
 Directory
 ---------
@@ -130,6 +131,8 @@ state that something should **not** be present anymore.
 
     Ensures that a set of files (given as a glob pattern) does not exist.
 
+
+.. _file-extract:
 
 Extracting archive files
 ------------------------
