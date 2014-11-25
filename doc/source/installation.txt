@@ -94,9 +94,6 @@ on your local or remote machine, resp.:
 Detailed instructions for: :ref:`Debian, Ubuntu, Mint <inst-deb>` |
 :ref:`Fedora, openSuse, RHEL, CentOS <inst-rpm>`
 
-To allow batou bootstrapping itself you will be using a simple buildout that
-allows you to require additional dependencies in a controlled fashion.
-
 .. _inst-deb:
 .. include:: installation-deb.txt
 .. _inst-rpm:
