@@ -52,6 +52,7 @@ To run ``batou remote`` you will need:
 On your local machine:
 
 * Python 2.7
+* virtualenv
 * Mercurial
 * SSH client
 
