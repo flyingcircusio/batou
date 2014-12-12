@@ -184,7 +184,7 @@ class RemoteHost(object):
         self.rpc.lock()
         env = self.deployment.environment
 
-        remote_repository = self.rpc.ensure_repository()
+        remote_repository = self.rpc.ensure_repository(env.target_directory)
         self.remote_base = os.path.join(
             remote_repository, self.deployment.deployment_base)
 
@@ -223,6 +223,11 @@ class RemoteHost(object):
         # Now, replace the basic interpreter connection, with a "real" one that
         # has all our dependencies installed.
         self.connect(self.remote_base + '/.batou/bin/python')
+
+        # Since we reconnected, any state on the remote side has been lost, so
+        # we need to set the target directory again (which we only can know
+        # about locally). XXX This is quite convoluted.
+        self.rpc.ensure_repository(env.target_directory)
 
         self.rpc.setup_deployment(
             self.deployment.deployment_base,

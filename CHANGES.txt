@@ -2,16 +2,35 @@
 Changelog
 =========
 
-1.0b27 (unreleased)
+1.0b29 (unreleased)
 ===================
 
-- Do not configure environments locally when running remote deployments. Use
-  order as determined by one reference remote host. #13530
+- Make target directory on remote side configurable via
+  Environment.target_directory (default is ``~/deployment``).
+
+- Improve installation documentation w.r.t more specific instructions for
+  various Linux distributions (deb- and rpm-based).
 
 - Change mode of files before changing content to allow self-fixing broken
   modes.
 
 - Allow deleting symlinks (on OS X) if they point to directorys.
+
+
+1.0b28 (2014-10-10)
+===================
+
+- batou bootstrap script is more roboust now for cases where the virtualenv becomes
+  broken.
+
+
+1.0b27 (2014-09-15)
+===================
+
+- Do not configure environments locally when running remote deployments. Use
+  order as determined by one reference remote host. #13530
+
+- Nagios configuration now supports contact groups.
 
 
 1.0b26 (2014-08-05)
@@ -21,6 +40,7 @@ Changelog
   mercurial one has (incoming/outgoing/local changes etc.).
 
   NOTE: This changes ``batou.lib.git.Clone`` in backward-incompatible ways:
+
   1. The namevar is now only the ``url``. The previously also accepted usage
      of passing the ``target`` as the namevar no longer works.
   2. ``update_unpinned`` is gone, use the ``branch``/``revision``/``vcs_update``

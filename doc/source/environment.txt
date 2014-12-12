@@ -17,11 +17,9 @@ Example::
 	branch = production
 
 service_user
-	The deployment is run as this user on remote machines. This currently means
-	a `sudo` do the service user.
-
-connect_method
-	?
+	The deployment is run as this user on remote machines. If this is not
+	the same as the user connecting via ssh, a `sudo` to the service user
+	is performed.
 
 host_domain
 	All hosts in the ``[hosts]`` section are postfixed with this domain. This
@@ -42,6 +40,11 @@ platform
 
 timeout
 	Set the ssh connection timeout in seconds.
+
+target_directory
+        Absolute path of the directory on remote machines where the remote
+        deployment repository is stored. Supports tilde expansion. Default:
+        ``~/deployment``.
 
 
 vfs mapping (reference)

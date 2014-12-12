@@ -20,15 +20,13 @@ def test_cmd():
 
 
 @pytest.fixture
-def mock_remote_core(monkeypatch, tmpdir):
+def mock_remote_core(monkeypatch):
     # Suppress active actions in the remote_core module
     monkeypatch.setattr(remote_core, 'cmd', mock.Mock())
-    monkeypatch.setattr(remote_core, 'target_directory', mock.Mock())
-    remote_core.target_directory.return_value = str(tmpdir)
 
 
-def test_update_code_existing_target(mock_remote_core):
-    remote_core.ensure_repository()
+def test_update_code_existing_target(mock_remote_core, tmpdir):
+    remote_core.ensure_repository(str(tmpdir))
     remote_core.pull_code('http://bitbucket.org/gocept/batou')
     remote_core.update_working_copy('default')
 
@@ -40,26 +38,21 @@ def test_update_code_existing_target(mock_remote_core):
     assert remote_core.cmd.call_count == 4
 
 
-def test_update_code_new_target(mock_remote_core):
-    remote_core.target_directory.return_value += '/foo'
-
-    remote_core.ensure_repository()
+def test_update_code_new_target(mock_remote_core, tmpdir):
+    remote_core.ensure_repository(str(tmpdir) + '/foo')
     remote_core.pull_code('http://bitbucket.org/gocept/batou')
     remote_core.update_working_copy('default')
 
     assert remote_core.cmd.call_count == 4
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
-    assert calls.next() == 'hg init {}'.format(
-        remote_core.target_directory())
+    assert calls.next() == 'hg init {}'.format(remote_core.target_directory)
     assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
     assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'
 
 
-def test_bundle_shipping(mock_remote_core):
-    remote_core.target_directory.return_value += '/foo'
-
-    remote_core.ensure_repository()
+def test_bundle_shipping(mock_remote_core, tmpdir):
+    remote_core.ensure_repository(str(tmpdir) + '/foo')
     remote_core.cmd.return_value = """\
 changeset: 371:revision-a
 nsummary:fdsa
@@ -73,8 +66,7 @@ changeset: 372:revision-b
 
     assert remote_core.cmd.call_count == 6
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
-    assert calls.next() == 'hg init {}'.format(
-        remote_core.target_directory())
+    assert calls.next() == 'hg init {}'.format(remote_core.target_directory)
     assert calls.next() == 'hg id -i'
     assert calls.next() == 'LANG=C hg heads'
     assert calls.next() == 'hg -y unbundle batou-bundle.hg'
@@ -89,18 +81,22 @@ def test_build_batou_fresh_install(mock_remote_core):
     assert calls.next() == './batou --help'
 
 
-def test_build_batou_virtualenv_exists(mock_remote_core):
-    os.mkdir(remote_core.target_directory() + '/bin')
-    open(remote_core.target_directory() + '/bin/python2.7', 'w')
+def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
+    remote_core.ensure_repository(str(tmpdir))
+    os.mkdir(remote_core.target_directory + '/bin')
+    open(remote_core.target_directory + '/bin/python2.7', 'w')
     remote_core.build_batou('.')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
-    assert remote_core.cmd.call_count == 1
+    assert remote_core.cmd.call_count == 2
+    calls.next()  # skip ensure_repository
     assert calls.next() == './batou --help'
 
 
-def test_expand_deployment_base():
-    assert (remote_core.target_directory() ==
-            os.path.expanduser('~/deployment'))
+def test_expand_deployment_base(tmpdir):
+    with mock.patch('os.path.expanduser') as expanduser:
+        expanduser.return_value = str(tmpdir)
+        remote_core.ensure_repository('~/deployment')
+    assert (remote_core.target_directory == str(tmpdir))
 
 
 def test_deploy_component(monkeypatch):
