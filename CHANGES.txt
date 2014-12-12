@@ -8,6 +8,11 @@ Changelog
 - Do not configure environments locally when running remote deployments. Use
   order as determined by one reference remote host. #13530
 
+- Change mode of files before changing content to allow self-fixing broken
+  modes.
+
+- Allow deleting symlinks (on OS X) if they point to directorys.
+
 
 1.0b26 (2014-08-05)
 ===================
