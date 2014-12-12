@@ -19,7 +19,9 @@ def ensure_path_nonexistent(path):
         os.lstat(path)
     except OSError:
         return
-    if os.path.isdir(path):
+    if os.path.islink(path):
+        os.unlink(path)
+    elif os.path.isdir(path):
         shutil.rmtree(path)
     else:
         os.unlink(path)
@@ -66,6 +68,11 @@ class File(Component):
                 'symlink not %s' % self.ensure)
         # variation: content or source explicitly given
 
+        # The mode needs to be set early to allow batou to get out of
+        # accidental "permission denied" situations.
+        if self.mode:
+            self += Mode(self.path, mode=self.mode)
+
         # no content or source given but file with same name
         # exists
         if self.ensure == 'file' and not self.content and not self.source:
@@ -94,9 +101,6 @@ class File(Component):
 
         if self.group:
             self += Group(self.path, group=self.group)
-
-        if self.mode:
-            self += Mode(self.path, mode=self.mode)
 
     @property
     def namevar_for_breadcrumb(self):
