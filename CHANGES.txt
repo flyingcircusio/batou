@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b29 (unreleased)
+1.0b29 (2014-12-12)
 ===================
 
 - Make target directory on remote side configurable via
