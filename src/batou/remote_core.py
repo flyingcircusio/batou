@@ -13,6 +13,7 @@ except NameError:
     channel = None
 
 deployment = None
+target_directory = None
 
 
 class Deployment(object):
@@ -38,8 +39,11 @@ def cmd(c):
         [c], shell=True)
 
 
-def ensure_repository():
-    target = target_directory()
+def ensure_repository(target):
+    target = os.path.expanduser(target)
+    global target_directory
+    target_directory = target
+
     if not os.path.exists(target):
         os.mkdir(target)
     if not os.path.exists(target + '/.hg'):
@@ -48,7 +52,7 @@ def ensure_repository():
 
 
 def current_heads():
-    target = target_directory()
+    target = target_directory
     os.chdir(target)
     result = []
     id = cmd('hg id -i').strip()
@@ -65,7 +69,7 @@ def current_heads():
 
 def pull_code(upstream):
     # TODO Make choice of VCS flexible
-    target = target_directory()
+    target = target_directory
     os.chdir(target)
     # Phase 1: update working copy
     # XXX manage certificates
@@ -75,7 +79,7 @@ def pull_code(upstream):
 def unbundle_code():
     # TODO Make choice of VCS flexible
     # XXX does this protect us from accidental new heads?
-    target = target_directory()
+    target = target_directory
     os.chdir(target)
     cmd('hg -y unbundle batou-bundle.hg')
 
@@ -87,7 +91,7 @@ def update_working_copy(branch):
 
 
 def build_batou(deployment_base):
-    target = target_directory()
+    target = target_directory
     os.chdir(os.path.join(target, deployment_base))
     cmd('./batou --help')
 
@@ -95,7 +99,7 @@ def build_batou(deployment_base):
 def setup_deployment(deployment_base, env_name, host_name, overrides):
     from batou.environment import Environment
 
-    target = target_directory()
+    target = target_directory
     os.chdir(os.path.join(target, deployment_base))
 
     environment = Environment(env_name)
@@ -116,11 +120,6 @@ def roots_in_order():
     for root in deployment.environment.roots_in_order():
         result.append((root.host.fqdn, root.name))
     return result
-
-
-def target_directory():
-    # XXX make configurable?
-    return os.path.expanduser('~/deployment')
 
 
 def whoami():

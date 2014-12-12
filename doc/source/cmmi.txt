@@ -11,6 +11,7 @@ batou has some support for downloading and compiling software packages, aka the
         checksum='md5:7dffe775f3bea68a44f762a3490e5e28',
         configure_args='--with-libs=-lssl')
 
+.. _cmmi-build:
 
 .. py:class:: batou.lib.cmmi.Build(url)
 
