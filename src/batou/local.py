@@ -22,7 +22,7 @@ def main(environment, hostname, platform, timeout):
             for root in environment.roots_in_order(host=hostname):
                 root.component.deploy()
         except (CmdExecutionError, NonConvergingWorkingSet):
-            # this has already been reported by the component itself.
+            logger.error('', exc_info=True)
             notify('Deployment failed',
                    '{}:{} encountered an error.'.format(
                        environment.name, hostname))

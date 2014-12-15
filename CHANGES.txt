@@ -2,10 +2,18 @@
 Changelog
 =========
 
-1.0b30 (unreleased)
-===================
+1.0 (unreleased)
+================
 
-- Nothing changed yet.
+- A special case in error reporting caused `batou local` to exit silently
+  on an error.
+
+- Provide an easier to read error message when encountering non-converging
+  working sets.
+
+- Provide an easier to read error message when encountering cycles
+  in the component dependencies.
+
 
 
 1.0b29 (2014-12-12)

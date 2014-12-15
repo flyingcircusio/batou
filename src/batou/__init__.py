@@ -12,3 +12,10 @@ class UnusedResource(Exception):
 
 class NonConvergingWorkingSet(Exception):
     """A working set did not converge."""
+
+    def __str__(self):
+        message = []
+        for component in self.args[0]:
+            message.append('    '+component.name)
+        message.sort()
+        return '\n'+'\n'.join(message)
