@@ -134,6 +134,16 @@ def ensure_graph_data(graph):
 class CycleError(ValueError):
     """Graph contains at least one cycle."""
 
+    def __str__(self):
+        message = []
+        components = self.args[0].items()
+        components.sort(key=lambda x: x[0].name)
+        for component, subs in components:
+            message.append('    '+component.name)
+            for sub in subs:
+                message.append('        '+sub.name)
+        return '\n'+'\n'.join(message)
+
 
 def remove_nodes_without_outgoing_edges(graph):
     for node, dependencies in list(graph.items()):
