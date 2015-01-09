@@ -102,7 +102,7 @@ class Clone(Component):
             if not just_cloned:
                 self.cmd('git fetch')
             if self.branch:
-                self.cmd('git merge')
+                self.cmd(self.expand('git merge origin/{{component.branch}}'))
             self.cmd(self.expand(
                 'git checkout --force {{component.revision_or_branch}}'))
 
