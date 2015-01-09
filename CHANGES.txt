@@ -14,6 +14,8 @@ Changelog
 - Provide an easier to read error message when encountering cycles
   in the component dependencies.
 
+- Fix bug in git Clone that caused breakage during update() when a fixed
+  revision was specified.
 
 
 1.0b29 (2014-12-12)

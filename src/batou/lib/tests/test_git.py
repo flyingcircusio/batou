@@ -39,6 +39,21 @@ def test_setting_branch_updates_on_incoming_changes(root, repos_path):
 
 
 @pytest.mark.slow
+def test_setting_revision_updates_on_incoming_changes(root, repos_path):
+    cmd('cd {dir}; touch bar; git add .; git commit -m "commit2"'.format(
+        dir=repos_path))
+    commit1, _ = cmd('cd {dir}; git rev-parse HEAD^'.format(dir=repos_path))
+    root.component += batou.lib.git.Clone(
+        repos_path, target='clone', revision=commit1)
+    root.component.deploy()
+    cmd('cd {dir}; touch qux; git add .; git commit -m "commit3"'.format(
+        dir=repos_path))
+    root.component.deploy()  # Our main assertion: Nothing breaks here
+    assert not os.path.isfile(
+        os.path.join(root.environment.workdir_base, 'mycomponent/clone/qux'))
+
+
+@pytest.mark.slow
 def test_branch_does_switch_branch(root, repos_path):
     cmd('cd {dir}; touch bar; git add .; git checkout -b bar;'
         'git commit -m "commit branch"'.format(

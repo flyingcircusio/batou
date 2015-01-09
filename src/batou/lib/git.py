@@ -100,7 +100,9 @@ class Clone(Component):
             for filepath in self.untracked_files:
                 os.unlink(os.path.join(self.target, filepath))
             if not just_cloned:
-                self.cmd('git pull --no-rebase')
+                self.cmd('git fetch')
+            if self.branch:
+                self.cmd('git merge')
             self.cmd(self.expand(
                 'git checkout --force {{component.revision_or_branch}}'))
 
