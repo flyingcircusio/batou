@@ -3,10 +3,10 @@ from batou.lib.file import File
 import os.path
 
 
-def ServiceCheck(name, **kw):
+def ServiceCheck(description, **kw):
     if kw.get('nrpe', False):
-        return NRPEService(name, **kw)
-    return Service(name, **kw)
+        return NRPEService(description, **kw)
+    return Service(description, **kw)
 
 
 class Service(HookComponent):
