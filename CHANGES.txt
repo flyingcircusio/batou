@@ -6,7 +6,7 @@ Changelog
 ===================
 
 - Rename a variable in ServiceCheck that conflicted with NRPEService and
-  prevented custom naming of NRPE checks..
+  prevented custom naming of NRPE checks.
 
 
 1.0b30 (2015-01-09)
