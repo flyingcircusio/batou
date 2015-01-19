@@ -25,7 +25,8 @@ class Command(Component):
         with open(self.tmp, 'w') as f:
             f.write(cmd+'\n')
         out, err = self.cmd(
-            self.expand('mysql -Bs -uroot -p{{component.admin_password}} '
+            self.expand('mysql -Bs -u{{component.admin_user}} '
+                        '-p{{component.admin_password}} '
                         '{{component.db}} < {{component.tmp}}'))
         os.unlink(self.tmp)
         return out, err
