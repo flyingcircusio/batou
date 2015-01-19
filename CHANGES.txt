@@ -5,7 +5,7 @@ Changelog
 1.0b32 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Fix custom MySQL admin user when executing SQL statements.
 
 
 1.0b31 (2015-01-16)
