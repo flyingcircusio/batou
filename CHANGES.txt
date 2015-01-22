@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b32 (unreleased)
+1.0b32 (2015-01-22)
 ===================
 
 - Fix custom MySQL admin user when executing SQL statements.
