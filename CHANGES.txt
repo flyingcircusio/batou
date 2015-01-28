@@ -14,6 +14,10 @@ Changelog
 - Provide an easier to read error message when encountering cycles
   in the component dependencies.
 
+- Add 'connect_method = vagrant' to the environment if you want to deploy
+  into vagrant and use the 'vagrant ssh' invocation.
+
+- Update internal buildout and setuptools versions.
 
 
 1.0b29 (2014-12-12)
