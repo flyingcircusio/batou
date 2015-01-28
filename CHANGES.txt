@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0b33 (unreleased)
+1.0b33 (2015-01-28)
 ===================
 
 - Fix bug in git Clone: Directly after cloning there is nothing to merge,
