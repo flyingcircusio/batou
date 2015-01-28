@@ -101,8 +101,9 @@ class Clone(Component):
                 os.unlink(os.path.join(self.target, filepath))
             if not just_cloned:
                 self.cmd('git fetch')
-            if self.branch:
-                self.cmd(self.expand('git merge origin/{{component.branch}}'))
+                if self.branch:
+                    self.cmd(self.expand(
+                        'git merge origin/{{component.branch}}'))
             self.cmd(self.expand(
                 'git checkout --force {{component.revision_or_branch}}'))
 
