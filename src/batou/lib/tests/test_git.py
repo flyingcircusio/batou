@@ -27,6 +27,25 @@ def test_runs_git_to_clone_repository(root, repos_path):
 
 
 @pytest.mark.slow
+def test_directly_after_clone_nothing_is_merged(root, repos_path):
+    # When a Clone is confirgured with a branch, the general gesture for
+    # updating is "git merge origin/branch", but directly after cloning, the
+    # Clone is still on master, so this would try to merge the configured
+    # branch into master, which is wrong.
+    cmd('cd {dir}; git checkout -b other; touch bar; echo qux > foo;'
+        'git add .; git commit -am "other";'
+        # Set up branches to be different, so we see that no merge takes place
+        'git checkout master; '
+        'echo one > foo; git add . ; git commit -am "foo master";'.format(
+            dir=repos_path))
+    root.component += batou.lib.git.Clone(
+        repos_path, target='clone', branch='other')
+    root.component.deploy()
+    assert os.path.isfile(
+        os.path.join(root.environment.workdir_base, 'mycomponent/clone/bar'))
+
+
+@pytest.mark.slow
 def test_setting_branch_updates_on_incoming_changes(root, repos_path):
     root.component += batou.lib.git.Clone(
         repos_path, target='clone', branch='master')
