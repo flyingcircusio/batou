@@ -462,7 +462,10 @@ class Attribute(object):
         if isinstance(value, basestring) and self.expand:
             value = obj.expand(value)
         if isinstance(value, basestring) and self.conversion:
-            value = self.conversion(value)
+            try:
+                value = self.conversion(value)
+            except Exception as e:
+                raise batou.ConversionError(obj, value, e)
         self.instances[obj] = value
 
     def convert_literal(self, value):
