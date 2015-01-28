@@ -5,7 +5,10 @@ Changelog
 1.0b33 (unreleased)
 ===================
 
-- Nothing changed yet.
+- Add 'connect_method = vagrant' to the environment if you want to deploy
+  into vagrant and use the 'vagrant ssh' invocation.
+
+- Update internal buildout and setuptools versions.
 
 
 1.0b32 (2015-01-22)
