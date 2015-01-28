@@ -67,6 +67,7 @@ class Environment(object):
     service_user = None
     host_domain = None
     branch = None
+    connect_method = None
     update_method = None
     platform = None
     vfs_sandbox = None
@@ -123,7 +124,8 @@ class Environment(object):
     def load_environment(self, config):
         environment = config.get('environment', {})
         for key in ['service_user', 'host_domain', 'target_directory',
-                    'update_method', 'branch', 'platform', 'timeout']:
+                    'connect_method', 'update_method', 'branch', 'platform',
+                    'timeout']:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
@@ -144,6 +146,8 @@ class Environment(object):
             self.branch = u'default'
         if self.update_method is None:
             self.update_method = 'pull'
+        if self.connect_method is None:
+            self.connect_method = 'ssh'
 
         if self.service_user is None:
             self.service_user = pwd.getpwuid(os.getuid()).pw_name

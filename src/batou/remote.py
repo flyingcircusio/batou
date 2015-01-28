@@ -9,7 +9,29 @@ import subprocess
 import sys
 import tempfile
 
-# XXX reset
+# Monkeypatch execnet to support vagrant ssh.
+
+
+def new_ssh_args(spec):
+    from execnet.gateway_io import popen_bootstrapline
+    remotepython = spec.python or 'python'
+    if spec.type == 'vagrant':
+        args = ['vagrant', 'ssh', spec.ssh, '--', '-C']
+    else:
+        args = ['ssh', '-C']
+    if spec.ssh_config is not None:
+        args.extend(['-F', str(spec.ssh_config)])
+    remotecmd = '%s -c "%s"' % (remotepython, popen_bootstrapline)
+    if spec.type == 'vagrant':
+        args.extend([remotecmd])
+    else:
+        args.extend([spec.ssh, remotecmd])
+    print args
+    return args
+
+import execnet.gateway_io
+execnet.gateway_io.ssh_args = new_ssh_args
+
 
 logger = logging.getLogger('batou.remote')
 
@@ -168,15 +190,19 @@ class RemoteHost(object):
             self.gateway.exit()
 
         self.gateway = execnet.makegateway(
-            "ssh={}//python={}".format(self.host.fqdn, interpreter))
+            "ssh={}//python={}//type={}".format(
+                self.host.fqdn, interpreter,
+                self.deployment.environment.connect_method))
         self.channel = self.gateway.remote_exec(remote_core)
 
         if self.rpc.whoami() != self.deployment.environment.service_user:
+            self.gateway.exit()
             self.gateway = execnet.makegateway(
-                "ssh={}//python=sudo -u {} {}".format(
+                "ssh={}//python=sudo -u {} {}//type={}".format(
                     self.host.fqdn,
                     self.deployment.environment.service_user,
-                    interpreter))
+                    interpreter,
+                    self.deployment.environment.connect_method))
             self.channel = self.gateway.remote_exec(remote_core)
 
     def start(self):
