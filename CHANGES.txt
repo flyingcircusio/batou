@@ -2,13 +2,20 @@
 Changelog
 =========
 
-1.0b33 (unreleased)
+1.0b34 (unreleased)
 ===================
 
 - Add 'connect_method = vagrant' to the environment if you want to deploy
   into vagrant and use the 'vagrant ssh' invocation.
 
 - Update internal buildout and setuptools versions.
+
+
+1.0b33 (2015-01-28)
+===================
+
+- Fix bug in git Clone: Directly after cloning there is nothing to merge,
+  so don't attempt to.
 
 
 1.0b32 (2015-01-22)
