@@ -26,7 +26,6 @@ def new_ssh_args(spec):
         args.extend([remotecmd])
     else:
         args.extend([spec.ssh, remotecmd])
-    print args
     return args
 
 import execnet.gateway_io
@@ -41,7 +40,9 @@ def main(environment, timeout, dirty):
     environment.load()
     if timeout is not None:
         environment.timeout = timeout
-    if not dirty:
+    if environment.update_method == 'rsync':
+        pass
+    elif not dirty:
         check_clean_hg_repository()
     environment.load_secrets()
 
@@ -205,14 +206,8 @@ class RemoteHost(object):
                     self.deployment.environment.connect_method))
             self.channel = self.gateway.remote_exec(remote_core)
 
-    def start(self):
-        logger.info('{}: bootstrapping'.format(self.host.fqdn))
-        self.rpc.lock()
+    def update_hg(self):
         env = self.deployment.environment
-
-        remote_repository = self.rpc.ensure_repository(env.target_directory)
-        self.remote_base = os.path.join(
-            remote_repository, self.deployment.deployment_base)
 
         if env.update_method == 'pull':
             self.rpc.pull_code(
@@ -226,13 +221,10 @@ class RemoteHost(object):
                 acceptable_returncodes=[0, 1])
             have_changes = os.stat(bundle_file).st_size > 0
             self.rpc.send_file(
-                bundle_file, remote_repository + '/batou-bundle.hg')
+                bundle_file, self.remote_repository + '/batou-bundle.hg')
             os.unlink(bundle_file)
             if have_changes:
                 self.rpc.unbundle_code()
-        else:
-            raise ValueError(
-                'unsupported update method: {}'.format(env.update_method))
 
         remote_id = self.rpc.update_working_copy(env.branch)
         local_id, _ = cmd('hg id -i')
@@ -244,6 +236,45 @@ class RemoteHost(object):
                 'Working copy parents differ. Local: {} Remote: {}'.format(
                     local_id, remote_id))
 
+        remote_id = self.rpc.update_working_copy(env.branch)
+        local_id, _ = cmd('hg id -i')
+        if self.deployment.dirty:
+            local_id = local_id.replace('+', '')
+        local_id = local_id.strip()
+        if remote_id != local_id:
+            raise RuntimeError(
+                'Working copy parents differ. Local: {} Remote: {}'.format(
+                    local_id, remote_id))
+
+    def update_rsync(self):
+        env = self.deployment.environment
+        blacklist = ['.batou', 'work', '.git', '.hg', '.vagrant']
+        for source in os.listdir(env.base_dir):
+            if source in blacklist:
+                continue
+            rsync = execnet.RSync(os.path.join(env.base_dir, source))
+            rsync.add_target(self.gateway,
+                             os.path.join(self.remote_base, source))
+            rsync.send()
+
+    def start(self):
+        logger.info('{}: bootstrapping'.format(self.host.fqdn))
+        self.rpc.lock()
+        env = self.deployment.environment
+
+        self.remote_repository = self.rpc.ensure_repository(
+            env.target_directory, env.update_method)
+        self.remote_base = os.path.join(
+            self.remote_repository, self.deployment.deployment_base)
+
+        if env.update_method in ['pull', 'bundle']:
+            self.update_hg()
+        elif env.update_method == 'rsync':
+            self.update_rsync()
+        else:
+            raise ValueError(
+                'unsupported update method: {}'.format(env.update_method))
+
         self.rpc.build_batou(self.deployment.deployment_base)
 
         # Now, replace the basic interpreter connection, with a "real" one that
@@ -253,7 +284,7 @@ class RemoteHost(object):
         # Since we reconnected, any state on the remote side has been lost, so
         # we need to set the target directory again (which we only can know
         # about locally). XXX This is quite convoluted.
-        self.rpc.ensure_repository(env.target_directory)
+        self.rpc.ensure_repository(env.target_directory, env.update_method)
 
         self.rpc.setup_deployment(
             self.deployment.deployment_base,
