@@ -1,13 +1,6 @@
 import batou.lib.supervisor
-import batou.lib.python
 import os.path
 import pytest
-
-
-batou.lib.python.VirtualEnvDownload.url = (
-    'file:///home/wosc/zeit/vivi/work/.virtualenv/virtualenv-{}.tar.gz')
-# batou.lib.python.VirtualEnvPy2_7.install_options += (
-#     '--download-cache=/home/wosc/.buildout/download-cache/dist',)
 
 
 @pytest.fixture
