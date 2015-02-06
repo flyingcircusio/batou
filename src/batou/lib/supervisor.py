@@ -83,8 +83,15 @@ redirect_stderr = true
     def update(self):
         self.ctl('reread')
         self.ctl('update')
-        self.ctl('restart {}'.format(self.name),
-                 communicate=self.supervisor.wait_for_running)
+        self.ctl('restart {}'.format(self.name))
+        if self.supervisor.wait_for_running:
+            for retry in range(self.options['startsecs']):
+                time.sleep(1)
+                out, err = self.ctl('status {}'.format(self.name))
+                if 'RUNNING' in out:
+                    return
+            raise RuntimeError(
+                'Program "{}" did not start up'.format(self.name))
 
 
 class Eventlistener(Program):
