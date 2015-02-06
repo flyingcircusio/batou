@@ -55,9 +55,9 @@ redirect_stderr = true
             self.command = os.path.normpath(
                 os.path.join(self.workdir, self.command))
 
-        if not 'startsecs' in self.options:
+        if 'startsecs' not in self.options:
             self.options['startsecs'] = 5
-        if not 'startretries' in self.options:
+        if 'startretries' not in self.options:
             self.options['startretries'] = 3
         self.supervisor.max_startup_delay = max(
             int(self.options['startsecs']), self.supervisor.max_startup_delay)
@@ -77,7 +77,7 @@ redirect_stderr = true
             return
         self.parent.assert_no_subcomponent_changes()
         out, err = self.ctl('status {}'.format(self.name))
-        if not 'RUNNING' in out:
+        if 'RUNNING' not in out:
             raise UpdateNeeded()
 
     def update(self):
