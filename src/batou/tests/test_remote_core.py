@@ -26,7 +26,7 @@ def mock_remote_core(monkeypatch):
 
 
 def test_update_code_existing_target(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir))
+    remote_core.ensure_repository(str(tmpdir), 'pull')
     remote_core.pull_code('http://bitbucket.org/gocept/batou')
     remote_core.update_working_copy('default')
 
@@ -39,7 +39,7 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
 
 
 def test_update_code_new_target(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir) + '/foo')
+    remote_core.ensure_repository(str(tmpdir) + '/foo', 'bundle')
     remote_core.pull_code('http://bitbucket.org/gocept/batou')
     remote_core.update_working_copy('default')
 
@@ -52,7 +52,7 @@ def test_update_code_new_target(mock_remote_core, tmpdir):
 
 
 def test_bundle_shipping(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir) + '/foo')
+    remote_core.ensure_repository(str(tmpdir) + '/foo', 'bundle')
     remote_core.cmd.return_value = """\
 changeset: 371:revision-a
 nsummary:fdsa
@@ -82,7 +82,7 @@ def test_build_batou_fresh_install(mock_remote_core):
 
 
 def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir))
+    remote_core.ensure_repository(str(tmpdir), 'pull')
     os.mkdir(remote_core.target_directory + '/bin')
     open(remote_core.target_directory + '/bin/python2.7', 'w')
     remote_core.build_batou('.')
@@ -95,7 +95,7 @@ def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
 def test_expand_deployment_base(tmpdir):
     with mock.patch('os.path.expanduser') as expanduser:
         expanduser.return_value = str(tmpdir)
-        remote_core.ensure_repository('~/deployment')
+        remote_core.ensure_repository('~/deployment', 'rsync')
     assert (remote_core.target_directory == str(tmpdir))
 
 

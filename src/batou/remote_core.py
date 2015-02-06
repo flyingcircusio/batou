@@ -39,15 +39,18 @@ def cmd(c):
         [c], shell=True)
 
 
-def ensure_repository(target):
+def ensure_repository(target, method):
     target = os.path.expanduser(target)
     global target_directory
     target_directory = target
 
     if not os.path.exists(target):
         os.mkdir(target)
-    if not os.path.exists(target + '/.hg'):
-        cmd("hg init {}".format(target))
+
+    if method in ['pull', 'bundle']:
+        if not os.path.exists(target + '/.hg'):
+            cmd("hg init {}".format(target))
+
     return target
 
 
