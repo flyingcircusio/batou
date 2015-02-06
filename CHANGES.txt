@@ -5,6 +5,15 @@ Changelog
 1.0b34 (unreleased)
 ===================
 
+- Add 'connect_method = vagrant' to the environment if you want to deploy
+  into vagrant and use the 'vagrant ssh' invocation.
+
+- Update internal buildout, setuptools, and execnet versions.
+
+- Add 'update_method = rsync' to provide a simple, non-VCS specific way
+  of shipping batou definitions to the remote side. This does not perform
+  any conflict resolution and is mainly intended for use with vagrant.
+
 - Supervisor: Assert that a Program should get to state "RUNNING" within
   ``startsecs`` after restarting, instead of only waiting for ``startsecs``.
 
