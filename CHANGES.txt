@@ -2,8 +2,8 @@
 Changelog
 =========
 
-1.0b34 (unreleased)
-===================
+1.0 (unreleased)
+================
 
 - Add 'connect_method = vagrant' to the environment if you want to deploy
   into vagrant and use the 'vagrant ssh' invocation.
