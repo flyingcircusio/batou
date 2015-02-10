@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0 (unreleased)
+1.0 (2015-02-10)
 ================
 
 - Add 'connect_method = vagrant' to the environment if you want to deploy
