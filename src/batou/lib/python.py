@@ -199,6 +199,14 @@ class VirtualEnvPy3_3(VirtualEnvPyBase):
     install_options = ('--ignore-installed', '--egg')
 
 
+class VirtualEnvPy3_4(VirtualEnvPyBase):
+
+    venv_version = '12.0.7'
+    venv_checksum = 'md5:e08796f79d112f3bfa6653cc10840114'
+
+    install_options = ('--ignore-installed', '--egg')
+
+
 class VirtualEnvDownload(Component):
     """Manage virtualenv package download and extraction.
 
