@@ -5,7 +5,7 @@ Changelog
 1.1 (unreleased)
 ================
 
-- Nothing changed yet.
+- Add virtualenv metadata for Python 2.4
 
 
 1.0 (2015-02-10)
