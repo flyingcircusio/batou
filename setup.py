@@ -41,7 +41,7 @@ setup(
     author='Christian Theune <ct@gocept.com>',
     author_email='ct@gocept.com',
     license='BSD (2-clause)',
-    url='https://projects.gocept.com/projects/batou/',
+    url='https://plan.flyingcircus.io/projects/batou',
     keywords='deployment',
     classifiers="""\
 License :: OSI Approved :: BSD License
