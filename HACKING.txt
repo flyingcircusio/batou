@@ -3,7 +3,7 @@ Developing batou
 ================
 
 :Issue tracker:
-    https://projects.gocept.com/projects/batou/
+    https://plan.flyingcircus.io/projects/batou
 
 :Source code:
-    https://bitbucket.org/gocept/batou/
+    https://bitbucket.org/flyingcircus/batou/
