@@ -45,6 +45,11 @@ def test_jinja2_template_keep_trailing_newline():
     assert ('hello world\n' == tmpl.expand('hello world\n', {}))
 
 
+def test_jinja2_template_dont_add_trailing_newline():
+    tmpl = TemplateEngine.get('jinja2')
+    assert ('hello world' == tmpl.expand('hello world', {}))
+
+
 def test_jinja2_template_file():
     tmpl = TemplateEngine.get('jinja2')
     filename = '{}/haproxy.cfg'.format(fixture)
