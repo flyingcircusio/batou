@@ -47,6 +47,7 @@ class Jinja2Engine(TemplateEngine):
         super(Jinja2Engine, self).__init__(*args, **kwargs)
         self.env = jinja2.Environment(
             line_statement_prefix='@@',
+            keep_trailing_newline=True,
             undefined=jinja2.StrictUndefined)
 
     def _render_template_file(self, sourcefile, args):
