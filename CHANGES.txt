@@ -6,6 +6,7 @@ Changelog
 ================
 
 - Add virtualenv metadata for Python 2.4
+- Keep trailing newlines when rendering templates
 
 
 1.0 (2015-02-10)
