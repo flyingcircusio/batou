@@ -40,6 +40,11 @@ def test_jinja2_template_str():
             tmpl.expand('hello {{hello}}\n\n   ', sample_dict))
 
 
+def test_jinja2_template_keep_trailing_newline():
+    tmpl = TemplateEngine.get('jinja2')
+    assert ('hello world\n' == tmpl.expand('hello world\n', {}))
+
+
 def test_jinja2_template_file():
     tmpl = TemplateEngine.get('jinja2')
     filename = '{}/haproxy.cfg'.format(fixture)
