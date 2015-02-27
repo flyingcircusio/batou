@@ -5,7 +5,8 @@ Changelog
 1.0.2 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Fix a bundle shipping issue: incorrect language settings caused us to
+  incorrectly parse the list of heads on the remote side.
 
 
 1.0.1 (2015-02-26)
