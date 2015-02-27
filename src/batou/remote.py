@@ -206,6 +206,23 @@ class RemoteHost(object):
                     self.deployment.environment.connect_method))
             self.channel = self.gateway.remote_exec(remote_core)
 
+    def update_hg_bundle(self):
+        heads = self.rpc.current_heads()
+        if not heads:
+            raise ValueError("Remote repository did not find any heads. "
+                             "Can not continue creating a bundle.")
+        fd, bundle_file = tempfile.mkstemp()
+        os.close(fd)
+        bases = ' '.join('--base {}'.format(x) for x in heads)
+        cmd('hg -qy bundle {} {}'.format(bases, bundle_file),
+            acceptable_returncodes=[0, 1])
+        have_changes = os.stat(bundle_file).st_size > 0
+        self.rpc.send_file(
+            bundle_file, self.remote_repository + '/batou-bundle.hg')
+        os.unlink(bundle_file)
+        if have_changes:
+            self.rpc.unbundle_code()
+
     def update_hg(self):
         env = self.deployment.environment
 
@@ -213,18 +230,7 @@ class RemoteHost(object):
             self.rpc.pull_code(
                 upstream=self.deployment.upstream)
         elif env.update_method == 'bundle':
-            heads = self.rpc.current_heads()
-            fd, bundle_file = tempfile.mkstemp()
-            os.close(fd)
-            bases = ' '.join('--base {}'.format(x) for x in heads)
-            cmd('hg -qy bundle {} {}'.format(bases, bundle_file),
-                acceptable_returncodes=[0, 1])
-            have_changes = os.stat(bundle_file).st_size > 0
-            self.rpc.send_file(
-                bundle_file, self.remote_repository + '/batou-bundle.hg')
-            os.unlink(bundle_file)
-            if have_changes:
-                self.rpc.unbundle_code()
+            self.update_hg_bundle()
 
         remote_id = self.rpc.update_working_copy(env.branch)
         local_id, _ = cmd('hg id -i')
