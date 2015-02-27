@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0.2 (unreleased)
+1.0.2 (2015-02-27)
 ==================
 
 - Fix a bundle shipping issue: incorrect language settings caused us to
