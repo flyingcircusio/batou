@@ -76,7 +76,7 @@ class Clone(Component):
     def has_incoming_changesets(self):
         try:
             self.cmd('hg incoming -q -l1', silent=True)
-        except RuntimeError, e:
+        except RuntimeError as e:
             returncode = e.args[1]
             if returncode == 1:
                 return False
@@ -88,7 +88,7 @@ class Clone(Component):
         try:
             with self.chdir(self.target):
                 self.cmd('hg outgoing -q -l1', silent=True)
-        except RuntimeError, e:
+        except RuntimeError as e:
             returncode = e.args[1]
             if returncode == 1:
                 return False

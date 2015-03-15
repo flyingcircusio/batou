@@ -5,6 +5,7 @@ import hashlib
 import itertools
 import logging
 import os
+import pkg_resources
 import socket
 import subprocess
 import sys
@@ -12,6 +13,16 @@ import time
 
 
 logger = logging.getLogger(__name__)
+
+
+def self_id():
+    template = 'batou/{version} ({python}, {system})'
+    system = os.uname()
+    system = ' '.join([system[0], system[2], system[4]])
+    version = pkg_resources.require("batou")[0].version
+    python = sys.subversion[0]
+    python += ' {0}.{1}.{2}-{3}{4}'.format(*sys.version_info)
+    return template.format(**locals())
 
 
 class MultiFile(object):
@@ -49,15 +60,34 @@ def locked(filename):
         lockfile.truncate()
 
 
-def flatten(listOfLists):
-    return list(itertools.chain.from_iterable(listOfLists))
+def flatten(list_of_lists):
+    return list(itertools.chain.from_iterable(list_of_lists))
 
 
-def notify(title, description):
+def notify_send(title, description):
+    subprocess.call(['notify-send', title, description])
+
+
+def notify_macosx(title, description):
+    subprocess.call([
+        'osascript', '-e',
+        'display notification "{}" with title "{}"'.format(
+            description, title)])
+
+
+def notify_none(title, description):
+    pass
+
+
+try:
+    subprocess.check_output(['which', 'osascript'])
+    notify = notify_macosx
+except subprocess.CalledProcessError:
     try:
-        subprocess.check_call(['notify-send', title, description])
-    except OSError:
-        pass
+        subprocess.check_output(['which', 'notify-send'])
+        notify = notify_send
+    except subprocess.CalledProcessError:
+        notify = notify_none
 
 
 def resolve(address):
@@ -139,10 +169,10 @@ class CycleError(ValueError):
         components = self.args[0].items()
         components.sort(key=lambda x: x[0].name)
         for component, subs in components:
-            message.append('    '+component.name)
+            message.append(component.name + ' depends on')
             for sub in subs:
-                message.append('        '+sub.name)
-        return '\n'+'\n'.join(message)
+                message.append('        ' + sub.name)
+        return '\n'.join(message)
 
 
 def remove_nodes_without_outgoing_edges(graph):

@@ -155,7 +155,7 @@ if __name__ == '__channelexec__':
         task, args, kw = channel.receive()
         try:
             result = locals()[task](*args, **kw)
-        except Exception, e:
+        except Exception as e:
             tb = traceback.format_exc()
             result = ('batou-remote-core-error', tb)
         channel.send(result)

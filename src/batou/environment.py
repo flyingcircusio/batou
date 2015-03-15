@@ -2,10 +2,13 @@ from .component import load_components_from_file
 from .host import Host
 from .resources import Resources
 from .secrets import add_secrets_to_environment_override
-from ConfigParser import RawConfigParser
-from batou import NonConvergingWorkingSet, UnusedResource
+from batou import NonConvergingWorkingSet, UnusedResources, ConfigurationError
+from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
+from batou import SuperfluousComponentSection, CycleErrorDetected
+from batou import UnknownComponentConfigurationError, UnsatisfiedResources
 from batou.component import RootComponent
-from batou.utils import revert_graph, topological_sort
+from batou.utils import revert_graph, topological_sort, CycleError
+from ConfigParser import RawConfigParser
 import batou.c
 import batou.vfs
 import glob
@@ -13,7 +16,6 @@ import logging
 import os
 import os.path
 import pwd
-import sys
 
 
 logger = logging.getLogger(__name__)
@@ -79,6 +81,7 @@ class Environment(object):
         self.hosts = {}
         self.resources = Resources()
         self.overrides = {}
+        self.exceptions = []
 
         # These are the component classes, decorated with their
         # name.
@@ -93,13 +96,16 @@ class Environment(object):
         # Scan all components
         for filename in sorted(glob.glob(
                 os.path.join(self.base_dir, 'components/*/component.py'))):
-            self.components.update(load_components_from_file(filename))
+            try:
+                self.components.update(load_components_from_file(filename))
+            except Exception as e:
+                self.exceptions.append(ComponentLoadingError(filename, e))
 
         # Load environment configuration
         config_file = os.path.join(
             self.base_dir, 'environments/{}.cfg'.format(self.name))
         if not os.path.isfile(config_file):
-            raise ValueError('No such environment "{}"'.format(self.name))
+            raise MissingEnvironment(self)
 
         config = Config(config_file)
 
@@ -113,8 +119,13 @@ class Environment(object):
         # load overrides
         for section in config:
             if not section.startswith('component:'):
+                if section not in ['hosts', 'environment', 'vfs']:
+                    self.exceptions.append(SuperfluousSection(section))
                 continue
             root_name = section.replace('component:', '')
+            if root_name not in self.components:
+                self.exceptions.append(SuperfluousComponentSection(root_name))
+                continue
             self.overrides.setdefault(root_name, {})
             self.overrides[root_name].update(config[section])
 
@@ -198,19 +209,25 @@ class Environment(object):
 
         previous_working_sets = []
         while working_set:
+            exceptions = []
             previous_working_sets.append(working_set.copy())
             retry = set()
-            exceptions = []
             self.resources.dirty_dependencies.clear()
 
             for root in working_set:
                 try:
                     self.resources.reset_component_resources(root)
                     root.prepare()
-                except Exception:
-                    exceptions.append((root, sys.exc_info()))
+                except ConfigurationError as e:
+                    # A known exception which we can report gracefully later.
+                    exceptions.append(e)
                     retry.add(root)
-                    continue
+                except Exception as e:
+                    # An unknown exception which we have to work harder
+                    # to report gracefully.
+                    exceptions.append(
+                        UnknownComponentConfigurationError(root, e))
+                    retry.add(root)
 
             retry.update(self.resources.dirty_dependencies)
             retry.update(self.resources.unsatisfied_components)
@@ -218,28 +235,22 @@ class Environment(object):
             # Try to find a valid order of the components. If we can't then we
             # have detected a dependency cycle and need to stop.
 
-            self.roots_in_order()
+            try:
+                self.roots_in_order()
+            except CycleError as e:
+                exceptions.append(CycleErrorDetected(e))
 
             if (retry in previous_working_sets):
+                # If any resources were required, now is the time to report
+                # them.
+                if self.resources.unsatisfied:
+                    exceptions.append(UnsatisfiedResources(
+                        self.resources.unsatisfied))
+
                 # We did not manage to improve on our last working set, so we
                 # give up.
-
-                # Report all exceptions we got in the last run.
-                for root, e in exceptions:
-                    logger.error('', exc_info=e)
-
-                # If any resources were required but not provided at least
-                # once we report this as well.
-                if self.resources.unsatisfied:
-                    logger.error('Unsatisfied resources: %s' %
-                                 ', '.join(self.resources.unsatisfied))
-
-                if exceptions:
-                    logger.error('\nThe following exceptions occurred '
-                                 '(see tracebacks above):')
-                for root, e in exceptions:
-                    logger.error('%s: %r', root.name, e[1])
-                raise NonConvergingWorkingSet(retry)
+                exceptions.append(NonConvergingWorkingSet(retry))
+                break
 
             working_set = retry
 
@@ -247,7 +258,14 @@ class Environment(object):
         # provided but never used. We're rather picky here and report this as
         # an error.
         if self.resources.unused:
-            raise UnusedResource(self.resources.unused)
+            exceptions.append(UnusedResources(self.resources.unused))
+
+        self.exceptions.extend(exceptions)
+        if self.exceptions:
+            # We just raise here to support a reasonable flow
+            # for our caller. We expect him to look at our exceptions
+            # attribute anyway.
+            raise self.exceptions[0]
 
     def roots_in_order(self, host=None):
         """Return a list of root components sorted by their resource
