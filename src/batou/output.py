@@ -13,7 +13,7 @@ class Output(object):
 
     def annotate(self, message, **format):
         lines = message.split('\n')
-        lines = [' '*5 + line for line in lines]
+        lines = [' ' * 5 + line for line in lines]
         message = '\n'.join(lines)
         self._tw.line(message, **format)
 

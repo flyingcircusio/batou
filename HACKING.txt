@@ -1,9 +1,0 @@
-================
-Developing batou
-================
-
-:Issue tracker:
-    https://plan.flyingcircus.io/projects/batou
-
-:Source code:
-    https://bitbucket.org/flyingcircus/batou/

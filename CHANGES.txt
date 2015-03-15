@@ -5,6 +5,25 @@ Changelog
 1.1a1 (unreleased)
 ==================
 
+- Fold the runner invocation for `local` and `remote` into
+  a single `deploy` command:
+
+  $ ./batou deploy <environment>
+
+  To force a local or remote invocation use --local and --remote. By default batou will assume a remote environment. To configure an environment's deployment mode use the `mode` attribute in the `environment` section::
+
+      [environment]
+      mode = local
+      mode = local
+
+  To specify a manual override on the commandline you can provide the `--local` or `--remote` arguments to the `run` command.
+
+- Improve bootstrapping to give developers a better way
+  to get started without installing batou system-wide
+  or in a temporary virtualenv.
+
+- Revamp README and documentation.
+
 - Rework error handling and output management.
 
   batou will now show more errors at once, suppress unnecessary internal tracebacks and try to prioritize
