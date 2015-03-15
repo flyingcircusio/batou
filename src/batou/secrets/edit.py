@@ -21,7 +21,7 @@ class Editor(object):
         while cmd != 'quit':
             try:
                 self.process_cmd(cmd)
-            except Exception, e:
+            except Exception as e:
                 print
                 print "Could not update due to error: {}".format(e)
                 print "Your changes are still available. You can try:"

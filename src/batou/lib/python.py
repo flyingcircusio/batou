@@ -82,7 +82,7 @@ class VirtualEnvPyBase(Component):
                 'bin/python -c "import pkg_resources; '
                 'assert pkg_resources.require(\'{}\')[0].version == \'{}\'"'
                 .format(pkg.package, pkg.version), silent=True)
-        except RuntimeError, e:
+        except RuntimeError as e:
             logger.debug(e[3])
             raise UpdateNeeded()
         # Is the package usable? Is the package a module?  This might be

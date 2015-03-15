@@ -11,8 +11,8 @@ import shutil
 import sys
 import subprocess
 
-version = '{version}'
-develop = '{develop}'
+version = ''
+develop = '../..'
 
 
 def cmd(c, quiet=False):
@@ -20,7 +20,7 @@ def cmd(c, quiet=False):
         subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
     except subprocess.CalledProcessError as e:
         if not quiet:
-            print("{{}} returned with exit code {{}}".format(c, e.returncode))
+            print("{} returned with exit code {}".format(c, e.returncode))
             print(e.output)
         raise
 
@@ -64,11 +64,11 @@ if missing or develop:
         if missing:
             print('Pre-installing batou - this can take a while...')
         cmd('.batou/bin/pip install --ignore-installed '
-            '--no-deps -e {{}}'.format(develop))
+            '--no-deps -e {}'.format(develop))
     else:
         print('Pre-installing batou - this can take a while...')
         cmd('.batou/bin/pip install --ignore-installed '
-            '--no-deps --egg batou=={{}}'.format(version))
+            '--no-deps --egg batou=={}'.format(version))
 
 
 os.environ['BATOU_VERSION'] = version

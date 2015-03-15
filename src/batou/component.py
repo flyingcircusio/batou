@@ -96,12 +96,14 @@ class Component(object):
         self._prepared = True
 
     def _overrides(self, overrides={}):
+        missing = []
         for key, value in overrides.items():
             if not hasattr(self, key):
-                raise KeyError(
-                    'Invalid override attribute "{}" for component {}'.format(
-                        key, self))
+                missing.append(key)
+                continue
             setattr(self, key, value)
+        if missing:
+            raise batou.MissingOverrideAttributes(self, missing)
 
     def configure(self):
         """Configure the component.
@@ -401,6 +403,8 @@ class RootComponent(object):
             self.environment.workdir_base, self.name)
 
     def prepare(self):
+        if self.name not in self.environment.components:
+            raise batou.MissingComponent(self)
         self.component = self.environment.components[self.name]()
         if self.features:
             self.component.features = self.features
@@ -452,6 +456,9 @@ class Attribute(object):
         self.instances = weakref.WeakKeyDictionary()
 
     def __get__(self, obj, objtype=None):
+        if obj is None:
+            # We're being accessed as a class attribute.
+            return self
         if obj not in self.instances:
             if self.default is ATTRIBUTE_NODEFAULT:
                 raise AttributeError()
@@ -465,7 +472,14 @@ class Attribute(object):
             try:
                 value = self.conversion(value)
             except Exception as e:
-                raise batou.ConversionError(obj, value, e)
+                # Try to detect our own name.
+                name = '<unknown>'
+                for k in dir(obj):
+                    if getattr(obj.__class__, k, None) is self:
+                        name = k
+                        break
+                raise batou.ConversionError(
+                    obj, name, value, self.conversion, e)
         self.instances[obj] = value
 
     def convert_literal(self, value):

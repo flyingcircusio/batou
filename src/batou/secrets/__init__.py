@@ -20,6 +20,7 @@ new one is created.
 
 """
 
+from batou import SuperfluousSecretsSection
 from .encryption import EncryptedConfigFile
 import os.path
 
@@ -33,6 +34,9 @@ def add_secrets_to_environment_override(environment):
         for section in f.config.sections():
             if section == 'batou':
                 continue
-            o = environment.overrides.setdefault(
-                section.replace('component:', ''), {})
+            section = section.replace('component:', '')
+            if section in environment.components:
+                environment.exceptions.append(
+                    SuperfluousSecretsSection(section))
+            o = environment.overrides.setdefault(section, {})
             o.update(f.config.items(section))
