@@ -3,19 +3,37 @@ batou
 
 .. raw:: html
 
-    <a href="https://bitbucket.org/gocept/batou"
+    <a href="https://bitbucket.org/flyingcircus/batou"
        style="float:right;border-bottom:none">
       <img src="https://bitbucket.org/zgramana/bitbucket-ribbons/raw/988dffc5fbeb/png/bitbucket-ribbon-dark-gray.png" />
     </a>
 
-.. rubric:: multi-(component | host | environment | platform) deployment
+.. rubric:: Automated application deployment
 
-batou makes it easy to define and perform automated service deployments. It tries to combine the simplicity of Fabric's SSH automation with the reliability of convergence/idempotence-oriented systems like Puppet.
+batou helps you to automate your application deployments:
 
-It is developed by the people running the `Flying Circus
-<http://flyingcircus.io>`_ and made available under the 2-clause BSD license.
+1. **Create a model of your deployment** (using a simple but powerful Python API)
 
-Services are described by components:
+2. **Describe different environments** (where your model will be deployed on actual machines)
+
+3. **Run the deployment** (using the batou utility)
+
+Getting started with a new project is easy:
+
+.. code-block:: bash
+
+    $ mkdir myproject
+    $ cd myproject
+    $ curl https://bitbucket.org/flyingcircus/batou/.../bootstrap-template -o batou
+    $ chmod +x batou
+    $ ./batou
+
+Here's a minimal application model:
+
+.. code-block:: bash
+
+    $ mkdir -p components/myapp
+    $ cat > components/myapp/component.py
 
 .. code-block:: python
 
@@ -32,34 +50,35 @@ Services are described by components:
             self += Program('myapp',
                 command='bin/myapp')
 
-Environments map components to hosts:
+And here's a minimal environment:
+
+.. code-block:: bash
+
+    $ mkdir environments
+    $ cat > environments/dev.cfg
 
 .. code-block:: ini
 
+    [environment]
+    mode = local
+
     [hosts]
-    prod00 = nginx, haproxy
-    prod01 = database
-    prod10 = myapp, supervisor
-    prod11 = myapp, supervisor
+    localhost = myapp
 
-Local deployments take care of a single host:
+To deploy this, you run:
 
 .. code-block:: bash
 
-    $ ./batou local
-
-Remote deployments cover a whole environment:
-
-.. code-block:: bash
-
-    $ ./batou remote production
+    $ ./batou deploy dev
 
 
 Guide
 -----
 
+Basic topics
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    introduction
    installation
@@ -89,21 +108,39 @@ Guide
    component-advanced
 
 
-Resources
----------
+Advanced topics
 
 
 .. toctree::
-    :maxdepth: 1
+   :maxdepth: 1
 
-    support
-    changes
-    legal
+   introduction
 
-Presentations from conferences:
+   component-advanced
 
-* `EuroPython 2013 - batou (talk slides) <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
-* `PyConDE 2013 - batou (talk video, German) <ttp://pyvideo.org/video/2436/batou-multicomponenthostenvironment-depl>`_
+Support
+-------
+
+batou itself is released "as is".
+
+We hang around #batou in the Freenode IRC network.
+
+A public `mailing list XXX`_ is
+there for general discussion and help.
+
+You can also report bugs to our `bugtracker
+<http://plan.flyingcircus.io/projects/batou>`_.
+
+
+.. rubric:: Commercial support
+
+We will be happy to give you commercial support for batou: feature
+implementation, bug fixing, consulting, or education.
+
+If you need us, send an email to `mail@flyingcircus.io
+<mailto:mail@flyingcircus.io?Subject=Support%20for%20batou>`_ to get an offer for
+our services.
+
 
 Contribute
 ----------
@@ -111,8 +148,23 @@ Contribute
 batou is developed as open source / free software. If you want to get in
 touch and contribute, you are more than welcome.
 
-* Use our `Redmine <http://projects.gocept.com/projects/batou>`_ to
+* Use our `Redmine <http://plan.flyingcircus.io/projects/batou>`_ to
   report bugs, feature requests, or send us feedback.
 
-* Fork our `bitbucket repository <http://bitbucket.org/gocept/batou>`_ and send
+* Fork our `bitbucket repository <http://bitbucket.org/flyingcircus/batou>`_ and send
   us pull requests.
+
+
+Resources
+---------
+
+.. toctree::
+    :maxdepth: 1
+
+    changes
+    legal
+
+Presentations from conferences:
+
+* `EuroPython 2013 - batou (talk slides) <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
+* `PyConDE 2013 - batou (talk video, German) <ttp://pyvideo.org/video/2436/batou-multicomponenthostenvironment-depl>`_

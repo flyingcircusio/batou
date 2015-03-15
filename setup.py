@@ -54,7 +54,6 @@ Programming Language :: Python :: 2 :: Only
     long_description='\n\n'.join(open(project_path(name)).read() for name in (
             'README',
             'CHANGES.txt',
-            'HACKING.txt',
             )),
 
     packages=find_packages('src'),

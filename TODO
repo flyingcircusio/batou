@@ -1,0 +1,22 @@
+batou 1.1
+
+- better documentation
+-- users
+-- developers
+-- faq
+-- guides
+-- API
+-- library
+-- cmdline
+-- comparison with other tools
+-- avoid large chunks of "TODO" documentation
+
+
+- general output restructuring
+- error reporting
+- better initial bootstrap
+- bootstrap w/ project structure template
+- replace `local` and `remote` with `deploy` command,
+  substitute the `--batch` command into `agent`?
+- mailingliste einrichten (batou@lists.flyingcircus.io)
+    -> kill google groups or keep using it?

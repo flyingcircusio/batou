@@ -3,15 +3,11 @@ Legal information
 
 The copyright holder for batou is::
 
-    gocept gmbh & co. kg
+    Flying Circus Internet Operations GmbH
     Forsterstraße 29
     06112 Halle (Saale)
     GERMANY
 
-The code of batou is licensed under the BSD license:
+The code of batou is licensed under the 2-clause BSD license:
 
 .. literalinclude:: ../../LICENSE.txt
-
-We include some code which is licensed under the ZPL (as indicated in the files' header):
-
-.. literalinclude:: ../../ZPL.txt
