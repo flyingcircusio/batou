@@ -35,7 +35,7 @@ def bootstrap(activate=True):
 
     # Ensure we have the right version of batou
     develop = os.environ['BATOU_DEVELOP']
-    if develop and not 'BATOU_DEVELOP_UPDATED' in os.environ:
+    if develop and 'BATOU_DEVELOP_UPDATED' not in os.environ:
         cmd('.batou/bin/pip install --no-deps -e {}'.format(develop))
         update_bootstrap(version=os.environ['BATOU_VERSION'],
                          develop=os.environ['BATOU_DEVELOP'])

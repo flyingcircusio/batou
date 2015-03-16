@@ -75,14 +75,13 @@ def test_setting_revision_updates_on_incoming_changes(root, repos_path):
 @pytest.mark.slow
 def test_branch_does_switch_branch(root, repos_path):
     cmd('cd {dir}; touch bar; git add .; git checkout -b bar;'
-        'git commit -m "commit branch"'.format(
-        dir=repos_path))
+        'git commit -m "commit branch"'.format(dir=repos_path))
     root.component += batou.lib.git.Clone(
         repos_path, target='clone', branch='bar')
     root.component.deploy()
     stdout, stderr = cmd(
         'cd {workdir}/clone; git rev-parse --abbrev-ref HEAD'.format(
-        workdir=root.workdir))
+            workdir=root.workdir))
     assert 'bar' == stdout.strip()
 
 

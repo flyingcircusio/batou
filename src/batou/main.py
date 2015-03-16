@@ -114,7 +114,7 @@ non-existent file name, a new encrypted file is created.
 
     console = logging.StreamHandler(sys.stdout)
     console.setLevel(level)
-    #console.setFormatter(logging.Formatter(fmt='%(message)s'))
+    # console.setFormatter(logging.Formatter(fmt='%(message)s'))
     logger = logging.getLogger('batou')
     logger.setLevel(level)
     logger.addHandler(console)

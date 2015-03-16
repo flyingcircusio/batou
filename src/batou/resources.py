@@ -120,7 +120,7 @@ class Resources(object):
                         if not resources[key]:
                             del resources[key]
                             break
-                if not key in resources:
+                if key not in resources:
                     break
         return resources
 
