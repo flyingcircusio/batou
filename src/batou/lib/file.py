@@ -257,44 +257,49 @@ class Content(FileComponent):
         if self.source and self.content:
             raise ValueError(
                 'Only one of either "content" or "source" are allowed.')
+
         if not self.content:
             if not self.source:
                 self.source = self.original_path
+
             if not self.source.startswith('/'):
                 self.source = os.path.join(self.root.defdir, self.source)
 
+        self._render()
+
+    def _render(self):
+        # Phase 1: acquire the source data into self.content
+        if self.source:
             if os.path.exists(self.source):
                 with open(self.source, 'r') as f:
                     self.content = f.read()
-                if self.encoding:
-                    self.content = self.content.decode(self.encoding)
             else:
-                # Delay reading to the verification phase as we might be on the
-                # local side of the remoting utility.
+                if self._delayed:
+                    raise RuntimeError(
+                        'Could not find file {}'.format(self.source))
+                # We need to try rendering again later.
                 self._delayed = True
+                return
 
-        # Step 2: If our content is a template then render it.
-        if not self._delayed:
-            self._render()
+        # Phase 2: Decode, if we have an encoding.
+        if self.encoding and not isinstance(self.content, unicode):
+            self.content = self.content.decode(self.encoding)
 
-    def _render(self):
-        if not self.is_template:
-            return
-        if self.template_args is None:
-            self.template_args = dict()
-        if not self.template_context:
-            self.template_context = self.parent
-        self.content = self.expand(
-            self.content, self.template_context, args=self.template_args)
-        if isinstance(self.content, unicode):
+        # Phase 3: If we have a template, render it.
+        if self.is_template:
+            if self.template_args is None:
+                self.template_args = dict()
+            if not self.template_context:
+                self.template_context = self.parent
+            self.content = self.expand(
+                self.content, self.template_context, args=self.template_args)
+
+        # Phase 4: If we have an encoding, encode the content again
+        if self.encoding:
             self.content = self.content.encode(self.encoding)
 
     def verify(self):
         if self._delayed:
-            with open(self.source, 'r') as f:
-                self.content = f.read()
-            if self.encoding:
-                self.content = self.content.decode(self.encoding)
             self._render()
         with open(self.path, 'r') as target:
             current = target.read()
