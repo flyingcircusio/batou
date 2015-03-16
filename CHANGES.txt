@@ -5,6 +5,9 @@ Changelog
 1.1a1 (unreleased)
 ==================
 
+- Fix unicode encoding/decoding in File handling. See #14944.
+  (Ported from 1.0)
+
 - Fold the runner invocation for `local` and `remote` into
   a single `deploy` command:
 

@@ -322,6 +322,25 @@ def test_content_passed_by_file_template_defaults_to_utf8(root):
         assert f.read().decode('utf-8') == u'cöntent from source file foo'
 
 
+def test_content_passed_by_file_no_template_is_binary(root):
+    # This is a regression test for #14944 where UTF 8 in a
+    # non-template file caused an accidental implicit encoding to ASCII
+    source = 'source'
+    with open(source, 'w') as f:
+        f.write(u'cöntent from source file {{component.foo}}'.encode('utf-8'))
+    path = 'path'
+    p = Content(path, source=source, is_template=False)
+    root.component.foo = u'foo'
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path) as f:
+        assert f.read() == 'c\xc3\xb6ntent from source file {{component.foo}}'
+
+
 def test_content_from_file_as_template_guessed(root):
     path = 'path'
     with open(path, 'w') as f:
