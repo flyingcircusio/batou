@@ -1,4 +1,11 @@
-import py.io
+try:
+    import py.io
+    __ready__ = True
+except ImportError:
+    # Too much meta. This happens due to import time dependency
+    # from the buildout recipe. :/
+    __ready__ = False
+    pass
 import sys
 import traceback
 
@@ -37,4 +44,7 @@ class Output(object):
             self._tw.write(tb, red=True)
 
 
-output = Output()
+if __ready__:
+    output = Output()
+else:
+    output = None

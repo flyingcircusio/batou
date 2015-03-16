@@ -1,8 +1,7 @@
-from batou import NonConvergingWorkingSet, UnusedResource
+from batou import CycleErrorDetected, UnknownComponentConfigurationError
+from batou import UnsatisfiedResources, UnusedResources
 from batou.component import Component
 from batou.environment import Environment
-from batou.utils import CycleError
-import mock
 import pytest
 
 
@@ -63,7 +62,7 @@ def env():
 
 def test_provider_without_consumer_raises_error(env):
     env.add_root('provider', 'host')
-    with pytest.raises(UnusedResource):
+    with pytest.raises(UnusedResources):
         env.configure()
 
 
@@ -78,7 +77,7 @@ def test_consumer_retrieves_value_from_provider_order1(env):
 def test_provider_with_consumer_limited_by_host_raises_error(env):
     env.add_root('provider', 'test2')
     env.add_root('samehostconsumer', 'test')
-    with pytest.raises(UnusedResource):
+    with pytest.raises(UnusedResources):
         env.configure()
 
 
@@ -91,27 +90,33 @@ def test_consumer_retrieves_value_from_provider_order2(env):
 
 
 def test_consumer_without_provider_raises_error(env):
-    consumer = env.add_root('consumer', 'host')
-    with pytest.raises(NonConvergingWorkingSet) as e:
+    env.add_root('consumer', 'host')
+    with pytest.raises(Exception):
         env.configure()
-    assert set([consumer]) == e.value.args[0]
+    for exc in env.exceptions:
+        if isinstance(exc, UnsatisfiedResources):
+            assert set(['the-answer']) == exc.resources
+            break
+    else:
+        assert False, "Did not find exception"
 
 
 def test_aggressive_consumer_raises_unsatisfiedrequirement(env):
-    consumer = env.add_root('aggressiveconsumer', 'host')
-    with pytest.raises(NonConvergingWorkingSet) as e:
+    env.add_root('aggressiveconsumer', 'host')
+    with pytest.raises(Exception):
         env.configure()
-    assert set([consumer]) == e.value.args[0]
+    for exc in env.exceptions:
+        if isinstance(exc, UnsatisfiedResources):
+            assert set(['the-answer']) == exc.resources
+            break
+    else:
+        assert False, "Did not find expected exception."
 
 
-@mock.patch('batou.environment.logger.error')
-def test_broken_component_logs_real_exception(exception_log, env):
+def test_broken_component_logs_real_exception(env):
     env.add_root('broken', 'host')
-    with pytest.raises(NonConvergingWorkingSet):
+    with pytest.raises(UnknownComponentConfigurationError):
         env.configure()
-    assert exception_log.called
-    assert isinstance(
-        exception_log.call_args_list[0][1]['exc_info'][1], KeyError)
 
 
 def test_consumer_retrieves_value_from_provider_with_same_host(env):
@@ -141,5 +146,5 @@ def test_components_are_ordered_over_multiple_hosts(env):
 def test_circular_depending_component(env):
     env.add_root('circular1', 'test')
     env.add_root('circular2', 'test')
-    with pytest.raises(CycleError):
+    with pytest.raises(CycleErrorDetected):
         env.configure()

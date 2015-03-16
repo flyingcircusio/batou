@@ -1,14 +1,15 @@
 from batou.component import Component
 from batou.environment import Environment
+from batou import MissingEnvironment
 import os
 import os.path
 import pwd
 import pytest
 
 
-def test_parse_nonexisting_file_raises_ioerror(tmpdir):
+def test_parse_nonexisting_environment_raises_error(tmpdir):
     env = Environment('test', basedir=str(tmpdir))
-    with pytest.raises(ValueError):
+    with pytest.raises(MissingEnvironment):
         env.load()
 
 

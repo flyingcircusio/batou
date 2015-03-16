@@ -135,8 +135,8 @@ class Supervisor(Component):
     program_config_dir = None
     logdir = None
     loglevel = 'info'
-    enable = 'True'  # Allows turning "everything off" via environment
-                     # configuration
+    # Allows turning "everything off" via environment configuration
+    enable = 'True'
     max_startup_delay = 0
     wait_for_running = 'True'
     pidfile = '/run/local/supervisord.pid'

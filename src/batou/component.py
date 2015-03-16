@@ -226,7 +226,7 @@ class Component(object):
 
     @classmethod
     def add_platform(cls, name, platform):
-        if not '_platforms' in cls.__dict__:
+        if '_platforms' not in cls.__dict__:
             cls._platforms = {}
         cls._platforms[name] = platform
 

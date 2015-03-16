@@ -208,6 +208,5 @@ class NonConvergingWorkingSet(ConfigurationError):
         # output.annotate(', '.join(c.name for c in self.roots))
 
 
-
 class DeploymentError(Exception):
     """Indicates that a deployment failed.."""

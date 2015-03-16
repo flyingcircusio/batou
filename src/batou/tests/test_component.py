@@ -457,8 +457,9 @@ def test_assert_no_changes_recursive_raises(root):
 
 def test_root_overrides_missing_attribute_raises(root):
     root.environment.overrides = {'mycomponent': {'asdf': 1}}
-    with pytest.raises(KeyError):
+    with pytest.raises(batou.MissingOverrideAttributes) as e:
         root.prepare()
+    assert e.value.attributes == ['asdf']
 
 
 def test_root_overrides_existing_attribute(root):

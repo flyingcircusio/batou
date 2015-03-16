@@ -1,11 +1,12 @@
 from batou.environment import Environment
+from batou import MissingEnvironment
 from mock import Mock
 import pytest
 
 
 def test_environment_should_raise_if_no_config_file(tmpdir):
     e = Environment(u'foobar')
-    with pytest.raises(ValueError):
+    with pytest.raises(MissingEnvironment):
         e.load()
 
 

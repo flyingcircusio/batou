@@ -1,8 +1,8 @@
-from StringIO import StringIO
 from batou.utils import hash
+from batou.utils import remove_nodes_without_outgoing_edges, cmd
 from batou.utils import resolve, MultiFile, locked, notify, Address
 from batou.utils import revert_graph, topological_sort, flatten, NetLoc
-from batou.utils import remove_nodes_without_outgoing_edges, cmd
+from StringIO import StringIO
 import mock
 import os
 import pytest
@@ -98,6 +98,7 @@ class LockfileContextManagerTests(unittest.TestCase):
 
 class NotifyTests(unittest.TestCase):
 
+    @pytest.mark.skipif("sys.platform == 'darwin'")
     @mock.patch('subprocess.check_call')
     def test_notify_calls_notify_send(self, call):
         notify('foo', 'bar')
