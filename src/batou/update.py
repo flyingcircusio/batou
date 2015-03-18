@@ -1,4 +1,5 @@
 from batou.utils import cmd
+import batou.template
 import os.path
 
 
@@ -6,9 +7,12 @@ bootstrap_template = os.path.dirname(__file__) + '/bootstrap-template'
 
 
 def update_bootstrap(version, develop):
+    engine = batou.template.Jinja2Engine()
+    template = open(bootstrap_template, 'r').read()
+    bootstrap = engine.expand(template, dict(version=version, develop=develop))
+
     with open('batou', 'w') as b:
-        bootstrap = open(bootstrap_template, 'r').read()
-        b.write(bootstrap.format(version=version, develop=develop))
+        b.write(bootstrap)
 
 
 def main(version, develop, finish):

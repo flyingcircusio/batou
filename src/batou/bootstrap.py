@@ -1,4 +1,3 @@
-from batou.update import update_bootstrap
 from batou.utils import cmd
 import logging
 import os
@@ -29,6 +28,9 @@ def bootstrap(activate=True):
         sys.argv.pop(0)
 
     if 'BATOU_BOOTSTRAPPED' in os.environ:
+        from batou.update import update_bootstrap
+        update_bootstrap(version=os.environ['BATOU_VERSION'],
+                         develop=os.environ['BATOU_DEVELOP'])
         import batou.main
         batou.main.main()
         return
@@ -37,8 +39,6 @@ def bootstrap(activate=True):
     develop = os.environ['BATOU_DEVELOP']
     if develop and 'BATOU_DEVELOP_UPDATED' not in os.environ:
         cmd('.batou/bin/pip install --no-deps -e {}'.format(develop))
-        update_bootstrap(version=os.environ['BATOU_VERSION'],
-                         develop=os.environ['BATOU_DEVELOP'])
         os.environ['BATOU_DEVELOP_UPDATED'] = '1'
         restart(False)
     elif not develop:

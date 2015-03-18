@@ -5,8 +5,8 @@ from batou.output import output
 import sys
 
 
-def main(environment, hostname, platform, timeout):
-    output.annotate(self_id())
+def main(environment, platform, timeout, dirty):
+    output.line(self_id())
     with locked('.batou-lock'):
         try:
             output.section("Configuration")

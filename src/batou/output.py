@@ -18,11 +18,14 @@ class Output(object):
     def __init__(self):
         self._tw = py.io.TerminalWriter(sys.stdout)
 
+    def line(self, message, **format):
+        self._tw.line(message, **format)
+
     def annotate(self, message, **format):
         lines = message.split('\n')
         lines = [' ' * 5 + line for line in lines]
         message = '\n'.join(lines)
-        self._tw.line(message, **format)
+        self.line(message, **format)
 
     def tabular(self, key, value, separator=': ', **kw):
         message = key.rjust(10) + separator + value

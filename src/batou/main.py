@@ -1,7 +1,6 @@
 import argparse
 import batou.init
-import batou.local
-import batou.remote
+import batou.deploy
 import batou.secrets.edit
 import batou.update
 import logging
@@ -24,21 +23,9 @@ def main():
 
     subparsers = parser.add_subparsers()
 
-    # INIT
+    # Deploy
     p = subparsers.add_parser(
-        'init',
-        help="""\
-Initialize batou project in the given directory. If the given directory does
-not exist, it will be created.
-
-If no directory is given, the current directory is used.
-""")
-    p.add_argument('destination')
-    p.set_defaults(func=batou.init.main)
-
-    # LOCAL
-    p = subparsers.add_parser(
-        'local', help=u'Deploy locally.')
+        'deploy', help=u'Deploy an environment.')
     p.add_argument(
         '-p', '--platform', default=None,
         help='Alternative platform to choose. Empty for no platform.')
@@ -46,32 +33,12 @@ If no directory is given, the current directory is used.
         '-t', '--timeout', default=None,
         help='Override the environment\'s timeout setting')
     p.add_argument(
-        'environment', help='Environment to deploy.',
-        nargs='?',
-        default='dev',
-        type=lambda x: x.replace('.cfg', ''))
-    p.add_argument(
-        'hostname',
-        nargs='?',
-        default='localhost',
-        help='Host to deploy.')
-
-    p.set_defaults(func=batou.local.main)
-
-    # REMOTE
-    p = subparsers.add_parser(
-        'remote', help=u'Deploy remotely.')
-    p.add_argument(
-        'environment', help='Environment to deploy.',
-        type=lambda x: x.replace('.cfg', ''))
-    p.add_argument(
-        '-t', '--timeout', default=None,
-        help='Override the environment\'s timeout setting')
-    p.add_argument(
         '-D', '--dirty', action='store_true',
         help='Allow deploying with dirty working copy or outgoing changes.')
-
-    p.set_defaults(func=batou.remote.main)
+    p.add_argument(
+        'environment', help='Environment to deploy.',
+        type=lambda x: x.replace('.cfg', ''))
+    p.set_defaults(func=batou.deploy.main)
 
     # SECRETS
     p = subparsers.add_parser(
@@ -89,6 +56,18 @@ non-existent file name, a new encrypted file is created.
         'environment', help='Environment to edit secrets for.',
         type=lambda x: x.replace('.cfg', ''))
     p.set_defaults(func=batou.secrets.edit.main)
+
+    # INIT
+    p = subparsers.add_parser(
+        'init',
+        help="""\
+Initialize batou project in the given directory. If the given directory does
+not exist, it will be created.
+
+If no directory is given, the current directory is used.
+""")
+    p.add_argument('destination')
+    p.set_defaults(func=batou.init.main)
 
     # UPDATE
     p = subparsers.add_parser(
