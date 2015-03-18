@@ -11,6 +11,10 @@ import shutil
 import sys
 import subprocess
 
+# We use this to trick the simple templating so you can
+# download and copy this file to bootstrap a new batou installation.
+BOOTSTRAP_VERSION_MARKER = '{' + '{version}' + '}'
+
 version = ''
 develop = '../..'
 
@@ -29,14 +33,16 @@ def install_venv():
     print('Preparing virtualenv in .batou ...')
     # Discover the right venv cmd. Or let batou figure that out later in a
     # second phase?
+    # XXX Give advice if virtualenv isn't there.
     cmd('virtualenv --python=python2.7 .batou')
 
 
 def install_pip():
+    # XXX give advice if we can't get the right pip version
     cmd('.batou/bin/pip install "pip>=1.2"')
 
 
-base = os.path.dirname(__file__)
+base = os.path.dirname(__file__) or '.'
 os.chdir(base)
 
 # Do we have a virtualenv?
@@ -60,15 +66,19 @@ else:
     missing = False
 
 if missing or develop:
-    if develop:
-        if missing:
-            print('Pre-installing batou - this can take a while...')
-        cmd('.batou/bin/pip install --ignore-installed '
-            '--no-deps -e {}'.format(develop))
-    else:
+    if version == BOOTSTRAP_VERSION_MARKER:
+        # we're bootstrapping a new project. just get whatever version.
+        # this will self-destruct this file later. :)
+        develop = ''
+        spec = '--egg batou'
+    if missing:
         print('Pre-installing batou - this can take a while...')
-        cmd('.batou/bin/pip install --ignore-installed '
-            '--no-deps --egg batou=={}'.format(version))
+    if develop:
+        spec = '-e {}'.format(develop)
+    else:
+        sepc = '--egg batou=={}'.format(version)
+
+    cmd('.batou/bin/pip install --ignore-installed {}'.format(spec))
 
 
 os.environ['BATOU_VERSION'] = version

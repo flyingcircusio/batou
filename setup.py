@@ -23,6 +23,7 @@ setup(
         'requests',
         'setuptools',
         'execnet',
+        'py'
     ],
     extras_require={
         'test': [
