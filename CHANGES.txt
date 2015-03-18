@@ -7,6 +7,8 @@ Changelog
 
 - Fix unicode encoding/decoding in File handling. See #14944.
 
+- Remove remnant of better error output that got deferred to the 1.1
+  branch that breaks reporting any conversion errors at all.
 
 1.0.2 (2015-02-27)
 ==================
