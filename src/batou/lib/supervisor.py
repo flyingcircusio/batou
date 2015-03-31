@@ -1,12 +1,11 @@
 from batou import UpdateNeeded
-from batou.component import Component
+from batou.component import Component, Attribute, handle_event
 from batou.lib.buildout import Buildout
 from batou.lib.file import File, Directory
 from batou.lib.nagios import ServiceCheck
 from batou.lib.logrotate import RotatedLogfile
 from batou.lib.service import Service
 from batou.utils import Address
-import ast
 import os
 import os.path
 import time
@@ -33,6 +32,12 @@ redirect_stderr = true
 """
 
     namevar = 'name'
+
+    # Can this be deployed while running or should the process be stopped
+    # prior to deploying it?
+    # hot = it can keep running
+    # cold = needs to be stopped
+    deployment = 'hot'
 
     command = None
     command_absolute = True
@@ -93,6 +98,23 @@ redirect_stderr = true
             raise RuntimeError(
                 'Program "{}" did not start up'.format(self.name))
 
+    # Keep track whether
+    _evaded = False
+
+    @handle_event('before-update', 'precursor')
+    def evade(self, component):
+        if self.deployment == 'hot':
+            return
+        if self._evaded:
+            return
+        # Only try once. Keep going anyway.
+        self._evaded = True
+        print u"\u2623 Stopping {} for cold deployment".format(self.name)
+        try:
+            self.ctl('stop {}'.format(self.name))
+        except Exception:
+            pass
+
 
 class Eventlistener(Program):
 
@@ -126,7 +148,7 @@ process_name={{component.name}}
 
 class Supervisor(Component):
 
-    address = 'localhost:9001'
+    address = Attribute(Address, 'localhost:9001')
     buildout_cfg = os.path.join(
         os.path.dirname(__file__), 'resources', 'supervisor.buildout.cfg')
     supervisor_conf = os.path.join(
@@ -135,15 +157,18 @@ class Supervisor(Component):
     program_config_dir = None
     logdir = None
     loglevel = 'info'
-    enable = 'True'  # Allows turning "everything off" via environment
-                     # configuration
-    max_startup_delay = 0
-    wait_for_running = 'True'
-    pidfile = '/run/local/supervisord.pid'
+    # Allows turning "everything off" via environment configuration
+    enable = Attribute('literal', 'True')
+    # Hot deployments: if supervisor is already running stuff - keep them
+    # running
+    # Cold deployments: if supervisor is already running: let it run
+    # but shutdown all processes before continuing
+    deployment_mode = Attribute(str, 'hot')
+    max_startup_delay = Attribute(int, 0)
+    wait_for_running = Attribute('literal', 'True')
+    pidfile = Attribute(str, '/run/local/supervisord.pid', map=True)
 
     def configure(self):
-        self.pidfile = self.map(self.pidfile)
-        self.address = Address(self.address)
         self.provide('supervisor', self)
 
         buildout_cfg = File('buildout.cfg',
@@ -167,8 +192,6 @@ class Supervisor(Component):
 
         self += Service('bin/supervisord', pidfile=self.pidfile)
 
-        self.wait_for_running = ast.literal_eval(self.wait_for_running)
-        self.enable = ast.literal_eval(self.enable)
         if self.enable:
             self += RunningSupervisor()
         else:

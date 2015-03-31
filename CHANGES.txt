@@ -5,7 +5,12 @@ Changelog
 1.0.4 (unreleased)
 ==================
 
-- Nothing changed yet.
+- A new event handling system that allows intercepting and responding
+  to events from components. Currently supports "before-update".
+
+- Supplement supervisor programs with 'deployment' mode parameter
+  to support 'cold' deployments that shut down programs before 
+  any updates get deployed without causing superfluous cycles.
 
 
 1.0.3 (2015-03-18)

@@ -485,3 +485,54 @@ def test_attribute_split_list(root):
     assert f.c == ['3']
     assert f.d == ['3', '3']
     assert f.e == []
+
+
+def test_event_handler_before_update_no_changes(root):
+    from batou.component import handle_event
+    log = []
+
+    class Foo(Component):
+        @handle_event('before-update', '*')
+        def handle(self, component):
+            log.append(component)
+    root.component += Foo()
+    root.component.deploy()
+    assert log == []
+
+
+def test_event_handler_before_update_with_changes_all(root):
+    from batou.component import handle_event
+    log = []
+
+    class Foo(Component):
+        namevar = 'x'
+
+        def verify(self):
+            raise UpdateNeeded()
+
+        @handle_event('before-update', '*')
+        def handle(self, component):
+            log.append(component.x)
+    root.component += Foo('1')
+    root.component += Foo('2')
+    root.component.deploy()
+    assert log == ['1', '1', '2', '2']
+
+
+def test_event_handler_before_update_with_changes_precursor(root):
+    from batou.component import handle_event
+    log = []
+
+    class Foo(Component):
+        namevar = 'x'
+
+        def verify(self):
+            raise UpdateNeeded()
+
+        @handle_event('before-update', 'precursor')
+        def handle(self, component):
+            log.append((self.x, component.x))
+    root.component += Foo('1')
+    root.component += Foo('2')
+    root.component.deploy()
+    assert log == [('2', '1')]
