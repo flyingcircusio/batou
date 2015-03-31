@@ -2,13 +2,17 @@ from batou import UpdateNeeded
 from batou.component import Component, Attribute, handle_event
 from batou.lib.buildout import Buildout
 from batou.lib.file import File, Directory
-from batou.lib.nagios import ServiceCheck
 from batou.lib.logrotate import RotatedLogfile
+from batou.lib.nagios import ServiceCheck
 from batou.lib.service import Service
 from batou.utils import Address
+import logging
 import os
 import os.path
 import time
+
+
+logger = logging.getLogger(__name__)
 
 
 class Program(Component):
@@ -109,7 +113,7 @@ redirect_stderr = true
             return
         # Only try once. Keep going anyway.
         self._evaded = True
-        print u"\u2623 Stopping {} for cold deployment".format(self.name)
+        logger.info("Stopping {} for cold deployment".format(self.name))
         try:
             self.ctl('stop {}'.format(self.name))
         except Exception:
