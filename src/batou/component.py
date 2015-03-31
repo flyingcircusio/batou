@@ -22,6 +22,28 @@ def platform(name, component):
     return register_platform
 
 
+def handle_event(event, scope):
+    def wrapper(f):
+        f._event = dict(event=event, scope=scope)
+        return f
+    return wrapper
+
+
+def check_event_scope(scope, source, target):
+    if scope == '*':
+        return True
+    if scope == 'precursor':
+        for candidate in source.root.component.recursive_sub_components:
+            if candidate is target:
+                break
+            if candidate is source:
+                # It's only a predecessor if it comes before us
+                # and is in the same root.
+                return True
+        return False
+    raise ValueError('Unknown event scope: {}'.format(scope))
+
+
 def load_components_from_file(filename):
     # XXX protect against loading the same component name multiple times.
     components = {}
@@ -91,6 +113,7 @@ class Component(object):
         self._overrides(overrides)
         self.configure()
         self += self.get_platform()
+        self.__setup_event_handlers__()
         self._prepared = True
 
     def _overrides(self, overrides={}):
@@ -150,6 +173,7 @@ class Component(object):
                         '{} verify()'.format(self._breadcrumbs)):
                     self.verify()
             except batou.UpdateNeeded:
+                self.__trigger_event__('before-update')
                 output.annotate(self._breadcrumbs)
                 self.update()
                 self.changed = True
@@ -182,6 +206,32 @@ class Component(object):
         Can be used to determine file ages, etc.
         """
         raise NotImplementedError
+
+    # Event handling mechanics
+
+    def __setup_event_handlers__(self):
+        self._event_handlers = handlers = {}
+        for candidate in dir(self):
+            try:
+                candidate = getattr(self, candidate)
+            except Exception:
+                continue
+            if not hasattr(candidate, '_event'):
+                continue
+            handler = candidate
+            if not isinstance(handler._event, dict):
+                continue
+            handlers.setdefault(handler._event['event'], []).append(handler)
+
+    def __trigger_event__(self, event):
+        # We notify all components that belong to the same
+        # root.
+        for target in self.root.component.recursive_sub_components:
+            for handler in target._event_handlers.get(event, []):
+                if not check_event_scope(
+                        handler._event['scope'], self, target):
+                    continue
+                handler(self)
 
     # Sub-component mechanics
 
@@ -445,12 +495,14 @@ class Attribute(object):
     def __init__(self,
                  conversion=None,
                  default=ATTRIBUTE_NODEFAULT,
-                 expand=True):
+                 expand=True,
+                 map=False):
         if isinstance(conversion, str):
             conversion = getattr(self, 'convert_{}'.format(conversion))
         self.conversion = conversion
         self.default = default
-        self.expand = True
+        self.expand = expand
+        self.map = map
         self.instances = weakref.WeakKeyDictionary()
 
     def __get__(self, obj, objtype=None):
@@ -466,6 +518,8 @@ class Attribute(object):
     def __set__(self, obj, value):
         if isinstance(value, basestring) and self.expand:
             value = obj.expand(value)
+        if isinstance(value, basestring) and self.map:
+            value = obj.map(value)
         if isinstance(value, basestring) and self.conversion:
             try:
                 value = self.conversion(value)
