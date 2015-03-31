@@ -174,7 +174,7 @@ class Component(object):
                     self.verify()
             except batou.UpdateNeeded:
                 self.__trigger_event__('before-update')
-                logger.info(u'{}'.format(self._breadcrumbs))
+                logger.info(u'Updating {}'.format(self._breadcrumbs))
                 self.update()
                 self.changed = True
 
