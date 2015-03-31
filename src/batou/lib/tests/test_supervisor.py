@@ -5,8 +5,7 @@ import pytest
 
 @pytest.fixture
 def supervisor(root, request):
-    supervisor = batou.lib.supervisor.Supervisor()
-    supervisor.pidfile = '%s/supervisor.pid' % root.workdir
+    supervisor = batou.lib.supervisor.Supervisor(pidfile='supervisor.pid')
     root.component += supervisor
     root.component.deploy()
     request.addfinalizer(lambda: supervisor.cmd(
