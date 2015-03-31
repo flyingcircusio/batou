@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0.5 (unreleased)
+1.0.5 (2015-03-31)
 ==================
 
 - Fix unicode accident: shells with ASCII only failed to run the 
