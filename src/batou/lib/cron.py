@@ -35,13 +35,23 @@ class CronTab(Component):
     crontab_template = os.path.join(
         os.path.dirname(__file__), 'resources', 'crontab')
     mailto = None
+    purge = False
 
     def configure(self):
-        self.jobs = self.require(CronJob.key, host=self.host)
+        self.jobs = self.require(CronJob.key, host=self.host, strict=False)
+        if self.purge and self.jobs:
+            raise ValueError('expected empty crontab, but found jobs')
+        elif not self.purge and not self.jobs:
+            raise ValueError('expected crontab, but found no jobs')
         self.jobs.sort(key=lambda job: job.command + ' ' + job.args)
-        self.crontab = File(
-            'crontab', source=self.crontab_template)
+        self.crontab = File('crontab', source=self.crontab_template)
         self += self.crontab
+
+
+class PurgeCronTab(Component):
+
+    def configure(self):
+        self += CronTab(purge=True)
 
 
 class InstallCrontab(Component):
