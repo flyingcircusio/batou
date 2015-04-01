@@ -288,12 +288,13 @@ class Component(object):
     def provide(self, key, value):
         self.environment.resources.provide(self.root, key, value)
 
-    def require(self, key, host=None, strict=True, reverse=False):
+    def require(self, key, host=None, strict=True, reverse=False, dirty=False):
         return self.environment.resources.require(
-            self.root, key, host, strict, reverse)
+            self.root, key, host, strict, reverse, dirty)
 
-    def require_one(self, key, host=None, strict=True, reverse=False):
-        resources = self.require(key, host, strict, reverse)
+    def require_one(self, key, host=None, strict=True, reverse=False,
+                    dirty=False):
+        resources = self.require(key, host, strict, reverse, dirty)
         if len(resources) > 1:
             raise KeyError(
                 'Expected only one result, got multiple for (key={}, host={})'.

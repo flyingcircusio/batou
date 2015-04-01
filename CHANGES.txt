@@ -5,7 +5,10 @@ Changelog
 1.0.6 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Add "dirty" flag to dependencies to express that it's OK to work with
+  dirty data, e.g. to simply do a one-time retrieval, as long as we get
+  _something_ back. Useful to peek onto static values like overrides or
+  configuration when otherwise confronted with circular dependencies.
 
 
 1.0.5 (2015-03-31)
