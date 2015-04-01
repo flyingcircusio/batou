@@ -11,11 +11,17 @@ def test_regression_reset_works_if_provided_but_not_required():
 
 def test_reset_marks_depending_components_as_dirty():
     resources = Resources()
-    root = mock.Mock()
+    root1 = mock.Mock()
     resources.provide(
-        root, mock.sentinel.key, 'asdf')
+        root1, mock.sentinel.key, 'asdf')
+
+    root2 = mock.Mock()
     resources.require(
-        root, mock.sentinel.key)
+        root2, mock.sentinel.key)
+
+    root3 = mock.Mock()
+    resources.require(
+        root3, mock.sentinel.key, dirty=True)
     assert resources.dirty_dependencies == set()
-    resources.reset_component_resources(root)
-    assert resources.dirty_dependencies == set([root])
+    resources.reset_component_resources(root1)
+    assert resources.dirty_dependencies == set([root2])

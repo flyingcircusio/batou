@@ -49,6 +49,13 @@ class Circular2(Component):
         self.provide('asdf', self)
 
 
+class DirtySingularCircularReverse(Component):
+
+    def configure(self):
+        self.bsdf = self.require('bsdf', reverse=True, dirty=True)
+        self.provide('asdf', self)
+
+
 @pytest.fixture
 def env():
     env = Environment('test')
@@ -148,3 +155,9 @@ def test_circular_depending_component(env):
     env.add_root('circular2', 'test')
     with pytest.raises(CycleErrorDetected):
         env.configure()
+
+
+def test_dirty_dependency_for_one_time_retrieval(env, capsys):
+    env.add_root('circular1', 'test')
+    env.add_root('dirtysingularcircularreverse', 'test')
+    env.configure()
