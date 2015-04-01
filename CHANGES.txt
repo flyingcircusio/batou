@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0.6 (unreleased)
+1.0.6 (2015-04-01)
 ==================
 
 - Add "dirty" flag to dependencies to express that it's OK to work with
