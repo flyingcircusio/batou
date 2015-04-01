@@ -198,7 +198,6 @@ class Environment(object):
 
         previous_working_sets = []
         while working_set:
-            print "working set", working_set
             previous_working_sets.append(working_set.copy())
             retry = set()
             exceptions = []
@@ -207,7 +206,6 @@ class Environment(object):
             for root in working_set:
                 try:
                     self.resources.reset_component_resources(root)
-                    print "preparing", root
                     root.prepare()
                 except Exception:
                     exceptions.append((root, sys.exc_info()))
