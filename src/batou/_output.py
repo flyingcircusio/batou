@@ -20,23 +20,23 @@ class TerminalBackend(object):
 
 class ChannelBackend(object):
 
-    def __init__(self):
-        self.channel = []
+    def __init__(self, channel):
+        self.channel = channel
+
+    def _send(self, output_cmd, *args, **kw):
+        self.channel.send(('batou-output', output_cmd, args, kw))
 
     def line(self, message, **format):
-        self.channel.append(('line', (message,), format))
+        self._send('line', message, **format)
 
     def sep(self, sep, title, **format):
-        self.channel.append(('sep', (sep, title,), format))
+        self._send('sep', sep, title, **format)
 
     def write(self, content, **format):
-        self.channel.append(('write', (content,), format))
+        self._send('write', content, **format)
 
 
 class NullBackend(object):
-
-    def __init__(self):
-        pass
 
     def line(self, message, **format):
         pass
