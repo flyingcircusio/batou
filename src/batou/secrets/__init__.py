@@ -31,12 +31,12 @@ def add_secrets_to_environment_override(environment):
         return
     with EncryptedConfigFile(secrets_file) as f:
         f.read()
-        for section in f.config.sections():
-            if section == 'batou':
+        for section_ in f.config.sections():
+            if section_ == 'batou':
                 continue
-            section = section.replace('component:', '')
-            if section in environment.components:
+            section = section_.replace('component:', '')
+            if section not in environment.components:
                 environment.exceptions.append(
                     SuperfluousSecretsSection(section))
             o = environment.overrides.setdefault(section, {})
-            o.update(f.config.items(section))
+            o.update(f.config.items(section_))
