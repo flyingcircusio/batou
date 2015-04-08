@@ -132,8 +132,6 @@ class Presence(Component):
 
     def update(self):
         ensure_path_nonexistent(self.path)
-        import time
-        time.sleep(5)
         with open(self.path, 'w'):
             # We're just touching it.
             pass
