@@ -1,15 +1,12 @@
+from batou import output
 from batou.component import Component
 import batou
 import difflib
 import glob
-import logging
 import os.path
 import pwd
 import shutil
 import stat
-
-
-logger = logging.getLogger(__name__)
 
 
 def ensure_path_nonexistent(path):
@@ -308,7 +305,7 @@ class Content(FileComponent):
             if current != self.content:
                 for line in difflib.unified_diff(current.splitlines(),
                                                  self.content.splitlines()):
-                    logger.debug(line)
+                    output.debug(line)
                 raise batou.UpdateNeeded()
 
     def update(self):

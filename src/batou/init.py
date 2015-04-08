@@ -1,18 +1,16 @@
 from batou.update import update_bootstrap
 from batou.utils import cmd
+from batou import output
 import argparse
-import logging
 import os.path
 import pkg_resources
 import shutil
-
-logger = logging.getLogger(__name__)
 
 
 def main(destination):
     develop = os.environ['BATOU_DEVELOP']
     if develop:
-        logger.warn(
+        output.warn(
             'Initializing with a development copy of batou will cause your '
             'project to have a reference outside its repository. '
             'Use at your own risk. ')

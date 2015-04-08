@@ -2,8 +2,8 @@ from .component import load_components_from_file
 from .host import Host
 from .resources import Resources
 from .secrets import add_secrets_to_environment_override
-from batou import NonConvergingWorkingSet, UnusedResources, ConfigurationError
 from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
+from batou import NonConvergingWorkingSet, UnusedResources, ConfigurationError
 from batou import SuperfluousComponentSection, CycleErrorDetected
 from batou import UnknownComponentConfigurationError, UnsatisfiedResources
 from batou.component import RootComponent
@@ -12,13 +12,9 @@ from ConfigParser import RawConfigParser
 import batou.c
 import batou.vfs
 import glob
-import logging
 import os
 import os.path
 import pwd
-
-
-logger = logging.getLogger(__name__)
 
 
 class ConfigSection(dict):

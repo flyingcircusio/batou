@@ -5,14 +5,11 @@ import batou.c
 import batou.template
 import batou.utils
 import contextlib
-import logging
 import os
 import os.path
 import sys
 import types
 import weakref
-
-logger = logging.getLogger(__name__)
 
 
 def platform(name, component):
@@ -276,14 +273,14 @@ class Component(object):
             requirements = [requirements]
         reference = self.last_updated(**kw)
         if reference is None:
-            logger.debug('assert_component_is_current({}, ...): No reference'.
+            output.debug('assert_component_is_current({}, ...): No reference'.
                          format(self._breadcrumb))
             raise batou.UpdateNeeded()
         for requirement in requirements:
             self |= requirement
             required = requirement.last_updated(**kw)
             if reference < required:
-                logger.debug('assert_component_is_current({}, {}): {} < {}'.
+                output.debug('assert_component_is_current({}, {}): {} < {}'.
                              format(self._breadcrumb, requirement._breadcrumb,
                                     reference, required))
                 raise batou.UpdateNeeded()
