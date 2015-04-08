@@ -77,6 +77,8 @@ class Deployment(object):
         ref_remote = remotes.values()[0]
         roots = ref_remote.roots_in_order()
 
+        output.section("Deployment")
+
         for host, component in roots:
             output.step(host,
                         "Deploying component {} ...".format(component))
@@ -325,9 +327,6 @@ def main(environment, platform, timeout, dirty, fast):
 
             output.step("main", "Loading secrets ...")
             environment.load_secrets()
-            output.step("main", "Configuring components ...")
-            environment.configure()
-            output.section("Deployment")
             deployment = Deployment(environment, dirty, fast)
             deployment()
         except ConfigurationError as e:
