@@ -1,12 +1,8 @@
-from batou import UpdateNeeded
+from batou import UpdateNeeded, output
 from batou.component import Component
 from batou.lib.file import Directory
-import logging
 import os.path
 import re
-
-
-logger = logging.getLogger(__name__)
 
 
 class Clone(Component):
@@ -35,14 +31,14 @@ class Clone(Component):
                 return
 
             if self.has_outgoing_changesets:
-                logger.info(
+                output.annotate(
                     'Hg clone at {} has outgoing changesets.'.format(
-                        self.target))
+                        self.target), red=True)
 
             if self.has_changes:
-                logger.warning(
+                output.annotate(
                     'Hg clone at {} is dirty, going to lose changes.'.format(
-                        self.target))
+                        self.target), red=True)
                 raise UpdateNeeded()
 
             if self.revision and self.current_revision != self.revision:

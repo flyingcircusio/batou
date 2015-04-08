@@ -1,11 +1,8 @@
 from batou.utils import cmd
-import logging
 import os
 import pkg_resources
 import re
 import sys
-
-logger = logging.getLogger(__name__)
 
 
 # XXX pkg_resources?

@@ -1,12 +1,8 @@
+from batou import UpdateNeeded, output
 from batou.component import Component
-from batou.lib.download import Download
 from batou.lib.archive import Extract
-from batou import UpdateNeeded
-import logging
+from batou.lib.download import Download
 import os.path
-
-
-logger = logging.getLogger(__name__)
 
 
 class VirtualEnv(Component):
@@ -83,7 +79,7 @@ class VirtualEnvPyBase(Component):
                 'assert pkg_resources.require(\'{}\')[0].version == \'{}\'"'
                 .format(pkg.package, pkg.version), silent=True)
         except RuntimeError as e:
-            logger.debug(e[3])
+            output.debug(e[3])
             raise UpdateNeeded()
         # Is the package usable? Is the package a module?  This might be
         # overspecific - I'm looking for a way to deal with:

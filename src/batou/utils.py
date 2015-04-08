@@ -1,18 +1,15 @@
+from batou import output
 from collections import defaultdict
 import contextlib
 import fcntl
 import hashlib
 import itertools
-import logging
 import os
 import pkg_resources
 import socket
 import subprocess
 import sys
 import time
-
-
-logger = logging.getLogger(__name__)
 
 
 def self_id():
@@ -268,7 +265,7 @@ class Timer(object):
 
     def __exit__(self, exc1, exc2, exc3):
         self.duration = time.time() - self.started
-        logger.debug(self.note + ' took %fs' % self.duration)
+        output.debug(self.note + ' took %fs' % self.duration)
 
 
 def hash(path, function='md5'):

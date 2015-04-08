@@ -1,9 +1,9 @@
 import argparse
-import batou.init
+import batou
 import batou.deploy
+import batou.init
 import batou.secrets.edit
 import batou.update
-import logging
 import os
 import os.path
 import pkg_resources
@@ -89,17 +89,7 @@ If no directory is given, the current directory is used.
     args = parser.parse_args()
 
     # Consume global arguments
-    if args.debug:
-        level = logging.DEBUG
-    else:
-        level = logging.INFO
-
-    console = logging.StreamHandler(sys.stdout)
-    console.setLevel(level)
-    # console.setFormatter(logging.Formatter(fmt='%(message)s'))
-    logger = logging.getLogger('batou')
-    logger.setLevel(level)
-    logger.addHandler(console)
+    batou.output.debug = args.debug
 
     # Pass over to function
     func_args = dict(args._get_kwargs())
