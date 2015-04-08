@@ -109,7 +109,8 @@ redirect_stderr = true
             return
         # Only try once. Keep going anyway.
         self._evaded = True
-        output.annotate(u"\u2623 Stopping {} for cold deployment".format(self.name))
+        output.annotate(
+            u"\u2623 Stopping {} for cold deployment".format(self.name))
         try:
             self.ctl('stop {}'.format(self.name))
         except Exception:
