@@ -89,7 +89,7 @@ If no directory is given, the current directory is used.
     args = parser.parse_args()
 
     # Consume global arguments
-    batou.output.debug = args.debug
+    batou.output.enable_debug = args.debug
 
     # Pass over to function
     func_args = dict(args._get_kwargs())

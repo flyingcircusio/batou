@@ -79,7 +79,7 @@ class VirtualEnvPyBase(Component):
                 'assert pkg_resources.require(\'{}\')[0].version == \'{}\'"'
                 .format(pkg.package, pkg.version), silent=True)
         except RuntimeError as e:
-            output.debug(e[3])
+            output.annotate(e[3], debug=True)
             raise UpdateNeeded()
         # Is the package usable? Is the package a module?  This might be
         # overspecific - I'm looking for a way to deal with:

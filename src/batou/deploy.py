@@ -85,7 +85,7 @@ class Deployment(object):
 
             remote.deploy_component(component)
 
-        output.debug("Disconnecting from nodes ...")
+        output.step("Disconnecting from nodes ...", debug=True)
         for remote in remotes.values():
             remote.gateway.exit()
 
@@ -97,12 +97,14 @@ class RPCWrapper(object):
 
     def __getattr__(self, name):
         def call(*args, **kw):
-            output.debug('rpc {}: {}(*{}, **{})'.format
-                         (self.host.host.fqdn, name, args, kw))
+            output.annotate(
+                'rpc {}: {}(*{}, **{})'.format(self.host.host.fqdn,
+                                               name, args, kw),
+                debug=True)
             self.host.channel.send((name, args, kw))
             while True:
                 message = self.host.channel.receive()
-                output.debug('message: {}'.format(message))
+                output.annotate('message: {}'.format(message), debug=True)
                 type = message[0]
                 if type == 'batou-result':
                     return message[1]
@@ -131,7 +133,7 @@ class RemoteHost(object):
         if not self.gateway:
             output.step(self.host.name, 'Connecting ...')
         else:
-            output.debug('Reconnecting ...')
+            output.step('Reconnecting ...', debug=True)
             self.gateway.exit()
 
         if self.deployment.environment.connect_method in ['ssh', 'vagrant']:
@@ -220,14 +222,14 @@ class RemoteHost(object):
 
             source = os.path.join(env.base_dir, candidate)
             target = os.path.join(self.remote_base, candidate)
-            output.debug("rsync source: {}".format(source))
-            output.debug("rsync target: {}".format(target))
+            output.annotate("rsync source: {}".format(source), debug=True)
+            output.annotate("rsync target: {}".format(target), debug=True)
             rsync = execnet.RSync(source)
             rsync.add_target(self.gateway, target)
             rsync.send()
 
     def start(self):
-        output.debug('Bootstrapping ...')
+        output.step('Bootstrapping ...', debug=True)
         self.rpc.lock()
         env = self.deployment.environment
 

@@ -265,7 +265,7 @@ class Timer(object):
 
     def __exit__(self, exc1, exc2, exc3):
         self.duration = time.time() - self.started
-        output.debug(self.note + ' took %fs' % self.duration)
+        output.annotate(self.note + ' took %fs' % self.duration, debug=True)
 
 
 def hash(path, function='md5'):
