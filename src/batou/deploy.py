@@ -85,7 +85,7 @@ class Deployment(object):
 
             remote.deploy_component(component)
 
-        output.step("main", "Disconnecting from nodes ...")
+        output.debug("Disconnecting from nodes ...")
         for remote in remotes.values():
             remote.gateway.exit()
 
@@ -100,17 +100,20 @@ class RPCWrapper(object):
             output.debug('rpc {}: {}(*{}, **{})'.format
                          (self.host.host.fqdn, name, args, kw))
             self.host.channel.send((name, args, kw))
-            result = self.host.channel.receive()
-            output.debug('result: {}'.format(result))
-            try:
-                result[0]
-            except (TypeError, IndexError):
-                pass
-            else:
-                if result[0] == 'batou-remote-core-error':
-                    output.error(result[1])
+            while True:
+                message = self.host.channel.receive()
+                output.debug('message: {}'.format(message))
+                type = message[0]
+                if type == 'batou-result':
+                    return message[1]
+                elif type == 'batou-output':
+                    _, output_cmd, args, kw = message
+                    getattr(output, output_cmd)(*args, **kw)
+                elif type == 'batou-remote-core-error':
+                    output.error(message[1])
                     raise RuntimeError('Remote exception encountered.')
-            return result
+                else:
+                    raise RuntimeError("Unknown message type {}".format(type))
         return call
 
 
@@ -128,7 +131,7 @@ class RemoteHost(object):
         if not self.gateway:
             output.step(self.host.name, 'Connecting ...')
         else:
-            output.step(self.host.name, 'Reconnecting ...')
+            output.debug('Reconnecting ...')
             self.gateway.exit()
 
         if self.deployment.environment.connect_method in ['ssh', 'vagrant']:
@@ -224,7 +227,7 @@ class RemoteHost(object):
             rsync.send()
 
     def start(self):
-        output.step(self.host.name, 'Bootstrapping ...')
+        output.debug('Bootstrapping ...')
         self.rpc.lock()
         env = self.deployment.environment
 
@@ -262,8 +265,7 @@ class RemoteHost(object):
             env.overrides)
 
     def deploy_component(self, component):
-        for out_cmd, args, kw in self.rpc.deploy(component):
-            getattr(output.backend, out_cmd)(*args, **kw)
+        self.rpc.deploy(component)
 
     def roots_in_order(self):
         return self.rpc.roots_in_order()

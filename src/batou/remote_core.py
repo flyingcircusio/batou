@@ -121,10 +121,7 @@ def setup_deployment(deployment_base, env_name, host_name, overrides):
 
 
 def deploy(root):
-    from batou import output
-    output.backend.channel = []
     deployment.deploy(root)
-    return output.backend.channel
 
 
 def roots_in_order():
@@ -140,7 +137,7 @@ def whoami():
 
 def setup_output():
     from batou._output import output, ChannelBackend
-    output.backend = ChannelBackend()
+    output.backend = ChannelBackend(channel)
 
 
 if __name__ == '__channelexec__':
@@ -148,7 +145,7 @@ if __name__ == '__channelexec__':
         task, args, kw = channel.receive()
         try:
             result = locals()[task](*args, **kw)
+            channel.send(('batou-result', result))
         except Exception as e:
             tb = traceback.format_exc()
-            result = ('batou-remote-core-error', tb)
-        channel.send(result)
+            channel.send(('batou-remote-core-error', tb))

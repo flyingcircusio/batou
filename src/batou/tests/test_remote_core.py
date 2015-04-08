@@ -164,7 +164,7 @@ def test_channelexec_echo_cmd(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    assert channel.sendqueue == ['asdf\n']
+    assert channel.sendqueue == [('batou-result', 'asdf\n')]
 
 
 def test_channelexec_multiple_echo_cmds(remote_core_mod):
@@ -174,7 +174,8 @@ def test_channelexec_multiple_echo_cmds(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    assert channel.sendqueue == ['asdf1\n', 'asdf2\n']
+    assert channel.sendqueue == [('batou-result', 'asdf1\n'),
+                                 ('batou-result', 'asdf2\n')]
 
 
 def test_channelexec_handle_exception(remote_core_mod):
