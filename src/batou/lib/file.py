@@ -305,7 +305,7 @@ class Content(FileComponent):
             if current != self.content:
                 for line in difflib.unified_diff(current.splitlines(),
                                                  self.content.splitlines()):
-                    output.debug(line)
+                    output.annotate(line, debug=True)
                 raise batou.UpdateNeeded()
 
     def update(self):

@@ -58,32 +58,39 @@ class Output(object):
     def __init__(self, backend):
         self.backend = backend
 
-    def line(self, message, **format):
+    def line(self, message, debug=False, **format):
+        if debug and not self.enable_debug:
+            return
         self.backend.line(message, **format)
 
-    def annotate(self, message, **format):
+    def annotate(self, message, debug=False, **format):
+        if debug and not self.enable_debug:
+            return
         lines = message.split('\n')
         lines = [' ' * 5 + line for line in lines]
         message = '\n'.join(lines)
         self.line(message, **format)
 
-    def tabular(self, key, value, separator=': ', **kw):
+    def tabular(self, key, value, separator=': ', debug=False, **kw):
+        if debug and not self.enable_debug:
+            return
         message = key.rjust(10) + separator + value
         self.annotate(message, **kw)
 
-    def section(self, title, **format):
+    def section(self, title, debug=False, **format):
+        if debug and not self.enable_debug:
+            return
         self.backend.sep("=", title, bold=True, **format)
 
-    def step(self, context, message, **format):
+    def step(self, context, message, debug=False, **format):
+        if debug and not self.enable_debug:
+            return
         self.line('{}: {}'.format(context, message),
                   bold=True, **format)
 
-    def debug(self, message, **format):
-        if not self.enable_debug:
+    def error(self, message, exc_info=None, debug=False):
+        if debug and not self.enable_debug:
             return
-        self.annotate(message, **format)
-
-    def error(self, message, exc_info=None):
         self.step("ERROR", message, red=True)
         if exc_info:
             tb = traceback.format_exception(*exc_info)
