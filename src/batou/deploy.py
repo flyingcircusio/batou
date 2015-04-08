@@ -3,7 +3,7 @@ from .environment import Environment
 from .utils import notify, cmd
 from .utils import locked, self_id
 from batou import DeploymentError, ConfigurationError
-from batou.output import output, TerminalBackend
+from batou._output import output, TerminalBackend
 import execnet
 import os
 import os.path
@@ -85,7 +85,7 @@ class Deployment(object):
 
             remote.deploy_component(component)
 
-        output.step("Disconnecting from nodes ...", debug=True)
+        output.step("main", "Disconnecting from nodes ...", debug=True)
         for remote in remotes.values():
             remote.gateway.exit()
 
@@ -133,7 +133,7 @@ class RemoteHost(object):
         if not self.gateway:
             output.step(self.host.name, 'Connecting ...')
         else:
-            output.step('Reconnecting ...', debug=True)
+            output.step(self.host.name, 'Reconnecting ...', debug=True)
             self.gateway.exit()
 
         if self.deployment.environment.connect_method in ['ssh', 'vagrant']:
@@ -229,7 +229,7 @@ class RemoteHost(object):
             rsync.send()
 
     def start(self):
-        output.step('Bootstrapping ...', debug=True)
+        output.step(self.host.name, 'Bootstrapping ...', debug=True)
         self.rpc.lock()
         env = self.deployment.environment
 
