@@ -27,7 +27,7 @@ def bootstrap(activate=True):
     while sys.argv[0] == '-c':
         sys.argv.pop(0)
 
-    if 'BATOU_BOOTSTRAPPED' in os.environ:
+    if 'BATOU_BOOTSTRAPPED' in os.environ or '--fast' in sys.argv:
         from batou.update import update_bootstrap
         update_bootstrap(version=os.environ['BATOU_VERSION'],
                          develop=os.environ['BATOU_DEVELOP'])

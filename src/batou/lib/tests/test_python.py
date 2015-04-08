@@ -22,7 +22,7 @@ def test_package_venv_installations(root):
     update_bootstrap('', base_dir)
 
     # run batou, hope for the best. ;)
-    stdout, stderr = cmd('./batou local dev localhost')
+    stdout, stderr = cmd('./batou deploy dev')
     for line in filter(None, stdout.split('\n')):
         assert line.startswith('Updating Py')
     assert "Updating Py24 >" in stdout

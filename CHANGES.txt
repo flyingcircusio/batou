@@ -5,6 +5,11 @@ Changelog
 1.1a1 (unreleased)
 ==================
 
+- Provide '--fast' mode: do not perform bootstrapping. 
+
+  This is a first step to improve bootstrapping times. The switch is rather dumb but allows us to work a) offline
+  in some cases and b) develop faster.
+
 - Fix unicode encoding/decoding in File handling. See #14944.
   (Ported from 1.0)
 

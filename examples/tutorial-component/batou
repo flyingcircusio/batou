@@ -7,8 +7,13 @@
 # somehow and then use that code to continue.
 
 import os
+import shutil
 import sys
 import subprocess
+
+# We use this to trick the simple templating so you can
+# download and copy this file to bootstrap a new batou installation.
+BOOTSTRAP_VERSION_MARKER = '{' + '{version}' + '}'
 
 version = ''
 develop = '../..'
@@ -17,38 +22,70 @@ develop = '../..'
 def cmd(c, quiet=False):
     try:
         subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
-    except subprocess.CalledProcessError, e:
+    except subprocess.CalledProcessError as e:
         if not quiet:
             print("{} returned with exit code {}".format(c, e.returncode))
             print(e.output)
         raise
 
-base = os.path.dirname(__file__)
+
+def install_venv():
+    print('Preparing virtualenv in .batou ...')
+    # Discover the right venv cmd. Or let batou figure that out later in a
+    # second phase?
+    # XXX Give advice if virtualenv isn't there.
+    cmd('virtualenv --python=python2.7 .batou')
+
+
+def install_pip():
+    # XXX give advice if we can't get the right pip version
+    cmd('.batou/bin/pip install "pip>=1.2"')
+
+
+base = os.path.dirname(__file__) or '.'
 os.chdir(base)
 
 # Do we have a virtualenv?
 if not os.path.exists(base + '/.batou'):
-    print('Preparing virtualenv in .batou ...')
-    # Discover the right venv cmd. Or let batou figure that out later in a second phase?
-    cmd('virtualenv --python=python2.7 .batou')
+    install_venv()
 
-cmd('.batou/bin/pip install "pip>=1.2"')
 
-try:
-    cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
-except Exception, e:
-    missing = True
-else:
-    missing = False
+def prepare():
+    global version, develop
 
-if missing or develop:
-    if develop:
+    try:
+        install_pip()
+    except Exception:
+        # Hum. This venv is probably broken. Remove and restart."
+        shutil.rmtree('.batou')
+        install_venv()
+        install_pip()
+
+    try:
+        cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
+    except Exception:
+        missing = True
+    else:
+        missing = False
+
+    if missing or develop:
+        if version == BOOTSTRAP_VERSION_MARKER:
+            # we're bootstrapping a new project. just get whatever version.
+            # this will self-destruct this file later. :)
+            develop = ''
+            spec = '--egg batou'
         if missing:
             print('Pre-installing batou - this can take a while...')
-        cmd('.batou/bin/pip install --no-deps -e {}'.format(develop))
-    else:
-        print('Pre-installing batou - this can take a while...')
-        cmd('.batou/bin/pip install --no-deps --egg batou=={}'.format(version))
+        if develop:
+            spec = '-e {}'.format(develop)
+        else:
+            spec = '--egg batou=={}'.format(version)
+
+        cmd('.batou/bin/pip install --ignore-installed {}'.format(spec))
+
+
+if '--fast' not in sys.argv:
+    prepare()
 
 
 os.environ['BATOU_VERSION'] = version

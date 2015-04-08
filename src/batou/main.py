@@ -20,6 +20,9 @@ def main():
     parser.add_argument(
         '-d', '--debug', action='store_true',
         help='Enable debug mode.')
+    parser.add_argument(
+        '-F', '--fast', action='store_true',
+        help='Enable fast mode. Do not perform bootstrapping.')
 
     subparsers = parser.add_subparsers()
 

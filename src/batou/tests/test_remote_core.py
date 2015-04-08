@@ -100,7 +100,9 @@ def test_expand_deployment_base(tmpdir):
 
 
 def test_deploy_component(monkeypatch):
+    import batou
     monkeypatch.setattr(remote_core, 'deployment', mock.Mock())
+    monkeypatch.setattr(batou, 'output', mock.Mock())
     remote_core.deploy('foo')
     assert remote_core.deployment.deploy.call_count == 1
 
