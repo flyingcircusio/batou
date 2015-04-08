@@ -1,4 +1,4 @@
-from batou import UpdateNeeded
+from batou import UpdateNeeded, output
 from batou.component import Component, Attribute, handle_event
 from batou.lib.buildout import Buildout
 from batou.lib.file import File, Directory
@@ -109,7 +109,7 @@ redirect_stderr = true
             return
         # Only try once. Keep going anyway.
         self._evaded = True
-        print u"\u2623 Stopping {} for cold deployment".format(self.name)
+        output.annotate(u"\u2623 Stopping {} for cold deployment".format(self.name))
         try:
             self.ctl('stop {}'.format(self.name))
         except Exception:
