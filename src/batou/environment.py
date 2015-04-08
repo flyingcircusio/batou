@@ -208,6 +208,8 @@ class Environment(object):
         working_set = set(self.root_components)
 
         previous_working_sets = []
+        exceptions = []
+
         while working_set:
             exceptions = []
             previous_working_sets.append(working_set.copy())

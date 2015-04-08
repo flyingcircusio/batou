@@ -1,5 +1,5 @@
 # This code must not cause non-stdlib imports to support self-bootstrapping.
-from .output import output
+from ._output import output
 
 
 class UpdateNeeded(Exception):

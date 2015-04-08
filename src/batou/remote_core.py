@@ -1,4 +1,3 @@
-import logging
 import os
 import os.path
 import pwd
@@ -45,13 +44,20 @@ def ensure_repository(target, method):
     target_directory = target
 
     if not os.path.exists(target):
-        os.mkdir(target)
+        os.makedirs(target)
 
     if method in ['pull', 'bundle']:
         if not os.path.exists(target + '/.hg'):
             cmd("hg init {}".format(target))
 
     return target
+
+
+def ensure_base(base):
+    base = os.path.join(target_directory, base)
+    if not os.path.exists(base):
+        os.makedirs(base)
+    return base
 
 
 def current_heads():
@@ -115,7 +121,10 @@ def setup_deployment(deployment_base, env_name, host_name, overrides):
 
 
 def deploy(root):
+    from batou import output
+    output.backend.channel = []
     deployment.deploy(root)
+    return output.backend.channel
 
 
 def roots_in_order():
@@ -129,28 +138,12 @@ def whoami():
     return pwd.getpwuid(os.getuid()).pw_name
 
 
-def setup_logging(loggers, level):
-    ch = logging.StreamHandler()
-    formatter = logging.Formatter(
-        '%(asctime)s %(levelname)s: %(message)s')
-    ch.setFormatter(formatter)
-    for logger in loggers:
-        logger = logging.getLogger(logger)
-        logger.setLevel(level)
-        logger.addHandler(ch)
-
-
-def send_file(name):
-    code = None
-    with open(name, 'w') as f:
-        while code != 'finish':
-            code, data = channel.receive()
-            f.write(data)
-    return 'OK'
+def setup_output():
+    from batou._output import output, ChannelBackend
+    output.backend = ChannelBackend()
 
 
 if __name__ == '__channelexec__':
-    setup_logging(['batou'], logging.INFO)
     while not channel.isclosed():
         task, args, kw = channel.receive()
         try:

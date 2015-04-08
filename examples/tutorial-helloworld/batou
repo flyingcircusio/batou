@@ -16,7 +16,7 @@ import subprocess
 BOOTSTRAP_VERSION_MARKER = '{' + '{version}' + '}'
 
 version = ''
-develop = '../..'
+develop = '/Users/ctheune/Code/batou'
 
 
 def cmd(c, quiet=False):
@@ -49,36 +49,43 @@ os.chdir(base)
 if not os.path.exists(base + '/.batou'):
     install_venv()
 
-try:
-    install_pip()
-except Exception:
-    # Hum. This venv is probably broken. Remove and restart."
-    shutil.rmtree('.batou')
-    install_venv()
-    install_pip()
 
+def prepare():
+    global version, develop
 
-try:
-    cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
-except Exception as e:
-    missing = True
-else:
-    missing = False
+    try:
+        install_pip()
+    except Exception:
+        # Hum. This venv is probably broken. Remove and restart."
+        shutil.rmtree('.batou')
+        install_venv()
+        install_pip()
 
-if missing or develop:
-    if version == BOOTSTRAP_VERSION_MARKER:
-        # we're bootstrapping a new project. just get whatever version.
-        # this will self-destruct this file later. :)
-        develop = ''
-        spec = '--egg batou'
-    if missing:
-        print('Pre-installing batou - this can take a while...')
-    if develop:
-        spec = '-e {}'.format(develop)
+    try:
+        cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
+    except Exception:
+        missing = True
     else:
-        sepc = '--egg batou=={}'.format(version)
+        missing = False
 
-    cmd('.batou/bin/pip install --ignore-installed {}'.format(spec))
+    if missing or develop:
+        if version == BOOTSTRAP_VERSION_MARKER:
+            # we're bootstrapping a new project. just get whatever version.
+            # this will self-destruct this file later. :)
+            develop = ''
+            spec = '--egg batou'
+        if missing:
+            print('Pre-installing batou - this can take a while...')
+        if develop:
+            spec = '-e {}'.format(develop)
+        else:
+            spec = '--egg batou=={}'.format(version)
+
+        cmd('.batou/bin/pip install --ignore-installed {}'.format(spec))
+
+
+if '--fast' not in sys.argv:
+    prepare()
 
 
 os.environ['BATOU_VERSION'] = version

@@ -1,3 +1,4 @@
+from batou import output
 import ast
 import batou
 import batou.c
@@ -152,7 +153,7 @@ class Component(object):
                         '{} verify()'.format(self._breadcrumbs)):
                     self.verify()
             except batou.UpdateNeeded:
-                logger.info('Updating {}'.format(self._breadcrumbs))
+                output.annotate(self._breadcrumbs)
                 self.update()
                 self.changed = True
 
