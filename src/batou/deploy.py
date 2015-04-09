@@ -226,7 +226,7 @@ class RemoteHost(object):
             target = os.path.join(self.remote_base, candidate)
             output.annotate("rsync source: {}".format(source), debug=True)
             output.annotate("rsync target: {}".format(target), debug=True)
-            rsync = execnet.RSync(source)
+            rsync = execnet.RSync(source, verbose=False)
             rsync.add_target(self.gateway, target)
             rsync.send()
 
