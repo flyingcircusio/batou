@@ -78,6 +78,7 @@ class EncryptedConfigFile(object):
         self.cleartext = subprocess.check_output(
             ['gpg {} --decrypt {}'.format
                 (self.gpg_opts, self.encrypted_file)],
+            stderr=subprocess.PIPE,
             shell=True)
 
     def _encrypt(self):
@@ -87,7 +88,8 @@ class EncryptedConfigFile(object):
         if not recipients:
             raise ValueError("Need at least one recipient.")
         recipients = ' '.join(['-r {}'.format(r.strip()) for r in recipients])
-        os.rename(self.encrypted_file, self.encrypted_file+'.old')
+        os.rename(self.encrypted_file,
+                  self.encrypted_file + '.old')
         try:
             gpg = subprocess.Popen(
                 ['gpg {} --encrypt {} -o {}'.format(
@@ -98,7 +100,8 @@ class EncryptedConfigFile(object):
             if gpg.returncode != 0:
                 raise RuntimeError('GPG returned non-zero exit code.')
         except Exception:
-            os.rename(self.encrypted_file+'.old', self.encrypted_file)
+            os.rename(self.encrypted_file + '.old',
+                      self.encrypted_file)
             raise
         else:
-            os.unlink(self.encrypted_file+'.old')
+            os.unlink(self.encrypted_file + '.old')

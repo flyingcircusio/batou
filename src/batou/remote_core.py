@@ -99,10 +99,15 @@ def update_working_copy(branch):
     return id
 
 
-def build_batou(deployment_base):
+def build_batou(deployment_base, fast=False, version=None, develop=None):
     target = target_directory
     os.chdir(os.path.join(target, deployment_base))
-    cmd('./batou --help')
+    if version:
+        os.environ['BATOU_VERSION'] = version
+    if develop:
+        os.environ['BATOU_DEVELOP'] = develop
+
+    cmd('./batou {}--help'.format('--fast ' if fast else ''))
 
 
 def setup_deployment(deployment_base, env_name, host_name, overrides):
@@ -147,5 +152,11 @@ if __name__ == '__channelexec__':
             result = locals()[task](*args, **kw)
             channel.send(('batou-result', result))
         except Exception as e:
-            tb = traceback.format_exc()
-            channel.send(('batou-remote-core-error', tb))
+            # I voted for duck-typing here as we may be running in the
+            # bootstrapping phase and don't have access to all classes yet.
+            if hasattr(e, 'report'):
+                report = e.report()
+                channel.send(('batou-error', report))
+            else:
+                tb = traceback.format_exc()
+                channel.send(('batou-unknown-error', tb))

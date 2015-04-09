@@ -113,7 +113,7 @@ class RPCWrapper(object):
                 elif type == 'batou-output':
                     _, output_cmd, args, kw = message
                     getattr(output, output_cmd)(*args, **kw)
-                elif type == 'batou-remote-core-error':
+                elif type in ['batou-unknown-error', 'batou-error']:
                     output.error(message[1])
                     raise RuntimeError('Remote exception encountered.')
                 else:
@@ -248,8 +248,13 @@ class RemoteHost(object):
             raise ValueError(
                 'unsupported update method: {}'.format(env.update_method))
 
-        if not self.deployment.fast:
-            self.rpc.build_batou(self.deployment.deployment_base)
+        develop = os.environ.get('BATOU_DEVELOP')
+        if '://' not in develop:
+            develop = os.path.abspath(develop)
+        self.rpc.build_batou(self.deployment.deployment_base,
+                             fast=self.deployment.fast,
+                             version=os.environ.get('BATOU_VERSION'),
+                             develop=develop)
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.
