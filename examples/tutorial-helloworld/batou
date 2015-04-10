@@ -15,8 +15,8 @@ import subprocess
 # download and copy this file to bootstrap a new batou installation.
 BOOTSTRAP_VERSION_MARKER = '{' + '{version}' + '}'
 
-version = ''
-develop = '/Users/ctheune/Code/batou'
+version = os.environ.get('BATOU_VERSION', '')
+develop = os.environ.get('BATOU_DEVELOP', '../..')
 
 
 def cmd(c, quiet=False):
@@ -90,6 +90,7 @@ if '--fast' not in sys.argv:
 
 os.environ['BATOU_VERSION'] = version
 os.environ['BATOU_DEVELOP'] = develop
+
 
 # Pass control over the bare-bone batou's bootstrapping code. Good luck!
 os.execv('.batou/bin/python',

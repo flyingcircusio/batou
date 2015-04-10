@@ -82,6 +82,9 @@ class Output(object):
             return
         self.backend.sep("=", title, bold=True, **format)
 
+    def sep(self, sep, title, **format):
+        return self.backend.sep(sep, title, **format)
+
     def step(self, context, message, debug=False, **format):
         if debug and not self.enable_debug:
             return

@@ -11,7 +11,9 @@ try:
 except NameError:
     channel = None
 
+
 deployment = None
+environment = None
 target_directory = None
 
 
@@ -33,9 +35,26 @@ def lock():
     pass
 
 
+class CmdError(Exception):
+
+    def __init__(self, orig_exception):
+        self.orig_exception = orig_exception
+
+    def report(self):
+        try:
+            from batou import output
+        except ImportError:
+            pass
+        else:
+            output.line('asdf', red=True)
+
+
 def cmd(c):
-    return subprocess.check_output(
-        [c], shell=True)
+    try:
+        return subprocess.check_output(
+            [c], shell=True)
+    except subprocess.CalledProcessError as e:
+        raise CmdError(e)
 
 
 def ensure_repository(target, method):
@@ -116,6 +135,7 @@ def setup_deployment(deployment_base, env_name, host_name, overrides):
     target = target_directory
     os.chdir(os.path.join(target, deployment_base))
 
+    global environment
     environment = Environment(env_name)
     environment.load()
     environment.overrides = overrides
@@ -148,15 +168,35 @@ def setup_output():
 if __name__ == '__channelexec__':
     while not channel.isclosed():
         task, args, kw = channel.receive()
+        # Support slow bootstrapping
+        try:
+            import batou
+        except ImportError:
+            batou = None
+
         try:
             result = locals()[task](*args, **kw)
             channel.send(('batou-result', result))
+        except getattr(batou, 'ConfigurationError', None) as e:
+            if e not in environment.exceptions:
+                environment.exceptions.append(e)
+            # Report on why configuration failed.
+            for exception in environment.exceptions:
+                exception.report()
+            batou.output.section(
+                "{} ERRORS - CONFIGURATION FAILED".format(
+                    len(environment.exceptions)), red=True)
+            channel.send(('batou-error', None))
+        except getattr(batou, 'DeploymentError', None) as e:
+            exception.report()
+            batou.output.section("DEPLOYMENT FAILED", red=True)
+            channel.send(('batou-error', None))
         except Exception as e:
             # I voted for duck-typing here as we may be running in the
             # bootstrapping phase and don't have access to all classes yet.
             if hasattr(e, 'report'):
-                report = e.report()
-                channel.send(('batou-error', report))
+                e.report()
+                channel.send(('batou-error', None))
             else:
                 tb = traceback.format_exc()
                 channel.send(('batou-unknown-error', tb))

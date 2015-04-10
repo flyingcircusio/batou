@@ -1,5 +1,5 @@
 from .component import load_components_from_file
-from .host import Host
+from .host import LocalHost, RemoteHost
 from .resources import Resources
 from .secrets import add_secrets_to_environment_override
 from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
@@ -72,12 +72,14 @@ class Environment(object):
     timeout = None
     target_directory = None
 
-    def __init__(self, name, basedir='.'):
+    def __init__(self, name, timeout=None, platform=None, basedir='.'):
         self.name = name
         self.hosts = {}
         self.resources = Resources()
         self.overrides = {}
         self.exceptions = []
+        self.timeout = timeout
+        self.platform = platform
 
         # These are the component classes, decorated with their
         # name.
@@ -175,7 +177,10 @@ class Environment(object):
     def add_host(self, hostname):
         fqdn = self.normalize_host_name(hostname)
         if fqdn not in self.hosts:
-            self.hosts[fqdn] = Host(fqdn)
+            if self.connect_method == 'local':
+                self.hosts[fqdn] = LocalHost(fqdn, self)
+            else:
+                self.hosts[fqdn] = RemoteHost(fqdn, self)
         return self.hosts[fqdn]
 
     def add_root(self, component_name, hostname, features=()):

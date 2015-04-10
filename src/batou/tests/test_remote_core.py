@@ -185,6 +185,4 @@ def test_channelexec_handle_exception(remote_core_mod):
     assert channel.isclosed()
     assert channel.receivequeue == []
     response = channel.sendqueue[0]
-    assert response[0] == 'batou-unknown-error'
-    assert ('CalledProcessError: Command \'[\'fdjkahfkjdasbfda\']\' returned '
-            'non-zero exit status 127' in response[1])
+    assert response[0] == 'batou-error'
