@@ -16,7 +16,7 @@ def test_parse_nonexisting_environment_raises_error(tmpdir):
 @pytest.fixture
 def env():
     environment = Environment(
-        'dev', os.path.dirname(__file__) + '/fixture/basic_service')
+        'dev', basedir=os.path.dirname(__file__) + '/fixture/basic_service')
     environment.load()
     return environment
 
@@ -24,7 +24,8 @@ def env():
 @pytest.fixture
 def env_prod():
     environment = Environment(
-        'production', os.path.dirname(__file__) + '/fixture/basic_service')
+        'production',
+        basedir=os.path.dirname(__file__) + '/fixture/basic_service')
     environment.load()
     return environment
 

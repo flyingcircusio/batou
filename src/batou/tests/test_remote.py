@@ -1,5 +1,6 @@
 from batou.environment import Environment
-from batou.deploy import Deployment, RemoteHost
+from batou.deploy import Deployment
+from batou.host import RemoteHost
 from batou.utils import cmd
 import pytest
 import mock
@@ -18,12 +19,13 @@ def test_remote_deployment_initializable(sample_service):
 
 def test_remote_bundle_breaks_on_missing_head(sample_service):
     env = mock.Mock()
-    deployment = mock.Mock()
-    h = RemoteHost(env, deployment)
+    h = RemoteHost('asdf', env)
+    from batou.repository import MercurialBundleRepository
+    repository = MercurialBundleRepository()
     h.rpc = mock.Mock()
     h.rpc.current_heads.return_value = []
     with pytest.raises(ValueError) as e:
-        h.update_hg_bundle()
+        repository.update(h)
     assert e.value.message == (
         'Remote repository did not find any heads. '
         'Can not continue creating a bundle.')

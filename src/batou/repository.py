@@ -1,0 +1,151 @@
+from batou import DeploymentError, output
+from batou.utils import cmd
+import execnet
+import os
+import subprocess
+import sys
+import tempfile
+
+
+def detect_repository(environment):
+    if environment.connect_method == 'local':
+        return NullRepository()
+    return MercurialPullRepository()
+
+
+@property
+def upstream(self):
+    if self._upstream is None:
+        self._upstream = cmd('hg showconfig paths')[0]
+        self._upstream = self._upstream.split('\n')[0].strip()
+        assert self._upstream.startswith('paths.default')
+        self._upstream = self.upstream.split('=')[1]
+    return self._upstream
+
+
+def check_clean_hg_repository(self):
+    # Safety belt that we're acting on a clean repository.
+    try:
+        status, _ = cmd('hg -q stat', silent=True)
+    except RuntimeError:
+        output.error('Unable to check repository status. '
+                     'Is there an HG repository here?')
+        sys.exit(1)
+    else:
+        status = status.strip()
+        if status.strip():
+            output.error("Your repository has uncommitted changes.")
+            output.annotate("""\
+I am refusing to deploy in this situation as the results will be unpredictable.
+Please commit and push first.
+""", red=True)
+            output.annotate(status, red=True)
+            raise DeploymentError()
+    try:
+        cmd('hg -q outgoing -l 1', acceptable_returncodes=[1])
+    except RuntimeError:
+        output.error("""\
+Your repository has outgoing changes.
+
+I am refusing to deploy in this situation as the results will be unpredictable.
+Please push first.
+""")
+        raise DeploymentError()
+
+
+class NullRepository(object):
+
+    root = '.'
+
+    def update(self):
+        pass
+
+    def verify(self):
+        pass
+
+
+class RSyncRepository(object):
+
+    root = '.'
+
+    def update(self):
+        env = self.deployment.environment
+        blacklist = ['.batou', 'work', '.git', '.hg', '.vagrant',
+                     '.batou-lock']
+        for candidate in os.listdir(env.base_dir):
+            if candidate in blacklist:
+                continue
+
+            source = os.path.join(env.base_dir, candidate)
+            target = os.path.join(self.remote_base, candidate)
+            output.annotate("rsync source: {}".format(source), debug=True)
+            output.annotate("rsync target: {}".format(target), debug=True)
+            rsync = execnet.RSync(source, verbose=False)
+            rsync.add_target(self.gateway, target)
+            rsync.send()
+
+
+class MercurialRepository(object):
+
+    root = None
+
+    def __init__(self):
+        self.root = subprocess.check_output(['hg', 'root']).strip()
+        self.subdir = os.path.relpath(
+            self.environment.base_dir, self.root)
+
+
+class MercurialPullRepository(object):
+
+    def verify(self):
+        pass
+
+    def update(self, host):
+        env = self.deployment.environment
+
+        if env.update_method == 'pull':
+            self.rpc.pull_code(
+                upstream=self.deployment.upstream)
+        elif env.update_method == 'bundle':
+            self.update_hg_bundle()
+
+        remote_id = self.rpc.update_working_copy(env.branch)
+        local_id, _ = cmd('hg id -i')
+        if self.deployment.dirty:
+            local_id = local_id.replace('+', '')
+        local_id = local_id.strip()
+        if remote_id != local_id:
+            raise RuntimeError(
+                'Working copy parents differ. Local: {} Remote: {}'.format(
+                    local_id, remote_id))
+
+        remote_id = self.rpc.update_working_copy(env.branch)
+        local_id, _ = cmd('hg id -i')
+        if self.deployment.dirty:
+            local_id = local_id.replace('+', '')
+        local_id = local_id.strip()
+        if remote_id != local_id:
+            raise RuntimeError(
+                'Working copy parents differ. Local: {} Remote: {}'.format(
+                    local_id, remote_id))
+
+
+class MercurialBundleRepository(object):
+
+    def update(self, host):
+        heads = host.rpc.current_heads()
+        if not heads:
+            raise ValueError("Remote repository did not find any heads. "
+                             "Can not continue creating a bundle.")
+        fd, bundle_file = tempfile.mkstemp()
+        os.close(fd)
+        bases = ' '.join('--base {}'.format(x) for x in heads)
+        cmd('hg -qy bundle {} {}'.format(bases, bundle_file),
+            acceptable_returncodes=[0, 1])
+        have_changes = os.stat(bundle_file).st_size > 0
+        # XXX Rsync!
+        host.rpc.send_file(
+            bundle_file, host.remote_repository + '/batou-bundle.hg')
+        os.unlink(bundle_file)
+        if have_changes:
+            host.rpc.unbundle_code()
