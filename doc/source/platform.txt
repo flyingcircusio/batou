@@ -33,7 +33,7 @@ Note: There are some features that batou's ``@platform`` mechanism does not
 support yet, but which you can access by importing ``Supervisor`` and
 ``Logrotate`` from ``batou.lib.debian`` instead of their usual module:
 
-* Set a useable path for supervisord's pidfile
+* Set a usable path for supervisord's pidfile
 * Set up sensible logrotate configuration defaults
 * Add our own logrotate cronjob, so we don't need to write to
   ``/etc/logrotate.d``
