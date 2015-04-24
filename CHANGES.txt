@@ -21,7 +21,7 @@ Changelog
 1.0.5 (2015-03-31)
 ==================
 
-- Fix unicode accident: shells with ASCII only failed to run the 
+- Fix unicode accident: shells with ASCII only failed to run the
   supervisor cold deployment log message.
 
 
@@ -32,7 +32,7 @@ Changelog
   to events from components. Currently supports "before-update".
 
 - Supplement supervisor programs with 'deployment' mode parameter
-  to support 'cold' deployments that shut down programs before 
+  to support 'cold' deployments that shut down programs before
   any updates get deployed without causing superfluous cycles.
 
 
