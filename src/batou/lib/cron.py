@@ -71,3 +71,8 @@ class FCInstallCrontab(InstallCrontab):
 @platform('debian', CronTab)
 class DebianInstallCrontab(InstallCrontab):
     pass
+
+
+@platform('vagrant', CronTab)
+class VagrantInstallCrontab(InstallCrontab):
+    pass
