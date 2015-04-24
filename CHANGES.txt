@@ -5,7 +5,8 @@ Changelog
 1.0.7 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Improve Vagrant support: automatically install crontabs and automatically
+  start services on boot.
 
 
 1.0.6 (2015-04-01)
