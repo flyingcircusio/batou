@@ -38,7 +38,7 @@ class Deployment(object):
         # repository where batou is located (with ./batou,
         # ./environments, and ./components)
         self.deployment_base = os.path.relpath(self.environment.base_dir,
-                                               self.repository)
+                                               self.repository.root)
 
         output.step("main", "Loading secrets ...")
         self.environment.load_secrets()
