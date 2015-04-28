@@ -33,7 +33,24 @@ Note: There are some features that batou's ``@platform`` mechanism does not
 support yet, but which you can access by importing ``Supervisor`` and
 ``Logrotate`` from ``batou.lib.debian`` instead of their usual module:
 
-* Set a useable path for supervisord's pidfile
+* Set a usable path for supervisord's pidfile
 * Set up sensible logrotate configuration defaults
 * Add our own logrotate cronjob, so we don't need to write to
   ``/etc/logrotate.d``
+
+
+Vagrant
+-------
+
+For developing vagrant is very handy. Batou supports vagrant and developing with the following settings in your development environment::
+
+    [environment]
+    service_user = vagrant
+    connect_method = vagrant
+    update_method = rsync
+    platform = vagrant
+
+For a simple, default Vagrant setup, you only use `default` as hostname::
+
+    [hosts]
+    default = component1, component2, component3
