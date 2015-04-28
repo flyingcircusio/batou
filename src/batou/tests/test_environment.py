@@ -92,13 +92,13 @@ def test_get_root_raises_keyerror_on_nonassigned_component():
         e.get_root('asdf', 'localhost')
 
 
-def test_multiple_components():
+def test_multiple_components(sample_service):
     e = Environment(u'test-multiple-components')
     e.load()
     components = dict(
         (host, list(sorted(c.name for c in e.roots_in_order(host=host))))
         for host in sorted(e.hosts.keys()))
     assert components == dict(
-        localhost=['component1', 'component2'],
-        otherhost=['component3', 'component4'],
-        thishost=['component5', 'component6'])
+        localhost=['hello1', 'hello2'],
+        otherhost=['hello3', 'hello4'],
+        thishost=['hello5', 'hello6'])

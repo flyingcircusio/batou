@@ -185,7 +185,15 @@ class Environment(object):
 
     def add_root(self, component_name, hostname, features=()):
         host = self.add_host(hostname)
-        root = RootComponent(component_name, self, host, features)
+        compdef = self.components[component_name]
+        root = RootComponent(
+            name=compdef.name,
+            environment=self,
+            host=host,
+            features=features,
+            factory=compdef.factory,
+            defdir=compdef.defdir,
+            workdir=os.path.join(self.workdir_base, compdef.name))
         self.root_components.append(root)
         return root
 
@@ -220,6 +228,7 @@ class Environment(object):
             for root in working_set:
                 try:
                     self.resources.reset_component_resources(root)
+                    root.overrides = self.overrides.get(root.name, {})
                     root.prepare()
                 except ConfigurationError as e:
                     # A known exception which we can report gracefully later.

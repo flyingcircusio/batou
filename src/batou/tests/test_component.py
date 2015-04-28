@@ -1,10 +1,15 @@
-from batou.component import Component, RootComponent, platform, Attribute
 from batou import UpdateNeeded
+from batou.component import Component, RootComponent, platform, Attribute
+from batou.component import handle_event
 from mock import Mock
 import batou
 import os
 import os.path
 import pytest
+
+
+def MockRoot():
+    return Mock(overrides={})
 
 
 class SampleComponent(Component):
@@ -55,7 +60,7 @@ def test_prepare_sets_up_vars(root):
     assert root.component.environment is root.environment
     assert root.component.host is root.host
     assert root.component.root is root
-    assert root.component.parent is None
+    assert root.component.parent is root
 
 
 def test_op_orassignment_ignores_none(root):
@@ -92,7 +97,7 @@ def test_op_orassignment_ignores_already_preapred_component(root):
 def test_prepare_calls_configure():
     component = Component()
     component.configure = Mock()
-    component.prepare(Mock(), Mock())
+    component.prepare(MockRoot())
     assert component.configure.called
 
 
@@ -278,26 +283,26 @@ def test_acic_accepts_multiple_components(root):
 def test_cmd_expands_jinja():
     c = Component()
     c.foo = 'asdf'
-    c.prepare(Mock())
+    c.prepare(MockRoot())
     assert ('asdf\n', '') == c.cmd('echo "{{component.foo}}"')
 
 
 def test_cmd_returns_output():
     c = Component()
-    c.prepare(Mock())
+    c.prepare(MockRoot())
     assert ('1\n', '') == c.cmd('echo 1')
 
 
 def test_cmd_raises_if_error():
     c = Component()
-    c.prepare(Mock())
+    c.prepare(MockRoot())
     with pytest.raises(RuntimeError):
         c.cmd('non-existing-command')
 
 
 def test_cmd_returns_output_if_ignore_returncode():
     c = Component()
-    c.prepare(Mock())
+    c.prepare(MockRoot())
     out, err = c.cmd('echo important output && false', silent=True,
                      ignore_returncode=True)
     assert 'important output\n' == out
@@ -343,7 +348,7 @@ def test_chdir_contextmanager_is_stackable():
     with c.chdir(inner1):
         assert inner1 == os.getcwd()
         with c.chdir(inner2):
-            assert inner2 == os.getcwd()
+            assert inner2 == os.getcwd()  # noqa
         assert inner1 == os.getcwd()
     assert outer == os.getcwd()
 
@@ -355,7 +360,9 @@ def test_root_and_component_know_working_dir(root):
 
 def test_root_component_repr():
     host = Mock()
-    root = RootComponent('haproxy', object, host, [])
+    environment = Mock()
+    root = RootComponent('haproxy', environment, host, [],
+                         object, '/defdir', '/workdir')
     assert repr(root).startswith('<RootComponent "haproxy" object at ')
 
 
@@ -379,7 +386,7 @@ def test_component_manages_working_dir(root):
 
 def test_cmd_execution_failed_gives_command_in_exception():
     c = Component()
-    c.prepare(Mock())
+    c.prepare(MockRoot())
     with pytest.raises(RuntimeError) as e:
         c.cmd('asdf')
     assert str(e.value[0]) == 'Command "asdf" returned unsuccessfully.'
@@ -388,7 +395,7 @@ def test_cmd_execution_failed_gives_command_in_exception():
 
 def test_cmd_should_not_stop_if_process_expects_input():
     c = Component()
-    c.prepare(Mock())
+    c.prepare(MockRoot())
     stdout, stderr = c.cmd('cat')
     # The assertion is, that the test doesn't get stuck .
 
@@ -421,13 +428,13 @@ def test_require_one_convenience_raises_if_more_results():
 
 def test_assert_cmd_when_succesful():
     c = Component()
-    c.prepare(Mock())
+    c.prepare(MockRoot())
     c.assert_cmd('true')
 
 
 def test_assert_cmd_when_unsuccessful():
     c = Component()
-    c.prepare(Mock())
+    c.prepare(MockRoot())
     with pytest.raises(UpdateNeeded):
         c.assert_cmd('false')
 
@@ -456,17 +463,15 @@ def test_assert_no_changes_recursive_raises(root):
 
 
 def test_root_overrides_missing_attribute_raises(root):
-    root.environment.overrides = {'mycomponent': {'asdf': 1}}
+    root.overrides = {'asdf': 1}
     with pytest.raises(batou.MissingOverrideAttributes) as e:
         root.prepare()
     assert e.value.attributes == ['asdf']
 
 
 def test_root_overrides_existing_attribute(root):
-    class OtherComponent(Component):
-        asdf = None
-    root.environment.components['mycomponent'] = OtherComponent
-    root.environment.overrides = {'mycomponent': {'asdf': 1}}
+    root.factory.asdf = None
+    root.overrides = {'asdf': 1}
     root.prepare()
     assert root.component.asdf == 1
 
@@ -488,36 +493,38 @@ def test_attribute_split_list(root):
     assert f.e == []
 
 
-def test_event_handler_before_update_no_changes(root):
-    from batou.component import handle_event
-    log = []
+class EventHandlingComponent(Component):
 
-    class Foo(Component):
-        @handle_event('before-update', '*')
-        def handle(self, component):
-            log.append(component)
-    root.component += Foo()
+    namevar = 'x'
+    perform_update = True
+
+    def verify(self):
+        if self.perform_update:
+            raise UpdateNeeded()
+
+    def configure(self):
+        self.log = []
+
+    @handle_event('before-update', '*')
+    def handle(self, component):
+        self.log.append(component.x)
+
+
+def test_event_handler_before_update_no_changes(root):
+    c = EventHandlingComponent('1', perform_update=False)
+    root.component += c
     root.component.deploy()
-    assert log == []
+    assert c.log == []
 
 
 def test_event_handler_before_update_with_changes_all(root):
-    from batou.component import handle_event
-    log = []
-
-    class Foo(Component):
-        namevar = 'x'
-
-        def verify(self):
-            raise UpdateNeeded()
-
-        @handle_event('before-update', '*')
-        def handle(self, component):
-            log.append(component.x)
-    root.component += Foo('1')
-    root.component += Foo('2')
+    c1 = EventHandlingComponent('1')
+    c2 = EventHandlingComponent('2')
+    root.component += c1
+    root.component += c2
     root.component.deploy()
-    assert log == ['1', '1', '2', '2']
+    assert c1.log == ['1', '2']
+    assert c2.log == ['1', '2']
 
 
 def test_event_handler_before_update_with_changes_precursor(root):

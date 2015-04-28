@@ -26,3 +26,15 @@ class Hello2(Hello):
 
 class Hello3(Hello):
     pass
+
+
+class Hello4(Hello):
+    pass
+
+
+class Hello5(Hello):
+    pass
+
+
+class Hello6(Hello):
+    pass
