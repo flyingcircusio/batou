@@ -1,6 +1,6 @@
 from batou import CycleErrorDetected, UnknownComponentConfigurationError
 from batou import UnsatisfiedResources, UnusedResources
-from batou.component import Component
+from batou.component import Component, ComponentDefinition
 from batou.environment import Environment
 import pytest
 
@@ -63,7 +63,8 @@ def env():
         if not isinstance(component, type):
             continue
         if issubclass(component, Component):
-            env.components[component.__name__.lower()] = component
+            compdef = ComponentDefinition(component)
+            env.components[compdef.name] = compdef
     return env
 
 

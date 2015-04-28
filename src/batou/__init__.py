@@ -33,7 +33,7 @@ class ConversionError(ConfigurationError):
                        '{}({})'.format(self.conversion.__name__,
                                        repr(self.value)),
                        red=True)
-        # XXX support -vv to include traceback
+        # TODO provide traceback in debug output
         output.tabular('Error', str(self.error), red=True)
 
 
@@ -54,8 +54,8 @@ class MissingOverrideAttributes(ConfigurationError):
             'Attributes',
             '.'.join(self.attributes),
             red=True)
-        # XXX point to line in secrets or environments
-        # cfg file
+        # TODO point to specific line in secrets or environments
+        # cfg file and show context
 
 
 class MissingComponent(ConfigurationError):
@@ -72,6 +72,18 @@ class MissingComponent(ConfigurationError):
             red=True)
 
 
+class DuplicateComponent(ConfigurationError):
+
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def report(self):
+        output.error('Duplicate component "{}"'.format(self.a.__name_))
+        output.tabular('Occurence', self.a.__file__)
+        output.tabular('Occurence', self.b.__file__)
+
+
 class UnknownComponentConfigurationError(ConfigurationError):
     """An unknown error occured while configuring a component."""
 
@@ -85,7 +97,7 @@ class UnknownComponentConfigurationError(ConfigurationError):
             "(Note, this might be batou bug, please report it.)", red=True)
         output.tabular(
             "Component", self.root.host.name + ':' + self.root.name, red=True)
-        # XXX traceback formatting/output
+        # TODO provide traceback in debug output
         output.tabular(
             "Exception", str(self.exception), red=True)
 
@@ -139,7 +151,7 @@ class ComponentLoadingError(ConfigurationError):
         output.error("Failed loading component file")
         output.tabular("File", self.filename, red=True)
         output.tabular("Exception", str(self.exception), red=True)
-        # XXX traceback -vv
+        # TODO provide traceback in debug output
 
 
 class SuperfluousSection(ConfigurationError):
@@ -152,7 +164,7 @@ class SuperfluousSection(ConfigurationError):
     def report(self):
         output.error("Superfluous section in environment configuration")
         output.tabular("Section", self.section, red=True)
-        # XXX show location in config file -vv
+        # TODO provide location and context in debug output
 
 
 class SuperfluousComponentSection(ConfigurationError):
@@ -165,7 +177,7 @@ class SuperfluousComponentSection(ConfigurationError):
     def report(self):
         output.error("Override section for unknown component found")
         output.tabular("Component", self.component, red=True)
-        # XXX show location in config file -vv
+        # TODO provide traceback in debug output
 
 
 class SuperfluousSecretsSection(ConfigurationError):
@@ -178,7 +190,7 @@ class SuperfluousSecretsSection(ConfigurationError):
     def report(self):
         output.error("Secrets section for unknown component found")
         output.tabular("Component", self.component, red=True)
-        # XXX show location in config file -vv
+        # TODO provide traceback in debug output
 
 
 class CycleErrorDetected(ConfigurationError):
@@ -191,7 +203,7 @@ class CycleErrorDetected(ConfigurationError):
     def report(self):
         output.error("Found dependency cycle")
         output.annotate(str(self.error), red=True)
-        # XXX show location in config file -vv
+        # TODO provide traceback in debug output
 
 
 class NonConvergingWorkingSet(ConfigurationError):
@@ -201,10 +213,11 @@ class NonConvergingWorkingSet(ConfigurationError):
         self.roots = roots
 
     def report(self):
-        # XXX Show this last or first
+        # TODO show this last or first, but not in the middle
+        # of everything
         output.error("{} remaining unconfigured components".format(
                      len(self.roots)))
-        # XXX show all incl. their host name in -vv or so
+        # TODO show all incl. their host name in -vv or so
         # output.annotate(', '.join(c.name for c in self.roots))
 
 

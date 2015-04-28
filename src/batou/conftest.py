@@ -1,4 +1,4 @@
-from batou.component import Component
+from batou.component import Component, ComponentDefinition
 from batou.environment import Environment
 import os
 import pytest
@@ -11,9 +11,12 @@ def root(tmpdir):
     os.chdir(str(tmpdir))
 
     class MyComponent(Component):
-        defdir = str(tmpdir)
-    environment.components['mycomponent'] = MyComponent
-    root = environment.add_root('mycomponent', 'host')
+        pass
+
+    compdef = ComponentDefinition(MyComponent)
+    compdef.defdir = str(tmpdir)
+    environment.components[compdef.name] = compdef
+    root = environment.add_root(compdef.name, 'host')
     root.prepare()
     root.component.deploy()
     return root

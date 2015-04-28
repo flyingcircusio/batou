@@ -1,10 +1,11 @@
-from batou import output
+from batou import output, DuplicateComponent
 import ast
 import batou
 import batou.c
 import batou.template
 import batou.utils
 import contextlib
+import inspect
 import os
 import os.path
 import sys
@@ -44,10 +45,19 @@ def check_event_scope(scope, source, target):
     raise ValueError('Unknown event scope: {}'.format(scope))
 
 
+class ComponentDefinition(object):
+
+    def __init__(self, factory, filename=None, defdir=None):
+        self.factory = factory
+        self.name = factory.__name__.lower()
+        self.filename = filename if filename else inspect.getfile(factory)
+        self.defdir = defdir if defdir else os.path.dirname(self.filename)
+
+
 def load_components_from_file(filename):
-    # XXX protect against loading the same component name multiple times.
     components = {}
 
+    # Synthesize a module for this component file in batou.c
     defdir = os.path.dirname(filename)
     module_name = os.path.basename(defdir)
     module_path = 'batou.c.{}'.format(module_name)
@@ -59,13 +69,14 @@ def load_components_from_file(filename):
 
     for candidate in module.__dict__.values():
         if candidate in [Component]:
-            # Ignore anything we pushed into the globals before execution
             continue
         if not (isinstance(candidate, type) and
                 issubclass(candidate, Component)):
             continue
-        candidate.defdir = defdir
-        components[candidate.__name__.lower()] = candidate
+        compdef = ComponentDefinition(candidate, filename, defdir)
+        if compdef.name in components:
+            raise DuplicateComponent(compdef)
+        components[compdef.name] = compdef
 
     return components
 
@@ -98,19 +109,20 @@ class Component(object):
     def environment(self):
         return self.root.environment
 
+    @property
+    def root(self):
+        current = self
+        while isinstance(current, Component):
+            current = current.parent
+        return current
+
     # Configuration phase
 
-    def prepare(self, root, parent=None, overrides={}):
-        # XXX why can parent be None? Can the root be the last parent?
-        # Can't the direct access to root be removed here?
-        self.root = root
+    def prepare(self, parent):
         self.parent = parent
-        if parent:
-            self.workdir = parent.workdir
-        else:
-            self.workdir = root.workdir
+        self.workdir = parent.workdir
         self.sub_components = []
-        self._overrides(overrides)
+        self._overrides(self.root.overrides)
         self.configure()
         self += self.get_platform()
         self.__setup_event_handlers__()
@@ -259,7 +271,7 @@ class Component(object):
 
         """
         if component is not None and not component._prepared:
-            component.prepare(self.root, self)
+            component.prepare(self)
         self._ = component
         return self
 
@@ -403,7 +415,7 @@ class Component(object):
     @property
     def _breadcrumbs(self):
         result = ''
-        if self.parent is not None:
+        if self.parent is not self.root:
             result += self.parent._breadcrumbs + ' > '
         result += self._breadcrumb
         return result
@@ -437,36 +449,25 @@ class RootComponent(object):
 
     """
 
-    def __init__(self, name, environment, host, features):
+    def __init__(self, name, environment, host, features,
+                 factory, defdir, workdir, overrides=None):
         self.name = name
         self.environment = environment
         self.host = host
         self.features = features
-
-    # XXX Should we turn this around and make the environment responsible for
-    # putting those attributes on the root?
-
-    @property
-    def defdir(self):
-        return self.environment.components[self.name].defdir
-
-    @property
-    def workdir(self):
-        return os.path.join(
-            self.environment.workdir_base, self.name)
+        self.defdir = defdir
+        self.workdir = workdir
+        self.overrides = overrides if overrides else {}
+        self.factory = factory
 
     def prepare(self):
-        if self.name not in self.environment.components:
-            raise batou.MissingComponent(self)
-        self.component = self.environment.components[self.name]()
+        self.component = self.factory()
         if self.features:
+            # Only override the default defined on the component class
+            # if the environment specified anything for this component/host
+            # combination.
             self.component.features = self.features
-
-        overrides = {}
-        if self.name in self.environment.overrides:
-            overrides.update(self.environment.overrides[self.name].items())
-
-        self.component.prepare(self, overrides=overrides)
+        self.component.prepare(self)
 
     def __repr__(self):
         return '<%s "%s" object at %s>' % (
