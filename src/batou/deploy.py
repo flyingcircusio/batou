@@ -1,9 +1,10 @@
 from .environment import Environment
-from .utils import notify
 from .utils import locked, self_id
+from .utils import notify
 from batou import DeploymentError, ConfigurationError
 from batou._output import output, TerminalBackend
 from batou.repository import detect_repository
+import os.path
 import sys
 
 
@@ -32,6 +33,12 @@ class Deployment(object):
         output.step("main", "Verifying repository ...")
         self.repository = detect_repository(self.environment)
         self.repository.verify()
+
+        # The deployment base is the path relative to the
+        # repository where batou is located (with ./batou,
+        # ./environments, and ./components)
+        self.deployment_base = os.path.relpath(self.environment.base_dir,
+                                               self.repository)
 
         output.step("main", "Loading secrets ...")
         self.environment.load_secrets()
