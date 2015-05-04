@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0.7 (unreleased)
+1.0.7 (2015-05-04)
 ==================
 
 - Improve Vagrant support: automatically install crontabs and automatically
