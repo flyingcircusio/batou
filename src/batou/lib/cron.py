@@ -60,7 +60,7 @@ class InstallCrontab(Component):
             raise UpdateNeeded()
 
     def update(self):
-        self.cmd(self.expand('crontab {{component.crontab.path}}'))
+        self.cmd(self.expand('crontab - < {{component.crontab.path}}'))
 
 
 @platform('gocept.net', CronTab)
