@@ -5,8 +5,11 @@ Changelog
 1.0.9 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Work around broken crontab setuid installations by passing the
+  new crontab via stdin.
 
+- Fix accidental conversions for component attribute defaults: avoid
+  conversions if we have overrides.
 
 1.0.8 (2015-05-06)
 ==================
