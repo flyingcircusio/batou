@@ -536,3 +536,17 @@ def test_event_handler_before_update_with_changes_precursor(root):
     root.component += Foo('2')
     root.component.deploy()
     assert log == [('2', '1')]
+
+
+def test_overrides_cancel_failures_from_faulty_defaults(root):
+    class Hello(Component):
+        x = Attribute(int, 'noint')
+
+    env = root.environment
+    env.components['hello'] = Hello
+    env.overrides['hello'] = {'x': '12'}
+
+    hello_root = env.add_root('hello', 'host')
+    hello_root.prepare()
+
+    assert hello_root.component.x == 12

@@ -120,7 +120,13 @@ class Component(object):
 
     def _overrides(self, overrides={}):
         for key, value in overrides.items():
-            if not hasattr(self, key):
+            # This 'in dir()' is on purpose, avoiding a hasattr() which
+            # triggers the attribute accessor protocol which in turn can cause
+            # expensive/volatile conversions, like DNS lookups for the Address
+            # type. Overrides need to be able to avoid the originals to be
+            # triggered, e.g. if the default DNS doesn't resolve when being
+            # offline working on Vagrant.
+            if key not in dir(self):
                 raise KeyError(
                     'Invalid override attribute "{}" for component {}'.format(
                         key, self))
