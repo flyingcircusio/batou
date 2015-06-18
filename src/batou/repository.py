@@ -7,46 +7,6 @@ import sys
 import tempfile
 
 
-@property
-def upstream(self):
-    if self._upstream is None:
-        self._upstream = cmd('hg showconfig paths')[0]
-        self._upstream = self._upstream.split('\n')[0].strip()
-        assert self._upstream.startswith('paths.default')
-        self._upstream = self.upstream.split('=')[1]
-    return self._upstream
-
-
-def check_clean_hg_repository(self):
-    # Safety belt that we're acting on a clean repository.
-    try:
-        status, _ = cmd('hg -q stat', silent=True)
-    except RuntimeError:
-        output.error('Unable to check repository status. '
-                     'Is there an HG repository here?')
-        sys.exit(1)
-    else:
-        status = status.strip()
-        if status.strip():
-            output.error("Your repository has uncommitted changes.")
-            output.annotate("""\
-I am refusing to deploy in this situation as the results will be unpredictable.
-Please commit and push first.
-""", red=True)
-            output.annotate(status, red=True)
-            raise DeploymentError()
-    try:
-        cmd('hg -q outgoing -l 1', acceptable_returncodes=[1])
-    except RuntimeError:
-        output.error("""\
-Your repository has outgoing changes.
-
-I am refusing to deploy in this situation as the results will be unpredictable.
-Please push first.
-""")
-        raise DeploymentError()
-
-
 class Repository(object):
     """A repository containing the batou deployment.
 
@@ -112,25 +72,63 @@ class MercurialRepository(Repository):
 
     root = None
 
-    def __init__(self):
+    def __init__(self, environment):
+        super(MercurialRepository, self).__init__(environment)
         self.root = subprocess.check_output(['hg', 'root']).strip()
         self.subdir = os.path.relpath(
             self.environment.base_dir, self.root)
 
-
-class MercurialPullRepository(Repository):
+    @property
+    def upstream(self):
+        if self._upstream is None:
+            self._upstream = cmd('hg showconfig paths')[0]
+            self._upstream = self._upstream.split('\n')[0].strip()
+            assert self._upstream.startswith('paths.default')
+            self._upstream = self.upstream.split('=')[1]
+        return self._upstream
 
     def verify(self):
-        pass
+        # Safety belt that we're acting on a clean repository.
+        if self.environment.deployment.dirty:
+            output.annotate(
+                "Dirty deployment - not verifying repository.", red=True)
+            return
+
+        try:
+            status, _ = cmd('hg -q stat', silent=True)
+        except RuntimeError:
+            output.error('Unable to check repository status. '
+                         'Is there an HG repository here?')
+            raise
+        else:
+            status = status.strip()
+            if status.strip():
+                output.error("Your repository has uncommitted changes.")
+                output.annotate("""\
+I am refusing to deploy in this situation as the results will be unpredictable.
+Please commit and push first.
+""", red=True)
+                output.annotate(status, red=True)
+                raise DeploymentError()
+        try:
+            cmd('hg -q outgoing -l 1', acceptable_returncodes=[1])
+        except RuntimeError:
+            output.error("""\
+Your repository has outgoing changes.
+
+I am refusing to deploy in this situation as the results will be unpredictable.
+Please push first.
+""")
+            raise DeploymentError()
+
+
+class MercurialPullRepository(MercurialRepository):
 
     def update(self, host):
         env = self.deployment.environment
 
-        if env.update_method == 'pull':
-            self.rpc.pull_code(
-                upstream=self.deployment.upstream)
-        elif env.update_method == 'bundle':
-            self.update_hg_bundle()
+        self.rpc.pull_code(
+            upstream=self.deployment.upstream)
 
         remote_id = self.rpc.update_working_copy(env.branch)
         local_id, _ = cmd('hg id -i')
@@ -153,7 +151,7 @@ class MercurialPullRepository(Repository):
                     local_id, remote_id))
 
 
-class MercurialBundleRepository(Repository):
+class MercurialBundleRepository(MercurialRepository):
 
     def update(self, host):
         heads = host.rpc.current_heads()
@@ -166,9 +164,11 @@ class MercurialBundleRepository(Repository):
         cmd('hg -qy bundle {} {}'.format(bases, bundle_file),
             acceptable_returncodes=[0, 1])
         have_changes = os.stat(bundle_file).st_size > 0
-        # XXX Rsync!
-        host.rpc.send_file(
-            bundle_file, host.remote_repository + '/batou-bundle.hg')
+        if not have_changes:
+            return
+        rsync = execnet.RSync(bundle_file, verbose=False)
+        rsync.add_target(host.gateway,
+                         host.remote_repository + '/batou-bundle.hg')
+        rsync.send()
         os.unlink(bundle_file)
-        if have_changes:
-            host.rpc.unbundle_code()
+        host.rpc.unbundle_code()

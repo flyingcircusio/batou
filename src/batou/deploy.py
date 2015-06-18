@@ -25,6 +25,7 @@ class Deployment(object):
 
         self.environment = Environment(
             self.environment, self.timeout, self.platform)
+        self.environment.deployment = self
         self.environment.load()
 
         output.step("main", "Loading secrets ...")
@@ -80,14 +81,16 @@ def main(environment, platform, timeout, dirty, fast):
             notify('Configuration failed',
                    'batou failed to configure the environment. '
                    'Check your console for details.')
+            sys.exit(1)
         except DeploymentError:
             notify('Deployment failed',
                    '{} encountered an error.'.format(environment))
+            output.section("DEPLOYMENT FAILED (1)", red=True)
             sys.exit(1)
         except Exception:
             # An unexpected exception happened. Bad.
             output.error("Unexpected exception", exc_info=sys.exc_info())
-            output.section("DEPLOYMENT FAILED", red=True)
+            output.section("DEPLOYMENT FAILED (2)", red=True)
             notify('Deployment failed', '')
             sys.exit(1)
         else:

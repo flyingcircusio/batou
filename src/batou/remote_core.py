@@ -65,9 +65,13 @@ def ensure_repository(target, method):
     if not os.path.exists(target):
         os.makedirs(target)
 
-    if method in ['pull', 'bundle']:
+    if method in ['hg-pull', 'hg-bundle']:
         if not os.path.exists(target + '/.hg'):
             cmd("hg init {}".format(target))
+    elif method == 'rsync':
+        pass
+    else:
+        raise RuntimeError("Unknown repository method: {}".format(method))
 
     return target
 
