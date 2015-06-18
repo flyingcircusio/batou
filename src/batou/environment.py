@@ -6,7 +6,9 @@ from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
 from batou import NonConvergingWorkingSet, UnusedResources, ConfigurationError
 from batou import SuperfluousComponentSection, CycleErrorDetected
 from batou import UnknownComponentConfigurationError, UnsatisfiedResources
+from batou._output import output
 from batou.component import RootComponent
+from batou.repository import Repository
 from batou.utils import revert_graph, topological_sort, CycleError
 from ConfigParser import RawConfigParser
 import batou.c
@@ -72,6 +74,9 @@ class Environment(object):
     timeout = None
     target_directory = None
 
+    version = None
+    develop = None
+
     def __init__(self, name, timeout=None, platform=None, basedir='.'):
         self.name = name
         self.hosts = {}
@@ -127,14 +132,25 @@ class Environment(object):
             self.overrides.setdefault(root_name, {})
             self.overrides[root_name].update(config[section])
 
+        # Verify the repository
+        output.step("main", "Verifying repository ...")
+        self.repository = Repository.from_environment(self)
+        self.repository.verify()
+
+        # The deployment base is the path relative to the
+        # repository where batou is located (with ./batou,
+        # ./environments, and ./components)
+        self.deployment_base = os.path.relpath(
+            self.base_dir, self.repository.root)
+
     def load_secrets(self):
         add_secrets_to_environment_override(self)
 
     def load_environment(self, config):
         environment = config.get('environment', {})
         for key in ['service_user', 'host_domain', 'target_directory',
-                    'connect_method', 'update_method', 'branch', 'platform',
-                    'timeout']:
+                    'connect_method', 'update_method', 'branch',
+                    'platform', 'timeout', 'develop']:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
@@ -171,6 +187,12 @@ class Environment(object):
             self.timeout = 3
         else:
             self.timeout = int(self.timeout)
+
+        if self.version is None:
+            self.version = os.environ.get('BATOU_VERSION')
+
+        if self.develop is None:
+            self.develop = os.environ.get('BATOU_DEVELOP')
 
     # API to instrument environment config loading
 
