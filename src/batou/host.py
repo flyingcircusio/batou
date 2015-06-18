@@ -137,7 +137,8 @@ class RemoteHost(Host):
         env.repository.update(self)
 
         bootstrap = generate_bootstrap(env.version, env.develop)
-        self.rpc.build_batou(env.deployment_base, bootstrap)
+        self.rpc.build_batou(
+            env.deployment_base, bootstrap, env.deployment.fast)
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.
@@ -148,13 +149,11 @@ class RemoteHost(Host):
         # know about locally)
         self.rpc.setup_output()
 
-        self.rpc.ensure_repository(env.target_directory, env.update_method)
-
         self.rpc.setup_deployment(
             self.remote_base,
             env.name,
             self.fqdn,
-            env.overrides)
+            env.overrides, env.deployment.timeout, env.deployment.platform)
 
     def disconnect(self):
         self.gateway.exit()

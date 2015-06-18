@@ -21,12 +21,25 @@ class Deployment(object):
 
     environment = None
 
-    def __init__(self, environment, host):
-        self.environment = environment
-        self.host = host
+    def __init__(self, env_name, host_name, overrides,
+                 timeout, platform):
+        self.env_name = env_name
+        self.host_name = host_name
+        self.overrides = overrides
+        self.timeout = timeout
+        self.platform = platform
+
+    def load(self):
+        from batou.environment import Environment
+        self.environment = Environment(
+            self.env_name, self.timeout, self.platform)
+        self.environment.deployment = self
+        self.environment.load()
+        self.environment.overrides = self.overrides
+        self.environment.configure()
 
     def deploy(self, root):
-        root = self.environment.get_root(root, self.host)
+        root = self.environment.get_root(root, self.host_name)
         root.component.deploy()
 
 
@@ -131,21 +144,14 @@ def build_batou(deployment_base, bootstrap, fast=False):
     cmd('./batou {}--help'.format('--fast ' if fast else ''))
 
 
-def setup_deployment(deployment_base, env_name, host_name, overrides):
-    from batou.environment import Environment
-
+def setup_deployment(
+        deployment_base, *args):
     target = target_directory
     os.chdir(os.path.join(target, deployment_base))
-
-    global environment
-    environment = Environment(env_name)
-    environment.load()
-    environment.overrides = overrides
-    environment.configure()
-
     global deployment
-    deployment = Deployment(environment, host_name)
-
+    deployment = Deployment(*args)
+    deployment.load()
+    
 
 def deploy(root):
     deployment.deploy(root)
@@ -180,14 +186,14 @@ if __name__ == '__channelexec__':
             result = locals()[task](*args, **kw)
             channel.send(('batou-result', result))
         except getattr(batou, 'ConfigurationError', None) as e:
-            if e not in environment.exceptions:
-                environment.exceptions.append(e)
+            if e not in deployment.environment.exceptions:
+                deployment.environment.exceptions.append(e)
             # Report on why configuration failed.
-            for exception in environment.exceptions:
+            for exception in deployment.environment.exceptions:
                 exception.report()
             batou.output.section(
                 "{} ERRORS - CONFIGURATION FAILED".format(
-                    len(environment.exceptions)), red=True)
+                    len(deployment.environment.exceptions)), red=True)
             channel.send(('batou-error', None))
         except getattr(batou, 'DeploymentError', None) as e:
             exception.report()
