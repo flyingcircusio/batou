@@ -30,6 +30,7 @@ class Deployment(object):
 
         # This is located here to avoid duplicating the verification check
         # when loading the repository on the remote environment object.
+        output.step("main", "Verifying repository ...")
         self.environment.repository.verify()
 
         output.step("main", "Loading secrets ...")

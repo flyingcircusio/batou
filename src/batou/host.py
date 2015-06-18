@@ -90,9 +90,12 @@ class LocalHost(Host):
         # know about locally).
         self.rpc.setup_output()
 
+        env = self.environment
+
         # XXX the cwd isn't right.
-        self.rpc.setup_deployment(os.getcwd(), self.environment.name,
-                                  self.fqdn, self.environment.overrides)
+        self.rpc.setup_deployment(
+            os.getcwd(), env.name, self.fqdn,
+            env.overrides, env.deployment.timeout, env.deployment.platform)
 
     def disconnect(self):
         self.gateway.exit()
