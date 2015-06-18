@@ -9,6 +9,7 @@ from batou import UnknownComponentConfigurationError, UnsatisfiedResources
 from batou._output import output
 from batou.component import RootComponent
 from batou.repository import Repository
+from batou.utils import cmd
 from batou.utils import revert_graph, topological_sort, CycleError
 from ConfigParser import RawConfigParser
 import batou.c
@@ -226,6 +227,11 @@ class Environment(object):
                 return root
         raise KeyError("Component {} not configured for host {}".format(
             component_name, hostname))
+
+    def prepare_connect(self):
+        if self.connect_method == 'vagrant':
+            output.step("vagrant", "Ensuring machines are up ...")
+            cmd('vagrant up')
 
     # Deployment API (implements the configure-verify-update cycle)
 
