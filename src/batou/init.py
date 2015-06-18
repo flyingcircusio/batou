@@ -27,7 +27,6 @@ def main(destination):
         os.chdir(destination)
         cmd('hg -y init .')
     update_bootstrap(os.environ['BATOU_VERSION'], develop)
-    os.chmod('batou', 0o755)
     # Need to clean up to avoid inheriting info that we're bootstrapped
     # already.
     for key in list(os.environ):

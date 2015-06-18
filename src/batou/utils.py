@@ -79,11 +79,11 @@ def notify_none(title, description):
 try:
     subprocess.check_output(['which', 'osascript'])
     notify = notify_macosx
-except subprocess.CalledProcessError:
+except (subprocess.CalledProcessError, OSError):
     try:
         subprocess.check_output(['which', 'notify-send'])
         notify = notify_send
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, OSError):
         notify = notify_none
 
 

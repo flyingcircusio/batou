@@ -118,14 +118,12 @@ def update_working_copy(branch):
     return id
 
 
-def build_batou(deployment_base, fast=False, version=None, develop=None):
+def build_batou(deployment_base, bootstrap, fast=False):
     target = target_directory
     os.chdir(os.path.join(target, deployment_base))
-    if version:
-        os.environ['BATOU_VERSION'] = version
-    if develop:
-        os.environ['BATOU_DEVELOP'] = develop
-
+    with open('batou', 'w') as f:
+        f.write(bootstrap)
+    os.chmod('batou', 0o755)
     cmd('./batou {}--help'.format('--fast ' if fast else ''))
 
 

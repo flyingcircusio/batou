@@ -1,20 +1,20 @@
 syntax: glob
-*.sublime-*
+
 *.egg-info
 *.pyc
+*.sublime-*
 *.swo
-.batou.buildout.success
 *.swp
-.DS_Store
-.Python
 .batou-lock
 .batou-passphrase
+.batou.buildout.success
 .cache
 .coverage
+.DS_Store
 .installed.cfg
 .mr.developer.cfg
-ID
-TAGS
+.Python
+.vagrant
 bin
 build
 coverage
@@ -27,6 +27,7 @@ examples/*/.batou-lock
 examples/*/local
 examples/*/work
 htmlcov
+ID
 include/python2.*
 lib/python2.*
 lib64
@@ -35,6 +36,7 @@ local.cfg
 my-buildout.cfg
 parts
 report.xml
+src/batou/secrets/tests/fixture/gnupg/random_seed
+TAGS
 tags
 vagrant/.vagrant
-src/batou/secrets/tests/fixture/gnupg/random_seed

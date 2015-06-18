@@ -7,12 +7,6 @@ import sys
 import tempfile
 
 
-def detect_repository(environment):
-    if environment.connect_method == 'local':
-        return NullRepository()
-    return MercurialPullRepository()
-
-
 @property
 def upstream(self):
     if self._upstream is None:
@@ -53,23 +47,52 @@ Please push first.
         raise DeploymentError()
 
 
-class NullRepository(object):
+class Repository(object):
+    """A repository containing the batou deployment.
+
+    The actual deployment may be located within a prefix
+    of this repository. Where the repository starts can be
+    determined by the specific repository implementation.
+
+    """
 
     root = '.'
 
-    def update(self):
-        pass
+    def __init__(self, environment):
+        self.environment = environment
+
+    @classmethod
+    def from_environment(cls, environment):
+        if environment.connect_method == 'local':
+            return NullRepository(environment)
+        elif environment.update_method == 'rsync':
+            return RSyncRepository(environment)
+        elif environment.update_method == 'hg-bundle':
+            return MercurialBundleRepository(environment)
+        elif environment.update_method == 'hg-pull':
+            return MercurialPullRepository(environment)
+        raise ValueError('Could not find method to transfer the repository.')
 
     def verify(self):
         pass
 
+    def update(self):
+        pass
 
-class RSyncRepository(object):
+
+class NullRepository(Repository):
+    """A repository that does nothing to verify or update."""
+
+
+class RSyncRepository(Repository):
 
     root = '.'
 
-    def update(self):
-        env = self.deployment.environment
+    def verify(self):
+        pass
+
+    def update(self, host):
+        env = self.environment
         blacklist = ['.batou', 'work', '.git', '.hg', '.vagrant',
                      '.batou-lock']
         for candidate in os.listdir(env.base_dir):
@@ -77,15 +100,15 @@ class RSyncRepository(object):
                 continue
 
             source = os.path.join(env.base_dir, candidate)
-            target = os.path.join(self.remote_base, candidate)
+            target = os.path.join(host.remote_base, candidate)
             output.annotate("rsync source: {}".format(source), debug=True)
             output.annotate("rsync target: {}".format(target), debug=True)
             rsync = execnet.RSync(source, verbose=False)
-            rsync.add_target(self.gateway, target)
+            rsync.add_target(host.gateway, target)
             rsync.send()
 
 
-class MercurialRepository(object):
+class MercurialRepository(Repository):
 
     root = None
 
@@ -95,7 +118,7 @@ class MercurialRepository(object):
             self.environment.base_dir, self.root)
 
 
-class MercurialPullRepository(object):
+class MercurialPullRepository(Repository):
 
     def verify(self):
         pass
@@ -130,7 +153,7 @@ class MercurialPullRepository(object):
                     local_id, remote_id))
 
 
-class MercurialBundleRepository(object):
+class MercurialBundleRepository(Repository):
 
     def update(self, host):
         heads = host.rpc.current_heads()

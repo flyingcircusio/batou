@@ -1,5 +1,6 @@
 from batou import output, DeploymentError
 from batou import remote_core
+from batou.update import generate_bootstrap
 import os
 import sys
 
@@ -130,23 +131,12 @@ class RemoteHost(Host):
         self.remote_repository = self.rpc.ensure_repository(
             env.target_directory, env.update_method)
         self.remote_base = self.rpc.ensure_base(
-            self.deployment.deployment_base)
+            env.deployment_base)
 
-        if env.update_method in ['pull', 'bundle']:
-            self.update_hg()
-        elif env.update_method == 'rsync':
-            self.update_rsync()
-        else:
-            raise ValueError(
-                'unsupported update method: {}'.format(env.update_method))
+        env.repository.update(self)
 
-        develop = os.environ.get('BATOU_DEVELOP')
-        if '://' not in develop:
-            develop = os.path.abspath(develop)
-        self.rpc.build_batou(self.deployment.deployment_base,
-                             fast=self.deployment.fast,
-                             version=os.environ.get('BATOU_VERSION'),
-                             develop=develop)
+        bootstrap = generate_bootstrap(env.version, env.develop)
+        self.rpc.build_batou(env.deployment_base, bootstrap, True)
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.
@@ -162,5 +152,9 @@ class RemoteHost(Host):
         self.rpc.setup_deployment(
             self.remote_base,
             env.name,
-            self.host.fqdn,
+            self.fqdn,
             env.overrides)
+
+    def disconnect(self):
+        self.gateway.exit()
+

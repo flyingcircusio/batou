@@ -6,13 +6,17 @@ import os.path
 bootstrap_template = os.path.dirname(__file__) + '/bootstrap-template'
 
 
-def update_bootstrap(version, develop):
+def generate_bootstrap(version, develop):
     engine = batou.template.Jinja2Engine()
     template = open(bootstrap_template, 'r').read()
-    bootstrap = engine.expand(template, dict(version=version, develop=develop))
+    return engine.expand(template, dict(version=version, develop=develop))
 
+
+def update_bootstrap(version, develop):
+    bootstrap = generate_bootstrap(version, develop)
     with open('batou', 'w') as b:
         b.write(bootstrap)
+    os.chmod('batou', 0o755)
 
 
 def main(version, develop, finish):

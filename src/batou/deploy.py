@@ -3,8 +3,6 @@ from .utils import locked, self_id
 from .utils import notify
 from batou import DeploymentError, ConfigurationError
 from batou._output import output, TerminalBackend
-from batou.repository import detect_repository
-import os.path
 import sys
 
 
@@ -28,17 +26,6 @@ class Deployment(object):
         self.environment = Environment(
             self.environment, self.timeout, self.platform)
         self.environment.load()
-
-        # Verify the repository
-        output.step("main", "Verifying repository ...")
-        self.repository = detect_repository(self.environment)
-        self.repository.verify()
-
-        # The deployment base is the path relative to the
-        # repository where batou is located (with ./batou,
-        # ./environments, and ./components)
-        self.deployment_base = os.path.relpath(self.environment.base_dir,
-                                               self.repository.root)
 
         output.step("main", "Loading secrets ...")
         self.environment.load_secrets()
@@ -83,13 +70,13 @@ def main(environment, platform, timeout, dirty, fast):
             deployment.deploy()
             deployment.disconnect()
         except ConfigurationError as e:
-            if e not in environment.exceptions:
-                environment.exceptions.append(e)
+            if e not in deployment.environment.exceptions:
+                deployment.environment.exceptions.append(e)
             # Report on why configuration failed.
-            for exception in environment.exceptions:
+            for exception in deployment.environment.exceptions:
                 exception.report()
             output.section("{} ERRORS - CONFIGURATION FAILED".format(
-                           len(environment.exceptions)), red=True)
+                           len(deployment.environment.exceptions)), red=True)
             notify('Configuration failed',
                    'batou failed to configure the environment. '
                    'Check your console for details.')
