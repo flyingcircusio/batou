@@ -18,10 +18,12 @@ def test_remote_deployment_initializable(sample_service):
 
 
 def test_remote_bundle_breaks_on_missing_head(sample_service):
+    cmd('hg init')
     env = mock.Mock()
+    env.base_dir = sample_service
     h = RemoteHost('asdf', env)
     from batou.repository import MercurialBundleRepository
-    repository = MercurialBundleRepository()
+    repository = MercurialBundleRepository(env)
     h.rpc = mock.Mock()
     h.rpc.current_heads.return_value = []
     with pytest.raises(ValueError) as e:

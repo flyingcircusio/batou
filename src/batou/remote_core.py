@@ -151,7 +151,7 @@ def setup_deployment(
     global deployment
     deployment = Deployment(*args)
     deployment.load()
-    
+
 
 def deploy(root):
     deployment.deploy(root)

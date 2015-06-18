@@ -170,7 +170,7 @@ class Environment(object):
         if self.branch is None:
             self.branch = u'default'
         if self.update_method is None:
-            self.update_method = 'pull'
+            self.update_method = 'rsync'
         if self.connect_method is None:
             self.connect_method = 'ssh'
 
