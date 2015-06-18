@@ -1,4 +1,4 @@
-from batou import UpdateNeeded
+from batou import UpdateNeeded, SilentConfigurationError
 from batou.component import Component, RootComponent, platform, Attribute
 from batou.component import handle_event
 from mock import Mock
@@ -415,7 +415,7 @@ def test_require_one_convenience_api_returns_scalar():
 def test_require_one_convenience_raises_if_no_result():
     c = Component()
     c.require = Mock(return_value=[])
-    with pytest.raises(KeyError):
+    with pytest.raises(SilentConfigurationError):
         c.require_one('asdf')
 
 
