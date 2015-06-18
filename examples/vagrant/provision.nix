@@ -2,5 +2,8 @@
 
 {
 
+    environment.systemPackages = with pkgs; [
+        mercurial
+    ];
   
 }
