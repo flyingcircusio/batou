@@ -28,6 +28,10 @@ class Deployment(object):
         self.environment.deployment = self
         self.environment.load()
 
+        # This is located here to avoid duplicating the verification check
+        # when loading the repository on the remote environment object.
+        self.environment.repository.verify()
+
         output.step("main", "Loading secrets ...")
         self.environment.load_secrets()
 
@@ -85,12 +89,12 @@ def main(environment, platform, timeout, dirty, fast):
         except DeploymentError:
             notify('Deployment failed',
                    '{} encountered an error.'.format(environment))
-            output.section("DEPLOYMENT FAILED (1)", red=True)
+            output.section("DEPLOYMENT FAILED", red=True)
             sys.exit(1)
         except Exception:
             # An unexpected exception happened. Bad.
             output.error("Unexpected exception", exc_info=sys.exc_info())
-            output.section("DEPLOYMENT FAILED (2)", red=True)
+            output.section("DEPLOYMENT FAILED", red=True)
             notify('Deployment failed', '')
             sys.exit(1)
         else:

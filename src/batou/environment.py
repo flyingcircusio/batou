@@ -74,6 +74,7 @@ class Environment(object):
     timeout = None
     target_directory = None
 
+    repository_url = None
     version = None
     develop = None
 
@@ -135,7 +136,6 @@ class Environment(object):
         # Verify the repository
         output.step("main", "Verifying repository ...")
         self.repository = Repository.from_environment(self)
-        self.repository.verify()
 
         # The deployment base is the path relative to the
         # repository where batou is located (with ./batou,
@@ -150,7 +150,7 @@ class Environment(object):
         environment = config.get('environment', {})
         for key in ['service_user', 'host_domain', 'target_directory',
                     'connect_method', 'update_method', 'branch',
-                    'platform', 'timeout', 'develop']:
+                    'platform', 'timeout', 'develop', 'repository_url']:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:

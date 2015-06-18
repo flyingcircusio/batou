@@ -71,6 +71,7 @@ class RSyncRepository(Repository):
 class MercurialRepository(Repository):
 
     root = None
+    _upstream = None
 
     def __init__(self, environment):
         super(MercurialRepository, self).__init__(environment)
@@ -80,18 +81,36 @@ class MercurialRepository(Repository):
 
     @property
     def upstream(self):
-        if self._upstream is None:
+        if self.environment.repository_url is not None:
+            self._upstream = self.environment.repository_url
+        elif self._upstream is None:
             self._upstream = cmd('hg showconfig paths')[0]
             self._upstream = self._upstream.split('\n')[0].strip()
             assert self._upstream.startswith('paths.default')
             self._upstream = self.upstream.split('=')[1]
         return self._upstream
 
+    def update(self, host):
+        env = self.environment
+
+        self._ship(host)
+
+        remote_id = host.rpc.update_working_copy(env.branch)
+        local_id, _ = cmd('hg id -i')
+        if self.environment.deployment.dirty:
+            local_id = local_id.replace('+', '')
+        local_id = local_id.strip()
+        if remote_id != local_id:
+            raise RuntimeError(
+                'Working copy parents differ. Local: {} Remote: {}'.format(
+                    local_id, remote_id))
+
     def verify(self):
         # Safety belt that we're acting on a clean repository.
         if self.environment.deployment.dirty:
             output.annotate(
-                "Dirty deployment - not verifying repository.", red=True)
+                "You are running a dirty deployment. This can cause "
+                "inconsistencies -- continuing on your own risk!", red=True)
             return
 
         try:
@@ -124,36 +143,13 @@ Please push first.
 
 class MercurialPullRepository(MercurialRepository):
 
-    def update(self, host):
-        env = self.deployment.environment
-
-        self.rpc.pull_code(
-            upstream=self.deployment.upstream)
-
-        remote_id = self.rpc.update_working_copy(env.branch)
-        local_id, _ = cmd('hg id -i')
-        if self.deployment.dirty:
-            local_id = local_id.replace('+', '')
-        local_id = local_id.strip()
-        if remote_id != local_id:
-            raise RuntimeError(
-                'Working copy parents differ. Local: {} Remote: {}'.format(
-                    local_id, remote_id))
-
-        remote_id = self.rpc.update_working_copy(env.branch)
-        local_id, _ = cmd('hg id -i')
-        if self.deployment.dirty:
-            local_id = local_id.replace('+', '')
-        local_id = local_id.strip()
-        if remote_id != local_id:
-            raise RuntimeError(
-                'Working copy parents differ. Local: {} Remote: {}'.format(
-                    local_id, remote_id))
+    def _ship(self, host):
+        host.rpc.pull_code(upstream=self.upstream)
 
 
 class MercurialBundleRepository(MercurialRepository):
 
-    def update(self, host):
+    def _ship(self, host):
         heads = host.rpc.current_heads()
         if not heads:
             raise ValueError("Remote repository did not find any heads. "
@@ -163,12 +159,16 @@ class MercurialBundleRepository(MercurialRepository):
         bases = ' '.join('--base {}'.format(x) for x in heads)
         cmd('hg -qy bundle {} {}'.format(bases, bundle_file),
             acceptable_returncodes=[0, 1])
-        have_changes = os.stat(bundle_file).st_size > 0
-        if not have_changes:
+        change_size = os.stat(bundle_file).st_size
+        if not change_size:
             return
+        output.annotate(
+            'Sending {} bytes of changes'.format(change_size), debug=True)
         rsync = execnet.RSync(bundle_file, verbose=False)
         rsync.add_target(host.gateway,
                          host.remote_repository + '/batou-bundle.hg')
         rsync.send()
         os.unlink(bundle_file)
+        output.annotate(
+            'Unbundling changes', debug=True)
         host.rpc.unbundle_code()
