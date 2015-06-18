@@ -33,7 +33,7 @@ class ConversionError(ConfigurationError):
             red=True)
         output.tabular(
             'Attribute',
-            '{}:{}.{}'.format(
+            '{}.{}'.format(
                 self.component._breadcrumbs,
                 self.key),
             red=True)
