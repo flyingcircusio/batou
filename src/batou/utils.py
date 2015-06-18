@@ -227,6 +227,7 @@ def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
         add_to_env = env
         env = os.environ.copy()
         env.update(add_to_env)
+    output.annotate('cmd: {}'.format(cmd), debug=True)
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,

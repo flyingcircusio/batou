@@ -38,6 +38,8 @@ class Deployment(object):
     def connect(self):
         output.section("Connecting")
 
+        self.environment.prepare_connect()
+
         for i, host in enumerate(self.environment.hosts.values(), 1):
             output.step(host.name, "Connecting ({}/{})".format(
                         i, len(self.environment.hosts)))
