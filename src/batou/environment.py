@@ -134,8 +134,6 @@ class Environment(object):
             self.overrides.setdefault(root_name, {})
             self.overrides[root_name].update(config[section])
 
-        # Verify the repository
-        output.step("main", "Verifying repository ...")
         self.repository = Repository.from_environment(self)
 
         # The deployment base is the path relative to the
@@ -229,6 +227,8 @@ class Environment(object):
             component_name, hostname))
 
     def prepare_connect(self):
+        if self.deployment.fast:
+            return
         if self.connect_method == 'vagrant':
             output.step("vagrant", "Ensuring machines are up ...")
             cmd('vagrant up')

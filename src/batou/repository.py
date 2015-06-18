@@ -60,8 +60,8 @@ class RSyncRepository(Repository):
 
             source = os.path.join(env.base_dir, candidate)
             target = os.path.join(host.remote_base, candidate)
-            output.annotate("rsync source: {}".format(source), debug=True)
-            output.annotate("rsync target: {}".format(target), debug=True)
+            output.annotate("rsync: {} -> {}".format(source, target),
+                            debug=True)
             rsync = execnet.RSync(source, verbose=False)
             rsync.add_target(host.gateway, target)
             rsync.send()
