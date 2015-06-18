@@ -26,7 +26,7 @@ def mock_remote_core(monkeypatch):
 
 
 def test_update_code_existing_target(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir), 'pull')
+    remote_core.ensure_repository(str(tmpdir), 'hg-pull')
     remote_core.pull_code('http://bitbucket.org/gocept/batou')
     remote_core.update_working_copy('default')
 
@@ -39,7 +39,7 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
 
 
 def test_update_code_new_target(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir) + '/foo', 'bundle')
+    remote_core.ensure_repository(str(tmpdir) + '/foo', 'hg-bundle')
     remote_core.pull_code('http://bitbucket.org/gocept/batou')
     remote_core.update_working_copy('default')
 
@@ -52,7 +52,7 @@ def test_update_code_new_target(mock_remote_core, tmpdir):
 
 
 def test_bundle_shipping(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir) + '/foo', 'bundle')
+    remote_core.ensure_repository(str(tmpdir) + '/foo', 'hg-bundle')
     remote_core.cmd.return_value = """\
 changeset: 371:revision-a
 nsummary:fdsa
@@ -75,17 +75,17 @@ changeset: 372:revision-b
 
 
 def test_build_batou_fresh_install(mock_remote_core):
-    remote_core.build_batou('.')
+    remote_core.build_batou('.', 'asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 1
     assert calls.next() == './batou --help'
 
 
 def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir), 'pull')
+    remote_core.ensure_repository(str(tmpdir), 'hg-pull')
     os.mkdir(remote_core.target_directory + '/bin')
     open(remote_core.target_directory + '/bin/python2.7', 'w')
-    remote_core.build_batou('.')
+    remote_core.build_batou('.', 'asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 2
     calls.next()  # skip ensure_repository

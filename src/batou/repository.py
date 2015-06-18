@@ -3,7 +3,6 @@ from batou.utils import cmd
 import execnet
 import os
 import subprocess
-import sys
 import tempfile
 
 
