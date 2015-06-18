@@ -9,6 +9,12 @@ class UpdateNeeded(Exception):
 class ConfigurationError(Exception):
     """Indicates that an environment could not be configured successfully."""
 
+    def __init__(self, message):
+        self.message = message
+
+    def report(self):
+        output.error(self.message)
+
 
 class ConversionError(ConfigurationError):
     """An override attribute could not be converted properly."""

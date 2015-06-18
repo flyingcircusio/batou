@@ -1,4 +1,5 @@
 from ..cron import CronJob, CronTab, PurgeCronTab
+from batou import ConfigurationError
 import batou.vfs
 import os.path
 import pytest
@@ -27,7 +28,7 @@ def test_pruge_crontab_is_empty(root):
 
 def test_empty_crontab_must_raise(root):
     root.environment.vfs_sandbox = batou.vfs.Developer(root.environment, None)
-    with pytest.raises(ValueError):
+    with pytest.raises(ConfigurationError):
         root.component += CronTab()
 
 
@@ -35,5 +36,5 @@ def test_non_empty_pruge_crontab_must_raise(root):
     root.environment.vfs_sandbox = batou.vfs.Developer(root.environment, None)
     root.component += CronJob('command1', timing='* * * * *')
     root.component += CronJob('command2', timing='* * * * *')
-    with pytest.raises(ValueError):
+    with pytest.raises(ConfigurationError):
         root.component += CronTab(purge=True)

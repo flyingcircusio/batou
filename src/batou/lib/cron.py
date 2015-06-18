@@ -1,4 +1,4 @@
-from batou import UpdateNeeded
+from batou import UpdateNeeded, ConfigurationError
 from batou.component import Component, HookComponent, platform
 from batou.lib.file import File
 import os
@@ -40,9 +40,10 @@ class CronTab(Component):
     def configure(self):
         self.jobs = self.require(CronJob.key, host=self.host, strict=False)
         if self.purge and self.jobs:
-            raise ValueError('expected empty crontab, but found jobs')
+            raise ConfigurationError(
+                'Found cron jobs, but expecting an empty crontab.')
         elif not self.purge and not self.jobs:
-            raise ValueError('expected crontab, but found no jobs')
+            raise ConfigurationError('No cron jobs found.')
         self.jobs.sort(key=lambda job: job.command + ' ' + job.args)
         self.crontab = File('crontab', source=self.crontab_template)
         self += self.crontab
