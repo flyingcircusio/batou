@@ -1,7 +1,7 @@
 from .environment import Environment
 from .utils import locked, self_id
 from .utils import notify
-from batou import DeploymentError, ConfigurationError
+from batou import DeploymentError, ConfigurationError, SilentConfigurationError
 from batou._output import output, TerminalBackend
 import sys
 
@@ -82,6 +82,8 @@ def main(environment, platform, timeout, dirty, fast):
                 deployment.environment.exceptions.append(e)
             # Report on why configuration failed.
             for exception in deployment.environment.exceptions:
+                if isinstance(SilentConfigurationError, e):
+                    continue
                 exception.report()
             output.section("{} ERRORS - CONFIGURATION FAILED".format(
                            len(deployment.environment.exceptions)), red=True)

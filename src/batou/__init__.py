@@ -37,6 +37,15 @@ class ConversionError(ConfigurationError):
         output.tabular('Error', str(self.error), red=True)
 
 
+class SilentConfigurationError(Exception):
+    """These are exceptions that will be reported by other exceptions.
+
+    They basically only influence control flow during configuration and
+    are manually placed to avoid double reporting.
+
+    """
+
+
 class MissingOverrideAttributes(ConfigurationError):
 
     def __init__(self, component, attributes):

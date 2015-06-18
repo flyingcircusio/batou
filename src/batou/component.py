@@ -1,4 +1,5 @@
 from batou import output, DuplicateComponent
+from batou import SilentConfigurationError
 import ast
 import batou
 import batou.c
@@ -312,9 +313,7 @@ class Component(object):
                 'Expected only one result, got multiple for (key={}, host={})'.
                 format(key, host))
         elif len(resources) == 0:
-            raise KeyError(
-                'Expected one result, got none for (key={}, host={})'.
-                format(key, host))
+            raise SilentConfigurationError()
         return resources[0]
 
     def assert_cmd(self, *args, **kw):
