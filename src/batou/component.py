@@ -103,6 +103,10 @@ class Component(object):
         self.__dict__.update(kw)
 
     @property
+    def defdir(self):
+        return self.root.defdir
+
+    @property
     def host(self):
         return self.root.host
 
