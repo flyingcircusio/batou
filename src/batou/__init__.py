@@ -73,6 +73,7 @@ class MissingOverrideAttributes(ConfigurationError):
             'Attributes',
             '.'.join(self.attributes),
             red=True)
+
         # TODO point to specific line in secrets or environments
         # cfg file and show context
 
