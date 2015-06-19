@@ -127,7 +127,8 @@ class Component(object):
         self.parent = parent
         self.workdir = parent.workdir
         self.sub_components = []
-        self._overrides(self.root.overrides)
+        if self.parent is self.root:
+            self._overrides(self.root.overrides)
         self.configure()
         self += self.get_platform()
         self.__setup_event_handlers__()
