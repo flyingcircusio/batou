@@ -29,7 +29,7 @@ class ConversionError(ConfigurationError):
     def report(self):
         output.error('Failed override attribute conversion')
         output.tabular(
-            'Host', self.component.host.name,
+            'Host', self.component.root.host.name,
             red=True)
         output.tabular(
             'Attribute',
@@ -63,7 +63,7 @@ class MissingOverrideAttributes(ConfigurationError):
     def report(self):
         output.error('Overrides for undefined attributes')
         output.tabular(
-            'Host', self.component.host.name,
+            'Host', self.component.root.host.name,
             red=True)
         output.tabular(
             'Component',
@@ -87,7 +87,7 @@ class MissingComponent(ConfigurationError):
         output.error('Missing component')
         output.tabular(
             'Host',
-            self.component.host.name,
+            self.component.root.host.name,
             red=True)
         output.tabular(
             'Component',
