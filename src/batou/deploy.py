@@ -42,8 +42,9 @@ class Deployment(object):
         self.environment.prepare_connect()
 
         for i, host in enumerate(self.environment.hosts.values(), 1):
-            output.step(host.name, "Connecting ({}/{})".format(
-                        i, len(self.environment.hosts)))
+            output.step(host.name, "Connecting via {} ({}/{})".format(
+                        self.environment.connect_method, i,
+                        len(self.environment.hosts)))
             host.connect()
             host.start()
 
