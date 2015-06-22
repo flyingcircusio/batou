@@ -1,6 +1,7 @@
 from batou import UpdateNeeded, output
 from batou.component import Component
 from batou.lib.file import Directory
+from batou.utils import CmdExecutionError
 import os.path
 import re
 
@@ -71,10 +72,9 @@ class Clone(Component):
     @property
     def has_incoming_changesets(self):
         try:
-            self.cmd('hg incoming -q -l1', silent=True)
-        except RuntimeError as e:
-            returncode = e.args[1]
-            if returncode == 1:
+            self.cmd('hg incoming -q -l1')
+        except CmdExecutionError as e:
+            if e.returncode == 1:
                 return False
             raise
         return True
@@ -83,10 +83,9 @@ class Clone(Component):
     def has_outgoing_changesets(self):
         try:
             with self.chdir(self.target):
-                self.cmd('hg outgoing -q -l1', silent=True)
-        except RuntimeError as e:
-            returncode = e.args[1]
-            if returncode == 1:
+                self.cmd('hg outgoing -q -l1')
+        except CmdExecutionError as e:
+            if e.returncode == 1:
                 return False
             raise
         return True

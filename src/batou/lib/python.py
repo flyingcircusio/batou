@@ -1,7 +1,8 @@
-from batou import UpdateNeeded, output
+from batou import UpdateNeeded
 from batou.component import Component
 from batou.lib.archive import Extract
 from batou.lib.download import Download
+from batou.utils import CmdExecutionError
 import os.path
 
 
@@ -77,9 +78,8 @@ class VirtualEnvPyBase(Component):
             self.cmd(
                 'bin/python -c "import pkg_resources; '
                 'assert pkg_resources.require(\'{}\')[0].version == \'{}\'"'
-                .format(pkg.package, pkg.version), silent=True)
-        except RuntimeError as e:
-            output.annotate(e[3], debug=True)
+                .format(pkg.package, pkg.version))
+        except CmdExecutionError:
             raise UpdateNeeded()
         # Is the package usable? Is the package a module?  This might be
         # overspecific - I'm looking for a way to deal with:
@@ -90,9 +90,8 @@ class VirtualEnvPyBase(Component):
         if pkg.check_package_is_module:
             try:
                 self.cmd('bin/python -c "import pkg_resources; '
-                         'import {0};{0}.__file__"'.format(pkg.package),
-                         silent=True)
-            except RuntimeError:
+                         'import {0};{0}.__file__"'.format(pkg.package))
+            except CmdExecutionError:
                 raise UpdateNeeded()
 
     def update_pkg(self, pkg):

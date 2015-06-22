@@ -1,5 +1,5 @@
 from batou import DeploymentError, output
-from batou.utils import cmd
+from batou.utils import cmd, CmdExecutionError
 import execnet
 import os
 import subprocess
@@ -115,8 +115,8 @@ class MercurialRepository(Repository):
             return
 
         try:
-            status, _ = cmd('hg -q stat', silent=True)
-        except RuntimeError:
+            status, _ = cmd('hg -q stat')
+        except CmdExecutionError:
             output.error('Unable to check repository status. '
                          'Is there an HG repository here?')
             raise
@@ -132,7 +132,7 @@ Please commit and push first.
                 raise DeploymentError()
         try:
             cmd('hg -q outgoing -l 1', acceptable_returncodes=[1])
-        except RuntimeError:
+        except CmdExecutionError:
             output.error("""\
 Your repository has outgoing changes.
 

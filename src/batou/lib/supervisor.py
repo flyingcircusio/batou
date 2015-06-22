@@ -224,7 +224,7 @@ class RunningSupervisor(Component):
             raise UpdateNeeded()
 
     def is_running(self):
-        pid, err = self.cmd('bin/supervisorctl pid', silent=True)
+        pid, err = self.cmd('bin/supervisorctl pid')
         try:
             int(pid) > 0
         except ValueError:
@@ -251,7 +251,7 @@ class RunningSupervisor(Component):
             out, err = '', ''
             # Supervisor tends to "randomly" set zero and non-zero exit codes.
             # See https://github.com/Supervisor/supervisor/issues/24 :-/
-            out, err = self.cmd('bin/supervisorctl pid', silent=True,
+            out, err = self.cmd('bin/supervisorctl pid',
                                 ignore_returncode=True)
             if 'SHUTDOWN_STATE' in out:
                 time.sleep(1)

@@ -1,4 +1,4 @@
-from batou import output
+from batou import output, DeploymentError
 from collections import defaultdict
 import contextlib
 import fcntl
@@ -209,8 +209,21 @@ def topological_sort(graph):
     return sorted
 
 
-class CmdExecutionError(RuntimeError):
-    pass
+class CmdExecutionError(DeploymentError):
+
+    def __init__(self, cmd, returncode, stdout, stderr):
+        self.cmd = cmd
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+    def report(self):
+        output.error(self.cmd)
+        output.tabular("Return code", str(self.returncode), red=True)
+        output.line('STDOUT', red=True)
+        output.annotate(self.stdout)
+        output.line('STDERR', red=True)
+        output.annotate(self.stderr)
 
 
 def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
@@ -242,18 +255,9 @@ def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
         return process
     stdout, stderr = process.communicate()
     if process.returncode not in acceptable_returncodes:
-        if not silent:
-            print("$ {}".format(cmd))
-            print("STDOUT")
-            print("=" * 72)
-            print(stdout)
-            print("STDERR")
-            print("=" * 72)
-            print(stderr)
         if not ignore_returncode:
             raise CmdExecutionError(
-                'Command "{}" returned unsuccessfully.'.format(cmd),
-                process.returncode, stdout, stderr)
+                cmd, process.returncode, stdout, stderr)
     return stdout, stderr
 
 

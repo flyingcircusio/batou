@@ -1,4 +1,4 @@
-from batou.utils import hash
+from batou.utils import hash, CmdExecutionError
 from batou.utils import remove_nodes_without_outgoing_edges, cmd
 from batou.utils import resolve, MultiFile, locked, notify, Address
 from batou.utils import revert_graph, topological_sort, flatten, NetLoc
@@ -211,7 +211,7 @@ def test_cmd_quotes_spacey_args(popen):
 def test_cmd_ignores_specified_returncodes(popen):
     popen.return_value.returncode = 4
     popen.return_value.communicate.return_value = '', ''
-    with pytest.raises(RuntimeError):
+    with pytest.raises(CmdExecutionError):
         cmd('asdf')
     cmd('asdf', acceptable_returncodes=[0, 4])
 
