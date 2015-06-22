@@ -62,8 +62,8 @@ class InstallCrontab(Component):
 
     def verify(self):
         try:
-            current, _ = self.cmd('crontab -l', silent=True)
-        except:
+            current, _ = self.cmd('crontab -l')
+        except Exception:
             current = ''
         current = ignore_comments(current)
         new = ignore_comments(self.crontab.content)

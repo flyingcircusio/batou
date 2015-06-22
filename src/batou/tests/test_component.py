@@ -1,6 +1,7 @@
 from batou import UpdateNeeded, SilentConfigurationError
 from batou.component import Component, RootComponent, platform, Attribute
 from batou.component import handle_event
+from batou.utils import CmdExecutionError
 from mock import Mock
 import batou
 import os
@@ -296,15 +297,14 @@ def test_cmd_returns_output():
 def test_cmd_raises_if_error():
     c = Component()
     c.prepare(MockRoot())
-    with pytest.raises(RuntimeError):
+    with pytest.raises(CmdExecutionError):
         c.cmd('non-existing-command')
 
 
 def test_cmd_returns_output_if_ignore_returncode():
     c = Component()
     c.prepare(MockRoot())
-    out, err = c.cmd('echo important output && false', silent=True,
-                     ignore_returncode=True)
+    out, err = c.cmd('echo important output && false', ignore_returncode=True)
     assert 'important output\n' == out
 
 
@@ -387,10 +387,10 @@ def test_component_manages_working_dir(root):
 def test_cmd_execution_failed_gives_command_in_exception():
     c = Component()
     c.prepare(MockRoot())
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(CmdExecutionError) as e:
         c.cmd('asdf')
-    assert str(e.value[0]) == 'Command "asdf" returned unsuccessfully.'
-    assert e.value[1] == 127
+    assert e.value.cmd == 'asdf'
+    assert e.value.returncode == 127
 
 
 def test_cmd_should_not_stop_if_process_expects_input():

@@ -118,15 +118,15 @@ class Untar(Extractor):
                                 for x in self.exclude)
 
     def get_names_from_archive(self):
-        # XXX This does not work combined with strip ... :/
-        stdout, stderr = self.cmd(self.expand(
-            'tar tf {{component.archive}} {{component.exclude}}'))
+        # Note, this does not work combined with strip ... :/
+        stdout, stderr = self.cmd(
+            'tar tf {{component.archive}} {{component.exclude}}')
         return stdout.splitlines()
 
     def update(self):
-        self.cmd(self.expand(
+        self.cmd(
             'tar xf {{component.archive}} -C {{component.target}} '
-            '--strip-components {{component.strip}}'))
+            '--strip-components {{component.strip}}')
 
 
 class DMGVolume(object):

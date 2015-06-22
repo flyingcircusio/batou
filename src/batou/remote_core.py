@@ -181,7 +181,6 @@ if __name__ == '__channelexec__':
             import batou
         except ImportError:
             batou = None
-
         try:
             result = locals()[task](*args, **kw)
             channel.send(('batou-result', result))
@@ -196,8 +195,7 @@ if __name__ == '__channelexec__':
                     len(deployment.environment.exceptions)), red=True)
             channel.send(('batou-error', None))
         except getattr(batou, 'DeploymentError', None) as e:
-            exception.report()
-            batou.output.section("DEPLOYMENT FAILED", red=True)
+            e.report()
             channel.send(('batou-error', None))
         except Exception as e:
             # I voted for duck-typing here as we may be running in the

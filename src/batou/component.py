@@ -323,9 +323,8 @@ class Component(object):
 
     def assert_cmd(self, *args, **kw):
         try:
-            kw['silent'] = True
             self.cmd(*args, **kw)
-        except RuntimeError:
+        except batou.utils.CmdExecutionError:
             raise batou.UpdateNeeded()
 
     def assert_file_is_current(self, reference, requirements=[], **kw):
