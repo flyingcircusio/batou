@@ -18,6 +18,7 @@ import glob
 import os
 import os.path
 import pwd
+import sys
 
 
 class ConfigSection(dict):
@@ -265,8 +266,9 @@ class Environment(object):
                 except Exception as e:
                     # An unknown exception which we have to work harder
                     # to report gracefully.
+                    ex_type, ex, tb = sys.exc_info()
                     exceptions.append(
-                        UnknownComponentConfigurationError(root, e))
+                        UnknownComponentConfigurationError(root, e, tb))
                     retry.add(root)
 
             retry.update(self.resources.dirty_dependencies)

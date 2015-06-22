@@ -1,5 +1,6 @@
 # This code must not cause non-stdlib imports to support self-bootstrapping.
 from ._output import output
+import traceback
 
 
 class UpdateNeeded(Exception):
@@ -110,21 +111,34 @@ class DuplicateComponent(ConfigurationError):
 class UnknownComponentConfigurationError(ConfigurationError):
     """An unknown error occured while configuring a component."""
 
-    def __init__(self, root, exception):
+    def __init__(self, root, exception, tb):
         self.root = root
         self.exception = exception
+        stack = traceback.extract_tb(tb)
+        from batou import environment, component
+        while True:
+            # Delete remoting-internal stack frames.'
+            line = stack.pop(0)
+            if line[0] in ['<string>', '<remote exec>',
+                           environment.__file__.rstrip('c'),
+                           component.__file__.rstrip('c')]:
+                continue
+            stack.insert(0, line)
+            break
+        self.traceback = ''.join(traceback.format_list(stack))
 
     def report(self):
-        output.error("Unknown configuration error")
+        output.error(repr(self.exception))
         output.annotate(
-            "(Note, this might be batou bug, please report it.)", red=True)
+            "This /might/ be a batou bug. Please consider reporting it.\n",
+            red=True)
         output.tabular(
             "Host", self.root.host.name, red=True)
         output.tabular(
-            "Component", self.root.name, red=True)
-        # TODO provide traceback in debug output
-        output.tabular(
-            "Exception", str(self.exception), red=True)
+            "Component", self.root.name + '\n', red=True)
+        output.annotate('Traceback (simplified, most recent call last):',
+                        red=True)
+        output.annotate(self.traceback, red=True)
 
 
 class UnusedResources(ConfigurationError):
@@ -240,7 +254,7 @@ class NonConvergingWorkingSet(ConfigurationError):
     def report(self):
         # TODO show this last or first, but not in the middle
         # of everything
-        output.error("{} remaining unconfigured components".format(
+        output.error("{} remaining unconfigured component(s)".format(
                      len(self.roots)))
         # TODO show all incl. their host name in -vv or so
         # output.annotate(', '.join(c.name for c in self.roots))
