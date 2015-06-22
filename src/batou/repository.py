@@ -49,7 +49,7 @@ class RSyncRepository(Repository):
 
     def verify(self):
         output.annotate(
-            "You are using rsync. This is a non-verifying repository, "
+            "You are using rsync. This is a non-verifying repository "
             "-- continuing on your own risk!", red=True)
 
     def update(self, host):
