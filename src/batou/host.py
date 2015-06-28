@@ -108,23 +108,36 @@ class RemoteHost(Host):
     def connect(self, interpreter='python2.7'):
         if self.gateway:
             output.annotate('Reconnecting ...', debug=True)
-            self.gateway.exit()
+            self.disconnect()
 
-        self.gateway = execnet.makegateway(
-            "ssh={}//python={}//type={}".format(
-                self.fqdn, interpreter,
-                self.environment.connect_method))
-        self.channel = self.gateway.remote_exec(remote_core)
-
-        if self.rpc.whoami() != self.environment.service_user:
-            self.gateway.exit()
+        try_sudo = False
+        try:
             self.gateway = execnet.makegateway(
-                "ssh={}//python=sudo -u {} {}//type={}".format(
+                "ssh={}//python={}//type={}".format(
+                    self.fqdn, interpreter,
+                    self.environment.connect_method))
+            self.channel = self.gateway.remote_exec(remote_core)
+            if self.rpc.whoami() != self.environment.service_user:
+                try_sudo = True
+                self.disconnect()
+        except IOError:
+            try_sudo = True
+
+        if try_sudo:
+            output.annotate('Trying to switch to sudo ...', debug=True)
+            # Call sudo, ensuring:
+            # - no password will ever be asked (fail instead)
+            # - we ensure a consistent set of environment variables
+            #   irregardless of the local configuration of env_reset, etc.
+            self.gateway = execnet.makegateway(
+                "ssh={}//python=sudo -ni -u {} {}//type={}".format(
                     self.fqdn,
                     self.environment.service_user,
                     interpreter,
                     self.environment.connect_method))
             self.channel = self.gateway.remote_exec(remote_core)
+
+        output.annotate('Connected ...', debug=True)
 
     def start(self):
         output.step(self.name, 'Bootstrapping ...', debug=True)
