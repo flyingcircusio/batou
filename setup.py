@@ -39,8 +39,8 @@ setup(
         [zest.releaser.postreleaser.after]
             update_requirements = batou.release:update_requirements
     """,
-    author='Christian Theune <ct@gocept.com>',
-    author_email='ct@gocept.com',
+    author='Christian Theune',
+    author_email='ct@flyingcircus.io',
     license='BSD (2-clause)',
     url='https://plan.flyingcircus.io/projects/batou',
     keywords='deployment',
