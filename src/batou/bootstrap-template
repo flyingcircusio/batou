@@ -45,6 +45,10 @@ def install_pip():
 base = os.path.dirname(__file__) or '.'
 os.chdir(base)
 
+# clear PYTHONPATH variable to get a defined environment
+if 'PYTHONPATH' in os.environ:
+    del os.environ['PYTHONPATH']
+
 # Do we have a virtualenv?
 if not os.path.exists(base + '/.batou'):
     install_venv()
