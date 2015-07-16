@@ -5,6 +5,9 @@ Changelog
 1.1a1 (unreleased)
 ==================
 
+- Do request an update for packages installed from requirements.txt within
+  the batou environment to help update VCS checkouts that are pinned.
+
 - Clear PYTHONPATH for bootstrapping to avoid accidental interaction with
   unclean Python environments.
 
