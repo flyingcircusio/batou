@@ -83,7 +83,7 @@ def main(environment, platform, timeout, dirty, fast):
                 deployment.environment.exceptions.append(e)
             # Report on why configuration failed.
             for exception in deployment.environment.exceptions:
-                if isinstance(SilentConfigurationError, e):
+                if isinstance(e, SilentConfigurationError):
                     continue
                 exception.report()
             output.section("{} ERRORS - CONFIGURATION FAILED".format(
