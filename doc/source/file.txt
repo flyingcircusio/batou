@@ -27,8 +27,9 @@ Jinja, with the file's parent component made available as ``component``.
 
 .. py:class:: batou.lib.File(path)
 
-Creates a file. The main parameter for File is the target path, and it accepts
-the following additional parameters:
+Creates a file. The main parameter for File is the target path. A ``File`` instance has an attribute ``path`` containing the full, absolute path to the resulting file.
+
+``File`` accepts the following additional parameters:
 
 .. py:attribute:: source
 
