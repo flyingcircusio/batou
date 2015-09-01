@@ -209,7 +209,7 @@ def topological_sort(graph):
     return sorted
 
 
-class CmdExecutionError(DeploymentError):
+class CmdExecutionError(DeploymentError, RuntimeError):
 
     def __init__(self, cmd, returncode, stdout, stderr):
         self.cmd = cmd
