@@ -169,4 +169,3 @@ Presentations from conferences:
 * `EuroPython 2013 - batou (talk slides) <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
 * `PyConDE 2013 - batou (talk video, German) <ttp://pyvideo.org/video/2436/batou-multicomponenthostenvironment-depl>`_
 
-
