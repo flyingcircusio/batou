@@ -28,7 +28,6 @@ Changelog
 
       [environment]
       mode = local
-      mode = local
 
   To specify a manual override on the commandline you can provide the `--local` or `--remote` arguments to the `run` command.
 
