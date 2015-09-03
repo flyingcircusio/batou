@@ -5,6 +5,9 @@ Changelog
 1.1a1 (unreleased)
 ==================
 
+- Add backwards compatibility for `batou remote` to help users
+  migrate their fingers.
+
 - Do request an update for packages installed from requirements.txt within
   the batou environment to help update VCS checkouts that are pinned.
 
