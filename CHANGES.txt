@@ -2,8 +2,8 @@
 Changelog
 =========
 
-1.1a1 (unreleased)
-==================
+1.1.0a1 (2015-09-03)
+====================
 
 - Do request an update for packages installed from requirements.txt within
   the batou environment to help update VCS checkouts that are pinned.
