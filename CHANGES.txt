@@ -5,7 +5,7 @@ Changelog
 1.1.0a2 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Fix updating from Batou 1.0
 
 
 1.1.0a1 (2015-09-03)
