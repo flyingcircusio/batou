@@ -2,8 +2,20 @@
 Changelog
 =========
 
-1.1a1 (unreleased)
-==================
+1.1.0a3 (unreleased)
+====================
+
+- Nothing changed yet.
+
+
+1.1.0a2 (2015-09-03)
+====================
+
+- Fix updating from Batou 1.0
+
+
+1.1.0a1 (2015-09-03)
+====================
 
 - Add backwards compatibility for `batou remote` to help users
   migrate their fingers.
@@ -30,7 +42,6 @@ Changelog
   To force a local or remote invocation use --local and --remote. By default batou will assume a remote environment. To configure an environment's deployment mode use the `mode` attribute in the `environment` section::
 
       [environment]
-      mode = local
       mode = local
 
   To specify a manual override on the commandline you can provide the `--local` or `--remote` arguments to the `run` command.
