@@ -15,8 +15,8 @@ import subprocess
 # download and copy this file to bootstrap a new batou installation.
 BOOTSTRAP_VERSION_MARKER = '{' + '{version}' + '}'
 
-version = ''
-develop = '../..'
+version = os.environ.get('BATOU_VERSION', '')
+develop = os.environ.get('BATOU_DEVELOP', '../..')
 
 
 def cmd(c, quiet=False):
@@ -44,6 +44,10 @@ def install_pip():
 
 base = os.path.dirname(__file__) or '.'
 os.chdir(base)
+
+# clear PYTHONPATH variable to get a defined environment
+if 'PYTHONPATH' in os.environ:
+    del os.environ['PYTHONPATH']
 
 # Do we have a virtualenv?
 if not os.path.exists(base + '/.batou'):
@@ -90,6 +94,7 @@ if '--fast' not in sys.argv:
 
 os.environ['BATOU_VERSION'] = version
 os.environ['BATOU_DEVELOP'] = develop
+
 
 # Pass control over the bare-bone batou's bootstrapping code. Good luck!
 os.execv('.batou/bin/python',
