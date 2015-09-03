@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.1.0a2 (unreleased)
+1.1.0a2 (2015-09-03)
 ====================
 
 - Fix updating from Batou 1.0
