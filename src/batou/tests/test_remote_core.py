@@ -16,7 +16,7 @@ def test_lock():
 
 def test_cmd():
     result = remote_core.cmd('echo "asdf"')
-    assert result == "asdf\n"
+    assert result == ('asdf\n', '')
 
 
 @pytest.fixture
@@ -27,12 +27,12 @@ def mock_remote_core(monkeypatch):
 
 def test_update_code_existing_target(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir), 'hg-pull')
-    remote_core.pull_code('http://bitbucket.org/gocept/batou')
-    remote_core.update_working_copy('default')
+    remote_core.hg_pull_code('http://bitbucket.org/flyingcircus/batou')
+    remote_core.hg_update_working_copy('default')
 
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert calls.next().startswith('hg init /')
-    assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
+    assert calls.next() == 'hg pull http://bitbucket.org/flyingcircus/batou'
     assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'
     assert remote_core.cmd.call_count == 4
@@ -40,18 +40,18 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
 
 def test_update_code_new_target(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir) + '/foo', 'hg-bundle')
-    remote_core.pull_code('http://bitbucket.org/gocept/batou')
-    remote_core.update_working_copy('default')
+    remote_core.hg_pull_code('http://bitbucket.org/flyingcircus/batou')
+    remote_core.hg_update_working_copy('default')
 
     assert remote_core.cmd.call_count == 4
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert calls.next() == 'hg init {}'.format(remote_core.target_directory)
-    assert calls.next() == 'hg pull http://bitbucket.org/gocept/batou'
+    assert calls.next() == 'hg pull http://bitbucket.org/flyingcircus/batou'
     assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'
 
 
-def test_bundle_shipping(mock_remote_core, tmpdir):
+def test_hg_bundle_shipping(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir) + '/foo', 'hg-bundle')
     remote_core.cmd.return_value = """\
 changeset: 371:revision-a
@@ -59,16 +59,16 @@ nsummary:fdsa
 
 changeset: 372:revision-b
 """
-    heads = remote_core.current_heads()
+    heads = remote_core.hg_current_heads()
     assert heads == ['revision-a', 'revision-b']
-    remote_core.unbundle_code()
-    remote_core.update_working_copy('default')
+    remote_core.hg_unbundle_code()
+    remote_core.hg_update_working_copy('default')
 
     assert remote_core.cmd.call_count == 6
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert calls.next() == 'hg init {}'.format(remote_core.target_directory)
     assert calls.next() == 'hg id -i'
-    assert calls.next() == 'LANG=C LC_ALL=C LANGUAGE=C hg heads'
+    assert calls.next() == 'hg heads'
     assert calls.next() == 'hg -y unbundle batou-bundle.hg'
     assert calls.next() == 'hg up -C default'
     assert calls.next() == 'hg id -i'
@@ -164,7 +164,7 @@ def test_channelexec_echo_cmd(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    assert channel.sendqueue == [('batou-result', 'asdf\n')]
+    assert channel.sendqueue == [('batou-result', ('asdf\n', ''))]
 
 
 def test_channelexec_multiple_echo_cmds(remote_core_mod):
@@ -174,8 +174,8 @@ def test_channelexec_multiple_echo_cmds(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    assert channel.sendqueue == [('batou-result', 'asdf1\n'),
-                                 ('batou-result', 'asdf2\n')]
+    assert channel.sendqueue == [('batou-result', ('asdf1\n', '')),
+                                 ('batou-result', ('asdf2\n', ''))]
 
 
 def test_channelexec_handle_exception(remote_core_mod):

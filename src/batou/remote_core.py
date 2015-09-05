@@ -62,12 +62,19 @@ class CmdError(Exception):
             output.line('asdf', red=True)
 
 
-def cmd(c):
-    try:
-        return subprocess.check_output(
-            [c], shell=True)
-    except subprocess.CalledProcessError as e:
-        raise CmdError(e)
+def cmd(c, acceptable_returncodes=[0]):
+    process = subprocess.Popen(
+        ['LANG=C LC_ALL=C LANGUAGE=C {}'.format(c)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        shell=True)
+    stdout, stderr = process.communicate()
+    if process.returncode not in acceptable_returncodes:
+        error = subprocess.CalledProcessError(
+            process.returncode, c)
+        raise CmdError(error)
+    return stdout, stderr
 
 
 def ensure_repository(target, method):
@@ -81,6 +88,9 @@ def ensure_repository(target, method):
     if method in ['hg-pull', 'hg-bundle']:
         if not os.path.exists(target + '/.hg'):
             cmd("hg init {}".format(target))
+    elif method in ['git-pull', 'git-bundle']:
+        if not os.path.exists(target + '/.git'):
+            cmd("git init {}".format(target))
     elif method == 'rsync':
         pass
     else:
@@ -96,14 +106,14 @@ def ensure_base(base):
     return base
 
 
-def current_heads():
+def hg_current_heads():
     target = target_directory
     os.chdir(target)
     result = []
     id = cmd('hg id -i').strip()
     if id == '000000000000':
         return [id]
-    heads = cmd('LANG=C LC_ALL=C LANGUAGE=C hg heads')
+    heads = cmd('hg heads')
     for line in heads.split('\n'):
         if not line.startswith('changeset:'):
             continue
@@ -112,7 +122,7 @@ def current_heads():
     return result
 
 
-def pull_code(upstream):
+def hg_pull_code(upstream):
     # TODO Make choice of VCS flexible
     target = target_directory
     os.chdir(target)
@@ -121,7 +131,7 @@ def pull_code(upstream):
     cmd("hg pull {}".format(upstream))
 
 
-def unbundle_code():
+def hg_unbundle_code():
     # TODO Make choice of VCS flexible
     # XXX does this protect us from accidental new heads?
     target = target_directory
@@ -129,10 +139,40 @@ def unbundle_code():
     cmd('hg -y unbundle batou-bundle.hg')
 
 
-def update_working_copy(branch):
+def hg_update_working_copy(branch):
     cmd("hg up -C {}".format(branch))
     id = cmd("hg id -i").strip()
     return id
+
+
+def git_current_head(branch):
+    target = target_directory
+    os.chdir(target)
+    id, err = cmd('git rev-parse {branch}'.format(branch=branch),
+                  acceptable_returncodes=[0, 128])
+    id = id.strip()
+    return id if 'unknown revision' not in err else None
+
+
+def git_pull_code(upstream):
+    target = target_directory
+    os.chdir(target)
+    cmd("git fetch {upstream}".format(upstream=upstream))
+
+
+def git_unbundle_code():
+    target = target_directory
+    os.chdir(target)
+    out, err = cmd('git remote -v')
+    if 'bundle' not in out:
+        cmd('git remote add bundle batou-bundle.git')
+    cmd('git fetch bundle')
+
+
+def git_update_working_copy(branch):
+    cmd('git checkout --force {branch}'.format(branch=branch))
+    id, _ = cmd('git rev-parse HEAD')
+    return id.strip()
 
 
 def build_batou(deployment_base, bootstrap, fast=False):
