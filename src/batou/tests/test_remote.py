@@ -25,7 +25,7 @@ def test_remote_bundle_breaks_on_missing_head(sample_service):
     from batou.repository import MercurialBundleRepository
     repository = MercurialBundleRepository(env)
     h.rpc = mock.Mock()
-    h.rpc.current_heads.return_value = []
+    h.rpc.hg_current_heads.return_value = []
     with pytest.raises(ValueError) as e:
         repository.update(h)
     assert e.value.message == (

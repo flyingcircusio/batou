@@ -1,5 +1,4 @@
 #!{{component.workdir}}/bin/py
-# Copyright (c) gocept gmbh & co. kg
 
 """Check supervisord programs."""
 
