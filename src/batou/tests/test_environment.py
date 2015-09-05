@@ -13,8 +13,8 @@ def test_environment_should_raise_if_no_config_file(tmpdir):
 def test_load_should_use_defaults(sample_service):
     e = Environment(u'test-without-env-config')
     e.load()
-    assert None == e.host_domain
-    assert 'default' == e.branch
+    assert e.host_domain is None
+    assert e.branch is None
 
 
 def test_load_should_use_config(sample_service):

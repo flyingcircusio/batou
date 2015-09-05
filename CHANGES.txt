@@ -5,7 +5,8 @@ Changelog
 1.1.0a3 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Initial support for managing batou projects with git. Git repositories
+  support pull-based and bundle-based shipping.
 
 
 1.1.0a2 (2015-09-03)
