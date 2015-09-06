@@ -17,6 +17,82 @@ environment = None
 target_directory = None
 
 
+# The output class should really live in _output. However, to support
+# bootstrapping we define it here and then re-import in the _output module.
+
+
+class Output(object):
+    """Manage the output of various parts of batou to achieve
+    consistency wrt to formatting and display.
+    """
+
+    enable_debug = False
+
+    def __init__(self, backend):
+        self.backend = backend
+
+    def line(self, message, debug=False, **format):
+        if debug and not self.enable_debug:
+            return
+        self.backend.line(message, **format)
+
+    def annotate(self, message, debug=False, **format):
+        if debug and not self.enable_debug:
+            return
+        lines = message.split('\n')
+        lines = [' ' * 5 + line for line in lines]
+        message = '\n'.join(lines)
+        self.line(message, **format)
+
+    def tabular(self, key, value, separator=': ', debug=False, **kw):
+        if debug and not self.enable_debug:
+            return
+        message = key.rjust(10) + separator + value
+        self.annotate(message, **kw)
+
+    def section(self, title, debug=False, **format):
+        if debug and not self.enable_debug:
+            return
+        self.backend.sep("=", title, bold=True, **format)
+
+    def sep(self, sep, title, **format):
+        return self.backend.sep(sep, title, **format)
+
+    def step(self, context, message, debug=False, **format):
+        if debug and not self.enable_debug:
+            return
+        self.line('{}: {}'.format(context, message),
+                  bold=True, **format)
+
+    def error(self, message, exc_info=None, debug=False):
+        if debug and not self.enable_debug:
+            return
+        self.step("ERROR", message, red=True)
+        if exc_info:
+            tb = traceback.format_exception(*exc_info)
+            tb = ''.join(tb)
+            tb = '      ' + tb.replace('\n', '\n      ') + '\n'
+            self.backend.write(tb, red=True)
+
+
+class ChannelBackend(object):
+
+    def __init__(self, channel):
+        self.channel = channel
+
+    def _send(self, output_cmd, *args, **kw):
+        self.channel.send(('batou-output', output_cmd, args, kw))
+
+    def line(self, message, **format):
+        self._send('line', message, **format)
+
+    def sep(self, sep, title, **format):
+        self._send('sep', sep, title, **format)
+
+    def write(self, content, **format):
+        self._send('write', content, **format)
+
+
 class Deployment(object):
 
     environment = None
@@ -50,16 +126,19 @@ def lock():
 
 class CmdError(Exception):
 
-    def __init__(self, orig_exception):
-        self.orig_exception = orig_exception
+    def __init__(self, cmd, returncode, stdout, stderr):
+        self.cmd = cmd
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
 
     def report(self):
-        try:
-            from batou import output
-        except ImportError:
-            pass
-        else:
-            output.line('asdf', red=True)
+        output.error(self.cmd)
+        output.tabular("Return code", str(self.returncode), red=True)
+        output.line('STDOUT', red=True)
+        output.annotate(self.stdout)
+        output.line('STDERR', red=True)
+        output.annotate(self.stderr)
 
 
 def cmd(c, acceptable_returncodes=[0]):
@@ -71,9 +150,7 @@ def cmd(c, acceptable_returncodes=[0]):
         shell=True)
     stdout, stderr = process.communicate()
     if process.returncode not in acceptable_returncodes:
-        error = subprocess.CalledProcessError(
-            process.returncode, c)
-        raise CmdError(error)
+        raise CmdError(c, process.returncode, stdout, stderr)
     return stdout, stderr
 
 
@@ -154,19 +231,35 @@ def git_current_head(branch):
     return id if 'unknown revision' not in err else None
 
 
-def git_pull_code(upstream):
+def git_pull_code(upstream, branch):
     target = target_directory
     os.chdir(target)
-    cmd("git fetch {upstream}".format(upstream=upstream))
+    out, err = cmd('git remote -v')
+    for line in out.splitlines():
+        line = line.strip()
+        line = line.replace(' ', '\t')
+        if not line:
+            continue
+        name, remote, _ = line.split('\t', 3)
+        if name != 'batou-pull':
+            continue
+        if remote != upstream:
+            cmd('git remote remove batou-pull')
+        # The batou-pull remote is correctly configured.
+        break
+    else:
+        cmd('git remote add batou-pull {upstream}'.format(upstream=upstream))
+    cmd('git fetch batou-pull')
+    cmd('git pull batou-pull {branch}'.format(branch=branch))
 
 
 def git_unbundle_code():
     target = target_directory
     os.chdir(target)
     out, err = cmd('git remote -v')
-    if 'bundle' not in out:
-        cmd('git remote add bundle batou-bundle.git')
-    cmd('git fetch bundle')
+    if 'batou-bundle' not in out:
+        cmd('git remote add batou-bundle batou-bundle.git')
+    cmd('git fetch batou-bundle')
 
 
 def git_update_working_copy(branch):
@@ -209,11 +302,12 @@ def whoami():
 
 
 def setup_output():
-    from batou._output import output, ChannelBackend
+    from batou._output import output
     output.backend = ChannelBackend(channel)
 
 
 if __name__ == '__channelexec__':
+    output = Output(ChannelBackend(channel))
     while not channel.isclosed():
         task, args, kw = channel.receive()
         # Support slow bootstrapping
@@ -233,7 +327,7 @@ if __name__ == '__channelexec__':
             batou.output.section(
                 "{} ERRORS - CONFIGURATION FAILED".format(
                     len(deployment.environment.exceptions)), red=True)
-            channel.send(('batou-error', None))
+            channel.send(('batou-error', ''))
         except getattr(batou, 'DeploymentError', None) as e:
             e.report()
             channel.send(('batou-error', None))

@@ -184,5 +184,18 @@ def test_channelexec_handle_exception(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    response = channel.sendqueue[0]
-    assert response[0] == 'batou-error'
+    response = channel.sendqueue
+    assert response == [
+        ('batou-output',
+         'line',
+         ('ERROR: fdjkahfkjdasbfda',),
+         {'bold': True, 'red': True}),
+        ('batou-output', 'line', ('     Return code: 127',), {'red': True}),
+        ('batou-output', 'line', ('STDOUT',), {'red': True}),
+        ('batou-output', 'line', ('     ',), {}),
+        ('batou-output', 'line', ('STDERR',), {'red': True}),
+        ('batou-output',
+         'line',
+         ('     /bin/sh: fdjkahfkjdasbfda: command not found\n     ',),
+         {}),
+        ('batou-error', None)]

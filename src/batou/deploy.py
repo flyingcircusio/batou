@@ -92,7 +92,8 @@ def main(environment, platform, timeout, dirty, fast):
                    'batou failed to configure the environment. '
                    'Check your console for details.')
             sys.exit(1)
-        except DeploymentError:
+        except DeploymentError as e:
+            e.report()
             notify('Deployment failed',
                    '{} encountered an error.'.format(environment))
             output.section("DEPLOYMENT FAILED", red=True)

@@ -262,3 +262,20 @@ class NonConvergingWorkingSet(ConfigurationError):
 
 class DeploymentError(Exception):
     """Indicates that a deployment failed.."""
+
+    def report(self):
+        pass
+
+
+class RepositoryDifferentError(DeploymentError):
+    """The repository on the remote side is different."""
+
+    def __init__(self, local, remote):
+        self.local = local
+        self.remote = remote
+
+    def report(self):
+        output.error(
+            "The remote working copy is based on a different revision.")
+        output.tabular("Local", self.local, red=True)
+        output.tabular("Remote", self.remote, red=True)
