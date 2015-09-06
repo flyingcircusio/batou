@@ -1,4 +1,4 @@
-from batou import DeploymentError, output
+from batou import DeploymentError, output, RepositoryDifferentError
 from batou.utils import cmd as cmd_, CmdExecutionError
 import execnet
 import os
@@ -116,9 +116,7 @@ class MercurialRepository(Repository):
             local_id = local_id.replace('+', '')
         local_id = local_id.strip()
         if remote_id != local_id:
-            raise RuntimeError(
-                'Working copy parents differ. Local: {} Remote: {}'.format(
-                    local_id, remote_id))
+            raise RepositoryDifferentError(local_id, remote_id)
 
     def verify(self):
         # Safety belt that we're acting on a clean repository.
@@ -220,9 +218,7 @@ class GitRepository(Repository):
         local_id, _ = cmd('git rev-parse HEAD')
         local_id = local_id.strip()
         if remote_id != local_id:
-            raise RuntimeError(
-                'Working copy parents differ. Local: {} Remote: {}'.format(
-                    local_id, remote_id))
+            raise RepositoryDifferentError(local_id, remote_id)
 
     def verify(self):
         # Safety belt that we're acting on a clean repository.
@@ -265,7 +261,8 @@ Please push first.
 class GitPullRepository(GitRepository):
 
     def _ship(self, host):
-        host.rpc.git_pull_code(upstream=self.upstream)
+        host.rpc.git_pull_code(upstream=self.upstream,
+                               branch=self.branch)
 
 
 class GitBundleRepository(GitRepository):
