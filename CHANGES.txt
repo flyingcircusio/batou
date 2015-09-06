@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.1.0a4 (unreleased)
+1.1.0a4 (2015-09-06)
 ====================
 
 - Actually get pull-based Git repositories to work. Still experimental, though.
