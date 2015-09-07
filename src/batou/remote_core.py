@@ -187,10 +187,11 @@ def hg_current_heads():
     target = target_directory
     os.chdir(target)
     result = []
-    id = cmd('hg id -i').strip()
+    id, _ = cmd('hg id -i')
+    id = id.strip()
     if id == '000000000000':
         return [id]
-    heads = cmd('hg heads')
+    heads, _ = cmd('hg heads')
     for line in heads.split('\n'):
         if not line.startswith('changeset:'):
             continue
@@ -218,7 +219,8 @@ def hg_unbundle_code():
 
 def hg_update_working_copy(branch):
     cmd("hg up -C {}".format(branch))
-    id = cmd("hg id -i").strip()
+    id, _ = cmd("hg id -i")
+    id = id.strip()
     return id
 
 

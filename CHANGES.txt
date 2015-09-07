@@ -5,7 +5,7 @@ Changelog
 1.1.0a5 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Fix Mercurial repositories after refactorings for Git broke it.
 
 
 1.1.0a4 (2015-09-06)
