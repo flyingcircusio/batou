@@ -261,7 +261,7 @@ def git_unbundle_code():
     out, err = cmd('git remote -v')
     if 'batou-bundle' not in out:
         cmd('git remote add batou-bundle batou-bundle.git')
-    cmd('git fetch batou-bundle')
+    cmd('git pull batou-bundle')
 
 
 def git_update_working_copy(branch):
