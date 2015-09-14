@@ -252,7 +252,6 @@ def git_pull_code(upstream, branch):
     else:
         cmd('git remote add batou-pull {upstream}'.format(upstream=upstream))
     cmd('git fetch batou-pull')
-    cmd('git pull batou-pull {branch}'.format(branch=branch))
 
 
 def git_unbundle_code():
@@ -261,11 +260,12 @@ def git_unbundle_code():
     out, err = cmd('git remote -v')
     if 'batou-bundle' not in out:
         cmd('git remote add batou-bundle batou-bundle.git')
-    cmd('git pull batou-bundle')
+    cmd('git fetch batou-bundle')
 
 
 def git_update_working_copy(branch):
     cmd('git checkout --force {branch}'.format(branch=branch))
+    cmd('git merge')
     id, _ = cmd('git rev-parse HEAD')
     return id.strip()
 
