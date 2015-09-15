@@ -26,6 +26,12 @@ def mock_remote_core(monkeypatch):
 
 
 def test_update_code_existing_target(mock_remote_core, tmpdir):
+    remote_core.cmd.side_effect = [
+        ('', ''),
+        ('', ''),
+        ('', ''),
+        ('', '')]
+
     remote_core.ensure_repository(str(tmpdir), 'hg-pull')
     remote_core.hg_pull_code('http://bitbucket.org/flyingcircus/batou')
     remote_core.hg_update_working_copy('default')
@@ -39,6 +45,11 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
 
 
 def test_update_code_new_target(mock_remote_core, tmpdir):
+    remote_core.cmd.side_effect = [
+        ('', ''),
+        ('', ''),
+        ('', ''),
+        ('', '')]
     remote_core.ensure_repository(str(tmpdir) + '/foo', 'hg-bundle')
     remote_core.hg_pull_code('http://bitbucket.org/flyingcircus/batou')
     remote_core.hg_update_working_copy('default')
@@ -53,12 +64,17 @@ def test_update_code_new_target(mock_remote_core, tmpdir):
 
 def test_hg_bundle_shipping(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir) + '/foo', 'hg-bundle')
-    remote_core.cmd.return_value = """\
+    remote_core.cmd.side_effect = [
+        ("41fea38ce5d3", None),
+        ("""\
 changeset: 371:revision-a
-nsummary:fdsa
+summary:fdsa
 
 changeset: 372:revision-b
-"""
+""", None),
+        ('', ''),
+        ('', ''),
+        ('', '')]
     heads = remote_core.hg_current_heads()
     assert heads == ['revision-a', 'revision-b']
     remote_core.hg_unbundle_code()

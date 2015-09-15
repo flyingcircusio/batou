@@ -5,8 +5,10 @@ Changelog
 1.1.0a6 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Adjust Git repositories to correctly perform fast-forward
+  merges.
 
+- Fix Mercurial repository tests that broke without noticing.
 
 1.1.0a5 (2015-09-09)
 ====================
