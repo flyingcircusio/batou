@@ -14,7 +14,7 @@ def test_remote_deployment_initializable(sample_service):
     env = Environment('test-with-env-config')
     env.load()
     env.configure()
-    Deployment(env, fast=False, dirty=False)
+    Deployment(env, platform='', timeout=30, fast=False, dirty=False)
 
 
 def test_remote_bundle_breaks_on_missing_head(sample_service):

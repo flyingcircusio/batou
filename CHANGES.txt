@@ -10,6 +10,9 @@ Changelog
 
 - Fix Mercurial repository tests that broke without noticing.
 
+- Add end-to-end test for our new error reporting which got a
+  regression (#17617)
+
 1.1.0a5 (2015-09-09)
 ====================
 

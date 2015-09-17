@@ -3,14 +3,14 @@ import os.path
 import pytest
 
 
-@pytest.fixture
+@pytest.yield_fixture
 def supervisor(root, request):
     supervisor = batou.lib.supervisor.Supervisor(pidfile='supervisor.pid')
     root.component += supervisor
     root.component.deploy()
-    request.addfinalizer(lambda: supervisor.cmd(
-        '{}/bin/supervisorctl shutdown'.format(supervisor.workdir)))
-    return supervisor
+    yield supervisor
+    supervisor.cmd(
+        '{}/bin/supervisorctl shutdown'.format(supervisor.workdir))
 
 
 @pytest.mark.slow
