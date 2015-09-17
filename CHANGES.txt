@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.1.0a6 (unreleased)
+1.1.0a6 (2015-09-17)
 ====================
 
 - Adjust Git repositories to correctly perform fast-forward
