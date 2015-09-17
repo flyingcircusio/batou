@@ -79,23 +79,6 @@ class MissingOverrideAttributes(ConfigurationError):
         # cfg file and show context
 
 
-class MissingComponent(ConfigurationError):
-
-    def __init__(self, root):
-        self.root = root
-
-    def report(self):
-        output.error('Missing component')
-        output.tabular(
-            'Host',
-            self.component.root.host.name,
-            red=True)
-        output.tabular(
-            'Component',
-            self.root.name,
-            red=True)
-
-
 class DuplicateComponent(ConfigurationError):
 
     def __init__(self, a, b):
@@ -191,6 +174,19 @@ class ComponentLoadingError(ConfigurationError):
         output.tabular("File", self.filename, red=True)
         output.tabular("Exception", str(self.exception), red=True)
         # TODO provide traceback in debug output
+
+
+class MissingComponent(ConfigurationError):
+    """The specified environment does not exist."""
+
+    def __init__(self, component, hostname):
+        self.component = component
+        self.hostname = hostname
+
+    def report(self):
+        output.error("Missing component")
+        output.tabular('Component', self.component, red=True)
+        output.tabular('Host', self.hostname, red=True)
 
 
 class SuperfluousSection(ConfigurationError):

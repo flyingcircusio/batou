@@ -3,6 +3,7 @@ from .host import LocalHost, RemoteHost
 from .resources import Resources
 from .secrets import add_secrets_to_environment_override
 from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
+from batou import MissingComponent
 from batou import NonConvergingWorkingSet, UnusedResources, ConfigurationError
 from batou import SuperfluousComponentSection, CycleErrorDetected
 from batou import UnknownComponentConfigurationError, UnsatisfiedResources
@@ -120,7 +121,11 @@ class Environment(object):
             components = parse_host_components(
                 config['hosts'].as_list(hostname))
             for component, features in components.items():
-                self.add_root(component, hostname, features)
+                try:
+                    self.add_root(component, hostname, features)
+                except KeyError as e:
+                    self.exceptions.append(
+                        MissingComponent(component, hostname))
 
         # load overrides
         for section in config:
