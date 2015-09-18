@@ -168,6 +168,8 @@ class Supervisor(Component):
     max_startup_delay = Attribute(int, 0)
     wait_for_running = Attribute('literal', 'True')
     pidfile = Attribute(str, '/run/local/supervisord.pid', map=True)
+    socketpath = Attribute(
+        str, '{{component.workdir}}/supervisor.sock', map=True)
 
     def configure(self):
         self.provide('supervisor', self)
@@ -175,8 +177,8 @@ class Supervisor(Component):
         buildout_cfg = File('buildout.cfg',
                             source=self.buildout_cfg)
         self += Buildout('buildout',
-                         version='2.2.1',
-                         setuptools='1.1.6',
+                         version='2.4.3',
+                         setuptools='18.3.1',
                          config=buildout_cfg,
                          python='2.7')
 
