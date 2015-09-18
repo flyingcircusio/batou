@@ -163,41 +163,40 @@ class VirtualEnvPy2_6(VirtualEnvPyBase):
 
 class VirtualEnvPy2_7(VirtualEnvPyBase):
 
-    venv_version = '1.10.1'
-    venv_checksum = 'md5:3a04aa2b32c76c83725ed4d9918e362e'
+    venv_version = '13.1.2'
+    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
 
-    install_options = ('--ignore-installed', '--egg')
-
-
-class VirtualEnvPy3_1(VirtualEnvPyBase):
-
-    venv_version = '1.9.1'
-    venv_checksum = 'md5:07e09df0adfca0b2d487e39a4bf2270a'
-
-    installer = 'pip'
     install_options = ('--ignore-installed', '--egg')
 
 
 class VirtualEnvPy3_2(VirtualEnvPyBase):
 
-    venv_version = '1.10.1'
-    venv_checksum = 'md5:3a04aa2b32c76c83725ed4d9918e362e'
+    venv_version = '13.1.2'
+    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
 
     install_options = ('--ignore-installed', '--egg')
 
 
 class VirtualEnvPy3_3(VirtualEnvPyBase):
 
-    venv_version = '1.10.1'
-    venv_checksum = 'md5:3a04aa2b32c76c83725ed4d9918e362e'
+    venv_version = '13.1.2'
+    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
 
     install_options = ('--ignore-installed', '--egg')
 
 
 class VirtualEnvPy3_4(VirtualEnvPyBase):
 
-    venv_version = '12.0.7'
-    venv_checksum = 'md5:e08796f79d112f3bfa6653cc10840114'
+    venv_version = '13.1.2'
+    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
+
+    install_options = ('--ignore-installed', '--egg')
+
+
+class VirtualEnvPy3_5(VirtualEnvPyBase):
+
+    venv_version = '13.1.2'
+    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
 
     install_options = ('--ignore-installed', '--egg')
 

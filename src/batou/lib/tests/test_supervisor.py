@@ -5,7 +5,10 @@ import pytest
 
 @pytest.yield_fixture
 def supervisor(root, request):
-    supervisor = batou.lib.supervisor.Supervisor(pidfile='supervisor.pid')
+    # Urks. Otherwise OS X ends up with socket paths that are too long.
+    supervisor = batou.lib.supervisor.Supervisor(
+        pidfile='supervisor.pid',
+        socketpath='/tmp/batou-test-supervisor.sock')
     root.component += supervisor
     root.component.deploy()
     yield supervisor

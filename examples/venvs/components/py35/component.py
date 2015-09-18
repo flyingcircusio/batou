@@ -2,11 +2,11 @@ from batou.component import Component
 from batou.lib.buildout import Buildout
 
 
-class Py31(Component):
+class Py35(Component):
 
     def configure(self):
         buildout = Buildout(
-            python='3.1',
-            setuptools='1.4.1',
-            version='2.2.1')
+            python='3.5',
+            setuptools='18.3.1',
+            version='2.4.3')
         self += buildout
