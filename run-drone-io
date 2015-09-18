@@ -10,7 +10,7 @@ cd buildout.python
 git checkout --force
 if [ ! -e bin/buildout ]; then
     virtualenv .
-    bin/pip install zc.buildout
+    bin/python bootstrap.py
 fi
 bin/buildout
 cd ..
