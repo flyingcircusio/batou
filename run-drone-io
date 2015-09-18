@@ -4,7 +4,7 @@ set -ex
 # Prepare additional Python verions
 
 if [ ! -e "buildout.python" ]; then
-    git clone git@github.com:collective/buildout.python.git
+    git clone https://github.com:collective/buildout.python.git
 fi
 cd buildout.python
 git checkout --force
