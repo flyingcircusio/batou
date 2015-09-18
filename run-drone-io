@@ -8,7 +8,6 @@ if [ ! -e "buildout.python" ]; then
 fi
 cd buildout.python
 git checkout --force
-git merge --ff-only
 if [ ! -e bin/buildout ]; then
     virtualenv .
     bin/pip install zc.buildout
