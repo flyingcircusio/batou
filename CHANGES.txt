@@ -5,7 +5,7 @@ Changelog
 1.1.0a7 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Support Git < 2.0
 
 
 1.1.0a6 (2015-09-17)

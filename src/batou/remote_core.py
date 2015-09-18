@@ -265,6 +265,8 @@ def git_unbundle_code():
 
 def git_update_working_copy(branch):
     cmd('git checkout --force {branch}'.format(branch=branch))
+    # For git <2.0:
+    cmd('git config merge.defaultToUpstream true')
     cmd('git merge --ff-only')
     id, _ = cmd('git rev-parse HEAD')
     return id.strip()
