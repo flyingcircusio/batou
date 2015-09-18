@@ -1,7 +1,26 @@
 #!/bin/bash
-set -e
+set -ex
+
+# Prepare additional Python verions
+
+if [ ! -e "buildout.python" ]; then
+    git clone git@github.com:collective/buildout.python.git
+fi
+cd buildout.python
+git checkout --force
+git merge --ff-only
+if [ ! -e bin/buildout ]; then
+    virtualenv .
+    bin/pip install zc.buildout
+fi
+cd ..
+
+bin/buildout
+
 pip install setuptools==18.3.1 --use-mirrors
 pip install zc.buildout==2.4.3 --use-mirrors
 pip install virtualenv==13.0.3 --use-mirrors
-buildout
+
+export PATH="$PATH:buildout.python/python-buildout.python/python-3.5/bin/python3.5"
+export PATH="$PATH:buildout.python/python-buildout.python/python-3.4/bin/python3.4"
 bin/py.test -m '1'

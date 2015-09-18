@@ -5,8 +5,20 @@ Changelog
 1.1.0a7 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Add support for managing Python 3.5 environments.
 
+- Update virtualenv to newest version for Python 2.7+ and all
+  Python 3 versions.
+
+- Drop support for Python 3.1.
+
+- Update supervisor: 3.0 -> 3.1.3
+
+  Includes updated dependencies.
+
+- Make socketpath in supervisor configurable.
+
+- Fix broken Python compatibility tests.
 
 1.1.0a6 (2015-09-17)
 ====================
