@@ -100,6 +100,8 @@ class Component(object):
             if namevar is None:
                 raise ValueError('Namevar %s required' % self.namevar)
             kw[self.namevar] = namevar
+        # Can't use the attribute setter here as our special attributes will
+        # error out as long as the component is not attached to a root.
         self.__dict__.update(kw)
 
     @property
@@ -129,6 +131,15 @@ class Component(object):
         self.sub_components = []
         if self.parent is self.root:
             self._overrides(self.root.overrides)
+        # Fix up attributes that have been set through the constructor.
+        for k, v in self.__dict__.items():
+            attribute = getattr(self.__class__, k, None)
+            if not isinstance(attribute, Attribute):
+                continue
+            # Setting it using the mutator causes conversions and our
+            # special attribute handling to catch up.
+            setattr(self, k, v)
+
         self.configure()
         self += self.get_platform()
         self.__setup_event_handlers__()
