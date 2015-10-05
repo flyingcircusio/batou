@@ -11,8 +11,7 @@ def cmd(c, *args, **kw):
 
 
 def find_line_with(prefix, output):
-    output = output.split('\n')
-    for line in output:
+    for line in output.splitlines():
         line = line.strip()
         if line.startswith(prefix):
             return line.replace(prefix, '', 1).strip()
