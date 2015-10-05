@@ -211,7 +211,7 @@ class VirtualEnvDownload(Component):
     checksum = None
 
     url = (
-        'http://pypi.gocept.com/packages/source/v/virtualenv/'
+        'https://pypi.fcio.net/packages/source/v/virtualenv/'
         'virtualenv-{}.tar.gz')
 
     def configure(self):
