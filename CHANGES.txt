@@ -8,6 +8,9 @@ Changelog
 - Fix default pip arguments for installing packages. This stops rebuilds of
   python/buildout components on each run.
 
+- Change default virtualenv download URL to https and use the current FCIO
+  mirror.
+
 
 1.1.0a7 (2015-09-18)
 ====================
