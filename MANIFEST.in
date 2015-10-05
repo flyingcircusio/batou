@@ -1,6 +1,5 @@
 include LICENSE.txt
 include README
-include HACKING.txt
 include CHANGES.txt
 include src/batou/version.txt
 include src/batou/requirements.txt
