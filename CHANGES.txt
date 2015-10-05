@@ -5,7 +5,8 @@ Changelog
 1.1.0a8 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Fix default pip arguments for installing packages. This stops rebuilds of
+  python/buildout components on each run.
 
 
 1.1.0a7 (2015-09-18)
