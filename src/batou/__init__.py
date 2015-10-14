@@ -72,7 +72,7 @@ class MissingOverrideAttributes(ConfigurationError):
             red=True)
         output.tabular(
             'Attributes',
-            '.'.join(self.attributes),
+            ', '.join(self.attributes),
             red=True)
 
         # TODO point to specific line in secrets or environments

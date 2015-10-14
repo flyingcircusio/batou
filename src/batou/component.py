@@ -148,7 +148,11 @@ class Component(object):
     def _overrides(self, overrides={}):
         missing = []
         for key, value in overrides.items():
-            if not hasattr(self, key):
+            # I explicity check whether we're overriding an attribute on the
+            # class. a) that's the intended semantic I want to check for and
+            # b) this suppresses implicit __get__ conversions of Attribute
+            # objects.
+            if not hasattr(self.__class__, key):
                 missing.append(key)
                 continue
             setattr(self, key, value)
