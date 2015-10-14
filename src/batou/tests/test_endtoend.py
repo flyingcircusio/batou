@@ -28,10 +28,10 @@ main: Loading secrets ...
 ==
 localhost: Connecting via local (1/1)
 ERROR: Failed loading component file
-           File: .../examples/errors/components/component5/component.py
+           File: .../errors/components/component5/component.py
       Exception: invalid syntax (component.py, line 1)
 ERROR: Failed loading component file
-           File: .../examples/errors/components/component6/component.py
+           File: .../errors/components/component6/component.py
       Exception: No module named asdf
 ERROR: Missing component
       Component: missingcomponent
@@ -40,15 +40,20 @@ ERROR: Superfluous section in environment configuration
         Section: superfluoussection
 ERROR: Override section for unknown component found
       Component: nonexisting-component-section
-ERROR: Overrides for undefined attributes
-           Host: localhost
-      Component: Component2
-     Attributes: this_does_not_exist
 ERROR: Failed override attribute conversion
            Host: localhost
       Attribute: Component1.do_what_is_needed
      Conversion: convert_literal(u'false')
           Error: malformed string
+ERROR: Failed override attribute conversion
+           Host: localhost
+      Attribute: DNSProblem.attribute_with_problem
+     Conversion: Address(u'localhost')
+          Error: Need port for service address.
+ERROR: Overrides for undefined attributes
+           Host: localhost
+      Component: Component2
+     Attributes: this_does_not_exist
 ERROR: Found dependency cycle
      cycle1 depends on
              cycle2
@@ -56,11 +61,11 @@ ERROR: Found dependency cycle
              cycle1
 ERROR: Unsatisfied resource requirements
      application: <undefined>
-ERROR: 4 remaining unconfigured component(s)
+ERROR: 5 remaining unconfigured component(s)
 ERROR: Unused provided resources
        frontend: ['test00.gocept.net']
         backend: ['192.168.0.1']
-======================= 11 ERRORS - CONFIGURATION FAILED =====================\
+======================= 12 ERRORS - CONFIGURATION FAILED =====================\
 ==
 ============================== DEPLOYMENT FAILED =============================\
 ==

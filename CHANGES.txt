@@ -5,7 +5,9 @@ Changelog
 1.1.0a8 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Do not implicitly perform attribute conversions when applying overrides.
+  Due to the behaviour of `hasattr` this shadowed conversion exceptions
+  and also performed unnecessary computation or network access (e.g. DNS).
 
 
 1.1.0a7 (2015-09-18)
