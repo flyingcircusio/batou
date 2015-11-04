@@ -1,5 +1,5 @@
 from batou import UpdateNeeded, ConfigurationError
-from batou.component import Component, HookComponent, platform
+from batou.component import Attribute, Component, HookComponent, platform
 from batou.lib.file import File
 import os
 
@@ -34,7 +34,7 @@ class CronTab(Component):
 
     crontab_template = os.path.join(
         os.path.dirname(__file__), 'resources', 'crontab')
-    mailto = None
+    mailto = Attribute(str, None)
     purge = False
 
     def configure(self):
