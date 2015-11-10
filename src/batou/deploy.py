@@ -82,6 +82,7 @@ def main(environment, platform, timeout, dirty, fast):
             if e not in deployment.environment.exceptions:
                 deployment.environment.exceptions.append(e)
             # Report on why configuration failed.
+            deployment.environment.exceptions.sort(key=lambda x: x.sort_key)
             for exception in deployment.environment.exceptions:
                 if isinstance(e, SilentConfigurationError):
                     continue
