@@ -18,7 +18,7 @@ def test_example_errors():
     os.chdir('examples/errors')
     out, _ = cmd('./batou deploy errors', acceptable_returncodes=[1])
     assert out == Ellipsis("""\
-batou/... (CPython 2.7...)
+batou/... (CPython 2.7..., ...)
 ================================== Preparing =================================\
 ==
 main: Loading environment `errors`...
@@ -28,7 +28,7 @@ main: Loading secrets ...
 ==
 localhost: Connecting via local (1/1)
 ERROR: Failed loading component file
-           File: .../errors/components/component5/component.py
+           File: .../examples/errors/components/component5/component.py
       Exception: invalid syntax (component.py, line 1)
 ERROR: Failed loading component file
            File: .../errors/components/component6/component.py
@@ -42,11 +42,6 @@ ERROR: Override section for unknown component found
       Component: nonexisting-component-section
 ERROR: Failed override attribute conversion
            Host: localhost
-      Attribute: Component1.do_what_is_needed
-     Conversion: convert_literal(u'false')
-          Error: malformed string
-ERROR: Failed override attribute conversion
-           Host: localhost
       Attribute: DNSProblem.attribute_with_problem
      Conversion: Address(u'localhost')
           Error: Need port for service address.
@@ -54,6 +49,11 @@ ERROR: Overrides for undefined attributes
            Host: localhost
       Component: Component2
      Attributes: this_does_not_exist
+ERROR: Failed override attribute conversion
+           Host: localhost
+      Attribute: Component1.do_what_is_needed
+     Conversion: convert_literal(u'false')
+          Error: malformed string
 ERROR: Found dependency cycle
      cycle1 depends on
              cycle2

@@ -10,6 +10,10 @@ class UpdateNeeded(Exception):
 class ConfigurationError(Exception):
     """Indicates that an environment could not be configured successfully."""
 
+    @property
+    def sort_key(self):
+        return (0, self.message)
+
     def __init__(self, message):
         self.message = message
 
@@ -19,6 +23,11 @@ class ConfigurationError(Exception):
 
 class ConversionError(ConfigurationError):
     """An override attribute could not be converted properly."""
+
+    @property
+    def sort_key(self):
+        return (1, self.component.root.host.name,
+                self.component._breadcrumbs, self.key)
 
     def __init__(self, component, key, value, conversion, error):
         self.component = component
@@ -57,6 +66,11 @@ class SilentConfigurationError(Exception):
 
 class MissingOverrideAttributes(ConfigurationError):
 
+    @property
+    def sort_key(self):
+        return (1, self.component.root.host.name,
+                self.component._breadcrumbs, 0)
+
     def __init__(self, component, attributes):
         self.component = component
         self.attributes = attributes
@@ -81,6 +95,10 @@ class MissingOverrideAttributes(ConfigurationError):
 
 class DuplicateComponent(ConfigurationError):
 
+    @property
+    def sort_key(self):
+        return (1, self.component.a.host.name, self.a.__name__)
+
     def __init__(self, a, b):
         self.a = a
         self.b = b
@@ -93,6 +111,10 @@ class DuplicateComponent(ConfigurationError):
 
 class UnknownComponentConfigurationError(ConfigurationError):
     """An unknown error occured while configuring a component."""
+
+    @property
+    def sort_key(self):
+        return (1, self.root.host.name, 2)
 
     def __init__(self, root, exception, tb):
         self.root = root
@@ -127,6 +149,10 @@ class UnknownComponentConfigurationError(ConfigurationError):
 class UnusedResources(ConfigurationError):
     """Some provided resources were never used."""
 
+    @property
+    def sort_key(self):
+        return (3, 'unused')
+
     def __init__(self, resources):
         self.resources = resources
 
@@ -142,6 +168,10 @@ class UnusedResources(ConfigurationError):
 class UnsatisfiedResources(ConfigurationError):
     """Some required resources were never provided."""
 
+    @property
+    def sort_key(self):
+        return (4, 'unsatisfied')
+
     def __init__(self, resources):
         self.resources = resources
 
@@ -154,6 +184,10 @@ class UnsatisfiedResources(ConfigurationError):
 class MissingEnvironment(ConfigurationError):
     """The specified environment does not exist."""
 
+    @property
+    def sort_key(self):
+        return (0, )
+
     def __init__(self, environment):
         self.environment = environment
 
@@ -164,6 +198,10 @@ class MissingEnvironment(ConfigurationError):
 
 class ComponentLoadingError(ConfigurationError):
     """The specified component file failed to load."""
+
+    @property
+    def sort_key(self):
+        return (0, )
 
     def __init__(self, filename, exception):
         self.filename = filename
@@ -179,6 +217,10 @@ class ComponentLoadingError(ConfigurationError):
 class MissingComponent(ConfigurationError):
     """The specified environment does not exist."""
 
+    @property
+    def sort_key(self):
+        return (0, )
+
     def __init__(self, component, hostname):
         self.component = component
         self.hostname = hostname
@@ -193,6 +235,10 @@ class SuperfluousSection(ConfigurationError):
     """A superfluous section was found in the environment
     configuration file."""
 
+    @property
+    def sort_key(self):
+        return (0, )
+
     def __init__(self, section):
         self.section = section
 
@@ -205,6 +251,10 @@ class SuperfluousSection(ConfigurationError):
 class SuperfluousComponentSection(ConfigurationError):
     """A component section was found in the environment
     but no associated component is known."""
+
+    @property
+    def sort_key(self):
+        return (0, )
 
     def __init__(self, component):
         self.component = component
@@ -219,6 +269,10 @@ class SuperfluousSecretsSection(ConfigurationError):
     """A component section was found in the secrets
     but no associated component is known."""
 
+    @property
+    def sort_key(self):
+        return (0, )
+
     def __init__(self, component):
         self.component = component
 
@@ -232,6 +286,10 @@ class CycleErrorDetected(ConfigurationError):
     """We think we found a cycle in the component dependencies.
     """
 
+    @property
+    def sort_key(self):
+        return (99, )
+
     def __init__(self, error):
         self.error = error
 
@@ -243,6 +301,10 @@ class CycleErrorDetected(ConfigurationError):
 
 class NonConvergingWorkingSet(ConfigurationError):
     """A working set did not converge."""
+
+    @property
+    def sort_key(self):
+        return (100, )
 
     def __init__(self, roots):
         self.roots = roots
@@ -259,12 +321,20 @@ class NonConvergingWorkingSet(ConfigurationError):
 class DeploymentError(Exception):
     """Indicates that a deployment failed.."""
 
+    @property
+    def sort_key(self):
+        return (200, )
+
     def report(self):
         pass
 
 
 class RepositoryDifferentError(DeploymentError):
     """The repository on the remote side is different."""
+
+    @property
+    def sort_key(self):
+        return (150, )
 
     def __init__(self, local, remote):
         self.local = local
