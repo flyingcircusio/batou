@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.1.0a10 (unreleased)
+1.1.0a10 (2015-11-11)
 =====================
 
 - Sort logfiles for logrotate to avoid superfluous reloading.
