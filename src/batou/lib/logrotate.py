@@ -28,6 +28,7 @@ class Logrotate(Component):
 
     def configure(self):
         self.logfiles = self.require(RotatedLogfile.key, host=self.host)
+        self.logfiles.sort(key=lambda l: l.path)
 
         config = self.common_config + self.logrotate_template
         self.logrotate_conf = File('logrotate.conf', content=config)
