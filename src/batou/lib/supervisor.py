@@ -170,6 +170,7 @@ class Supervisor(Component):
     pidfile = Attribute(str, '/run/local/supervisord.pid', map=True)
     socketpath = Attribute(
         str, '{{component.workdir}}/supervisor.sock', map=True)
+    check_contact_groups = None
 
     def configure(self):
         self.provide('supervisor', self)
@@ -211,6 +212,7 @@ class Supervisor(Component):
         self += ServiceCheck(
             'Supervisor programs',
             nrpe=True,
+            contact_groups=self.check_contact_groups,
             command=self.expand('{{component.workdir}}/check_supervisor'))
 
 
