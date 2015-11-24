@@ -73,14 +73,14 @@ def prepare():
         missing = False
 
     if missing or develop:
+        if missing:
+            print('Pre-installing batou - this can take a while...')
         if version == BOOTSTRAP_VERSION_MARKER:
             # we're bootstrapping a new project. just get whatever version.
             # this will self-destruct this file later. :)
             develop = ''
             spec = '--egg batou'
-        if missing:
-            print('Pre-installing batou - this can take a while...')
-        if develop:
+        elif develop:
             spec = '-e {}'.format(develop)
         else:
             spec = '--egg batou=={}'.format(version)

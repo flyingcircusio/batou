@@ -5,6 +5,8 @@ Changelog
 1.1.0a12 (unreleased)
 =====================
 
+- Fix curl initial bootstrap.
+
 - Allow to set the contact group of the Supervisor service check from
   the environment::
 
