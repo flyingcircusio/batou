@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.1.0a11 (unreleased)
+1.1.0a11 (2015-11-24)
 =====================
 
 - Allow to set the contact group of the Supervisor service check.
