@@ -26,6 +26,8 @@ class Service(HookComponent):
     def configure(self):
         # ","" are not safe for being referenced in business processes.
         self.description = self.description.replace(',', '_')
+        if isinstance(self.contact_groups, (list, tuple)):
+            self.contact_groups = ','.join(self.contact_groups)
         super(Service, self).configure()
 
     @property
