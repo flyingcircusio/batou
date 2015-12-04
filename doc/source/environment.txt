@@ -26,10 +26,10 @@ host_domain
 	is handy do make the host/component assignment less verbose
 
 update_method
-	`bundle|pull|rsync`, sets how the remote deployment repository is updated.
+	`hg-bundle|hg-pull|git-bundle|git-pull|rsync`, sets how the remote deployment repository is updated.
 
-	* `pull`, the default, uses `hg clone` and/or `hg pull` on the remote site.
-	* `bundle` will copy the necessary changes as Mercurial bundle, via the batou ssh link.
+	* `pull`, the default, uses `hg/git clone` and/or `hg/git pull` on the remote site.
+	* `bundle` will copy the necessary changes as Mercurial/Git bundle, via the batou ssh link.
 	* `rsync` will rsync the *working copy*. This is most useful in combination with the vagrant platform.
 
 
