@@ -1,5 +1,6 @@
 syntax: glob
 
+.batou
 *.egg-info
 *.pyc
 *.sublime-*
