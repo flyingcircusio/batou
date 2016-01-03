@@ -45,6 +45,10 @@ def install_pip():
 base = os.path.dirname(__file__) or '.'
 os.chdir(base)
 
+# clear PYTHONPATH variable to get a defined environment
+if 'PYTHONPATH' in os.environ:
+    del os.environ['PYTHONPATH']
+
 # Do we have a virtualenv?
 if not os.path.exists(base + '/.batou'):
     install_venv()
@@ -69,14 +73,14 @@ def prepare():
         missing = False
 
     if missing or develop:
+        if missing:
+            print('Pre-installing batou - this can take a while...')
         if version == BOOTSTRAP_VERSION_MARKER:
             # we're bootstrapping a new project. just get whatever version.
             # this will self-destruct this file later. :)
             develop = ''
-            spec = '--egg batou'
-        if missing:
-            print('Pre-installing batou - this can take a while...')
-        if develop:
+            spec = '--egg batou --pre'
+        elif develop:
             spec = '-e {}'.format(develop)
         else:
             spec = '--egg batou=={}'.format(version)
