@@ -5,7 +5,7 @@ Changelog
 1.1.0a13 (unreleased)
 =====================
 
-- Nothing changed yet.
+- Fix Debian supervisor's pid file attribute.
 
 
 1.1.0a12 (2015-11-24)
