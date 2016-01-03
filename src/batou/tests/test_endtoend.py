@@ -42,6 +42,11 @@ ERROR: Override section for unknown component found
       Component: nonexisting-component-section
 ERROR: Failed override attribute conversion
            Host: localhost
+      Attribute: Component1.do_what_is_needed
+     Conversion: convert_literal(u'false')
+          Error: malformed string
+ERROR: Failed override attribute conversion
+           Host: localhost
       Attribute: DNSProblem.attribute_with_problem
      Conversion: Address(u'localhost')
           Error: Need port for service address.
@@ -49,11 +54,6 @@ ERROR: Overrides for undefined attributes
            Host: localhost
       Component: Component2
      Attributes: this_does_not_exist
-ERROR: Failed override attribute conversion
-           Host: localhost
-      Attribute: Component1.do_what_is_needed
-     Conversion: convert_literal(u'false')
-          Error: malformed string
 ERROR: Found dependency cycle
      cycle1 depends on
              cycle2
