@@ -1,4 +1,4 @@
-from batou.component import Component, platform
+from batou.component import Attribute, Component, platform
 from batou.lib.cron import CronJob
 import batou.lib.logrotate
 import batou.lib.service
@@ -18,7 +18,7 @@ class RebootCronjob(Component):
 # XXX can't use @platform since that's too late (see #12418)
 class Supervisor(batou.lib.supervisor.Supervisor):
 
-    pidfile = 'var/supervisord.pid'
+    pidfile = Attribute(str, 'var/supervisord.pid', map=True)
 
 
 class Logrotate(batou.lib.logrotate.Logrotate):
