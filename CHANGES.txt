@@ -7,6 +7,8 @@ Changelog
 
 - Fix Debian supervisor's pid file attribute.
 
+- Update supervisor to 3.2.
+
 
 1.1.0a12 (2015-11-24)
 =====================
