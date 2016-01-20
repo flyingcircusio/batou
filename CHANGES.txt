@@ -9,6 +9,16 @@ Changelog
 
 - Fix error ordering.
 
+- Introduce syntax to disable deployment of hosts and components.
+  Prefix a hostname with '!' or a component name with '!' to have
+  it configured but not deployed. This supports temporary adjustments
+  while keeping a consistent config.
+
+  We mark this red in the output because this really needs to be used
+  carefully.
+
+  It replaces the approach in batou 1.0 where one would set up dummy
+  hosts and use "batou local dev localhost".
 
 1.1.1 (2016-01-11)
 ==================

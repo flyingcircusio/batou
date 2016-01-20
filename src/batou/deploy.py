@@ -42,6 +42,8 @@ class Deployment(object):
         self.environment.prepare_connect()
 
         for i, host in enumerate(self.environment.hosts.values(), 1):
+            if host.ignore:
+                continue
             output.step(host.name, "Connecting via {} ({}/{})".format(
                         self.environment.connect_method, i,
                         len(self.environment.hosts)))
@@ -53,12 +55,26 @@ class Deployment(object):
 
         # Pick a reference remote (the last we initialised) that will pass us
         # the order we should be deploying components in.
-        reference_node = self.environment.hosts.values()[0]
+        reference_node = [h for h in self.environment.hosts.values()
+                          if not h.ignore][0]
 
-        for host, component in reference_node.roots_in_order():
+        for root in reference_node.roots_in_order():
+            hostname, component, ignore_component = root
+            host = self.environment.hosts[hostname]
+            if host.ignore:
+                output.step(
+                    hostname,
+                    "Skipping component {} ... (Host ignored)".format(
+                        component), red=True)
+                continue
+            if ignore_component:
+                output.step(
+                    hostname, "Skipping component {} ... (Component ignored)".
+                    format(component), red=True)
+                continue
+
             output.step(
-                host, "Deploying component {} ...".format(component))
-            host = self.environment.hosts[host]
+                hostname, "Deploying component {} ...".format(component))
             host.deploy_component(component)
 
     def disconnect(self):

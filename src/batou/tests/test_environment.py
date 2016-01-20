@@ -102,3 +102,18 @@ def test_multiple_components(sample_service):
         localhost=['hello1', 'hello2'],
         otherhost=['hello3', 'hello4'],
         thishost=['hello5', 'hello6'])
+
+
+def test_parse_host_components():
+    from batou.environment import parse_host_components
+    assert (parse_host_components(['asdf']) ==
+            {'asdf': {'features': [], 'ignore': False}})
+
+    assert (parse_host_components(['!asdf']) ==
+            {'asdf': {'features': [], 'ignore': True}})
+
+    assert (parse_host_components(['!asdf:test', 'asdf:bar']) ==
+            {'asdf': {'features': ['test', 'bar'], 'ignore': True}})
+
+    assert (parse_host_components(['asdf:test', 'asdf:bar']) ==
+            {'asdf': {'features': ['test', 'bar'], 'ignore': False}})

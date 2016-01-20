@@ -361,7 +361,7 @@ def test_root_and_component_know_working_dir(root):
 def test_root_component_repr():
     host = Mock()
     environment = Mock()
-    root = RootComponent('haproxy', environment, host, [],
+    root = RootComponent('haproxy', environment, host, [], False,
                          object, '/defdir', '/workdir')
     assert repr(root).startswith('<RootComponent "haproxy" object at ')
 
