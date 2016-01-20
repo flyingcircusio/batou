@@ -71,3 +71,26 @@ ERROR: 6 remaining unconfigured component(s)
 ============================== DEPLOYMENT FAILED =============================\
 ==
 """)
+
+
+def test_example_ignores():
+    os.chdir('examples/ignores')
+    out, _ = cmd('./batou deploy ignores')
+    assert out == Ellipsis("""\
+batou/... (CPython 2.7..., ...)
+================================== Preparing =================================\
+==
+main: Loading environment `ignores`...
+main: Verifying repository ...
+main: Loading secrets ...
+================================== Connecting ================================\
+==
+localhost: Connecting via local (2/2)
+================================== Deploying =================================\
+==
+localhost: Deploying component component1 ...
+localhost: Skipping component fail ... (Component ignored)
+otherhost: Skipping component fail2 ... (Host ignored)
+============================= DEPLOYMENT FINISHED ============================\
+==
+""")

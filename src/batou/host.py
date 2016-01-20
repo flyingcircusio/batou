@@ -61,6 +61,8 @@ class RPCWrapper(object):
 
 class Host(object):
 
+    ignore = False
+
     def __init__(self, fqdn, environment):
         self.fqdn = fqdn
         self.name = self.fqdn.split('.')[0]
@@ -98,7 +100,8 @@ class LocalHost(Host):
             env.overrides, env.deployment.timeout, env.deployment.platform)
 
     def disconnect(self):
-        self.gateway.exit()
+        if hasattr(self, 'gateway'):
+            self.gateway.exit()
 
 
 class RemoteHost(Host):

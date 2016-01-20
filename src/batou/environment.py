@@ -117,12 +117,16 @@ class Environment(object):
         config = Config(config_file)
 
         self.load_environment(config)
-        for hostname in config.get('hosts', {}):
+        for literal_hostname in config.get('hosts', {}):
+            hostname = literal_hostname.strip('!')
+            host = self.add_host(hostname)
+            host.ignore = literal_hostname.startswith('!')
             components = parse_host_components(
-                config['hosts'].as_list(hostname))
-            for component, features in components.items():
+                config['hosts'].as_list(literal_hostname))
+            for component, settings in components.items():
                 try:
-                    self.add_root(component, hostname, features)
+                    self.add_root(component, hostname,
+                                  settings['features'], settings['ignore'])
                 except KeyError as e:
                     self.exceptions.append(
                         MissingComponent(component, hostname))
@@ -208,7 +212,7 @@ class Environment(object):
                 self.hosts[fqdn] = RemoteHost(fqdn, self)
         return self.hosts[fqdn]
 
-    def add_root(self, component_name, hostname, features=()):
+    def add_root(self, component_name, hostname, features=(), ignore=False):
         host = self.add_host(hostname)
         compdef = self.components[component_name]
         root = RootComponent(
@@ -216,6 +220,7 @@ class Environment(object):
             environment=self,
             host=host,
             features=features,
+            ignore=ignore,
             factory=compdef.factory,
             defdir=compdef.defdir,
             workdir=os.path.join(self.workdir_base, compdef.name))
@@ -349,11 +354,16 @@ class Environment(object):
 
 def parse_host_components(components):
     """Parse a component list as given in an environment config for a host
-    into a mapping of compoment -> features.
+    into a dict of dicts:
+
+        {'name': {'features': [], 'ignore': False}}
+
+    If one component is ignored, then the whole set of component features
+    is ignored.
 
     Expected syntax:
 
-    component[:feature], component[:feature]
+    [!]component[:feature], component[:feature]
 
     """
     result = {}
@@ -363,7 +373,11 @@ def parse_host_components(components):
             name, feature = name.split(':', 1)
         else:
             feature = None
-        result.setdefault(name, [])
+
+        ignore = name.startswith('!')
+        name = name.strip('!')
+        result.setdefault(name, {'features': [], 'ignore': False})
+        result[name]['ignore'] |= ignore
         if feature:
-            result[name].append(feature)
+            result[name]['features'].append(feature)
     return result

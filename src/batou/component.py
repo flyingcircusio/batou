@@ -467,12 +467,15 @@ class RootComponent(object):
 
     """
 
-    def __init__(self, name, environment, host, features,
+    ignore = False
+
+    def __init__(self, name, environment, host, features, ignore,
                  factory, defdir, workdir, overrides=None):
         self.name = name
         self.environment = environment
         self.host = host
         self.features = features
+        self.ignore = ignore
         self.defdir = defdir
         self.workdir = workdir
         self.overrides = overrides if overrides else {}
