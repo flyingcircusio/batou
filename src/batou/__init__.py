@@ -14,11 +14,19 @@ class ConfigurationError(Exception):
     def sort_key(self):
         return (0, self.message)
 
-    def __init__(self, message):
+    def __init__(self, message, component=None):
         self.message = message
+        self.component = component
 
     def report(self):
-        output.error(self.message)
+        if self.component:
+            message = '{}@{}: {}'.format(
+                self.component.root.name,
+                self.component.root.host.name,
+                self.message)
+        else:
+            message = self.message
+        output.error(message)
 
 
 class ConversionError(ConfigurationError):

@@ -76,8 +76,10 @@ class VirtualEnvPyBase(Component):
     def verify_pkg(self, pkg):
         try:
             self.cmd(
-                'bin/python -c "import pkg_resources; '
-                'assert pkg_resources.require(\'{}\')[0].version == \'{}\'"'
+                'bin/python -c "'
+                'import pkg_resources; '
+                'assert pkg_resources.require(\'{}\')[0].parsed_version == '
+                'pkg_resources.parse_version(\'{}\')"'
                 .format(pkg.package, pkg.version))
         except CmdExecutionError:
             raise UpdateNeeded()

@@ -43,7 +43,7 @@ class CronTab(Component):
             raise ConfigurationError(
                 'Found cron jobs, but expecting an empty crontab.')
         elif not self.purge and not self.jobs:
-            raise ConfigurationError('No cron jobs found.')
+            raise ConfigurationError('No cron jobs found.', self)
         self.jobs.sort(key=lambda job: job.command + ' ' + job.args)
         self.crontab = File('crontab', source=self.crontab_template)
         self += self.crontab
