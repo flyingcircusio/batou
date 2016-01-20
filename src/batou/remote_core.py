@@ -326,8 +326,13 @@ if __name__ == '__channelexec__':
             if e not in deployment.environment.exceptions:
                 deployment.environment.exceptions.append(e)
             # Report on why configuration failed.
+            deployment.environment.exceptions.sort(key=lambda x: x.sort_key)
+
             for exception in deployment.environment.exceptions:
+                if isinstance(e, batou.SilentConfigurationError):
+                    continue
                 exception.report()
+
             batou.output.section(
                 "{} ERRORS - CONFIGURATION FAILED".format(
                     len(deployment.environment.exceptions)), red=True)
