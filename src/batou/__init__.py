@@ -166,7 +166,7 @@ class UnusedResources(ConfigurationError):
 
     def report(self):
         output.error("Unused provided resources")
-        for key in self.resources:
+        for key in sorted(self.resources):
             values = []
             for v in self.resources[key].values():
                 values.extend(v)

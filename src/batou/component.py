@@ -104,6 +104,12 @@ class Component(object):
         # error out as long as the component is not attached to a root.
         self.__dict__.update(kw)
 
+    def __repr__(self):
+        return '<%s (%s) "%s">' % (
+            self.__class__.__name__,
+            self.host.name,
+            self._breadcrumbs)
+
     @property
     def defdir(self):
         return self.root.defdir
