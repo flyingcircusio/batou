@@ -21,7 +21,7 @@ class EncryptedConfigFile(object):
     # Additional GPG parameters. Used for testing.
     gpg_opts = ''
 
-    def __init__(self, encrypted_file, write_lock=False):
+    def __init__(self, encrypted_file, write_lock=False, quiet=False):
         """Context manager that opens an encrypted file.
 
         Use the read() and write() methods in the subordinate "with"
@@ -33,6 +33,7 @@ class EncryptedConfigFile(object):
         """
         self.encrypted_file = encrypted_file
         self.write_lock = write_lock
+        self.quiet = quiet
 
     def __enter__(self):
         self._lock()
@@ -66,6 +67,11 @@ class EncryptedConfigFile(object):
         self.cleartext = cleartext
         self._encrypt()
 
+    def write_config(self):
+        s = StringIO.StringIO()
+        self.config.write(s)
+        self.write(s.getvalue())
+
     def _lock(self):
         self.lockfd = open(
             self.encrypted_file, self.write_lock and 'a+' or 'r+')
@@ -75,16 +81,27 @@ class EncryptedConfigFile(object):
             fcntl.lockf(self.lockfd, fcntl.LOCK_SH)
 
     def _decrypt(self):
+        opts = self.gpg_opts
+        if self.quiet:
+            opts += ' -q --no-tty --batch'
         self.cleartext = subprocess.check_output(
             ['gpg {} --decrypt {}'.format
-                (self.gpg_opts, self.encrypted_file)],
+                (opts, self.encrypted_file)],
             stderr=subprocess.PIPE,
             shell=True)
 
+    def get_members(self):
+        members = self.config.get('batou', 'members').split(',')
+        members = [x.strip() for x in members]
+        members = filter(None, members)
+        return members
+
+    def set_members(self, members):
+        members = ', '.join(members)
+        members = self.config.set('batou', 'members', members)
+
     def _encrypt(self):
-        recipients = self.config.get('batou', 'members').split(',')
-        recipients = [x.strip() for x in recipients]
-        recipients = filter(None, recipients)
+        recipients = self.get_members()
         if not recipients:
             raise ValueError("Need at least one recipient.")
         recipients = ' '.join(['-r {}'.format(r.strip()) for r in recipients])
