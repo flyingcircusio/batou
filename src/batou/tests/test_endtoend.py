@@ -56,8 +56,9 @@ ERROR: Failed override attribute conversion
      Conversion: Address(u'localhost')
           Error: Need port for service address.
 ERROR: Unused provided resources
-       frontend: ['test00.gocept.net']
         backend: ['192.168.0.1']
+       frontend: ['test00.gocept.net']
+            sub: [<SubComponent (localhost) "Component3 > SubComponent(sub sub)">]
 ERROR: Unsatisfied resource requirements
      application: <undefined>
 ERROR: Found dependency cycle
@@ -70,7 +71,7 @@ ERROR: 6 remaining unconfigured component(s)
 ==
 ============================== DEPLOYMENT FAILED =============================\
 ==
-""")
+""")  # NOQA
 
 
 def test_example_ignores():

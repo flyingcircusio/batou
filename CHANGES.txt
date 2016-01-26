@@ -9,7 +9,7 @@ Changelog
   all environments and what user keys are there, automatically
   add or remove users to all, one, or multiple environments.
 
-  Note: the old './batou secrets <env>' is now './batou secrets edit <env>'
+- Improve component error reporting.
 
 
 1.1.2 (2016-01-20)
