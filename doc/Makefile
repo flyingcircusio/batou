@@ -46,7 +46,6 @@ clean:
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	cp ../src/batou/bootstrap-template build/html/batou
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 

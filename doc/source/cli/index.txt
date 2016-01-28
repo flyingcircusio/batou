@@ -4,9 +4,6 @@ Command Line Usage
 General options
 ---------------
 
-* debug
-* fast
-
 .. code-block:: console
 
     usage: batou [-h] [-d] [-F] {deploy,secrets,init,update} ...
@@ -29,7 +26,6 @@ General options
       -d, --debug           Enable debug mode. (default: False)
       -F, --fast            Enable fast mode. Do not perform bootstrapping.
                             (default: False)
-
 
 
 batou deploy
@@ -58,13 +54,60 @@ batou deploy
 batou secrets edit
 ------------------
 
-batou secrets adduser
----------------------
+.. code-block:: console
 
+    usage: batou secrets edit [-h] [--editor EDITOR] environment
+
+    positional arguments:
+      environment           Environment to edit secrets for.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --editor EDITOR, -e EDITOR
+                            Invoke EDITOR to edit (default: $EDITOR or vi)
+
+
+batou secrets add
+-----------------
+
+.. code-block:: console
+
+    usage: batou secrets add [-h] [--environments ENVIRONMENTS] keyid
+
+    positional arguments:
+      keyid                 The user's key ID or email address
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --environments ENVIRONMENTS
+                            The environments to update. Update all if not
+                            specified.
 
 batou secrets removeuser
 ------------------------
 
+.. code-block:: console
+
+    usage: batou secrets remove [-h] [--environments ENVIRONMENTS] keyid
+
+    positional arguments:
+      keyid                 The user's key ID or email address
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --environments ENVIRONMENTS
+                            The environments to update. Update all if not
+                            specified.
+
 
 batou update
 ------------
+
+.. code-block:: console
+
+    usage: batou update [-h] (--version VERSION | --develop DEVELOP)
+
+    optional arguments:
+      -h, --help         show this help message and exit
+      --version VERSION  Exact version to install.
+      --develop DEVELOP  Path to checkout of batou to install in edit mode.
