@@ -56,7 +56,7 @@ Creates a file. The main parameter for File is the target path. A ``File`` insta
 
 .. py:attribute:: encoding
 
-    Encoding for the file contents [Default: ascii]
+    Encoding for the file contents [Default: utf-8]
 
 .. py:attribute:: owner
 
@@ -88,6 +88,11 @@ Creates a file. The main parameter for File is the target path. A ``File`` insta
 
 
 XXX explain detailed factoring of Presence and Content
+
+.. py:class:: batou.lib.BinaryFile(path)
+
+Subclass of batou.lib.File. Creates a non-template binary file. 
+
 
 .. _file-directory:
 
