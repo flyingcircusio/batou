@@ -1,7 +1,7 @@
 from .environment import Environment
 from .utils import locked, self_id
 from .utils import notify
-from batou import DeploymentError, ConfigurationError, SilentConfigurationError
+from batou import DeploymentError, ConfigurationError
 from batou._output import output, TerminalBackend
 import sys
 
@@ -36,19 +36,30 @@ class Deployment(object):
         output.step("main", "Loading secrets ...")
         self.environment.load_secrets()
 
-    def connect(self):
-        output.section("Connecting")
+    def configure(self):
+        output.section("Configuring first host")
+        self.connections = iter(self._connections())
+        self.connections.next()
 
+    def _connections(self):
         self.environment.prepare_connect()
-
         for i, host in enumerate(self.environment.hosts.values(), 1):
             if host.ignore:
+                output.step(host.name, "Connection ignored ({}/{})".format(
+                    i, len(self.environment.hosts)),
+                    bold=False, red=True)
                 continue
             output.step(host.name, "Connecting via {} ({}/{})".format(
                         self.environment.connect_method, i,
                         len(self.environment.hosts)))
             host.connect()
             host.start()
+            yield
+
+    def connect(self):
+        output.section("Connecting remaining hosts")
+        # Consume the connection iterator to establish remaining connections.
+        list(self.connections)
 
     def deploy(self):
         output.section("Deploying")
@@ -83,7 +94,7 @@ class Deployment(object):
             node.disconnect()
 
 
-def main(environment, platform, timeout, dirty, fast):
+def main(environment, platform, timeout, dirty, fast, check_only):
     output.backend = TerminalBackend()
     output.line(self_id())
     with locked('.batou-lock'):
@@ -91,23 +102,17 @@ def main(environment, platform, timeout, dirty, fast):
             deployment = Deployment(
                 environment, platform, timeout, dirty, fast)
             deployment.load()
-            deployment.connect()
-            deployment.deploy()
+            deployment.configure()
+            if not check_only:
+                deployment.connect()
+                deployment.deploy()
             deployment.disconnect()
         except ConfigurationError as e:
-            if e not in deployment.environment.exceptions:
-                deployment.environment.exceptions.append(e)
-            # Report on why configuration failed.
-            deployment.environment.exceptions.sort(key=lambda x: x.sort_key)
-            for exception in deployment.environment.exceptions:
-                if isinstance(e, SilentConfigurationError):
-                    continue
-                exception.report()
-            output.section("{} ERRORS - CONFIGURATION FAILED".format(
-                           len(deployment.environment.exceptions)), red=True)
-            notify('Configuration failed',
-                   'batou failed to configure the environment. '
-                   'Check your console for details.')
+            if check_only:
+                output.section("CHECK FAILED", red=True)
+                notify('Deployment check finished',
+                       'Configuration for {} encountered an error.'.format(
+                           environment))
             sys.exit(1)
         except DeploymentError as e:
             e.report()
@@ -122,6 +127,12 @@ def main(environment, platform, timeout, dirty, fast):
             notify('Deployment failed', '')
             sys.exit(1)
         else:
-            output.section("DEPLOYMENT FINISHED", green=True)
-            notify('Deployment finished',
-                   'Successfully deployed {}.'.format(environment))
+            if check_only:
+                output.section("CHECK FINISHED", green=True)
+                notify('Deployment check finished',
+                       'Successfully checked configuration for {}.'.format(
+                           environment))
+            else:
+                output.section("DEPLOYMENT FINISHED", green=True)
+                notify('Deployment finished',
+                       'Successfully deployed {}.'.format(environment))

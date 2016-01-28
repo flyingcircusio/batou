@@ -1,4 +1,4 @@
-from batou import output, DeploymentError
+from batou import output, DeploymentError, ConfigurationError
 from batou import remote_core
 from batou.update import generate_bootstrap
 import os
@@ -49,7 +49,9 @@ class RPCWrapper(object):
                 elif type == 'batou-output':
                     _, output_cmd, args, kw = message
                     getattr(output, output_cmd)(*args, **kw)
-                elif type == 'batou-error':
+                elif type == 'batou-configuration-error':
+                    raise ConfigurationError(None)
+                elif type == 'batou-deployment-error':
                     raise DeploymentError()
                 elif type in ['batou-unknown-error']:
                     output.error(message[1])

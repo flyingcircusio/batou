@@ -88,7 +88,7 @@ def prepare():
         cmd('.batou/bin/pip install --ignore-installed {}'.format(spec))
 
 
-if '--fast' not in sys.argv:
+if '--fast' not in sys.argv and '-F' not in sys.argv:
     prepare()
 
 
