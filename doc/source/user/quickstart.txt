@@ -70,8 +70,8 @@ simple application:
   done
   """)
 
-The component has a `configure` method that is used to build a model of your
-configuration as a tree of components. By using the syntax `self += File(...)`
+The component has a ``configure`` method that is used to build a model of your
+configuration as a tree of components. By using the syntax ``self += File(...)``
 you add a File component as a sub-component to your Tick component. Components
 can thus recursively combine configurations into larger, more complex setups.
 
