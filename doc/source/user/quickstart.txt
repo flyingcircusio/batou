@@ -294,8 +294,8 @@ Storing secrets as encrypted overrides
 --------------------------------------
 
 
-Using git or Mercurial to ensure consistent deployments
---------------------------------------------------------
+Using version control to ensure consistent deployments
+------------------------------------------------------
 
 
 Downloading and building software
