@@ -1,6 +1,9 @@
 # This code must not cause non-stdlib imports to support self-bootstrapping.
 from ._output import output
+import os.path
 import traceback
+
+__version__ = open(os.path.dirname(__file__) + '/version.txt').read().strip()
 
 
 class UpdateNeeded(Exception):

@@ -1,0 +1,46 @@
+Introduction
+============
+
+Philosophy
+----------
+
+batou was developed with a number of ideas in mind:
+
+* Deploying should always be just a single command.
+* Python is the language batou uses. This is not to be
+  confused with the Python that your application might use.
+* We expect little from the remote environments
+  regarding software dependencies: Python 2.7,  OpenSSH, and rsync, Mercurial or git should be sufficient.
+* batou does not become an active component during your
+  application's runtime. batou automates what a sysadmin would do -- in a structured manner.
+* It should be easy to switch between the declarative
+  part of the model and the imperative implementation.
+* Implementations that become too complicated
+  should be easy to break up into simpler ones.
+* batou is not intended to perform provisioning or
+  system configuration tasks. We expect the heavy lifting (preparing the target OS) to already be done.
+* batou should be working with your applications without
+  too many hassles.
+* We want to make things simple for you but we do
+  not insulate you in ways that make you blind.
+
+Name
+----
+
+The name "batou" is taken from the animated movie "Ghost in the Shell".
+
+Legal
+-----
+
+The copyright holder for batou is::
+
+    Flying Circus Internet Operations GmbH
+    Forsterstraße 29
+    06112 Halle (Saale)
+    GERMANY
+
+The code of batou is licensed under the 2-clause BSD license:
+
+.. literalinclude:: ../../../LICENSE.txt
+
+

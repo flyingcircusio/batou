@@ -45,7 +45,7 @@ Step 1: Model your application's configuration
 ----------------------------------------------
 
 With our component model you write a configuration specification in Python
-based on a simple API. Components make configuration convergent and idempotent
+based on a simple API. Components make configuration `convergent <https://en.wikipedia.org/wiki/Convergence_(logic)>`_ and `idempotent <https://en.wikipedia.org/wiki/Idempotence>`_
 and using Python lets you perform any computation you need. The component
 model is recursive, so you can refactor complicated components into simpler
 ones without breaking your setup.
@@ -107,7 +107,7 @@ Features
 * Dynamically connect services during deployments and track their dependencies.
 * Few run-time requirements on your servers: only Python 2.7 and SSH are needed.
 * Use pre-defined components to manage files, python environments, supervisor, cronjobs, and more.
-* Writing your own components is easy, use any Python dependency.
+* Writing your own components is easy and you can use  additional Python package dependencies.
 
 User guide
 ----------
@@ -116,57 +116,47 @@ This part of the documentation, begins with some background information about Re
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   introduction
-   installation
-   create-new-project
-   component-tutorial
+   user/intro
+   user/install
+   user/quickstart
+   user/advanced
 
-   component-configure
-   component-update
-   resources
-   environment
-
-   local
-   remote
-
-   templating
-   file
-   download
-   cmmi
-   supervisor
-   python
-
-   network
-   secrets
-   platform
-
-   update
-   component-advanced
-
-
-Advanced topics
-
-.. toctree::
-   :maxdepth: 1
-
-   introduction
-
-   component-advanced
-
-
-API documentation
------------------
+Command line
+------------
 
 If you are looking for information on a specific function, class or method, this part of the documentation is for you.
 
+.. toctree::
+   :maxdepth: 2
+
+   cli
+
+
+API
+---
+
+If you are looking for information on a specific function, class or method, this part of the documentation is for you.
+
+.. toctree::
+   :maxdepth: 2
+
+   api
 
 Contributor guide
 -----------------
 
 If you want to contribute to the project, this part of the documentation is for you.
 
+
+.. toctree::
+   :maxdepth: 1
+
+   dev/contributing
+   dev/philosophy
+   dev/todo
+   dev/authors
 
 Support
 -------
