@@ -40,6 +40,10 @@ def main():
         '-D', '--dirty', action='store_true',
         help='Allow deploying with dirty working copy or outgoing changes.')
     p.add_argument(
+        '-c', '--check-only', action='store_true',
+        help='Only perform a deployment check. '
+             'Do not change configuration on target hosts.')
+    p.add_argument(
         'environment', help='Environment to deploy.',
         type=lambda x: x.replace('.cfg', ''))
     p.set_defaults(func=batou.deploy.main)

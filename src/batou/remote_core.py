@@ -53,7 +53,9 @@ class Output(object):
     def section(self, title, debug=False, **format):
         if debug and not self.enable_debug:
             return
-        self.backend.sep("=", title, bold=True, **format)
+        _format = {'bold': True}
+        _format.update(format)
+        self.backend.sep("=", title, **_format)
 
     def sep(self, sep, title, **format):
         return self.backend.sep(sep, title, **format)
@@ -61,8 +63,9 @@ class Output(object):
     def step(self, context, message, debug=False, **format):
         if debug and not self.enable_debug:
             return
-        self.line('{}: {}'.format(context, message),
-                  bold=True, **format)
+        _format = {'bold': True}
+        _format.update(format)
+        self.line('{}: {}'.format(context, message), **_format)
 
     def error(self, message, exc_info=None, debug=False):
         if debug and not self.enable_debug:
@@ -336,10 +339,10 @@ if __name__ == '__channelexec__':
             batou.output.section(
                 "{} ERRORS - CONFIGURATION FAILED".format(
                     len(deployment.environment.exceptions)), red=True)
-            channel.send(('batou-error', ''))
+            channel.send(('batou-configuration-error', None))
         except getattr(batou, 'DeploymentError', None) as e:
             e.report()
-            channel.send(('batou-error', None))
+            channel.send(('batou-deployment-error', None))
         except Exception as e:
             # I voted for duck-typing here as we may be running in the
             # bootstrapping phase and don't have access to all classes yet.

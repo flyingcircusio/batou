@@ -34,6 +34,9 @@ def install_venv():
     # Discover the right venv cmd. Or let batou figure that out later in a
     # second phase?
     # XXX Give advice if virtualenv isn't there.
+    for fast in ['-F', '--fast']:
+        while fast in sys.argv:
+            sys.argv.remove(fast)
     cmd('virtualenv --python=python2.7 .batou')
 
 
@@ -73,14 +76,14 @@ def prepare():
         missing = False
 
     if missing or develop:
+        if missing:
+            print('Pre-installing batou - this can take a while...')
         if version == BOOTSTRAP_VERSION_MARKER:
             # we're bootstrapping a new project. just get whatever version.
             # this will self-destruct this file later. :)
             develop = ''
-            spec = '--egg batou'
-        if missing:
-            print('Pre-installing batou - this can take a while...')
-        if develop:
+            spec = '--egg batou --pre'
+        elif develop:
             spec = '-e {}'.format(develop)
         else:
             spec = '--egg batou=={}'.format(version)
@@ -88,7 +91,7 @@ def prepare():
         cmd('.batou/bin/pip install --ignore-installed {}'.format(spec))
 
 
-if '--fast' not in sys.argv:
+if '--fast' not in sys.argv and '-F' not in sys.argv:
     prepare()
 
 

@@ -24,7 +24,7 @@ batou/... (CPython 2.7..., ...)
 main: Loading environment `errors`...
 main: Verifying repository ...
 main: Loading secrets ...
-================================== Connecting ================================\
+============================ Configuring first host ==========================\
 ==
 localhost: Connecting via local (1/1)
 ERROR: Failed loading component file
@@ -69,8 +69,6 @@ ERROR: Found dependency cycle
 ERROR: 6 remaining unconfigured component(s)
 ======================= 13 ERRORS - CONFIGURATION FAILED =====================\
 ==
-============================== DEPLOYMENT FAILED =============================\
-==
 """)  # NOQA
 
 
@@ -84,9 +82,12 @@ batou/... (CPython 2.7..., ...)
 main: Loading environment `ignores`...
 main: Verifying repository ...
 main: Loading secrets ...
-================================== Connecting ================================\
+============================ Configuring first host ==========================\
 ==
+otherhost: Connection ignored (1/2)
 localhost: Connecting via local (2/2)
+========================== Connecting remaining hosts ========================\
+==
 ================================== Deploying =================================\
 ==
 localhost: Deploying component component1 ...

@@ -11,6 +11,22 @@ Changelog
 
 - Improve component error reporting.
 
+- Add '--check' flag to deploy command. This causes batou to connect only
+  to the first host and report any configuration errors.
+
+  The target will have their batou repository updated, so here's a friendly
+  reminder that your deployment should not depend on the content of the
+  repository directly but always only on things copied to the work environment.
+
+- Make the '--fast' and '-F' flags more robust.
+
+- Fix up some outdated examples (not all of them, though).
+
+- Fix configuration error reporting. Removing some code that would
+  never get run. Do not report configuration errors as deployment errors.
+
+- Display ignored hosts during connection sequence to make numbers add
+  up and clarify what's going on.
 
 1.1.2 (2016-01-20)
 ==================
