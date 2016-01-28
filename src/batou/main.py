@@ -48,9 +48,6 @@ def main():
         type=lambda x: x.replace('.cfg', ''))
     p.set_defaults(func=batou.deploy.main)
 
-    # Backwards compatibility.
-    subparsers._name_parser_map['remote'] = p
-
     # SECRETS
     secrets = subparsers.add_parser(
         'secrets', help="""\
