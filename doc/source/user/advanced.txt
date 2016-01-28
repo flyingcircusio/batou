@@ -1,5 +1,46 @@
-Components III: Advanced component concepts and API (TBD)
-=========================================================
+Advanced Usage
+==============
+
+
+Writing a custom component
+--------------------------
+
+
+
+Multiple components in a single component.py
+--------------------------------------------
+
+
+Environment options
+-------------------
+
+Skipping individual hosts or components when deploying
+------------------------------------------------------
+
+
+Events
+------
+
+
+Using bundle transfers if the repository server is not reachable from your remote server
+----------------------------------------------------------------------------------------
+
+Timeout
+-------
+
+
+
+VFS mapping for development
+---------------------------
+
+VFS mapping with explicit rewrite rules
+---------------------------------------
+
+
+Extended service discovery options
+----------------------------------
+
+
 
 context manager
 ---------------

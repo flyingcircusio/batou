@@ -1,5 +1,5 @@
-Environments (TBD)
-==================
+Environment configuration
+=========================
 
 Component/host assignment
 -------------------------

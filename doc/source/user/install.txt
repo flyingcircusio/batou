@@ -28,8 +28,8 @@ A new project is started by placing the batou master command into the project an
     $ hg add batou
     $ hg commit -m "Start a batou project."
 
-Locally running the master command
-----------------------------------
+Local
+-----
 
 To run the master command on your machine you will need to have the following dependencies installed:
 
@@ -40,8 +40,8 @@ To run the master command on your machine you will need to have the following de
 * Mercurial, git, or rsync *(you only need to have the one installed you actually use to transfer your repository)*
 
 
-Remotely deploying onto a server
---------------------------------
+Remote
+------
 
 To deploy on a remote server, that server needs to have installed:
 
@@ -50,8 +50,8 @@ To deploy on a remote server, that server needs to have installed:
 * OpenSSH
 * Mercurial, git or rsync *(you only need to have the one installed you actually use to transfer your repository)*
 
-Platforms
----------
+Supported Platforms
+-------------------
 
 batou is being tested to run on Linux and Mac OS X.
 
@@ -60,8 +60,8 @@ We do *not* support deploying from or to non-UNIX targets.
 batou is written in Python and requires to be run with **Python 2.7**.
 
 
-Additional requirements
------------------------
+Optional requirements
+---------------------
 
 Depending on the actual components you are going to install, you may need to have those packages installed on your remote machines:
 

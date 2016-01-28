@@ -1,365 +1,74 @@
-Using components
-================
+Quickstart
+==========
 
-.. note::
-
-    batou has a pre-built supervisor component that you can just use. This
-    tutorial demonstrates what mechanics batou provides to build such a
-    component.
-
-This is a tutorial about batou components. You will use batou to deploy a
-simple long-running process as a daemon using supervisor.
-
-To do so, you need to configure multiple components and you will learn about
-the concepts behind components as well as the practical steps to take in order
-to put them into action.
-
-In order to successfully follow the tutorial, you should have installed and
-used the very basics of batou before. Working through the :doc:`create-new-project`
-tutorial would be adequate as a prerequisite.
+Do you want to get started? We'll go through the steps of developing a project with batou.
 
 .. contents::
     :local:
 
+Create a new project
+--------------------
 
-Prepare the deployment
+
+
+Writing a component configuration
+---------------------------------
+
+
+
+Local environments
+------------------
+
+
+Vagrant environments
+--------------------
+
+
+Remote environments
+-------------------
+
+
+Overriding configuration per environment
+----------------------------------------
+
+
+Using Jinja2 templates
 ----------------------
 
-As a starting point, we create a batou deployment similar to the one from the
-"hello world" tutorial, only this time, we deploy a program instead of a
-minimal text file. Start by preparing a directory for your deployment and
-install batou in it. When you're finished, you should have the
-``./batou`` script available.
 
+Storing secrets as encrypted overrides
+--------------------------------------
 
-Deploy a program
------------------
 
-Next, create a component named "tick" and a simple environment that uses it:
+Using git or Mercurial to ensure consistent deployments
+--------------------------------------------------------
 
-.. code-block:: console
 
-  $ mkdir -p components/tick
+Downloading and building software
+---------------------------------
 
-Configure the environment first as it is very simple and straightforward. Edit
-the file ``environments/dev.cfg`` to contain the following content:
 
-.. code-block:: ini
+Managing Python environments
+----------------------------
 
-  [hosts]
-  localhost = tick
 
-The component directory needs to contain two files: the component definition
-and the program. Let's use a shell script like this for the program and put it in the file ``components/tick/tick.sh``:
+Registering programs with supervisor
+------------------------------------
 
-.. literalinclude:: ../../examples/tutorial-component/components/tick/tick.sh
-        :language: bash
 
-The component which deploys this program is similar to the one you know from
-the "hello world" tutorial, this time in ```components/tick/component.py``:
-
-.. code-block:: python
-
-  from batou.component import Component
-  from batou.lib.file import File
-
-
-  class Tick(Component):
-
-      def configure(self):
-          self += File('tick.sh', mode=0755)
-
-However, it differs in two ways: Firstly, since we deal with a multi-line
-program which we store in a separate file, the File component is passed the
-path to that source file instead of its content. Secondly, since the program
-should be executable, we need to specify the mode of the deployed file.
-
-Finally, we are ready to run the deployment:
-
-.. code-block:: console
-
-  $ ./batou local
-  Updating Tick > File(hello) > Presence(hello)
-  Updating Tick > File(hello) > Content(hello)
-  Updating Tick > File(hello) > Mode(hello)
-
-As the output suggests, this created an executable file with the contents of
-our program:
-
-.. code-block:: console
-
-  $ ls -l work/tick/tick.sh
-  -rwxr-xr-x 1 thomas thomas 66 2012-07-05 18:09 work/tick/tick.sh
-
-We can actually run that program now:
-
-.. code-block:: console
-
-  $ work/tick/tick.sh
-  Fr 6. Jul 14:27:15 CEST 2012
-  Fr 6. Jul 14:27:16 CEST 2012
-  Fr 6. Jul 14:27:17 CEST 2012
-  ^C
-
-In the next step, we will concern ourselves with installing supervisor to run
-our program for us.
-
-
-Deploy supervisor
------------------
-
-As a second component, deploy now a supervisor instance that will daemonise
-the program from the previous step as a long-running process, and control that
-daemon.
-
-Create a directory for the ``supervisor`` component:
-
-.. code-block:: console
-
-  $ mkdir -p components/supervisor
-
-We want to make use of zc.buildout for installing supervisor. This is done by
-employing the ``Buildout`` component from batou's standard component library
-and providing a ``buildout.cfg`` file. Create a file
-``components/supervisor/component.py`` with the following content:
-
-.. code-block:: python
-
-  from batou.component import Component
-  from batou.lib.buildout import Buildout
-
-
-  class Supervisor(Component):
-
-      def configure(self):
-          self += Buildout('supervisor',
-                           version='2.2.1',
-                           setuptools='1.1.6',
-                           python='2.7')
-
-By default, the buildout configuration is expected to sit next to the
-component definition. Create a file ``components/supervisor/buildout.cfg``
-with this content:
-
-.. code-block:: ini
-
-  [buildout]
-  parts = supervisor
-  versions = versions
-  allow-picked-versions = false
-
-  [supervisor]
-  recipe = collective.recipe.supervisor
-  programs = 10 tick ../tick/tick.sh true
-
-  [versions]
-  collective.recipe.supervisor = 0.19
-  meld3 = 0.6.8
-  setuptools = 1.1.6
-  supervisor = 3.0
-  zc.buildout = 2.2.1
-  zc.recipe.egg = 2.0.1
-
-The syntax of the programs lines passed to the supervisor buildout recipe is
-specific to that recipe; for the time being, we simply hard-code the path to
-our program.
-
-For the next batou run to include the supervisor component, we add it to the
-same host as our tick component in ``environments/dev.cfg``:
-
-.. code-block:: ini
-
-  [hosts]
-  localhost = tick, supervisor
-
-Run batou next:
-
-.. code-block:: console
-
-  $ ./batou local
-  Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
-  Updating Supervisor > Buildout
-
-Now you can use supervisor to run the "tick" program for you (you'll have to
-change into supervisor's working directory to make the hard-coded relative
-path to ``tick.sh`` work):
-
-.. code-block:: console
-
-  $ cd work/supervisor/
-  $ bin/supervisord
-  $ bin/supervisorctl
-  tick                             RUNNING    pid 23576, uptime 0:00:01
-  supervisor> tail tick
-  Sa 7. Jul 11:09:43 CEST 2012
-  Sa 7. Jul 11:09:44 CEST 2012
-  Sa 7. Jul 11:09:45 CEST 2012
-
-  supervisor> shutdown
-  Really shut the remote supervisord process down y/N? y
-  Shut down
-  supervisor> quit
-  $ cd ../../
-
-
-Configure supervisor programs
------------------------------
-
-Rather than having to hard-code the program(s) supervisor should control
-within its buildout configuration, you can use batou to do that for you. Batou
-has a concept of pieces of information being provided by some components and
-required by others.
-
-Firstly, you need to let the "tick" component provide some details such as the
-file-system path to the program. This information will be kept in a key-value
-store, so you need to choose the name of a key, such as "programs".
-
-Add a line to the file ``components/tick/component.py`` so that it ends up
-with the following content:
-
-.. literalinclude:: ../../examples/tutorial-component/components/tick/component.py
-  :language: python
-
-Secondly, the supervisor component needs to make use of the provided
-information. This means that the supervisor component must be configured after
-any other component that provides a value for the "programs" key and actually
-use all the values provided by other components when writing the supervisor
-configuration file. The former is achieved by declaring the requirement for
-the "programs" key within the configuration code and retrieving the values,
-the latter by treating the ``buildout.cfg`` file as a template and iterating
-over the "program" values.
-
-Add a line to the file ``components/supervisor/component.py`` so that it looks
-like this:
-
-.. code-block:: python
-
-  from batou.component import Component
-  from batou.lib.buildout import Buildout
-
-
-  class Supervisor(Component):
-
-      def configure(self):
-          self.programs = self.require('programs', self.host)
-          self += Buildout('supervisor',
-                           version='2.2.1',
-                           setuptools='1.1.6',
-                           python='2.7')
-
-
-Change the file ``components/supervisor/buildout.cfg`` to replace the
-hard-coded program line for "tick" with a loop (in the Jinja templating
-language):
-
-.. literalinclude:: ../../examples/tutorial-component/components/supervisor/buildout.cfg
-  :language: ini
-
-After updating your local deployment, you can now run supervisor as before to
-control the "tick" program but you no longer need to be concerned about your
-working directory:
-
-.. code-block:: console
-
-  $ ./batou local
-  Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
-  Updating Supervisor > Buildout
-  $ work/supervisor/bin/supervisord
-  $ work/supervisor/bin/supervisorctl
-  tick                             RUNNING    pid 24186, uptime 0:00:02
-  supervisor> tail tick
-  Sa 7. Jul 11:53:58 CEST 2012
-  Sa 7. Jul 11:53:59 CEST 2012
-  Sa 7. Jul 11:54:00 CEST 2012
-
-  supervisor> shutdown
-  Really shut the remote supervisord process down y/N? y
-  Shut down
-  supervisor> quit
-
-A quick look at the generated buildout configuration shows that batou created
-the same supervisor configuration that you had before, only automatically:
-
-.. code-block:: console
-
-  $ cat work/supervisor/buildout.cfg
-  …
-  [supervisor]
-  recipe = collective.recipe.supervisor
-  programs =
-      10 tick …/work/tick/tick.sh true
-  …
-
-Manage supervisor as a service
+Working with network addresses
 ------------------------------
 
-So far, you are using batou to install and configure the components of your
-deployment, the tick program and supervisor to run it for you. However, you
-still need to manually start or restart ``supervisord`` after doing a
-deployment. In order not to disrupt the service unnecessarily, you have to
-think about whether there have been any recent changes to either software or
-configuration that require a restart.
 
-However, you can use batou also for managing running services for you. As you
-saw, batou makes sure to update components either if their deployed artifacts
-are different from what they should be, or because of changes in their
-dependencies (such as running buildout again after the desired content of
-``buildout.cfg`` has changed). Similarly, batou can start or stop services
-that should or should not be running according to the deployment's
-configuration, and it can restart services that need to be restarted because
-of updates to their software or configuration.
+Registering and discovering services
+------------------------------------
 
-Add a service sub-component to your supervisor component, and add code that
-makes sure the running process is newer (by its pid file) than both the last
-successful run of the supervisor buildout and any programs supervisor is to
-control. Also, add instructions for starting or restarting ``supervisord``.
-Update the file ``components/supervisor/component.py`` to read:
 
-.. literalinclude:: ../../examples/tutorial-component/components/supervisor/component.py
-  :language: python
+Updating batou in an existing project
+-------------------------------------
 
-To see how batou manages the supervisor service, first make sure that
-supervisord is not currently running:
+Checking a deployment configuration before running it
+-----------------------------------------------------
 
-.. code-block:: console
-
-  $ work/supervisor/bin/supervisorctl
-  http://127.0.0.1:9001 refused connection
-  supervisor> quit
-
-Next, run the deployment and see how both the supervisord process and the
-controlled tick program are running immediately afterwards:
-
-.. code-block:: console
-
-  $ ./batou local
-  Updating Supervisor
-  $ work/supervisor/bin/supervisorctl
-  tick                             RUNNING    pid 6021, uptime 0:00:17
-  supervisor> pid
-  6019
-  supervisor> quit
-
-Observe now how supervisor is made to reload its configuration when it
-changes. Change, say, the priority of the tick program by editing
-``components/tick/component.py``, run batou and look at the process ids again:
-
-.. code-block:: console
-
-  $ ./batou local
-  Updating Supervisor > Buildout > File(buildout.cfg) > Content(buildout.cfg)
-  Updating Supervisor > Buildout
-  Updating Supervisor
-  $ work/supervisor/bin/supervisorctl
-  tick                             RUNNING    pid 6242, uptime 0:00:07
-  supervisor> pid
-  6019
-  supervisor> quit
-
-As you see, the supervisord process is still running without having been
-interrupted, but the tick program has been restarted.
-
-.. note::
-
-    You can safely delete the ``components/example`` directory as this is only
-    intended to give you a working sample environment after bootstrapping.
+Platform-specific components
+----------------------------
