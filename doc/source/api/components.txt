@@ -1,0 +1,47 @@
+Component standard library
+==========================
+
+
+Files and Directories
+---------------------
+
+Downloading Files
+-----------------
+
+Archive extraction
+------------------
+
+Version Control Checkouts
+-------------------------
+
+* Mercurial
+* Subversion
+* git
+
+Building CMMI-based software
+----------------------------
+
+Python applications
+-------------------
+
+* VirtualEnv
+* Buildout
+* Pip
+
+
+Supervisor
+----------
+
+
+Cronjobs
+--------
+
+MySQL
+-----
+
+Nagios
+------
+
+
+
+

@@ -131,7 +131,7 @@ If you are looking for information on a specific function, class or method, this
 .. toctree::
    :maxdepth: 2
 
-   cli
+   cli/index
 
 
 API
@@ -142,7 +142,9 @@ If you are looking for information on a specific function, class or method, this
 .. toctree::
    :maxdepth: 2
 
-   api
+   api/component
+   api/components
+   api/environment
 
 Contributor guide
 -----------------
@@ -161,35 +163,17 @@ If you want to contribute to the project, this part of the documentation is for 
 Support
 -------
 
-batou itself is released "as is".
-
-We hang around #batou in the Freenode IRC network.
-
-You can also report bugs to our `bugtracker
-<http://plan.flyingcircus.io/projects/batou>`_.
+batou itself is released "as is". We hang around #batou in the Freenode IRC
+network. You can also report bugs to our `bugtracker <http://plan.flyingcircus.io/projects/batou>`_.
 
 .. rubric:: Commercial support
 
 We will be happy to give you commercial support for batou: feature
 implementation, bug fixing, consulting, or education.
 
-If you need us, send an email to `mail@flyingcircus.io
-<mailto:mail@flyingcircus.io?Subject=Support%20for%20batou>`_ to get an offer for
-our services.
-
-
-Contribute
-----------
-
-batou is developed as open source / free software. If you want to get in
-touch and contribute, you are more than welcome.
-
-* Use our `Redmine <http://plan.flyingcircus.io/projects/batou>`_ to
-  report bugs, feature requests, or send us feedback.
-
-* Fork our `bitbucket repository <http://bitbucket.org/flyingcircus/batou>`_ and send
-  us pull requests.
-
+To get in touch, send an email to `mail@flyingcircus.io
+<mailto:mail@flyingcircus.io?Subject=Support%20for%20batou>`_ and we'll
+be happy to discuss your requirements.
 
 Resources
 ---------

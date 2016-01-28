@@ -1,0 +1,70 @@
+Command Line Usage
+==================
+
+General options
+---------------
+
+* debug
+* fast
+
+.. code-block:: console
+
+    usage: batou [-h] [-d] [-F] {deploy,secrets,init,update} ...
+
+    batou v1.2b1 multi-(host|component|environment|version|platform) deployment
+
+    positional arguments:
+      {deploy,remote,secrets,init,update}
+        deploy              Deploy an environment.
+        secrets             Manage encrypted secret files. Relies on gpg being
+                            installed and configured correctly.
+        init                Initialize batou project in the given directory. If
+                            the given directory does not exist, it will be
+                            created. If no directory is given, the current
+                            directory is used.
+        update              Update the batou version.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -d, --debug           Enable debug mode. (default: False)
+      -F, --fast            Enable fast mode. Do not perform bootstrapping.
+                            (default: False)
+
+
+
+batou deploy
+------------
+
+
+.. code-block:: console
+
+    usage: batou deploy [-h] [-p PLATFORM] [-t TIMEOUT] [-D] [-c] environment
+
+    positional arguments:
+      environment           Environment to deploy.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -p PLATFORM, --platform PLATFORM
+                            Alternative platform to choose. Empty for no platform.
+      -t TIMEOUT, --timeout TIMEOUT
+                            Override the environment's timeout setting
+      -D, --dirty           Allow deploying with dirty working copy or outgoing
+                            changes.
+      -c, --check-only      Only perform a deployment check. Do not change
+                            configuration on target hosts.
+
+
+batou secrets edit
+------------------
+
+batou secrets adduser
+---------------------
+
+
+batou secrets removeuser
+------------------------
+
+
+batou update
+------------
