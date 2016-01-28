@@ -83,8 +83,8 @@ batou secrets add
                             The environments to update. Update all if not
                             specified.
 
-batou secrets removeuser
-------------------------
+batou secrets remove
+--------------------
 
 .. code-block:: console
 
