@@ -1,7 +1,6 @@
 Component standard library
 ==========================
 
-
 Files and Directories
 ---------------------
 

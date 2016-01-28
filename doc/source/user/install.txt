@@ -13,6 +13,7 @@ A new project is started by placing the batou master command into the project an
 
     $ mkdir myproject
     $ cd myproject
+    $ git init
     $ curl https://batou.readthedocs.org/en/latest/batou -o batou
     $ chmod +x batou
     $ ./batou
@@ -25,8 +26,8 @@ A new project is started by placing the batou master command into the project an
     Installing py==1.4.26
     usage: batou [-h] [-d] [-F] {deploy,remote,secrets,init,update} ...
     batou: error: too few arguments
-    $ hg add batou
-    $ hg commit -m "Start a batou project."
+    $ git add batou
+    $ git commit -m "Start a batou project."
 
 Local
 -----
