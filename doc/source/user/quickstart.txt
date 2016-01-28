@@ -1,27 +1,281 @@
 Quickstart
 ==========
 
-Do you want to get started? We'll go through the steps of developing a project with batou.
-
-.. contents::
-    :local:
+Do you want to get started? We'll go through the steps of developing a project
+with batou. The steps are built on top of each other, so if you have trouble
+with a specific step, it might help to review what happened earlier.
 
 Create a new project
 --------------------
 
+Deployments with batou are placed in a new directory. For this tutorial
+we will assume that you're using git as your version control system. Feel
+feel free to follow along using Mercurial -- batou can handle both.
 
+.. code-block:: console
+
+  $ mkdir myproject
+  $ cd myproject
+  $ curl https://batou.readthedocs.org/en/latest/batou -o batou
+  $ chmod +x batou
+  $ git init
+  $ git add batou
+  $ git commit
+  $ ./batou
+  Preparing virtualenv in .batou ...
+  Pre-installing batou - this can take a while...
+  Installing Jinja2==2.7.3
+  Installing requests==2.6.0
+  Installing setuptools==18.3.1
+  Installing execnet==1.3.0
+  Installing py==1.4.26
+  usage: batou [-h] [-d] [-F] {deploy,remote,secrets,init,update} ...
+  batou: error: too few arguments
+
+The project is now initialized and batou is ready to be used.
 
 Writing a component configuration
 ---------------------------------
 
+Once you bootstrapped your batou project you start modelling your
+configuration. This is done by creating a directory in the ``components``
+directory and a ``component.py`` file in there. You can use those sub-
+directories to group together things that belong to each component:
+
+.. code-block:: shell
+
+  $ cd myproject
+  $ mkdir -p components/myapp
+
+In ``components/myapp/component.py`` put the following to manage a very
+simple application:
+
+.. code-block:: python
+  :caption: components/myapp/component.py
+
+  from batou.component import Component
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      def configure(self):
+          self += File(
+              'tick.sh',
+              mode=0755,
+              content="""\
+  while true; do
+    date
+    sleep 1
+  done
+  """)
 
 
 Local environments
 ------------------
 
+Now, to deploy this "application" we can specify a local environment to deploy
+directly on the machine you are working on:
+
+.. code-block:: shell
+
+  $ mkdir environments
+
+Put the following in ``environments/local.cfg`` to specify a local
+configuration that will deploy the "Tick" component:
+
+.. code-block:: ini
+  :caption: environments/local.cfg
+
+  [environment]
+  connect_method = local
+
+  [hosts]
+  localhost = tick
+
+Your project now looks like this:
+
+.. code-block:: console
+
+  $ tree
+  .
+  ├── batou
+  ├── components
+  │   └── myapp
+  │       └── component.py
+  └── environments
+      └── local.cfg
+
+You can now deploy this environment:
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  ============================== Preparing ===============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ======================= Configuring first host =========================
+  localhost: Connecting via local (1/1)
+  ===================== Connecting remaining hosts =======================
+  ============================== Deploying ===============================
+  localhost: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Presence(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Mode(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ========================= DEPLOYMENT FINISHED ==========================
+
+When deploying, batou creates a working directory for each component. Your
+project directory now looks like this:
+
+.. code-block:: console
+
+  $ tree
+  .
+  ├── batou
+  ├── components
+  │   └── myapp
+  │       └── component.py
+  ├── environments
+  │   └── local.cfg
+  └── work
+      └── tick
+          └── tick.sh
+
+The application has been copied over to the work directory and the mode has
+been set. We can now use it:
+
+.. code-block:: console
+
+  $ ./work/tick/tick.sh
+  Thu Jan 28 21:47:58 CET 2016
+  Thu Jan 28 21:47:59 CET 2016
+  Thu Jan 28 21:48:00 CET 2016
+  Thu Jan 28 21:48:01 CET 2016
+  Thu Jan 28 21:48:02 CET 2016
+  Thu Jan 28 21:48:03 CET 2016
+  ^C
+
+When running the deployment again, you see that batou knows what has been
+deployed and that no action is necessary:
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  ============================== Preparing ===============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ======================= Configuring first host =========================
+  localhost: Connecting via local (1/1)
+  ===================== Connecting remaining hosts =======================
+  ============================== Deploying ===============================
+  localhost: Deploying component tick ...
+  ========================= DEPLOYMENT FINISHED ==========================
+
+.. note::
+
+  Things in the work directory are generated or data from your application --
+  you should thus add the ``work`` directory to your version control systems'
+  ignore file.
+
 
 Vagrant environments
 --------------------
+
+If you would like to deploy a more complex application, that may involve
+a webserver, databases, and other auxiliary services, you may prefer to
+deploy into a virtual machine, instead of deploying those to your local
+work environment.
+
+For this, batou supports `Vagrant <http://vagrantup.com>`_. Once you have
+Vagrant (and VirtualBox) installed, place a `Vagrantfile` directory in
+your batou project:
+
+.. code-block:: ruby
+  :caption: Vagrantfile
+
+  # -*- mode: ruby -*-
+  # vi: set ft=ruby :
+
+  Vagrant.configure("2") do |config|
+    config.vm.box = "flyingcircus/nixos-15.09-x86_64"
+    config.vm.box_version = ">= 1.2"
+
+    config.vm.network "private_network", ip: "192.168.50.4"
+    config.vm.hostname = "default"
+  end
+
+Now, we add a second environment that uses Vagrant to connect and rsync
+to ensure that our batou project gets synced. The user we want to deploy
+to in a vagrant box is `vagrant` and we specify that as the service user.
+The machine in our Vagrant file is "default", so we use that as the hostname:
+
+.. code-block:: ini
+  :caption: environments/vagrant.cfg
+
+  [environment]
+  connect_method = vagrant
+  update_method = rsync
+  service_user = vagrant
+
+  [hosts]
+  default = tick
+
+The deployment is invoked similar to the local deployment. Getting the
+vagrant machine up and running may take a while, though:
+
+.. code-block:: console
+
+  $ ./batou deploy vagrant
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `vagrant`...
+  main: Verifying repository ...
+       You are using rsync. This is a non-verifying repository --
+       continuing on your own risk!
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  vagrant: Ensuring machines are up ...
+  default: Connecting via vagrant (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  default: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Presence(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Mode(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ====================== DEPLOYMENT FINISHED =======================
+
+Now, the tick component has been deployed on the virtual machine. We can
+connect there and see that the same structure has been deployed as previously
+for our local environment. batou places deployments in the service user's
+home directory in a directory named `deployment` by default:
+
+.. code-block:: console
+
+  $ vagrant ssh
+  [vagrant@nixos:~]$ tree
+  .
+  └── deployment
+      ├── batou
+      ├── components
+      │   └── myapp
+      │       └── component.py
+      ├── environments
+      │   ├── local.cfg
+      │   └── vagrant.cfg
+      ├── Vagrantfile
+      └── work
+          └── tick
+              └── tick.sh
+  [vagrant@nixos:~]$ ./deployment/work/tick/tick.sh
+  Thu Jan 28 21:02:31 UTC 2016
+  Thu Jan 28 21:02:32 UTC 2016
+  Thu Jan 28 21:02:33 UTC 2016
+  ^C
+
+
 
 
 Remote environments
