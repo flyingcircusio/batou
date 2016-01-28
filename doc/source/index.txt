@@ -1,5 +1,5 @@
-batou
-=====
+batou: automating web-application deployments
+=============================================
 
 .. raw:: html
 
@@ -8,74 +8,112 @@ batou
       <img src="https://bitbucket.org/zgramana/bitbucket-ribbons/raw/988dffc5fbeb/png/bitbucket-ribbon-dark-gray.png" />
     </a>
 
-.. rubric:: Automated application deployment
+Release v\ |version|.
 
-batou helps you to automate your application deployments:
+batou is a BSD licensed utility, written in Python, to configure
+development and production environments for web applications.
 
-1. **Create a model of your deployment** (using a simple but powerful Python API)
+Deployments are hard and complicated. Tools like Docker, Puppet, chef, and
+others exist that try to solve this problem once and for all. However, they
+usually need you to change your workflow or toolchain massively while still
+missing important steps.
 
-2. **Describe different environments** (where your model will be deployed on actual machines)
+batou makes deployments more bearable without requiring developers to change
+their applications. It provides a "one command" approach that should never
+need additional wrapper scripts.
 
-3. **Run the deployment** (using the batou utility)
+As a developer all you ever have to run after cloning or updating your project
+is:
 
-Getting started with a new project is easy:
+.. code-block:: console
 
-.. code-block:: bash
+ $ hg clone https://bitbucket.org/example/myproject
+ $ cd myproject
+ $ ./batou deploy dev
 
-    $ mkdir myproject
-    $ cd myproject
-    $ curl https://bitbucket.org/flyingcircus/batou/raw/tip/src/batou/bootstrap-template -o batou
-    $ chmod +x batou
-    $ ./batou
+To run a production deployment all you should ever have to run is:
 
-Here's a minimal application model:
+.. code-block:: console
 
-.. code-block:: bash
+ $ cd my-project
+ $ git pull
+ $ ./batou deploy prod
 
-    $ mkdir -p components/myapp
-    $ cat > components/myapp/component.py
+Writing a deployment with batou is a two step process:
+
+Step 1: Model your application's configuration
+----------------------------------------------
+
+With our component model you write a configuration specification in Python
+based on a simple API. Components make configuration convergent and idempotent
+and using Python lets you perform any computation you need. The component
+model is recursive, so you can refactor complicated components into simpler
+ones without breaking your setup.
+
+Here is an example application model that installs a Python package into a
+VirtualEnv and asks Supervisor to run it:
 
 .. code-block:: python
 
-    from batou.component import Component
-    from batou.lib.python import VirtualEnv, Package
-    from batou.lib.supervisor import Program
+  from batou.component import Component
+  from batou.lib.python import VirtualEnv, Package
+  from batou.lib.supervisor import Program
 
-    class MyApp(Component):
+  class MyApp(Component):
 
-        def configure(self):
-            venv = VirtualEnv('2.7')
-            self += venv
-            venv += Package('myapp')
-            self += Program('myapp',
-                command='bin/myapp')
+    def configure(self):
+      venv = VirtualEnv('2.7')
+      self += venv
+      venv += Package('myapp')
+      self += Program('myapp', command='bin/myapp')
 
-And here's a minimal environment:
+Step 2: Fit your model to your environments
+-------------------------------------------
 
-.. code-block:: bash
+Your model from step 1 is abstract: it does not mention the names of the
+servers you deploy to.
 
-    $ mkdir environments
-    $ cat > environments/dev.cfg
+By describing an environment you tell batou how your abstract model should
+actually be applied: on your local development machine, to a vagrant setup, or
+on servers on the network.
+
+Here's an environment specification that sets up an application on multiple
+hosts and provides an override for the publicly visible address.
 
 .. code-block:: ini
 
     [environment]
-    mode = local
+    host_domain = fcio.net
 
     [hosts]
-    localhost = myapp
+    host01 = nginx, haproxy, varnish
+    host02 = myapp
+    host03 = myapp
+    host04 = postgresql
 
-To deploy this, you run:
+    [component:nginx]
+    server_name = staging.example.com
 
-.. code-block:: bash
+Features
+--------
 
-    $ ./batou deploy dev
+* Run the same command to deploy locally, to Vagrant, or to remote clusters.
+* Use different versions of batou in different projects. Ensure everybody uses the same version.
+* Check before deploying whether your configuration is internally consistent and consistent with what has been deployed before.
+* Convergent, idempotent components are fast to deploy.
+* Resume partial deployments where they were aborted.
+* Store database passwords, SSH keys, SSL certificates or other secret data with on the-fly decryption. Manage access to secrets per environment and user.
+* Use Jinja2 templates to easily create dynamic configuration.
+* Dynamically connect services during deployments and track their dependencies.
+* Few run-time requirements on your servers: only Python 2.7 and SSH are needed.
+* Use pre-defined components to manage files, python environments, supervisor, cronjobs, and more.
+* Writing your own components is easy, use any Python dependency.
 
+User guide
+----------
 
-Guide
------
+This part of the documentation, begins with some background information about Requests, then focuses on step-by-step instructions for getting the most out of batou.
 
-Basic topics
 
 .. toctree::
    :maxdepth: 1
@@ -110,13 +148,25 @@ Basic topics
 
 Advanced topics
 
-
 .. toctree::
    :maxdepth: 1
 
    introduction
 
    component-advanced
+
+
+API documentation
+-----------------
+
+If you are looking for information on a specific function, class or method, this part of the documentation is for you.
+
+
+Contributor guide
+-----------------
+
+If you want to contribute to the project, this part of the documentation is for you.
+
 
 Support
 -------
@@ -125,12 +175,8 @@ batou itself is released "as is".
 
 We hang around #batou in the Freenode IRC network.
 
-A public `mailing list XXX`_ is
-there for general discussion and help.
-
 You can also report bugs to our `bugtracker
 <http://plan.flyingcircus.io/projects/batou>`_.
-
 
 .. rubric:: Commercial support
 
