@@ -2,8 +2,8 @@
 Changelog
 =========
 
-1.2b3 (unreleased)
-==================
+1.2 (2016-01-29)
+================
 
 - Change default of supervisor PID file path to ensure it does something
   useful out of the box.
