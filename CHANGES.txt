@@ -7,6 +7,22 @@ Changelog
 
 - Remove the deprecated 'remote' command alias.
 
+- Remove implicit dependency of Supervisor to Logrotation and Nagios.
+
+  Supervisor now has the options ``logrotate`` and ``nagios`` that can
+  be enabled per environment.
+
+  **Compatibility note:** if you update from an existing setup with supervisor
+  you should add this to your environments that actually use those features::
+
+    [component:supervisor]
+    logrotate = True
+    nagios = True
+
+  Otherwise environments will complain that the RotatedLogFile and
+  nagios.Service have unsatisfied resource requirements. Alternatively you
+  can drop the ``logrotate`` and ``nrpehost`` or ``nagiosserver`` components
+  in environments where you don't need them.
 
 1.2b1 (2016-01-28)
 ==================

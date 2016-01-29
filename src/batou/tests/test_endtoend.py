@@ -72,6 +72,21 @@ ERROR: 6 remaining unconfigured component(s)
 """)  # NOQA
 
 
+def test_example_errors_missing_environment():
+    os.chdir('examples/errors')
+    out, _ = cmd('./batou deploy production', acceptable_returncodes=[1])
+    assert out == Ellipsis("""\
+batou/... (CPython 2.7..., ...)
+================================== Preparing =================================\
+==
+main: Loading environment `production`...
+ERROR: Missing environment
+     Environment: production
+============================= CONFIGURATION FAILED ===========================\
+==
+""")  # NOQA
+
+
 def test_example_ignores():
     os.chdir('examples/ignores')
     out, _ = cmd('./batou deploy ignores')
