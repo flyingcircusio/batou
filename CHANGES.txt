@@ -5,7 +5,11 @@ Changelog
 1.2b3 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Change default of supervisor PID file path to ensure it does something
+  useful out of the box.
+
+  It's still a good idea to place it on a temporary filesystem that is wiped
+  after a reboot to ensure the PID is from a current system environment.
 
 
 1.2b2 (2016-01-29)

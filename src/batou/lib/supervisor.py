@@ -171,7 +171,7 @@ class Supervisor(Component):
     deployment_mode = Attribute(str, 'hot')
     max_startup_delay = Attribute(int, 0)
     wait_for_running = Attribute('literal', 'True')
-    pidfile = Attribute(str, '/run/local/supervisord.pid', map=True)
+    pidfile = Attribute(str, 'supervisord.pid', map=True)
     socketpath = Attribute(
         str, '{{component.workdir}}/supervisor.sock', map=True)
     check_contact_groups = None
