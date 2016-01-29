@@ -676,6 +676,94 @@ for users to multiple or all environments quickly.
 Using version control to ensure consistent deployments
 ------------------------------------------------------
 
+Working in a team means that some of your colleagues may be deploying code
+independent of you. Deploying when a colleague may have deployed last Friday
+and forgot to push his code can lead to bad things happening ...
+
+batou supports integrating with Git or Mercurial to verify the repository
+integrity on the target systems. This consists of multiple steps:
+
+1. Ensuring you do not have uncommitted changes and no unpushed commits in
+   your repository.
+
+2. Shipping changes to the remote servers (either via pulling from a central
+   server or using an export/import mechanism if you server has no access
+   to your central repository).
+
+3. Switching to an environment-specific branch.
+
+4. Ensuring the local working copy and the remote working copy
+   are the same.
+
+To leverage those features in batou, you have to select an update method in
+your environment that is not ``rsync``. batou supports ``git-pull``, ``git-
+bundle``, ``hg-pull`` and ``hg-bundle``.
+
+Lets use ``git-bundle`` for this example:
+
+.. code-block:: ini
+  :caption: environments/production.cfg
+
+  [environment]
+  connect_method = ssh
+  update_method = git-bundle
+  branch = production
+  host_domain = fcio.net
+
+  [hosts]
+  test01 = tick
+
+To deploy to production we now end up with the following workflow:
+
+.. code-block:: console
+
+  $ git checkout -tb production
+  $ git merge master
+  $ ./batou deploy production
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  test01.gocept.net: Deploying component tick ...
+  ====================== DEPLOYMENT FINISHED =======================
+
+Now, if the remote server would have incompatible changes, batou would
+inform you and refuse to deploy until you clean up the situation:
+
+.. code-block:: console
+
+  $ ./batou deploy remote
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  ERROR: LANG=C LC_ALL=C LANGUAGE=C git bundle create /var/folders/
+  24/4w5jy6r532d0k5mgrrgkt0qm0000gn/T/tmp1ezxQj
+  36052b45d6cfd7ec7202cf34301fba76c1360c0e..production
+       Return code: 1
+  STDOUT
+
+  STDERR
+       fatal: Invalid revision range
+        36052b45d6cfd7ec7202cf34301fba76c1360c0e..production
+       error: rev-list died
+
+  ======================= DEPLOYMENT FAILED ========================
+
+.. note::
+
+  The error message may be cryptic at times, depending on the error situation of
+  your version control system, but you'll get the gist to look at the repository
+  situation.
+
 
 Downloading and building software
 ---------------------------------
