@@ -1179,6 +1179,57 @@ expect a single value, you can do this:
     You can pick keys as you like, but if you re-used standard components
     then you may need to consider collisions.
 
+Checking a deployment configuration before running it
+-----------------------------------------------------
+
+If you are ready to deploy something but want to wait until a certain point
+in time, then you can use ``--check`` with the deployment to see whether
+the configuration for the target environment is consistent without performing
+any action. This lets you debug your deployments early in the release cycle:
+
+.. code-block:: console
+
+  $ ./batou deploy --check production
+  batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+
+  You need a passphrase to unlock the secret key for
+  user: "Bob Sample <bob@example.com>"
+  4096-bit RSA key, ID 4DE34B34, created 2013-10-05 (main key ID 4DE34B34)
+
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  ========================= CHECK FINISHED =========================
+
+If the check fails you get the error message that you would otherwise have
+gotten when running the deployment for real:
+
+  $ ./batou deploy --check production
+  batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+
+  You need a passphrase to unlock the secret key for
+  user: "Christian Theune <ct@flyingcircus.io>"
+  4096-bit RSA key, ID 8FD98A97, created 2013-10-05 (main key ID A97C62CE)
+
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  ERROR: Overrides for undefined attributes
+             Host: test01
+        Component: Tick
+       Attributes: foobar
+  ERROR: Unused provided resources
+       supervisor: [<Supervisor (test01) "Supervisor">]
+  ERROR: 1 remaining unconfigured component(s)
+  ================ 3 ERRORS - CONFIGURATION FAILED =================
+  ========================== CHECK FAILED ==========================
+
 
 Updating batou in an existing project
 -------------------------------------
@@ -1199,5 +1250,3 @@ Now, check in the changed ``batou`` file and all your colleagues will
 get the new batou version automatically the next time the pull and run
 ``batou``.
 
-Checking a deployment configuration before running it
------------------------------------------------------
