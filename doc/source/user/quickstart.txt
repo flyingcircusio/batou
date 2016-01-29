@@ -1104,12 +1104,100 @@ or static addresses:
 Registering and discovering services
 ------------------------------------
 
+If you deploy your application on multiple hosts, you need to communicate
+between components what is configured where and how often. For example,
+to configure a load balancer, you need to see where the application servers
+are installed.
+
+batou provides an API that allows a component to ``provide`` a resource
+and other components to ``require`` a resource. This API has the following
+features:
+
+* handling scalars (single values) and list-oriented resources
+* filtering for resources by key and by host
+* warning if provided resources are never used
+* warning if required resources are never provided
+* warning if multiple resources are provided where exactly one is expected
+
+Additionally, batou orders components based on their resource requirements:
+a component that provides a resource will be deployed before the component
+requiring it. This has component granularity, so batou may switch deploying
+components between hosts if that is what the dependencies require.
+
+To provide a resource, you call ``provide`` with a key (that you can define
+as you like.)
+
+.. code-block:: python
+
+    from batou.component import Component, Attribute
+    from batou.utils import Address
+
+    class MyApp(Component):
+
+        address = Attribute(Address, '{{host.fqdn}}:8080')
+
+        def configure(self):
+            self.provide('application', self.address)
+
+If you call ``provide`` from multiple components, then batou will automatically
+maintain a list of those items.
+
+To get the registered resources for a key, you call ``require`` with the
+key you are interested in:
+
+.. code-block:: python
+
+    from batou.component import Component
+    from batou.lib.file import File
+
+    class Loadbalancer(Component):
+
+        def configure(self):
+            application_servers = self.require('application')
+
+            self += File('loadbalancer', content='''\
+    {% for server in component.application_servers %}
+    server connect={{server.connect}}
+    {% endfor %}
+    ''')
+
+To filter for resources from the same host as your component and you
+expect a single value, you can do this:
+
+.. code-block:: python
+
+    from batou.component import Component
+
+    class Nginx(Component):
+
+        def configure(self):
+            varnish = self.require_one('varnish', host=self.host)
+
+
+.. note::
+
+    You can pick keys as you like, but if you re-used standard components
+    then you may need to consider collisions.
+
 
 Updating batou in an existing project
 -------------------------------------
 
+You can update batou to a specific version for your project with a single
+command:
+
+.. code-block:: console
+
+  $ ./batou update --version 1.2
+  Updating batou to 1.2
+  See the changelog at https://batou.readthedocs.org/en/latest/changes.html
+
+  $ git add batou
+  $ git commit -m 'Update batou to 1.2'
+
+Now, check in the changed ``batou`` file and all your colleagues will
+get the new batou version automatically the next time the pull and run
+``batou``.
+
 Checking a deployment configuration before running it
 -----------------------------------------------------
-
-Platform-specific components
-----------------------------

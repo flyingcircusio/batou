@@ -37,6 +37,9 @@ Extended service discovery options
 ----------------------------------
 
 
+Platform-specific components
+----------------------------
+
 
 context manager
 ---------------
