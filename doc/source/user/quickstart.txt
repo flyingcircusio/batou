@@ -768,9 +768,181 @@ inform you and refuse to deploy until you clean up the situation:
 Downloading and building software
 ---------------------------------
 
+A typical action that you encounter when configuring software is to download
+and compile them. This is also known as the "CMMI" method: configure, make,
+make install.
 
-Managing Python environments
-----------------------------
+batou provides a standard library component that subsumes downloading and
+building standard packages:
+
+.. code-block:: python
+  :caption: components/zlib/component.py
+
+  from batou.component import Component
+  from batou.lib.cmmi import Build
+
+  class Zlib(Component):
+
+    def configure(self):
+      self += Build(
+        'http://zlib.net/zlib-1.2.8.tar.gz',
+        checksum='md5:1142191120b845f4ed8c8c17455420ac')
+
+Deploying this demonstrates how the build component includes sub-components,
+which you can also use to perform more fine-grained builds:
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component zlib ...
+     Zlib > Build(zlib-1.2.8.tar.gz) > Extract(zlib-1.2.8.tar.gz) >
+        Untar(zlib-1.2.8.tar.gz) > Directory(work/zlib/zlib-1.2.8)
+     Zlib > Build(zlib-1.2.8.tar.gz) > Extract(zlib-1.2.8.tar.gz) >
+        Untar(zlib-1.2.8.tar.gz)
+     Zlib > Build(zlib-1.2.8.tar.gz) >
+        Configure(/private/tmp/myproject/work/zlib/zlib-1.2.8)
+     Zlib > Build(zlib-1.2.8.tar.gz) >
+        Make(/private/tmp/myproject/work/zlib/zlib-1.2.8)
+  localhost: Deploying component tick ...
+  ====================== DEPLOYMENT FINISHED =======================
+
+
+Managing Python environments with VirtualEnv and Pip
+----------------------------------------------------
+
+Installing Python software has some best practices, that involve managing
+virtual environments, using Pip or zc.buildout. batou provides components
+that let you manage virtual environments (and automatically update them
+and keep them in order) for different Python versions.
+
+batou includes pre-defined versions of virtualenv and Pip for the various
+supported Python versions.
+
+Here is how a component installing Python packages looks like:
+
+.. code-block:: python
+  :caption: components/flask/component.py
+
+  from batou.component import Component
+  from batou.lib.python import VirtualEnv, Package
+
+
+  class Flask(Component):
+
+      def configure(self):
+          venv = VirtualEnv('2.7')
+          self += venv
+
+          venv += Package('Flask', version='0.10.1')
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component tick ...
+  localhost: Deploying component zlib ...
+  localhost: Deploying component flask ...
+    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7 >
+      VirtualEnvDownload(13.1.2) > Download(https://pypi.fcio.net/packages/source/v/virtualenv/virtualenv-13.1.2.tar.gz)
+    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7 >
+      VirtualEnvDownload(13.1.2) > Extract(virtualenv-13.1.2.tar.gz) >
+      Untar(virtualenv-13.1.2.tar.gz)
+    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7 > VirtualEnvDownload(13.1.2)
+    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7
+    Flask > VirtualEnv(2.7) > Package(Flask==0.10.1)
+  ====================== DEPLOYMENT FINISHED =======================
+
+.. note::
+
+  Due to the ``work`` directory separation for each component you can easily
+  manage many different virtual environments with different packages and
+  different Python versions.
+
+
+Managing Python environments with zc.buildout
+---------------------------------------------
+
+If you manage your Python environment with zc.buildout, you can automate that
+easily as well. Place your ``buildout.cfg`` next to your component.py and
+use the following component:
+
+.. code-block:: python
+  :caption: components/flask/component.py
+
+  from batou.component import Component
+  from batou.lib.python import VirtualEnv, Package
+
+
+  class Flask(Component):
+
+      def configure(self):
+          venv = VirtualEnv('2.7')
+          self += venv
+
+          venv += Package('Flask', version='0.10.1')
+
+
+.. code-block:: ini
+  :caption: components/flask/buildout.cfg
+
+  [buildout]
+  parts = flask
+  allow-picked-versions = false
+  versions = versions
+
+  [flask]
+  recipe = zc.recipe.egg
+  eggs = Flask
+
+  [versions]
+  zc.recipe.egg = 2.0.3
+  zc.buildout = 2.5.0
+  setuptools = 19.6.1
+  Flask = 0.10.1
+  itsdangerous = 0.24
+  Jinja2 = 2.8
+  Werkzeug = 0.11.3
+  MarkupSafe = 0.23
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component flask ...
+     Flask > Buildout > File(work/flask/buildout.cfg) >
+        Presence(work/flask/buildout.cfg)
+     Flask > Buildout > File(work/flask/buildout.cfg) >
+        Content(work/flask/buildout.cfg)
+     Flask > Buildout > VirtualEnv(2.7) > VirtualEnvPy2_7
+     Flask > Buildout > VirtualEnv(2.7) > Package(setuptools==19.6.1)
+     Flask > Buildout > VirtualEnv(2.7) > Package(zc.buildout==2.5.0)
+     Flask > Buildout
+  ====================== DEPLOYMENT FINISHED =======================
 
 
 Registering programs with supervisor

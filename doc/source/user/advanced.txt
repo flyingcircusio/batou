@@ -10,10 +10,6 @@ Writing a custom component
 Multiple components in a single component.py
 --------------------------------------------
 
-
-Environment options
--------------------
-
 Skipping individual hosts or components when deploying
 ------------------------------------------------------
 
