@@ -64,6 +64,7 @@ simple application:
               'tick.sh',
               mode=0755,
               content="""\
+  #!/bin/bash
   while true; do
     date
     sleep 1
@@ -366,6 +367,7 @@ class:
               'tick.sh',
               mode=0755,
               content="""\
+  #!/bin/bash
   while true; do
     date
     sleep {}
@@ -412,6 +414,7 @@ Now, let's deploy this:
   ====================== DEPLOYMENT FINISHED =======================
 
   $ cat work/tick/tick.sh
+  #!/bin/bash
   while true; do
     date
     sleep 10
@@ -974,7 +977,7 @@ a program component:
 
   from batou.component import Component, Attribute
   from batou.lib.file import File
-  from batou.lib.supervisor import Supervisor
+  from batou.lib.supervisor import Program
 
   class Tick(Component):
 
@@ -982,7 +985,51 @@ a program component:
 
       def configure(self):
           self += File('tick.sh', mode=0755)
-          self += Supervisor('tick', command='tick.sh')
+          self += Program('tick', command='tick.sh')
+
+Deploying it enables supervisor in its own virtualenv and starts the
+registered program:
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component supervisor ...
+    Supervisor > Buildout > File(work/supervisor/buildout.cfg) >
+      Presence(work/supervisor/buildout.cfg)
+    Supervisor > Buildout > File(work/supervisor/buildout.cfg) >
+      Content(work/supervisor/buildout.cfg)
+    Supervisor > Buildout > VirtualEnv(2.7) > VirtualEnvPy2_7
+    Supervisor > Buildout > VirtualEnv(2.7) >
+      Package(setuptools==19.2)
+    Supervisor > Buildout > VirtualEnv(2.7) >
+      Package(zc.buildout==2.5.0)
+    Supervisor > Buildout
+    Supervisor > Directory(work/supervisor/etc/supervisor.d)
+    Supervisor > File(work/supervisor/etc/supervisord.conf) >
+      Presence(work/supervisor/etc/supervisord.conf)
+    Supervisor > File(work/supervisor/etc/supervisord.conf) >
+      Content(work/supervisor/etc/supervisord.conf)
+    Supervisor > Directory(work/supervisor/var/log)
+    Supervisor > RunningSupervisor
+  localhost: Deploying component tick ...
+    Tick > Program(tick) > File(work/supervisor/etc/supervisor.d/tick.conf)
+      > Presence(work/supervisor/etc/supervisor.d/tick.conf)
+    Tick > Program(tick) > File(work/supervisor/etc/supervisor.d/tick.conf)
+      > Content(work/supervisor/etc/supervisor.d/tick.conf)
+    Tick > Program(tick)
+  ====================== DEPLOYMENT FINISHED =======================
+  $ ./work/supervisor/bin/supervisorctl
+  tick                             RUNNING   pid 30992, uptime 0:01:37
+  supervisor> ^D
 
 
 Working with network addresses
