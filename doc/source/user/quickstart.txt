@@ -42,7 +42,7 @@ configuration. This is done by creating a directory in the ``components``
 directory and a ``component.py`` file in there. You can use those sub-
 directories to group together things that belong to each component:
 
-.. code-block:: shell
+.. code-block:: console
 
   $ cd myproject
   $ mkdir -p components/myapp
@@ -84,7 +84,7 @@ Local environments
 Now, to deploy this "application" we can specify a local environment to deploy
 directly on the machine you are working on:
 
-.. code-block:: shell
+.. code-block:: console
 
   $ mkdir environments
 
@@ -395,7 +395,7 @@ section ``[component:tick]`` to the configuration:
 
 Now, let's deploy this:
 
-.. code-block:: shell
+.. code-block:: console
 
   $ ./batou deploy local
   batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
@@ -549,7 +549,7 @@ secrets file for our production environment:
 
 This opens up your preferred editor and provides you with a template file:
 
-.. code-block:: init
+.. code-block:: ini
   :caption: secrets/production.cfg (decrypted)
 
   [batou]
@@ -570,7 +570,7 @@ Adding the database password works similar to the environment overrides. Our
 final file then looks like this:
 
 
-.. code-block:: init
+.. code-block:: ini
   :caption: secrets/production.cfg (decrypted)
 
   [batou]
@@ -635,6 +635,39 @@ and might look like this:
   000002a0  84 5a 5d ae 83 0e                                 |.Z]...|
   000002a6
 
+Now, deploying this will cause GPG to be invoked on your local machine (there is no need to install GPG on the remote hosts) and transfer the decrypted secrets securely through
+the SSH connection:
+
+.. code-block:: console
+
+  $ ./batou deploy production
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+       You are using rsync. This is a non-verifying repository --
+       continuing on your own risk!
+  main: Loading secrets ...
+
+  You need a passphrase to unlock the secret key for
+  user: "Bob Sample <bob@example.com>"
+  4096-bit RSA key, ID 4DE34B34, created 2013-10-05 (main key ID 4DE34B34)
+
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  test01.gocept.net: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ====================== DEPLOYMENT FINISHED =======================
+
+  $ ssh test01.fcio.net
+  $ cat ./deployment/work/tick/tick.sh
+  while true; do
+    date
+    echo "The database password is AfMhV3EDznGbNnzVdxE8"
+    sleep 1
+  done
 
 If you deal with a growing number of environments and users, you can use the
 commands ``batou secrets add`` and ``batou secrets remove`` to manage access
