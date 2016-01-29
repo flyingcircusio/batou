@@ -1035,6 +1035,71 @@ registered program:
 Working with network addresses
 ------------------------------
 
+Network addresses in batou typically appear in various config files:
+for clients to find their servers and for servers to configure their bind
+addresses.
+
+A good practice is to use hostnames when configuring a client, so the IP of
+the server can be dynamically resolved when connecting. For servers, bind
+addresses should be configured with IPs because resolvers may not be
+reachable at the time the server is started and the server may not start
+reliably under that condition.
+
+batou has a utility object ``Address`` that can be used for doing DNS lookups
+depending on what you're doing:
+
+.. code-block:: pycon
+
+    >>> from batou.utils import Address
+    >>> address = Address('localhost', 8080)
+    >>> str(address.listen)
+    '127.0.0.1:8080'
+    >>> str(address.connect)
+    'localhost:8080'
+
+You can also use the ``Address`` type for converting overrides automatically:
+
+.. code-block:: python
+
+    from batou.component import Component, Attribute
+    from batou.utils import Address
+
+    class MyApp(Component):
+
+        address = Attribute(Address, 'localhost:8080')
+
+To have services talk to each other on different machines, you can use the
+``host`` attribute of a component to get the name of the host that the
+component is configured on. Specifically we recommend using ``host.fqdn``,
+which can be used with the built-in Jinja2 templating:
+
+.. code-block:: python
+
+    from batou.component import Component, Attribute
+    from batou.utils import Address
+
+    class MyApp(Component):
+
+        address = Attribute(Address, '{{host.fqdn}}:8080')
+
+        # address is now environment- and host-specific, e.g.:
+        # address == Address('test01.fcio.net', 8080)
+
+To override this attribute in an environment configuration you simply do
+a regular override using templating:
+
+.. code-block:: ini
+
+  [component:myapp]
+  address = {{host.fqdn}}:9000
+
+or static addresses:
+
+.. code-block:: ini
+
+  [component:myapp]
+  address = 192.168.0.1:8080
+
 
 Registering and discovering services
 ------------------------------------
