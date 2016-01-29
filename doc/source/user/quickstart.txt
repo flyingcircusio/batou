@@ -948,6 +948,42 @@ use the following component:
 Registering programs with supervisor
 ------------------------------------
 
+If you're used to running your programs in supervisor, batou can help you with
+a pre-made Supervisor component. You can simply enable it by importing it
+into a component file and registering it with your environment:
+
+.. code-block:: python
+  :caption: components/supervisor/component.py
+
+  from batou.lib.supervisor import Supervisor
+
+.. code-block:: ini
+  :caption: environments/local.cfg
+
+  [environment]
+  connect_method = local
+
+  [hosts]
+  localhost = tick, supervisor
+
+To make your program run within supervisor, you register it by configuring
+a program component:
+
+.. code-block:: python
+  :caption: components/myapp/component.py
+
+  from batou.component import Component, Attribute
+  from batou.lib.file import File
+  from batou.lib.supervisor import Supervisor
+
+  class Tick(Component):
+
+      sleep = Attribute(int, 1)
+
+      def configure(self):
+          self += File('tick.sh', mode=0755)
+          self += Supervisor('tick', command='tick.sh')
+
 
 Working with network addresses
 ------------------------------

@@ -158,6 +158,10 @@ class Supervisor(Component):
     program_config_dir = None
     logdir = None
     loglevel = 'info'
+
+    logrotate = Attribute('literal', 'False')
+    nagios = Attribute('literal', 'False')
+
     # Allows turning "everything off" via environment configuration
     enable = Attribute('literal', 'True')
     # Hot deployments: if supervisor is already running stuff - keep them
@@ -192,7 +196,9 @@ class Supervisor(Component):
 
         postrotate = self.expand(
             'kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)')
-        self += RotatedLogfile('var/log/*.log', postrotate=postrotate)
+
+        if self.logrotate:
+            self += RotatedLogfile('var/log/*.log', postrotate=postrotate)
 
         self += Service('bin/supervisord', pidfile=self.pidfile)
 
@@ -202,18 +208,19 @@ class Supervisor(Component):
             self += StoppedSupervisor()
 
         # Nagios check
-        self += File('check_supervisor',
-                     mode=0o755,
-                     source=os.path.join(
-                         os.path.dirname(__file__),
-                         'resources',
-                         'check_supervisor.py.in'))
+        if self.nagios:
+            self += File('check_supervisor',
+                         mode=0o755,
+                         source=os.path.join(
+                             os.path.dirname(__file__),
+                             'resources',
+                             'check_supervisor.py.in'))
 
-        self += ServiceCheck(
-            'Supervisor programs',
-            nrpe=True,
-            contact_groups=self.check_contact_groups,
-            command=self.expand('{{component.workdir}}/check_supervisor'))
+            self += ServiceCheck(
+                'Supervisor programs',
+                nrpe=True,
+                contact_groups=self.check_contact_groups,
+                command=self.expand('{{component.workdir}}/check_supervisor'))
 
 
 class RunningSupervisor(Component):

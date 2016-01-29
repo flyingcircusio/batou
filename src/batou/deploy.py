@@ -1,4 +1,4 @@
-from .environment import Environment
+from .environment import Environment, MissingEnvironment
 from .utils import locked, self_id
 from .utils import notify
 from batou import DeploymentError, ConfigurationError
@@ -107,6 +107,15 @@ def main(environment, platform, timeout, dirty, fast, check_only):
                 deployment.connect()
                 deployment.deploy()
             deployment.disconnect()
+        except MissingEnvironment as e:
+            e.report()
+            output.section("CONFIGURATION FAILED", red=True)
+            if check_only:
+                output.section("CHECK FAILED", red=True)
+                notify('Deployment check finished',
+                       'Configuration for {} encountered an error.'.format(
+                           environment))
+            sys.exit(1)
         except ConfigurationError as e:
             if check_only:
                 output.section("CHECK FAILED", red=True)
