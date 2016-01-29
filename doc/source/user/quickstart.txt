@@ -283,18 +283,211 @@ home directory in a directory named `deployment` by default:
   ^C
 
 
-
-
 Remote environments
 -------------------
+
+To deploy your application into a production environment you will typically
+use SSH to log in to the remote servers. This works similar to Vagrant
+environments. To try this out, you will have to replace the host name you
+see here, with a host that you have access to.
+
+.. note::
+
+  Make sure that the few but important
+  :any:`installation requirements <install>` requirements for remote hosts
+  are satisfied!
+
+Let's add a third environment that uses SSH to connect and rsync
+to ensure that our batou project gets synced. We do not specify the user to
+deploy to, which means batou will use whatever your SSH configuration is set
+up to use. To save some typing (and for some other features) we specify
+a domain name that should be appended to all hosts.
+
+Here's the full environment configuration:
+
+.. code-block:: ini
+  :caption: environments/production.cfg
+
+  [environment]
+  connect_method = ssh
+  update_method = rsync
+  host_domain = fcio.net
+
+  [hosts]
+  test01 = tick
+
+Now, to deploy to the remote host:
+
+.. code-block:: console
+
+  $ ./batou deploy production
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+       You are using rsync. This is a non-verifying repository --
+       continuing on your own risk!
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  test01.gocept.net: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Presence(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Mode(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ====================== DEPLOYMENT FINISHED =======================
 
 
 Overriding configuration per environment
 ----------------------------------------
 
+Every environment is currently deploying the same configuration of our
+application. It often is necessary to customize applications based on the
+environment: either your setup is larger or smaller, or you are using
+a different web address to access it, or ...
 
-Using Jinja2 templates
-----------------------
+To make a component configurable, we add an attribute to the component
+class:
+
+.. code-block:: python
+  :caption: components/myapp/component.py
+
+  from batou.component import Component, Attribute
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      sleep = Attribute(int, 1)
+
+      def configure(self):
+          self += File(
+              'tick.sh',
+              mode=0755,
+              content="""\
+  while true; do
+    date
+    sleep {}
+  done
+  """.format(self.sleep))
+
+Attributes are specified with a conversion function or type, to help batou
+convert them from strings. The second argument given is the default that will
+be used when attribute is not specified explicitly otherwise. The attribute
+can then be accessed as usual during the configure method and include this in
+our application configuration.
+
+To adjust the application for the development environment, we add a new
+section ``[component:tick]`` to the configuration:
+
+.. code-block:: ini
+  :caption: environments/local.cfg
+
+  [environment]
+  connect_method = local
+
+  [hosts]
+  localhost = tick
+
+  [component:tick]
+  sleep = 10
+
+Now, let's deploy this:
+
+.. code-block:: shell
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ====================== DEPLOYMENT FINISHED =======================
+
+  $ cat work/tick/tick.sh
+  while true; do
+    date
+    sleep 10
+  done
+
+  $ ./work/tick/tick.sh
+  Fri Jan 29 09:44:18 CET 2016
+  Fri Jan 29 09:44:28 CET 2016
+  ^C
+
+Now, our model specific the default configuration and environment-specific
+overrides allow us to document variations between environments easily.
+
+Templating from files
+---------------------
+
+Currently our application configuration has been written directly in Python
+code. This quickly becomes unwieldy. File components can be used to pull their
+content from files by specifying the ``source`` parameter. The filename is
+relative to the directory that the ``component.py`` is placed in:
+
+.. code-block:: python
+  :caption: components/myapp/component.py
+
+  from batou.component import Component
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      def configure(self):
+          self += File(
+              'tick.sh',
+              mode=0755,
+              source='tick.sh')
+
+Also, templating with Python format strings is very limited. batou thus
+includes Jinja2 templating, which is enabled by default for all content
+(independent of whether you specify the content inline or in a separate file).
+
+.. code-block:: bash
+  :caption: components/myapp/tick.sh
+  #!/bin/bash
+  while true; do
+    date
+    sleep {{component.sleep}}
+  done
+
+As a simplification, you can leave out the ``source`` parameter if the
+filename of your template is identical to the name you want it to be in the
+work directory:
+
+
+.. code-block:: python
+  :caption: components/myapp/component.py
+
+  from batou.component import Component
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      def configure(self):
+          self += File('tick.sh', mode=0755)
+
+To disable templating and encoding handling, you can use the ``BinaryFile``
+component::
+
+.. code-block:: python
+  from batou.component import Component, Attribute
+  from batou.lib.file import File
+
+  class Example(Component):
+
+      def configure(self):
+          self += BinaryFile('something.zip')
 
 
 Storing secrets as encrypted overrides
