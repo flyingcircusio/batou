@@ -109,7 +109,23 @@ class Address(object):
     The constructor address is expected to be the address that can be
     connected to. The listen address will be computed automatically.
 
+    .. code-block:: pycon
+
+        >>> x = Address('localhost', 80)
+        >>> str(x.connect)
+        'localhost:80'
+        >>> str(x.listen)
+        '127.0.0.1:80'
+
     """
+
+    #: The connect address as it should be used when configuring clients.
+    #: This is a :py:class:`batou.utils.NetLoc` object.
+    connect = None
+
+    #: The listen (or bind) address as it should be used when configuring
+    #: servers. This is a :py:class:`batou.utils.NetLoc` object.
+    listen = None
 
     def __init__(self, connect_address, port=None):
         if ':' in connect_address:
@@ -126,7 +142,31 @@ class Address(object):
 
 
 class NetLoc(object):
-    """A network location specified by host and port."""
+    """A network location specified by host and port.
+
+    Network locations can automatically render an appropriate string
+    representation:
+
+    .. code-block:: pycon
+
+        >>> x = NetLoc('127.0.0.1')
+        >>> x.host
+        '127.0.0.1'
+        >>> x.port
+        None
+        >>> str(x)
+        '127.0.0.1'
+
+        >>> y = NetLoc('127.0.0.1', 80)
+        >>> str(y)
+        '127.0.0.1:80'
+
+    """
+
+    #: The host part of this network location. Can be a hostname or IP address.
+    host = None
+    #: The port of this network location. Can be ``None`` or an integer.
+    port = None
 
     def __init__(self, host, port=None):
         self.host = host
@@ -161,7 +201,6 @@ def ensure_graph_data(graph):
 
 
 class CycleError(ValueError):
-    """Graph contains at least one cycle."""
 
     def __str__(self):
         message = []
@@ -181,14 +220,14 @@ def remove_nodes_without_outgoing_edges(graph):
 
 
 def topological_sort(graph):
-    """Take a directed graph and provide a topological sort of all nodes.
+    # Take a directed graph and provide a topological sort of all nodes.
+    #
+    # The graph is given as
+    #
+    # {node: [dependency, dependency], ...}
+    #
+    # If the graph has cycles a ValueError will be raised.
 
-    The graph is given as
-
-    {node: [dependency, dependency], ...}
-
-    If the graph has cycles a ValueError will be raised.
-    """
     graph = ensure_graph_data(graph)
     sorted = []
     reverse_graph = revert_graph(graph)
