@@ -142,10 +142,10 @@ If you are looking for information on a specific function, class or method, this
 .. toctree::
    :maxdepth: 2
 
-   api/component
-   api/components
-   api/environment
+   api/foundation
+   api/library
    api/templates
+   api/utilities
 
 Contributor guide
 -----------------
@@ -183,7 +183,6 @@ Resources
     :maxdepth: 1
 
     changes
-    legal
 
 Presentations from conferences:
 

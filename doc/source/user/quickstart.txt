@@ -51,7 +51,7 @@ In ``components/myapp/component.py`` put the following to manage a very
 simple application:
 
 .. code-block:: python
-  :caption: components/myapp/component.py
+  :caption: components/myapp/component.py (v1)
 
   from batou.component import Component
   from batou.lib.file import File
@@ -93,7 +93,7 @@ Put the following in ``environments/local.cfg`` to specify a local
 configuration that will deploy the "Tick" component:
 
 .. code-block:: ini
-  :caption: environments/local.cfg
+  :caption: environments/local.cfg (v1)
 
   [environment]
   connect_method = local
@@ -307,7 +307,7 @@ a domain name that should be appended to all hosts.
 Here's the full environment configuration:
 
 .. code-block:: ini
-  :caption: environments/production.cfg
+  :caption: environments/production.cfg (v2)
 
   [environment]
   connect_method = ssh
@@ -352,7 +352,7 @@ To make a component configurable, we add an attribute to the component
 class:
 
 .. code-block:: python
-  :caption: components/myapp/component.py
+  :caption: components/myapp/component.py (v2)
 
   from batou.component import Component, Attribute
   from batou.lib.file import File
@@ -384,7 +384,7 @@ To adjust the application for the development environment, we add a new
 section ``[component:tick]`` to the configuration:
 
 .. code-block:: ini
-  :caption: environments/local.cfg
+  :caption: environments/local.cfg (v2)
 
   [environment]
   connect_method = local
@@ -437,7 +437,7 @@ content from files by specifying the ``source`` parameter. The filename is
 relative to the directory that the ``component.py`` is placed in:
 
 .. code-block:: python
-  :caption: components/myapp/component.py
+  :caption: components/myapp/component.py (v3)
 
   from batou.component import Component, Attribute
   from batou.lib.file import File
@@ -458,7 +458,8 @@ includes Jinja2 templating, which is enabled by default for all content
 (independent of whether you specify the content inline or in a separate file).
 
 .. code-block:: bash
-  :caption: components/myapp/tick.sh
+  :caption: components/myapp/tick.sh (v1)
+
   #!/bin/bash
   while true; do
     date
@@ -471,7 +472,7 @@ work directory:
 
 
 .. code-block:: python
-  :caption: components/myapp/component.py
+  :caption: components/myapp/component.py (v4)
 
   from batou.component import Component, Attribute
   from batou.lib.file import File
@@ -520,7 +521,7 @@ To start managing a secret, first add a new override attribute
 ``database_password`` to your component:
 
 .. code-block:: python
-  :caption: components/myapp/component.py
+  :caption: components/myapp/component.py (v5)
 
   from batou.component import Component, Attribute
   from batou.lib.file import File
@@ -535,7 +536,8 @@ To start managing a secret, first add a new override attribute
           self += File('tick.sh', mode=0755)
 
 .. code-block:: bash
-  :caption: components/myapp/tick.sh
+  :caption: components/myapp/tick.sh (v2)
+
   #!/bin/bash
   while true; do
     date
@@ -553,7 +555,7 @@ secrets file for our production environment:
 This opens up your preferred editor and provides you with a template file:
 
 .. code-block:: ini
-  :caption: secrets/production.cfg (decrypted)
+  :caption: secrets/production.cfg (decrypted) (v1)
 
   [batou]
   members =
@@ -574,7 +576,7 @@ final file then looks like this:
 
 
 .. code-block:: ini
-  :caption: secrets/production.cfg (decrypted)
+  :caption: secrets/production.cfg (decrypted) (v2)
 
   [batou]
   members = bob@example.com, alice@example.com
@@ -705,7 +707,7 @@ bundle``, ``hg-pull`` and ``hg-bundle``.
 Lets use ``git-bundle`` for this example:
 
 .. code-block:: ini
-  :caption: environments/production.cfg
+  :caption: environments/production.cfg (v1)
 
   [environment]
   connect_method = ssh
@@ -833,7 +835,7 @@ supported Python versions.
 Here is how a component installing Python packages looks like:
 
 .. code-block:: python
-  :caption: components/flask/component.py
+  :caption: components/flask/component.py (v1)
 
   from batou.component import Component
   from batou.lib.python import VirtualEnv, Package
@@ -887,7 +889,7 @@ easily as well. Place your ``buildout.cfg`` next to your component.py and
 use the following component:
 
 .. code-block:: python
-  :caption: components/flask/component.py
+  :caption: components/flask/component.py (v2)
 
   from batou.component import Component
   from batou.lib.python import VirtualEnv, Package
@@ -961,7 +963,7 @@ into a component file and registering it with your environment:
   from batou.lib.supervisor import Supervisor
 
 .. code-block:: ini
-  :caption: environments/local.cfg
+  :caption: environments/local.cfg (v3)
 
   [environment]
   connect_method = local
@@ -973,7 +975,7 @@ To make your program run within supervisor, you register it by configuring
 a program component:
 
 .. code-block:: python
-  :caption: components/myapp/component.py
+  :caption: components/myapp/component.py (v6)
 
   from batou.component import Component, Attribute
   from batou.lib.file import File
@@ -1206,6 +1208,8 @@ any action. This lets you debug your deployments early in the release cycle:
 
 If the check fails you get the error message that you would otherwise have
 gotten when running the deployment for real:
+
+.. code-block:: console
 
   $ ./batou deploy --check production
   batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)

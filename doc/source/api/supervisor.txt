@@ -1,9 +1,0 @@
-Managing programs (TBD)
-=======================
-
-supervisor, program, eventlistener
-----------------------------------
-
-crontab, cronjob
-----------------
-
