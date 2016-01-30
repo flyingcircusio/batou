@@ -19,7 +19,7 @@ def platform(name, component):
     for the given platform and component.
     """
     def register_platform(cls):
-        component.add_platform(name, cls)
+        component._add_platform(name, cls)
         return cls
     return register_platform
 
@@ -210,7 +210,7 @@ class Component(object):
             setattr(self, k, v)
 
         self.configure()
-        self += self.get_platform()
+        self += self._get_platform()
         self.__setup_event_handlers__()
         self._prepared = True
 
@@ -855,6 +855,8 @@ class Component(object):
 
     @property
     def namevar_for_breadcrumb(self):
+        if self.namevar is None:
+            return None
         return getattr(self, self.namevar, None)
 
 
