@@ -1,5 +1,7 @@
-batou: automating web-application deployments
-=============================================
+batou
+=====
+
+.. rubric::  automating web-application deployments
 
 .. raw:: html
 
