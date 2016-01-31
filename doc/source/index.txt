@@ -144,7 +144,8 @@ If you are looking for information on a specific function, class or method, this
 .. toctree::
    :maxdepth: 2
 
-   api/foundation
+   api/component
+   api/environment
    api/library
    api/templates
    api/utilities
@@ -159,7 +160,6 @@ If you want to contribute to the project, this part of the documentation is for 
    :maxdepth: 1
 
    dev/contributing
-   dev/philosophy
    dev/todo
    dev/authors
 

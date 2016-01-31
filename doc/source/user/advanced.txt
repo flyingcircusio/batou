@@ -2,58 +2,58 @@ Advanced Usage
 ==============
 
 
-Writing a custom component
---------------------------
+Writing a custom component (TODO)
+---------------------------------
 
 
 
-Multiple components in a single component.py
---------------------------------------------
+Multiple components in a single component.py (TODO)
+---------------------------------------------------
 
-Skipping individual hosts or components when deploying
-------------------------------------------------------
-
-
-Events
-------
+Skipping individual hosts or components when deploying (TODO)
+-------------------------------------------------------------
 
 
-Using bundle transfers if the repository server is not reachable from your remote server
-----------------------------------------------------------------------------------------
-
-Timeout
--------
+Events (TODO)
+-------------
 
 
+Using bundle transfers if the repository server is not reachable from your remote server (TODO)
+-----------------------------------------------------------------------------------------------
 
-VFS mapping for development
----------------------------
-
-VFS mapping with explicit rewrite rules
----------------------------------------
+Timeout (TODO)
+--------------
 
 
-Extended service discovery options
+
+VFS mapping for development (TODO)
 ----------------------------------
 
+VFS mapping with explicit rewrite rules (TODO)
+----------------------------------------------
 
-Platform-specific components
-----------------------------
+
+Extended service discovery options (TODO)
+-----------------------------------------
 
 
-context manager
----------------
+Platform-specific components (TODO)
+-----------------------------------
 
-last_updated
-------------
 
-prepare, ``|=``, ``component._``
---------------------------------
+context manager (TODO)
+----------------------
 
-workdir overriding
-------------------
+last_updated (TODO)
+-------------------
 
-batou.c
--------
+prepare, ``|=``, ``component._`` (TODO)
+---------------------------------------
+
+workdir overriding (TODO)
+-------------------------
+
+batou.c (TODO)
+--------------
 
 ordered alphabetically (significant for imports)
