@@ -10,24 +10,56 @@ batou was developed with a number of ideas in mind:
 * Python is the language batou uses. This is not to be
   confused with the Python that your application might use.
 * We expect little from the remote environments
-  regarding software dependencies: Python 2.7,  OpenSSH, and rsync, Mercurial or git should be sufficient.
+  regarding software dependencies: Python 2.7,  OpenSSH, and rsync, Mercurial
+  or git should be sufficient.
 * batou does not become an active component during your
-  application's runtime. batou automates what a sysadmin would do -- in a structured manner.
+  application's runtime. batou automates what a sysadmin would do -- in a
+  structured manner.
 * It should be easy to switch between the declarative
   part of the model and the imperative implementation.
-* Implementations that become too complicated
-  should be easy to break up into simpler ones.
+* Deployment code that become too complicated
+  should be easy to simplify by breaking it up into smaller pieces.
 * batou is not intended to perform provisioning or
-  system configuration tasks. We expect the heavy lifting (preparing the target OS) to already be done.
-* batou should be working with your applications without
+  system configuration tasks. We expect the heavy lifting
+  (preparing the target OS) to already be done.
+* batou should be working with your existing applications without
   too many hassles.
-* We want to make things simple for you but we do
-  not insulate you in ways that make you blind.
+* No silver bullets: we want to make things simple for you but we do
+  not insulate you in ways that make you blind
 
 Name
 ----
 
 The name "batou" is taken from the animated movie "Ghost in the Shell".
+
+Kudos
+-----
+
+batou is built on the shoulders of giants. We're extremely happy to be part
+of an active open source community:
+
+* Guido and the Python core developers -- we could not have built this
+  without such an awesome language.
+
+* Jim Fulton (@j1mfulton) and zc.buildout -- we love using buildout to create
+  Python application environments, but we started having our own ideas at some
+  point.
+
+* Kenneth Reitz (@kennethreitz) and the Requests team -- who built the awesome
+  requests library. He and his team have brilliant documentation. When it came
+  to finally document batou we used their works -- quite literally and
+  generously! Everything that is awesome about our documentation stems from
+  them. Everything that sucks was caused by us (if you want to help us improve
+  -- you're more than welcome!).
+
+* Jeff Forcier (@bitprophet) of Fabric and Paramiko fame -- we've made huge
+  advances when we switched from bash scripts to Fabric and kept refactoring
+  until our Fabfile slowly turned into batou. We've used Paramiko before
+  switching to execnet which gave us a nice way to slowly grow out of Fabric.
+
+* Holger Krekel (@hpk42) who gave us py.tests and execnet -- without those
+  tools we would not have such a nice test suite and execnet is brilliant for
+  lightweight remote Python processing.
 
 Legal
 -----

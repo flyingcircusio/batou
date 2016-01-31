@@ -1,49 +1,11 @@
-.. _api:
+Environment configuration
+=========================
 
-Developer Interface
-===================
+Component assignment (TODO)
+---------------------------
 
-.. module:: batou
-
-This part of the documentation covers all the interfaces of batou you
-can use to develop your deployments.
-
-Component
----------
-
-.. autoclass:: batou.component.Component
-    :members:
-    :member-order: bysource
-    :special-members: __enter__, __exit__, __add__, __or__
-
-.. autoclass:: batou.component.Attribute
-    :members:
-    :member-order: bysource
-
-.. autoclass:: batou.component.HookComponent
-    :members:
-    :member-order: bysource
-
-.. autoclass:: batou.component.RootComponent
-    :members:
-    :member-order: bysource
-
-.. autofunction:: batou.component.platform
-
-.. autofunction:: batou.component.handle_event
-
-.. autoclass:: batou.host.Host
-
-.. autoclass:: batou.environment.Environment
-
-Environment
------------
-
-Component/host assignment
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-General parameters
-------------------
+General parameters (TODO)
+-------------------------
 
 General environment parameters are set in the ``[environment]`` config section.
 Example::
@@ -88,8 +50,8 @@ target_directory
         ``~/deployment``.
 
 
-vfs mapping (reference)
-~~~~~~~~~~~~~~~~~~~~~~~
+vfs mapping (TODO)
+------------------
 
-top-level attribute overrides
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Root-component attribute overrides (TODO)
+------------------------------------------
