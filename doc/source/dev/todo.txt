@@ -1,0 +1,98 @@
+How to Help
+===========
+
+batou is under active development, and contributions are more than welcome!
+
+#. Check for open issues or open a fresh issue to start a discussion around a bug.
+#. Fork `the repository <https://bitbucket.org/flyingcircus/batou>`_ on
+   Bitbucket and start making your changes to a new branch.
+#. Write a test which shows that the bug or feature works fine.
+#. Send a pull request and bug the maintainer until it gets merged and published. :)
+   Make sure to add yourself to ``AUTHORS``.
+
+Ideas
+-----
+
+* A continuous deployment server would be nice. I started experimenting
+  with a new project that would be called "Aramaki". Contact @theuni if
+  you are interested.
+
+* Documentation improvements are always welcome. Especially if you're missing
+  something or would like to understand things. We'll be happy to explain
+  things in depth -- a good deed would then be to improve our documentation.
+
+* Switching from the Component base class to an explicit API to avoid
+  namespace collisions would be nice. The idea would be to create components
+  using a class decorator:
+
+  .. code-block:: python
+
+    from batou import component
+
+    @component
+    class MyApp(object):
+
+        def configure(self, b):
+            self += File(...)
+
+        def verify(self, b):
+            b.assert_no_subcomponent_changes('touch asdf')
+
+        def verify(self, b):
+            b.cmd('rm -rf /')
+
+  ``b`` is an API object bound to the component that provides the
+  standard API. This way, you can use any names on your environment
+  without the hassle of potential namespace collisions.
+
+* More pre-defined, reusable components are welcome. Check the
+  `batou_ext <https://bitbucket.org/flyingcircus/batou_ext>`_ repository.
+
+* Supporting provisioning for platforms aside from Vagrant: e.g. Amazon,
+  Flying Circus, ...
+
+Development Dependencies
+------------------------
+
+We use zc.buildout to manage the batou build environment:
+
+.. code-block:: console
+
+    $ virtualenv --python=python2.7
+    $ bin/pip install zc.buildout
+    $ bin/buildout
+
+Run py.test to verify that everything works fine:
+
+.. code-block:: console
+
+    $ bin/py.test
+    ================= test session starts ==================
+    platform darwin -- Python 2.7.10 -- py-1.4.26 -- pytest-2.6.4
+    plugins: cache, capturelog, codecheckers, cov, timeout
+    collected 426 items
+
+    src/batou/__init__.py ..
+    src/batou/_output.py ..
+    src/batou/agent.py ..
+    src/batou/bootstrap.py ..
+    src/batou/buildout.py ..
+    src/batou/c.py ..
+    src/batou/component.py ..
+    ...
+
+Runtime Environments
+--------------------
+
+batou currently supports CPython 2.7 on Unix platforms.
+
+We may switch to Python 3 at some point, but due to the meta programming
+that we do we likely will not support 2 and 3 at the same time.
+
+We will likely not accept patches that are related to Windows. We are open
+to good arguments, though.
+
+Downstream Repackaging
+----------------------
+
+batou is not intended for downstream repackaging.
