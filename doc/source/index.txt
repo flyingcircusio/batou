@@ -1,7 +1,7 @@
 batou
 =====
 
-.. rubric::  automating web-application deployments
+.. rubric::  automating web application deployments
 
 .. raw:: html
 
