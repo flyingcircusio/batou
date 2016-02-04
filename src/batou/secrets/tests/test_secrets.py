@@ -24,7 +24,7 @@ class EncryptedConfigFile(BaseEncConfigFile):
 def test_decrypt():
     with EncryptedConfigFile(encrypted_file) as secrets:
         with open(cleartext_file) as cleartext:
-            assert cleartext.read() == secrets.read()
+            assert cleartext.read().strip() == secrets.read().strip()
 
 
 def test_caches_cleartext():
