@@ -40,9 +40,14 @@ def main():
         '-D', '--dirty', action='store_true',
         help='Allow deploying with dirty working copy or outgoing changes.')
     p.add_argument(
-        '-c', '--check-only', action='store_true',
-        help='Only perform a deployment check. '
-             'Do not change configuration on target hosts.')
+        '-c', '--consistency-only', action='store_true',
+        help='Only perform a deployment model and environment '
+             'consistency check. Only connects to a single host. '
+             'Does not touch anything.')
+    p.add_argument(
+        '-P', '--predict-only', action='store_true',
+        help='Only predict what updates would happen. '
+             'Do not change anything.')
     p.add_argument(
         'environment', help='Environment to deploy.',
         type=lambda x: x.replace('.cfg', ''))

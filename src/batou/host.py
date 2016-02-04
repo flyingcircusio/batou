@@ -72,8 +72,8 @@ class Host(object):
         self.rpc = RPCWrapper(self)
         self.environment = environment
 
-    def deploy_component(self, component):
-        self.rpc.deploy(component)
+    def deploy_component(self, component, predict_only):
+        self.rpc.deploy(component, predict_only)
 
     def roots_in_order(self):
         return self.rpc.roots_in_order()

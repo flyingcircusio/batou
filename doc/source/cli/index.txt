@@ -34,7 +34,7 @@ batou deploy
 
 .. code-block:: console
 
-    usage: batou deploy [-h] [-p PLATFORM] [-t TIMEOUT] [-D] [-c] environment
+    usage: batou deploy [-h] [-p PLATFORM] [-t TIMEOUT] [-D] [-c] [-P] environment
 
     positional arguments:
       environment           Environment to deploy.
@@ -47,9 +47,12 @@ batou deploy
                             Override the environment's timeout setting
       -D, --dirty           Allow deploying with dirty working copy or outgoing
                             changes.
-      -c, --check-only      Only perform a deployment check. Do not change
-                            configuration on target hosts.
-
+      -c, --consistency-only
+                            Only perform a deployment model and environment
+                            consistency check. Only connects to a single host.
+                            Does not touch anything.
+      -P, --predict-only    Only predict what updates would happen. Do not change
+                            anything.
 
 batou secrets edit
 ------------------
@@ -65,6 +68,17 @@ batou secrets edit
       -h, --help            show this help message and exit
       --editor EDITOR, -e EDITOR
                             Invoke EDITOR to edit (default: $EDITOR or vi)
+
+batou secrets overview
+----------------------
+
+Show an overview of which users have access to what encrypted secrets
+.. code-block:: console
+
+    usage: batou secrets summary [-h]
+
+    optional arguments:
+      -h, --help  show this help message and exit
 
 
 batou secrets add

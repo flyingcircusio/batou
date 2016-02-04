@@ -69,6 +69,8 @@ ERROR: Found dependency cycle
 ERROR: 6 remaining unconfigured component(s)
 ======================= 13 ERRORS - CONFIGURATION FAILED =====================\
 ==
+============================== DEPLOYMENT FAILED =============================\
+==
 """)  # NOQA
 
 
@@ -82,7 +84,7 @@ batou/... (CPython 2.7..., ...)
 main: Loading environment `production`...
 ERROR: Missing environment
      Environment: production
-============================= CONFIGURATION FAILED ===========================\
+============================== DEPLOYMENT FAILED =============================\
 ==
 """)  # NOQA
 
