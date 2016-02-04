@@ -5,7 +5,8 @@ Changelog
 1.3b1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Enhance support for multi-line members in secret files: order them and
+  indent them automatically. (#13040)
 
 
 1.2 (2016-01-29)

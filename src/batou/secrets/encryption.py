@@ -50,9 +50,12 @@ class EncryptedConfigFile(object):
 
     @cleartext.setter
     def cleartext(self, value):
-        self._cleartext = value
         self.config = ConfigParser.ConfigParser()
         self.config.readfp(StringIO.StringIO(value))
+        self.set_members(self.get_members())
+        s = StringIO.StringIO()
+        self.config.write(s)
+        self._cleartext = s.getvalue()
 
     def read(self):
         if self._cleartext is None:
@@ -94,16 +97,21 @@ class EncryptedConfigFile(object):
         members = self.config.get('batou', 'members').split(',')
         members = [x.strip() for x in members]
         members = filter(None, members)
+        members.sort()
         return members
 
     def set_members(self, members):
-        members = ', '.join(members)
-        members = self.config.set('batou', 'members', members)
+        # The whitespace here is exactly what
+        # "members = " looks like in the config file so we get
+        # proper indentation.
+        members = ',\n      '.join(members)
+        self.config.set('batou', 'members', members)
 
     def _encrypt(self):
         recipients = self.get_members()
         if not recipients:
             raise ValueError("Need at least one recipient.")
+        self.set_members(self.get_members())
         recipients = ' '.join(['-r {}'.format(r.strip()) for r in recipients])
         os.rename(self.encrypted_file,
                   self.encrypted_file + '.old')
