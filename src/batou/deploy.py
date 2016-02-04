@@ -61,8 +61,11 @@ class Deployment(object):
         # Consume the connection iterator to establish remaining connections.
         list(self.connections)
 
-    def deploy(self):
-        output.section("Deploying")
+    def deploy(self, predict_only=False):
+        if predict_only:
+            output.section("Predicting deployment actions")
+        else:
+            output.section("Deploying")
 
         # Pick a reference remote (the last we initialised) that will pass us
         # the order we should be deploying components in.
@@ -86,7 +89,7 @@ class Deployment(object):
 
             output.step(
                 hostname, "Deploying component {} ...".format(component))
-            host.deploy_component(component)
+            host.deploy_component(component, predict_only)
 
     def disconnect(self):
         output.step("main", "Disconnecting from nodes ...", debug=True)
@@ -94,54 +97,52 @@ class Deployment(object):
             node.disconnect()
 
 
-def main(environment, platform, timeout, dirty, fast, check_only):
+def main(environment, platform, timeout, dirty, fast, consistency_only,
+         predict_only):
     output.backend = TerminalBackend()
     output.line(self_id())
+    if consistency_only:
+        ACTION = 'CONSISTENCY CHECK'
+    elif predict_only:
+        ACTION = 'DEPLOYMENT PREDICTION'
+    else:
+        ACTION = 'DEPLOYMENT'
     with locked('.batou-lock'):
         try:
             deployment = Deployment(
                 environment, platform, timeout, dirty, fast)
             deployment.load()
             deployment.configure()
-            if not check_only:
+            if not consistency_only:
                 deployment.connect()
-                deployment.deploy()
+                deployment.deploy(predict_only)
             deployment.disconnect()
         except MissingEnvironment as e:
             e.report()
-            output.section("CONFIGURATION FAILED", red=True)
-            if check_only:
-                output.section("CHECK FAILED", red=True)
-                notify('Deployment check finished',
-                       'Configuration for {} encountered an error.'.format(
-                           environment))
+            output.section("{} FAILED".format(ACTION), red=True)
+            notify('{} FAILED'.format(ACTION),
+                   'Configuration for {} encountered an error.'.format(
+                       environment))
             sys.exit(1)
         except ConfigurationError as e:
-            if check_only:
-                output.section("CHECK FAILED", red=True)
-                notify('Deployment check finished',
-                       'Configuration for {} encountered an error.'.format(
-                           environment))
+            output.section("{} FAILED".format(ACTION), red=True)
+            notify('{} FAILED'.format(ACTION),
+                   'Configuration for {} encountered an error.'.format(
+                       environment))
             sys.exit(1)
         except DeploymentError as e:
             e.report()
-            notify('Deployment failed',
+            output.section("{} FAILED".format(ACTION), red=True)
+            notify('{} FAILED'.format(ACTION),
                    '{} encountered an error.'.format(environment))
-            output.section("DEPLOYMENT FAILED", red=True)
             sys.exit(1)
         except Exception:
             # An unexpected exception happened. Bad.
             output.error("Unexpected exception", exc_info=sys.exc_info())
-            output.section("DEPLOYMENT FAILED", red=True)
-            notify('Deployment failed', '')
+            output.section("{} FAILED".format(ACTION), red=True)
+            notify('{} FAILED'.format(ACTION),
+                   'Encountered an unexpected exception.')
             sys.exit(1)
         else:
-            if check_only:
-                output.section("CHECK FINISHED", green=True)
-                notify('Deployment check finished',
-                       'Successfully checked configuration for {}.'.format(
-                           environment))
-            else:
-                output.section("DEPLOYMENT FINISHED", green=True)
-                notify('Deployment finished',
-                       'Successfully deployed {}.'.format(environment))
+            output.section('{} FINISHED'.format(ACTION), green=True)
+            notify('{} SUCCEEDED'.format(ACTION), environment)

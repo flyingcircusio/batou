@@ -229,6 +229,7 @@ class RunningSupervisor(Component):
     reload_timeout = 60
 
     def verify(self):
+        self.parent.assert_no_changes()
         self.assert_file_is_current(
             self.parent.pidfile, ['bin/supervisord', 'etc/supervisord.conf'])
         if not self.is_running():

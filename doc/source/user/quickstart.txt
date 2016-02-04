@@ -1184,24 +1184,20 @@ expect a single value, you can do this:
 Checking a deployment configuration before running it
 -----------------------------------------------------
 
-If you are ready to deploy something but want to wait until a certain point
-in time, then you can use ``--check`` with the deployment to see whether
-the configuration for the target environment is consistent without performing
-any action. This lets you debug your deployments early in the release cycle:
+If you are ready to deploy something but want to wait until a certain point in
+time, then you can use ``-c`` (aka ``--consistency-only``) with the deployment
+to see whether the configuration for the target environment is consistent
+without performing any action. This lets you debug your deployments early in
+the release cycle:
 
 .. code-block:: console
 
-  $ ./batou deploy --check production
+  $ ./batou deploy -c production
   batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `production`...
   main: Verifying repository ...
   main: Loading secrets ...
-
-  You need a passphrase to unlock the secret key for
-  user: "Bob Sample <bob@example.com>"
-  4096-bit RSA key, ID 4DE34B34, created 2013-10-05 (main key ID 4DE34B34)
-
   ===================== Configuring first host =====================
   test01: Connecting via ssh (1/1)
   ========================= CHECK FINISHED =========================
@@ -1211,17 +1207,12 @@ gotten when running the deployment for real:
 
 .. code-block:: console
 
-  $ ./batou deploy --check production
+  $ ./batou deploy -c production
   batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `production`...
   main: Verifying repository ...
   main: Loading secrets ...
-
-  You need a passphrase to unlock the secret key for
-  user: "Christian Theune <ct@flyingcircus.io>"
-  4096-bit RSA key, ID 8FD98A97, created 2013-10-05 (main key ID A97C62CE)
-
   ===================== Configuring first host =====================
   test01: Connecting via ssh (1/1)
   ERROR: Overrides for undefined attributes
@@ -1233,6 +1224,51 @@ gotten when running the deployment for real:
   ERROR: 1 remaining unconfigured component(s)
   ================ 3 ERRORS - CONFIGURATION FAILED =================
   ========================== CHECK FAILED ==========================
+
+
+Predicting the changes a deployment will cause
+----------------------------------------------
+
+In addition to performing a consistency check, you can also perform a
+prediction which changes would during a deployment. This is more expensive than
+a pure consistency check, because it connects to all hosts and runs all
+``verify()`` commands. However, it gives you a rough estimate of the changes
+that would happen.
+
+.. code-block:: console
+
+    $ ./batou deploy tutorial -P
+    batou/1.3b1.dev0 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+    ============================ Preparing ============================
+    main: Loading environment `tutorial`...
+    main: Verifying repository ...
+    main: Loading secrets ...
+    ====================== Configuring first host =====================
+    localhost: Connecting via local (1/1)
+    ==================== Connecting remaining hosts ===================
+    ================== Predicting deployment actions ==================
+    localhost: Deploying component tick ...
+         Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+    localhost: Deploying component supervisor ...
+         Supervisor
+    ================== DEPLOYMENT PREDICTION FINISHED =================
+
+
+The prediction assumes that an exception during ``verify()`` indicates
+that a previous component that had changes would have performed an
+action that would trigger the component with a failing verification to
+perform an update. Under very specific conditions this could also be
+a real error when deploying, but in most cases this is not true.
+
+**batou can not predict all possible changes**, especially if you depend on
+timestamps of files on the disk that are updated due to performing an
+action (which doesn't happen when predicting).
+
+Remember, the prediction is intended to give you a rough estimate in which top-
+level components you can expect changes. There should always be an indicator
+for some change if a component is affected. After that you can consider the
+implications, e.g. to determine when would be a good time to run the deployment
+if you expect downtime.
 
 
 Updating batou in an existing project

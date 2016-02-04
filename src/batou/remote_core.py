@@ -117,9 +117,9 @@ class Deployment(object):
         self.environment.overrides = self.overrides
         self.environment.configure()
 
-    def deploy(self, root):
+    def deploy(self, root, predict_only):
         root = self.environment.get_root(root, self.host_name)
-        root.component.deploy()
+        root.component.deploy(predict_only)
 
 
 def lock():
@@ -293,8 +293,8 @@ def setup_deployment(
     deployment.load()
 
 
-def deploy(root):
-    deployment.deploy(root)
+def deploy(root, predict_only=False):
+    deployment.deploy(root, predict_only)
 
 
 def roots_in_order():

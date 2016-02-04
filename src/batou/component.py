@@ -279,14 +279,14 @@ class Component(object):
 
     # Deployment phase
 
-    def deploy(self):
+    def deploy(self, predict_only=False):
         # Remember: this is a tight loop - we need to keep this code fast.
 
         # Reset changed flag here to support triggering deploy() multiple
-        # times. This is mostly helpful for testing, but who know.
+        # times. This is mostly helpful for testing, but who knows.
         self.changed = False
         for sub_component in self.sub_components:
-            sub_component.deploy()
+            sub_component.deploy(predict_only)
             if sub_component.changed:
                 self.changed = True
 
@@ -296,11 +296,17 @@ class Component(object):
             try:
                 with batou.utils.Timer(
                         '{} verify()'.format(self._breadcrumbs)):
-                    self.verify()
+                    try:
+                        self.verify()
+                    except Exception:
+                        if predict_only:
+                            raise batou.UpdateNeeded()
+                        raise
             except batou.UpdateNeeded:
-                self.__trigger_event__('before-update')
+                self.__trigger_event__('before-update', predict_only=True)
                 output.annotate(self._breadcrumbs)
-                self.update()
+                if not predict_only:
+                    self.update()
                 self.changed = True
 
     def verify(self):
@@ -392,14 +398,17 @@ class Component(object):
                 continue
             handlers.setdefault(handler._event['event'], []).append(handler)
 
-    def __trigger_event__(self, event):
-        # We notify all components that belong to the same
-        # root.
+    def __trigger_event__(self, event, predict_only):
+        # We notify all components that belong to the same root.
         for target in self.root.component.recursive_sub_components:
             for handler in target._event_handlers.get(event, []):
                 if not check_event_scope(
                         handler._event['scope'], self, target):
                     continue
+                if predict_only:
+                    output.annotate(
+                        'Would triggering handler {} for event {}'.
+                        format(handler, event))
                 handler(self)
 
     # Sub-component mechanics

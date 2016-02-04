@@ -5,6 +5,11 @@ Changelog
 1.3b1 (unreleased)
 ==================
 
+- Provided extended prediction support for deployments. In addition to ``-c``
+  which checks internal consistency of the configuration model you can pass
+  ``-P`` which causes verification to be run and predict which changes
+  will be applied when deploying.
+
 - Enhance support for multi-line members in secret files: order them and
   indent them automatically. (#13040)
 
