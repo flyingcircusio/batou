@@ -407,8 +407,9 @@ class Component(object):
                     continue
                 if predict_only:
                     output.annotate(
-                        'Would triggering handler {} for event {}'.
-                        format(handler, event))
+                        'Trigger {}: {}.{}'.
+                        format(event, handler.im_self, handler.__name__))
+                    continue
                 handler(self)
 
     # Sub-component mechanics
