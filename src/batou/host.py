@@ -1,6 +1,7 @@
 from batou import output, DeploymentError, ConfigurationError
 from batou import remote_core
 from batou.update import generate_bootstrap
+import execnet.gateway_io
 import os
 import sys
 
@@ -25,7 +26,6 @@ def new_ssh_args(spec):
         args.extend([spec.ssh, remotecmd])
     return args
 
-import execnet.gateway_io
 execnet.gateway_io.ssh_args = new_ssh_args
 
 
