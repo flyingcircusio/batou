@@ -72,7 +72,8 @@ batou secrets edit
 batou secrets overview
 ----------------------
 
-Show an overview of which users have access to what encrypted secrets
+Show an overview of which users have access to what encrypted secrets.
+
 .. code-block:: console
 
     usage: batou secrets summary [-h]
