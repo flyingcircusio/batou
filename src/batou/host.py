@@ -1,9 +1,9 @@
 from batou import output, DeploymentError, ConfigurationError
 from batou import remote_core
 from batou.update import generate_bootstrap
+import execnet.gateway_io
 import os
 import sys
-
 
 # Monkeypatch execnet to support vagrant ssh. Can be removed
 # with execnet release 1.4
@@ -25,7 +25,7 @@ def new_ssh_args(spec):
         args.extend([spec.ssh, remotecmd])
     return args
 
-import execnet.gateway_io
+
 execnet.gateway_io.ssh_args = new_ssh_args
 
 
