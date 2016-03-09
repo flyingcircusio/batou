@@ -303,7 +303,8 @@ class Component(object):
                             raise batou.UpdateNeeded()
                         raise
             except batou.UpdateNeeded:
-                self.__trigger_event__('before-update', predict_only=True)
+                self.__trigger_event__(
+                    'before-update', predict_only=predict_only)
                 output.annotate(self._breadcrumbs)
                 if not predict_only:
                     self.update()
