@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.3b1 (unreleased)
+1.3b1 (2016-03-09)
 ==================
 
 - Provided extended prediction support for deployments. In addition to ``-c``
