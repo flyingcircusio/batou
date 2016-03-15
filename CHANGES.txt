@@ -232,12 +232,10 @@ Changelog
 
   $ ./batou deploy <environment>
 
-  To force a local or remote invocation use --local and --remote. By default batou will assume a remote environment. To configure an environment's deployment mode use the `mode` attribute in the `environment` section::
+  By default batou will assume a remote environment. To configure an environment's deployment mode use the `connect_method` attribute in the `environment` section::
 
       [environment]
-      mode = local
-
-  To specify a manual override on the commandline you can provide the `--local` or `--remote` arguments to the `run` command.
+      connect_method = local
 
 - Improve bootstrapping to give developers a better way
   to get started without installing batou system-wide
