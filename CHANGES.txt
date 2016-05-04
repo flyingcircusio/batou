@@ -5,7 +5,7 @@ Changelog
 1.3b2 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Support remote host/port for MySQL commands.
 
 
 1.3b1 (2016-03-09)
