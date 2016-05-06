@@ -14,7 +14,7 @@ A new project is started by placing the batou master command into the project an
     $ mkdir myproject
     $ cd myproject
     $ git init
-    $ curl https://batou.readthedocs.org/en/latest/batou -o batou
+    $ curl -L https://batou.readthedocs.io/en/latest/batou -o batou
     $ chmod +x batou
     $ ./batou
     Preparing virtualenv in .batou ...
