@@ -5,6 +5,8 @@ Changelog
 1.3b2 (unreleased)
 ==================
 
+- Parallelize connect to remote hosts and bootstrapping of remote batou via
+  `./batou deploy --parallel-connect`.
 - Support remote host/port for MySQL commands.
 
 
