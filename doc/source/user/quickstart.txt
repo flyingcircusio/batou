@@ -16,7 +16,7 @@ feel free to follow along using Mercurial -- batou can handle both.
 
   $ mkdir myproject
   $ cd myproject
-  $ curl https://batou.readthedocs.org/en/latest/batou -o batou
+  $ curl -L https://batou.readthedocs.io/en/latest/batou -o batou
   $ chmod +x batou
   $ git init
   $ git add batou
@@ -1281,7 +1281,7 @@ command:
 
   $ ./batou update --version 1.2
   Updating batou to 1.2
-  See the changelog at https://batou.readthedocs.org/en/latest/changes.html
+  See the changelog at https://batou.readthedocs.io/en/latest/changes.html
 
   $ git add batou
   $ git commit -m 'Update batou to 1.2'
