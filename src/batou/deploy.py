@@ -4,18 +4,41 @@ from .utils import notify
 from batou import DeploymentError, ConfigurationError
 from batou._output import output, TerminalBackend
 import sys
+import threading
+
+
+class Connector(threading.Thread):
+
+    def __init__(self, host):
+        self.host = host
+        self.exc_info = None
+        super(Connector, self).__init__(name=host.name)
+
+    def run(self):
+        try:
+            self.host.connect()
+            self.host.start()
+        except Exception:
+            self.exc_info = sys.exc_info()
+
+    def join(self):
+        super(Connector, self).join()
+        if self.exc_info:
+            raise self.exc_info[0], self.exc_info[1], self.exc_info[2]
 
 
 class Deployment(object):
 
     _upstream = None
 
-    def __init__(self, environment, platform, timeout, dirty, fast):
+    def __init__(self, environment, platform, timeout, dirty, fast,
+                 parallel_connect):
         self.environment = environment
         self.platform = platform
         self.timeout = timeout
         self.dirty = dirty
         self.fast = fast
+        self.parallel_connect = parallel_connect
 
     def load(self):
         output.section("Preparing")
@@ -39,7 +62,7 @@ class Deployment(object):
     def configure(self):
         output.section("Configuring first host")
         self.connections = iter(self._connections())
-        self.connections.next()
+        self.connections.next().join()
 
     def _connections(self):
         self.environment.prepare_connect()
@@ -52,14 +75,16 @@ class Deployment(object):
             output.step(host.name, "Connecting via {} ({}/{})".format(
                         self.environment.connect_method, i,
                         len(self.environment.hosts)))
-            host.connect()
-            host.start()
-            yield
+            c = Connector(host)
+            c.start()
+            if not self.parallel_connect:
+                c.join()
+            yield c
 
     def connect(self):
         output.section("Connecting remaining hosts")
         # Consume the connection iterator to establish remaining connections.
-        list(self.connections)
+        [t.join() for t in list(self.connections)]
 
     def deploy(self, predict_only=False):
         if predict_only:
@@ -98,7 +123,7 @@ class Deployment(object):
 
 
 def main(environment, platform, timeout, dirty, fast, consistency_only,
-         predict_only):
+         predict_only, parallel_connect):
     output.backend = TerminalBackend()
     output.line(self_id())
     if consistency_only:
@@ -110,7 +135,7 @@ def main(environment, platform, timeout, dirty, fast, consistency_only,
     with locked('.batou-lock'):
         try:
             deployment = Deployment(
-                environment, platform, timeout, dirty, fast)
+                environment, platform, timeout, dirty, fast, parallel_connect)
             deployment.load()
             deployment.configure()
             if not consistency_only:
