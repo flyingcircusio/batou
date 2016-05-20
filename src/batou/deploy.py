@@ -31,14 +31,12 @@ class Deployment(object):
 
     _upstream = None
 
-    def __init__(self, environment, platform, timeout, dirty, fast,
-                 parallel_connect):
+    def __init__(self, environment, platform, timeout, dirty, fast):
         self.environment = environment
         self.platform = platform
         self.timeout = timeout
         self.dirty = dirty
         self.fast = fast
-        self.parallel_connect = parallel_connect
 
     def load(self):
         output.section("Preparing")
@@ -77,8 +75,6 @@ class Deployment(object):
                         len(self.environment.hosts)))
             c = Connector(host)
             c.start()
-            if not self.parallel_connect:
-                c.join()
             yield c
 
     def connect(self):
@@ -123,7 +119,7 @@ class Deployment(object):
 
 
 def main(environment, platform, timeout, dirty, fast, consistency_only,
-         predict_only, parallel_connect):
+         predict_only):
     output.backend = TerminalBackend()
     output.line(self_id())
     if consistency_only:
@@ -135,7 +131,7 @@ def main(environment, platform, timeout, dirty, fast, consistency_only,
     with locked('.batou-lock'):
         try:
             deployment = Deployment(
-                environment, platform, timeout, dirty, fast, parallel_connect)
+                environment, platform, timeout, dirty, fast)
             deployment.load()
             deployment.configure()
             if not consistency_only:
