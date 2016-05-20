@@ -38,6 +38,12 @@ class DownloadTest(unittest.TestCase):
         self.assertEqual('Checksum mismatch!\nexpected: 1234\ngot: 4321',
                          str(err.exception))
 
+    def test_breadcrumbs_should_not_show_password(self):
+        component = Download('http://me:mypw@myhost/file.name',
+                             checksum='foobar:1234')
+        assert 'http://me:*****@myhost/file.name' == \
+            component.namevar_for_breadcrumb
+
 
 @pytest.mark.slow
 def test_downloads_file(root):
