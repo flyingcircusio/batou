@@ -49,9 +49,6 @@ def main():
         help='Only predict what updates would happen. '
              'Do not change anything.')
     p.add_argument(
-        '-f', '--parallel-connect', action='store_true',
-        help='Initialize host connections in parallel.')
-    p.add_argument(
         'environment', help='Environment to deploy.',
         type=lambda x: x.replace('.cfg', ''))
     p.set_defaults(func=batou.deploy.main)
