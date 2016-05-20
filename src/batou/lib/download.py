@@ -61,3 +61,12 @@ got: %s''' % (self.checksum, target_checksum)
     def _update_urllib(self):
         path, headers = urlretrieve(self.uri, self.target)
         assert path == self.target
+
+    @property
+    def namevar_for_breadcrumb(self):
+        uri = self.uri
+        password = urlparse.urlsplit(uri).password
+        if password:
+            # Indeed, this is a very simple approach.
+            uri = uri.replace(password, '*****')
+        return uri
