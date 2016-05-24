@@ -45,12 +45,15 @@ redirect_stderr = true
     args = ''
     priority = 10
     directory = None
+    dependencies = None
 
     program_template = ('{priority} {name} ({options}) {command} '
                         '{args} {directory} true')
 
     def configure(self):
         self.supervisor = self.require_one('supervisor', self.host)
+        if self.dependencies is None:
+            self.dependencies = (self.parent,)
         if not self.command:
             raise ValueError(
                 '`command` option missing for program {}'.format(self.name))
@@ -80,7 +83,8 @@ redirect_stderr = true
     def verify(self):
         if not self.supervisor.enable:
             return
-        self.parent.assert_no_subcomponent_changes()
+        for dependency in self.dependencies:
+            dependency.assert_no_changes()
         out, err = self.ctl('status {}'.format(self.name))
         if 'RUNNING' not in out:
             raise UpdateNeeded()
