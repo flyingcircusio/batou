@@ -84,7 +84,7 @@ redirect_stderr = true
         if not self.supervisor.enable:
             return
         for dependency in self.dependencies:
-            dependency.assert_no_subcomponent_changes()
+            dependency.assert_no_changes()
         out, err = self.ctl('status {}'.format(self.name))
         if 'RUNNING' not in out:
             raise UpdateNeeded()
