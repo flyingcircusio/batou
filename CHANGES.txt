@@ -7,6 +7,7 @@ Changelog
 
 - Parallelize connect to remote hosts and bootstrapping of remote batou via
   `./batou deploy --parallel-connect`.
+
 - Support remote host/port for MySQL commands.
 
 - Copy virtualenv files instead of symlinking (for Python 2.7 and up).
@@ -16,6 +17,8 @@ Changelog
 - Hide passwords from output of the `Download` component.
 
 - Add `dependencies` to `supervisor.Program`.
+
+- Fix disconnect error in consistency check.
 
 1.3b1 (2016-03-09)
 ==================
