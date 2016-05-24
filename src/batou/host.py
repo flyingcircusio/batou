@@ -177,4 +177,5 @@ class RemoteHost(Host):
             env.overrides, env.deployment.timeout, env.deployment.platform)
 
     def disconnect(self):
-        self.gateway.exit()
+        if self.gateway is not None:
+            self.gateway.exit()
