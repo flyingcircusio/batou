@@ -20,6 +20,8 @@ Changelog
 
 - Fix disconnect error in consistency check.
 
+- Support gpg2.
+
 1.3b1 (2016-03-09)
 ==================
 
