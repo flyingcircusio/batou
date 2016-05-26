@@ -22,6 +22,9 @@ Changelog
 
 - Support gpg2.
 
+- Download virtualenv via PIP. This fixes an error caused by the PyPI
+  restructuring
+
 1.3b1 (2016-03-09)
 ==================
 
