@@ -3,6 +3,7 @@ from batou.lib.archive import Extract
 from batou.utils import CmdExecutionError
 import batou
 import os.path
+import sys
 
 
 class VirtualEnv(Component):
@@ -218,6 +219,7 @@ class PipDownload(Component):
         self.target = self.expand(
             '{{component.package}}-{{component.version}}.{{component.format}}')
         self.checksum_function, self.checksum = self.checksum.split(':')
+        self.pip = os.path.join(os.path.dirname(sys.executable), 'pip')
 
     def verify(self):
         if not os.path.exists(self.target):
@@ -228,9 +230,10 @@ class PipDownload(Component):
 
     def update(self):
         self.cmd(
-            'pip --isolated download --disable-pip-version-check '
-            '--no-binary=:all: {{component.package}}=={{component.version}} '
-            '--no-deps')
+            '{{component.pip}} --isolated --disable-pip-version-check'
+            ' install --download .'
+            ' --no-binary=:all: {{component.package}}=={{component.version}}'
+            ' --no-deps')
         target_checksum = batou.utils.hash(self.target, self.checksum_function)
         assert self.checksum == target_checksum, '''\
 Checksum mismatch!
