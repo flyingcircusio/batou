@@ -230,7 +230,7 @@ class PipDownload(Component):
 
     def update(self):
         self.cmd(
-            '{{component.pip}} --isolated --disable-pip-version-check'
+            '{{component.pip}} --disable-pip-version-check'
             ' install --download .'
             ' --no-binary=:all: {{component.package}}=={{component.version}}'
             ' --no-deps')
