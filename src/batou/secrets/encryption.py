@@ -45,7 +45,8 @@ class EncryptedConfigFile(object):
     def gpg(self, cmdline):
         for gpg in ['gpg2', 'gpg']:
             try:
-                subprocess.check_call('{} --version 2>&1'.format(gpg), shell=True)
+                subprocess.check_call('{} --version 2>&1'.format(gpg),
+                                      shell=True)
             except subprocess.CalledProcessError:
                 pass
             else:
