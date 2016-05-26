@@ -1,9 +1,9 @@
-from batou import UpdateNeeded
 from batou.component import Component
 from batou.lib.archive import Extract
-from batou.lib.download import Download
 from batou.utils import CmdExecutionError
+import batou
 import os.path
+import sys
 
 
 class VirtualEnv(Component):
@@ -82,7 +82,7 @@ class VirtualEnvPyBase(Component):
                 'pkg_resources.parse_version(\'{}\')"'
                 .format(pkg.package, pkg.version))
         except CmdExecutionError:
-            raise UpdateNeeded()
+            raise batou.UpdateNeeded()
         # Is the package usable? Is the package a module?  This might be
         # overspecific - I'm looking for a way to deal with:
         # https://github.com/pypa/pip/issues/3 if a namespace package was not
@@ -94,7 +94,7 @@ class VirtualEnvPyBase(Component):
                 self.cmd('bin/python -c "import pkg_resources; '
                          'import {0};{0}.__file__"'.format(pkg.package))
             except CmdExecutionError:
-                raise UpdateNeeded()
+                raise batou.UpdateNeeded()
 
     def update_pkg(self, pkg):
         if self.installer == 'pip':
@@ -208,6 +208,39 @@ class VirtualEnvPy3_5(VirtualEnvPyBase):
     install_options = ('--egg', )
 
 
+class PipDownload(Component):
+
+    namevar = 'package'
+    version = None
+    checksum = None
+    format = 'tar.gz'  # The format we expect pip to download
+
+    def configure(self):
+        self.target = self.expand(
+            '{{component.package}}-{{component.version}}.{{component.format}}')
+        self.checksum_function, self.checksum = self.checksum.split(':')
+        self.pip = os.path.join(os.path.dirname(sys.executable), 'pip')
+
+    def verify(self):
+        if not os.path.exists(self.target):
+            raise batou.UpdateNeeded()
+        if self.checksum != batou.utils.hash(self.target,
+                                             self.checksum_function):
+            raise batou.UpdateNeeded()
+
+    def update(self):
+        self.cmd(
+            '{{component.pip}} --disable-pip-version-check'
+            ' install --download .'
+            ' --no-binary=:all: {{component.package}}=={{component.version}}'
+            ' --no-deps')
+        target_checksum = batou.utils.hash(self.target, self.checksum_function)
+        assert self.checksum == target_checksum, '''\
+Checksum mismatch!
+expected: %s
+got: %s''' % (self.checksum, target_checksum)
+
+
 class VirtualEnvDownload(Component):
     """Manage virtualenv package download and extraction.
 
@@ -217,18 +250,14 @@ class VirtualEnvDownload(Component):
     namevar = 'version'
     checksum = None
 
-    url = (
-        'https://pypi.fcio.net/packages/source/v/virtualenv/'
-        'virtualenv-{}.tar.gz')
-
     def configure(self):
         # This will manage central, version-specific virtualenv base
         # installations for multiple components to share.
         self.workdir = self.environment.workdir_base + '/.virtualenv'
-        download = Download(
-            self.url.format(self.version),
+        self += PipDownload(
+            'virtualenv', version=self.version,
             checksum=self.checksum)
-        self += download
+        download = self._
         self += Extract(download.target, target='.')
         extracted_dir = os.path.basename(download.target).rstrip('.tar.gz')
         self.venv_cmd = self.workdir + '/' + extracted_dir + '/virtualenv.py'
