@@ -49,7 +49,7 @@ class EncryptedConfigFile(object):
                     [gpg, '--version'],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
-            except subprocess.CalledProcessError:
+            except (subprocess.CalledProcessError, OSError):
                 pass
             else:
                 return '{} {}'.format(gpg, cmdline)
