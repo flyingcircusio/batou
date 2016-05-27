@@ -9,6 +9,8 @@ class Command(Component):
     namevar = 'statement'
     admin_password = ''
     admin_user = 'root'
+    hostname = None
+    port = None
 
     db = 'mysql'
 
@@ -24,11 +26,18 @@ class Command(Component):
         _, self.tmp = tempfile.mkstemp(suffix='sql')
         with open(self.tmp, 'w') as f:
             f.write(cmd+'\n')
-        out, err = self.cmd(
-            self.expand('mysql -Bs -u{{component.admin_user}} '
-                        '-p{{component.admin_password}} '
-                        '{{component.db}} < {{component.tmp}}'))
-        os.unlink(self.tmp)
+
+        command = [
+            'mysql -Bs -u{{component.admin_user}}',
+            '-p{{component.admin_password}}']
+        if self.hostname:
+            command.append('-h {{component.hostname}}')
+        if self.port:
+            command.append('-P {{component.port}}')
+        command.append('{{component.db}} < {{component.tmp}}')
+
+        out, err = self.cmd(self.expand(' '.join(command)))
+        os.remove(self.tmp)
         return out, err
 
     def verify(self):
