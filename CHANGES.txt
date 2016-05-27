@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.3b2 (unreleased)
+1.3b2 (2016-05-27)
 ==================
 
 - Parallelize connect to remote hosts and bootstrapping of remote batou via
