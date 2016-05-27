@@ -42,6 +42,18 @@ class EncryptedConfigFile(object):
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.lockfd.close()
 
+    def gpg(self, cmdline):
+        for gpg in ['gpg2', 'gpg']:
+            try:
+                subprocess.check_call(
+                    [gpg, '--version'],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError:
+                pass
+            else:
+                return '{} {}'.format(gpg, cmdline)
+
     @property
     def cleartext(self):
         if self._cleartext is None:
@@ -88,8 +100,8 @@ class EncryptedConfigFile(object):
         if self.quiet:
             opts += ' -q --no-tty --batch'
         self.cleartext = subprocess.check_output(
-            ['gpg {} --decrypt {}'.format
-                (opts, self.encrypted_file)],
+            [self.gpg('{} --decrypt {}'.format(
+                opts, self.encrypted_file))],
             stderr=subprocess.PIPE,
             shell=True)
 
@@ -117,8 +129,8 @@ class EncryptedConfigFile(object):
                   self.encrypted_file + '.old')
         try:
             gpg = subprocess.Popen(
-                ['gpg {} --encrypt {} -o {}'.format(
-                    self.gpg_opts, recipients, self.encrypted_file)],
+                [self.gpg('{} --encrypt {} -o {}'.format(
+                    self.gpg_opts, recipients, self.encrypted_file))],
                 stdin=subprocess.PIPE,
                 shell=True)
             gpg.communicate(self.cleartext)

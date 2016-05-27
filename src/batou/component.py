@@ -314,9 +314,10 @@ class Component(object):
         """Verify whether this component has been deployed correctly or needs
         to be updated.
 
-        Raise the :py:class:`UpdateNeeded` exception if the desired target
-        state is not reached. Use the :py:meth:`assert_*` methods (see below)
-        to check for typical conditions and raise this exception comfortably.
+        Raise the :py:class:`batou.UpdateNeeded` exception if the desired
+        target state is not reached. Use the :py:meth:`assert_*` methods (see
+        below) to check for typical conditions and raise this exception
+        comfortably.
 
         This method is run exactly once on the target system when batou
         has entered the deployment phase. The working directory is
