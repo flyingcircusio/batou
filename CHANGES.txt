@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.3b3 (unreleased)
+1.3b3 (2016-05-30)
 ==================
 
 - Fix a crash in case of GnuPG2 is not installed at all.
