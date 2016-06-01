@@ -33,7 +33,7 @@ def install_venv():
 
 
 def install_pip():
-    cmd('.batou/bin/pip install "pip>=1.2"')
+    cmd('.batou/bin/pip install "pip>=8.0"')
 
 
 base = os.path.dirname(__file__)
