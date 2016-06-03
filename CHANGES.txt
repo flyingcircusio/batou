@@ -5,7 +5,7 @@ Changelog
 1.3b4 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Add way to set arbitrary environment variables in crontab.
 
 
 1.3b3 (2016-05-30)
