@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0.10 (unreleased)
+1.0.10 (2016-06-03)
 ===================
 
 - Download virtualenv via PIP. This fixes an error caused by the PyPI
