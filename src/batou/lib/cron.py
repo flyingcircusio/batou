@@ -37,6 +37,9 @@ class CronTab(Component):
     mailto = Attribute(str, None)
     purge = False
 
+    # Dict of additional environment variables
+    env = Attribute('literal', '{}')
+
     def configure(self):
         self.jobs = self.require(CronJob.key, host=self.host, strict=False)
         if self.purge and self.jobs:
