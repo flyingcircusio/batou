@@ -1,4 +1,6 @@
 syntax: glob
+.batou
+pip-selfcheck.json
 *.sublime-*
 *.egg-info
 *.pyc
