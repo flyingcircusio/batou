@@ -18,7 +18,7 @@ Changelog
 ==================
 
 - Parallelize connect to remote hosts and bootstrapping of remote batou via
-  `./batou deploy --parallel-connect`.
+  `./batou deploy`.
 
 - Support remote host/port for MySQL commands.
 
