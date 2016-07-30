@@ -7,6 +7,8 @@ Changelog
 
 - Add way to set arbitrary environment variables in crontab.
 
+- Fix performance issue with git and mercurial Clone components.
+
 
 1.3b3 (2016-05-30)
 ==================
