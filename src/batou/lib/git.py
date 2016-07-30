@@ -31,12 +31,12 @@ class Clone(Component):
             if not self.vcs_update:
                 return
 
-            if self.has_outgoing_changesets:
+            if self.has_outgoing_changesets():
                 output.annotate(
                     'Git clone at {} has outgoing changesets.'.format(
                         self.target))
 
-            if self.has_changes:
+            if self.has_changes():
                 output.annotate(
                     'Git clone at {} is dirty, going to lose changes.'.format(
                         self.target), red=True)
@@ -45,15 +45,14 @@ class Clone(Component):
             if self.revision and self.current_revision != self.revision:
                 raise UpdateNeeded()
             if (self.branch and (
-                    self.current_branch != self.branch) or
-                    self.has_incoming_changesets):
+                    self.current_branch() != self.branch) or
+                    self.has_incoming_changesets()):
                 raise UpdateNeeded()
 
     @property
     def revision_or_branch(self):
         return self.revision or self.branch
 
-    @property
     def current_revision(self):
         try:
             with self.chdir(self.target):
@@ -62,25 +61,21 @@ class Clone(Component):
             return None
         return stdout.strip()
 
-    @property
     def current_branch(self):
         with self.chdir(self.target):
             stdout, stderr = self.cmd('git rev-parse --abbrev-ref HEAD')
         return stdout.strip()
 
-    @property
     def has_incoming_changesets(self):
         with self.chdir(self.target):
             stdout, stderr = self.cmd('git fetch --dry-run')
             return stderr.strip()
 
-    @property
     def has_outgoing_changesets(self):
         with self.chdir(self.target):
             stdout, stderr = self.cmd('LANG=C git status')
         return 'Your branch is ahead of' in stdout
 
-    @property
     def has_changes(self):
         with self.chdir(self.target):
             stdout, stderr = self.cmd('git status --porcelain')
@@ -93,7 +88,7 @@ class Clone(Component):
                 'git clone {{component.url}} {{component.target}}'))
             just_cloned = True
         with self.chdir(self.target):
-            for filepath in self.untracked_files:
+            for filepath in self.untracked_files():
                 os.unlink(os.path.join(self.target, filepath))
             if not just_cloned:
                 self.cmd('git fetch')
@@ -107,7 +102,6 @@ class Clone(Component):
             # shall the submodules be updated to?
             self.cmd('git submodule update --init --recursive')
 
-    @property
     def untracked_files(self):
         stdout, stderr = self.cmd(
             'git status --porcelain --untracked-files=all')
