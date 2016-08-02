@@ -9,6 +9,8 @@ Changelog
 
 - Fix performance issue with git and mercurial Clone components.
 
+- Git: Clean workingcopy before merging changes.
+
 
 1.3b3 (2016-05-30)
 ==================
