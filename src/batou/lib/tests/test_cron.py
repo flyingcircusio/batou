@@ -38,3 +38,13 @@ def test_non_empty_pruge_crontab_must_raise(root):
     root.component += CronJob('command2', timing='* * * * *')
     with pytest.raises(ConfigurationError):
         root.component += CronTab(purge=True)
+
+
+def test_additional_envs_can_be_set(root):
+    root.environment.vfs_sandbox = batou.vfs.Developer(root.environment, None)
+    root.component += CronJob('command2', timing='* * * * *')
+    root.component += CronTab(env=dict(PATH='/foo/bar'))
+    root.component.deploy()
+    crontab = open(os.path.join(
+        root.environment.workdir_base, 'mycomponent/crontab')).read()
+    assert "PATH=/foo/bar" in crontab

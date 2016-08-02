@@ -31,22 +31,22 @@ class Clone(Component):
             if not self.vcs_update:
                 return
 
-            if self.has_outgoing_changesets:
+            if self.has_outgoing_changesets():
                 output.annotate(
                     'Hg clone at {} has outgoing changesets.'.format(
                         self.target), red=True)
 
-            if self.has_changes:
+            if self.has_changes():
                 output.annotate(
                     'Hg clone at {} is dirty, going to lose changes.'.format(
                         self.target), red=True)
                 raise UpdateNeeded()
 
-            if self.revision and self.current_revision != self.revision:
+            if self.revision and self.current_revision() != self.revision:
                 raise UpdateNeeded()
             if (self.branch and (
-                    self.current_branch != self.branch or
-                    self.has_incoming_changesets)):
+                    self.current_branch() != self.branch or
+                    self.has_incoming_changesets())):
                 raise UpdateNeeded()
 
     @property
@@ -54,7 +54,6 @@ class Clone(Component):
         # Mercurial often takes either a revision or a branch.
         return self.revision or self.branch
 
-    @property
     def current_revision(self):
         stdout, stderr = self.cmd(
             self.expand('LANG=C hg --cwd {{component.target}} summary | '
@@ -64,12 +63,10 @@ class Clone(Component):
             return None
         return match.group(1)
 
-    @property
     def current_branch(self):
         stdout, stderr = self.cmd('hg branch')
         return stdout.strip()
 
-    @property
     def has_incoming_changesets(self):
         try:
             self.cmd('hg incoming -q -l1')
@@ -79,7 +76,6 @@ class Clone(Component):
             raise
         return True
 
-    @property
     def has_outgoing_changesets(self):
         try:
             with self.chdir(self.target):
@@ -90,7 +86,6 @@ class Clone(Component):
             raise
         return True
 
-    @property
     def has_changes(self):
         with self.chdir(self.target):
             stdout, stderr = self.cmd('hg status')
@@ -110,7 +105,6 @@ class Clone(Component):
             self.cmd(self.expand(
                 'hg update --clean --rev {{component.revision_or_branch}}'))
 
-    @property
     def untracked_files(self):
         stdout, stderr = self.cmd('hg status -q -u')
         items = (line.split(None, 1) for line in stdout.splitlines())
