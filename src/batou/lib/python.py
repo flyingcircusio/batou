@@ -61,6 +61,10 @@ class VirtualEnvPyBase(Component):
     def verify(self):
         # Did we install an updated virtualenv package in between?
         self.assert_file_is_current('bin/python', [self.base.venv_cmd])
+        self.assert_cmd(
+            'bin/python -c "import sys; '
+            'assert sys.version_info[:2] == {}"'.format(repr(
+                self.parent.version.split('.'))))
         # Is this Python (still) functional 'enough'
         # from a setuptools/distribute perspective?
         self.assert_cmd('bin/python -c "import pkg_resources"')
