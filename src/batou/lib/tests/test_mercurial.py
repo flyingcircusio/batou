@@ -52,7 +52,7 @@ def test_set_revision_does_not_pull_when_revision_matches(root, repos_path):
         repos_path, target='clone', branch='default')
     root.component += clone
     root.component.deploy()
-    revision = clone.current_revision
+    revision = clone.current_revision()
     clone.revision = revision
     clone.branch = None
     cmd('cd {dir}; touch bar; hg addremove; hg ci -m "commit"'.format(
@@ -69,10 +69,10 @@ def test_has_changes_counts_changes_to_tracked_files(root, repos_path):
         repos_path, target='clone', branch='default')
     root.component += clone
     root.component.deploy()
-    assert not clone.has_changes
+    assert not clone.has_changes()
     cmd('touch {}/clone/bar'.format(root.workdir))
     cmd('cd {}/clone; hg add bar'.format(root.workdir))
-    assert clone.has_changes
+    assert clone.has_changes()
 
 
 @pytest.mark.slow
@@ -81,9 +81,9 @@ def test_has_changes_counts_untracked_files_as_changes(root, repos_path):
         repos_path, target='clone', branch='default')
     root.component += clone
     root.component.deploy()
-    assert not clone.has_changes
+    assert not clone.has_changes()
     cmd('touch {}/clone/bar'.format(root.workdir))
-    assert clone.has_changes
+    assert clone.has_changes()
 
 
 @pytest.mark.slow
