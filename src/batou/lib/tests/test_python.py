@@ -24,11 +24,8 @@ def test_package_venv_installations(root):
 
     # run batou, hope for the best. ;)
     stdout, stderr = cmd('./batou deploy dev')
-    assert "Deploying component py24" in stdout
-    assert "Deploying component py25" in stdout
     assert "Deploying component py26" in stdout
     assert "Deploying component py27" in stdout
-    assert "Deploying component py32" in stdout
     assert "Deploying component py33" in stdout
     assert "Deploying component py34" in stdout
     assert "Deploying component py35" in stdout
