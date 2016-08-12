@@ -100,7 +100,7 @@ class Clone(Component):
                 return
             self.cmd(self.expand(
                 'hg pull --rev {{component.revision_or_branch}}'))
-            for filepath in self.untracked_files:
+            for filepath in self.untracked_files():
                 os.unlink(os.path.join(self.target, filepath))
             self.cmd(self.expand(
                 'hg update --clean --rev {{component.revision_or_branch}}'))
@@ -116,6 +116,6 @@ class Clone(Component):
                 return None
             stdout, stderr = self.cmd(
                 'hg log -r %s --template "{date|hgdate}\n"' %
-                self.current_revision)
+                self.current_revision())
             timestamp, offset = stdout.split()
             return float(timestamp) - float(offset)
