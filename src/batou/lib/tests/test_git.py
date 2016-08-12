@@ -91,10 +91,10 @@ def test_has_changes_counts_changes_to_tracked_files(root, repos_path):
         repos_path, target='clone', branch='master')
     root.component += clone
     root.component.deploy()
-    assert not clone.has_changes
+    assert not clone.has_changes()
     cmd('touch {}/clone/bar'.format(root.workdir))
     cmd('cd {}/clone; git add bar'.format(root.workdir))
-    assert clone.has_changes
+    assert clone.has_changes()
 
 
 @pytest.mark.slow
@@ -103,9 +103,9 @@ def test_has_changes_counts_untracked_files_as_changes(root, repos_path):
         repos_path, target='clone', branch='master')
     root.component += clone
     root.component.deploy()
-    assert not clone.has_changes
+    assert not clone.has_changes()
     cmd('touch {}/clone/bar'.format(root.workdir))
-    assert clone.has_changes
+    assert clone.has_changes()
 
 
 @pytest.mark.slow
