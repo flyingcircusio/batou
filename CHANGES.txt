@@ -5,6 +5,8 @@ Changelog
 1.3b4 (unreleased)
 ==================
 
+- Remove support for virtualenv with Python 2.4, 2.5 and 3.2.
+
 - Add way to set arbitrary environment variables in crontab.
 
 - Fix performance issue with git and mercurial Clone components.

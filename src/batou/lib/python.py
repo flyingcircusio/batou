@@ -129,53 +129,18 @@ class VirtualEnvPyBase(Component):
                  env=pkg.env if pkg.env else {})
 
 
-class VirtualEnvPy2_4(VirtualEnvPyBase):
-
-    venv_version = '1.7.2'
-    venv_checksum = 'md5:b5d63b05373a4344ae099a68875aae78'
-    venv_options = ('--no-site-packages',)
-
-    installer = 'easy_install'
-    install_options = ()
-
-
-class VirtualEnvPy2_5(VirtualEnvPyBase):
-
-    venv_version = '1.9.1'
-    venv_checksum = 'md5:07e09df0adfca0b2d487e39a4bf2270a'
-    venv_options = ('--setuptools', )
-
-    install_options = ('--ignore-installed', '--egg')
-
-    def configure(self):
-        super(VirtualEnvPy2_5, self).configure()
-        self.parent += Package(
-            'ssl',
-            version='1.16',
-            install_options=('--insecure',))
-
-
 class VirtualEnvPy2_6(VirtualEnvPyBase):
 
-    venv_version = '1.10.1'
-    venv_checksum = 'md5:3a04aa2b32c76c83725ed4d9918e362e'
+    venv_version = '15.0.3'
+    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
 
     install_options = ('--ignore-installed', '--egg')
 
 
 class VirtualEnvPy2_7(VirtualEnvPyBase):
 
-    venv_version = '13.1.2'
-    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
-    venv_options = ('--always-copy',)
-
-    install_options = ('--egg', )
-
-
-class VirtualEnvPy3_2(VirtualEnvPyBase):
-
-    venv_version = '13.1.2'
-    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
+    venv_version = '15.0.3'
+    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
     venv_options = ('--always-copy',)
 
     install_options = ('--egg', )
@@ -183,8 +148,8 @@ class VirtualEnvPy3_2(VirtualEnvPyBase):
 
 class VirtualEnvPy3_3(VirtualEnvPyBase):
 
-    venv_version = '13.1.2'
-    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
+    venv_version = '15.0.3'
+    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
     venv_options = ('--always-copy',)
 
     install_options = ('--egg', )
@@ -192,8 +157,8 @@ class VirtualEnvPy3_3(VirtualEnvPyBase):
 
 class VirtualEnvPy3_4(VirtualEnvPyBase):
 
-    venv_version = '13.1.2'
-    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
+    venv_version = '15.0.3'
+    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
     venv_options = ('--always-copy',)
 
     install_options = ('--egg', )
@@ -201,8 +166,8 @@ class VirtualEnvPy3_4(VirtualEnvPyBase):
 
 class VirtualEnvPy3_5(VirtualEnvPyBase):
 
-    venv_version = '13.1.2'
-    venv_checksum = 'md5:b989598f068d64b32dead530eb25589a'
+    venv_version = '15.0.3'
+    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
     venv_options = ('--always-copy',)
 
     install_options = ('--egg', )
