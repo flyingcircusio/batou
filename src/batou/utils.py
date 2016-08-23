@@ -103,6 +103,15 @@ def resolve(address):
     return address
 
 
+def resolve_v6(host, port):
+    try:
+        return socket.getaddrinfo(
+            host, int(port),
+            socket.AF_INET6)[0][4][0]
+    except socket.gaierror:
+        return None
+
+
 class Address(object):
     """An internet service address that can be listened and connected to.
 
@@ -127,6 +136,11 @@ class Address(object):
     #: servers. This is a :py:class:`batou.utils.NetLoc` object.
     listen = None
 
+    #: The IPv6 listen (or bind) address as it should be used when configuring
+    #: servers. This is a :py:class:`batou.utils.NetLoc` object or None, if
+    #: there is no IPv6 address.
+    listen_v6 = None
+
     def __init__(self, connect_address, port=None):
         if ':' in connect_address:
             connect, port = connect_address.split(':')
@@ -136,6 +150,8 @@ class Address(object):
             raise ValueError('Need port for service address.')
         self.connect = NetLoc(connect, str(port))
         self.listen = NetLoc(resolve(connect), str(port))
+        v6_address = resolve_v6(connect, port)
+        self.listen_v6 = NetLoc(v6_address, str(port))
 
     def __str__(self):
         return str(self.connect)
@@ -173,10 +189,14 @@ class NetLoc(object):
         self.port = port
 
     def __str__(self):
-        result = self.host
         if self.port:
-            result += ':' + self.port
-        return result
+            if ':' in self.host:  # ipv6
+                fmt = '[{self.host}]:{self.port}'
+            else:
+                fmt = '{self.host}:{self.port}'
+        else:
+            fmt = '{self.host}'
+        return fmt.format(self=self)
 
 
 def revert_graph(graph):
