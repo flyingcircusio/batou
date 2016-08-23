@@ -151,7 +151,8 @@ class Address(object):
         self.connect = NetLoc(connect, str(port))
         self.listen = NetLoc(resolve(connect), str(port))
         v6_address = resolve_v6(connect, port)
-        self.listen_v6 = NetLoc(v6_address, str(port))
+        if v6_address:
+            self.listen_v6 = NetLoc(v6_address, str(port))
 
     def __str__(self):
         return str(self.connect)
