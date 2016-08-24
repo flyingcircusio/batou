@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.define "nixos" do |nixos|
+
+    nixos.vm.box = "flyingcircus/nixos-15.09-x86_64"
+    nixos.vm.network "private_network", ip: "192.168.51.5"
+    nixos.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+    end
+
+    nixos.vm.provision :shell, \
+      :inline => "
+      # ix-channel --add https://hydra.flyingcircus.io/channels/branches/webdata-blackbee/ nixos
+      nix-channel --update", \
+      :run => "always"
+    nixos.vm.provision :nixos, :verbose => true,\
+      :path => "provision.nix", \
+      :run => "always"
+
+  end
+
+  config.vm.define "ubuntu" do |ubuntu|
+    ubuntu.vm.box = "ubuntu/trusty64"
+    ubuntu.vm.network "private_network", ip: "192.168.51.6"
+    ubuntu.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+    end
+
+  end
+end
