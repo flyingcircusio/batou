@@ -356,3 +356,16 @@ class RepositoryDifferentError(DeploymentError):
             "The remote working copy is based on a different revision.")
         output.tabular("Local", self.local, red=True)
         output.tabular("Remote", self.remote, red=True)
+
+
+class DuplicateHostError(ConfigurationError):
+
+    @property
+    def sort_key(self):
+        return (0, )
+
+    def __init__(self, hostname):
+        self.hostname = hostname
+
+    def report(self):
+        output.error("Duplicate definition of host: {}".format(self.hostname))
