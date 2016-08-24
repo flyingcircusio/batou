@@ -163,6 +163,20 @@ components = bar
 
 
 @mock.patch('batou.environment.Environment.add_root')
+def test_load_hosts_multi_should_use_ignore_flag(add_root):
+    pass
+    e = Environment(u'name')
+    config = Config(None)
+    config.config.readfp(StringIO("""
+[host:foo]
+components = bar
+ignore = True
+    """))
+    e.load_hosts(config)
+    assert e.hosts['foo'].ignore
+
+
+@mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_should_break_on_duplicate_definition(add_root):
     e = Environment(u'name')
     config = Config(None)
