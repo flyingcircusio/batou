@@ -462,7 +462,7 @@ class Component(object):
     def _get_platform(self):
         """Return the platform component for this component if one exists."""
         platforms = self.__class__.__dict__.get('_platforms', {})
-        return platforms.get(self.environment.platform, lambda: None)()
+        return platforms.get(self.host.platform, lambda: None)()
 
     # Resource provider/user API
 

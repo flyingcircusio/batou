@@ -64,6 +64,7 @@ class RPCWrapper(object):
 class Host(object):
 
     ignore = False
+    platform = None
 
     def __init__(self, fqdn, environment):
         self.fqdn = fqdn

@@ -125,6 +125,8 @@ class Environment(object):
 
         # load overrides
         for section in config:
+            if section.startswith('host:'):
+                continue
             if not section.startswith('component:'):
                 if section not in ['hosts', 'environment', 'vfs']:
                     self.exceptions.append(SuperfluousSection(section))
@@ -190,9 +192,10 @@ class Environment(object):
             host = self.add_host(hostname)
             host.ignore = ast.literal_eval(
                 config[section].get('ignore', 'False'))
+            host.platform = config[section].get('platform', self.platform)
             self._load_host_components(
                 hostname,
-               config[section].as_list('components'))
+                config[section].as_list('components'))
 
     def _load_host_components(self, hostname, component_list):
             components = parse_host_components(component_list)

@@ -189,3 +189,34 @@ components = bar
     e.load_hosts(config)
     assert e.exceptions
     assert 'foo' == e.exceptions[0].hostname
+
+
+@mock.patch('batou.environment.Environment.add_root')
+def test_load_hosts_multi_should_use_env_platform(add_root):
+    pass
+    e = Environment(u'name')
+    e.platform = mock.sentinel.platform
+    config = Config(None)
+    config.config.readfp(StringIO("""
+[host:foo]
+components = bar
+ignore = True
+    """))
+    e.load_hosts(config)
+    assert e.hosts['foo'].platform == mock.sentinel.platform
+
+
+@mock.patch('batou.environment.Environment.add_root')
+def test_load_hosts_multi_should_use_host_platform_if_given(add_root):
+    pass
+    e = Environment(u'name')
+    e.platform = mock.sentinel.platform
+    config = Config(None)
+    config.config.readfp(StringIO("""
+[host:foo]
+components = bar
+platform = specific
+    """))
+    e.load_hosts(config)
+    assert e.hosts['foo'].platform =='specific'
+
