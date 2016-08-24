@@ -5,6 +5,8 @@ Changelog
 1.3b4 (unreleased)
 ==================
 
+- Support multiple platforms per environment (#12405).
+
 - Add way to set arbitrary environment variables in crontab.
 
 - Fix performance issue with git and mercurial Clone components.
