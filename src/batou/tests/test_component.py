@@ -117,7 +117,7 @@ def test_prepare_configures_applicable_platforms_as_subcomponents(root):
     class MyOtherPlatform(Component):
         pass
 
-    root.environment.platform = 'testplatform'
+    root.host.platform = 'testplatform'
     component = MyComponent()
     root.component += component
     assert 1 == len(component.sub_components)
