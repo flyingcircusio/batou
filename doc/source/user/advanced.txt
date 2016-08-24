@@ -40,6 +40,53 @@ Extended service discovery options (TODO)
 Platform-specific components (TODO)
 -----------------------------------
 
+Platform-specific components allow to customize behavior depending on the system or "platform" the target system runs as. Examples:
+
+* Production system on Gentoo, local development on Ubuntu, or
+* All VMs on Ubuntu but Oracle is being  run with RedHat.
+
+To define a platform specific aspects, you use the `platform` class decorator. Example::
+
+    import batou.component
+    import batou.lib.file
+
+
+    class Test(batou.component.Component):
+
+        def configure(self):
+            self += batou.lib.file.File('base-component')
+
+
+    @batou.component.platform('nixos', Test)
+    class TestNixos(batou.component.Component):
+
+        def configure(self):
+            self += batou.lib.file.File('i-am-nixos')
+
+
+    @batou.component.platform('ubuntu', Test)
+    class TestUbuntu(batou.component.Component):
+
+        def configure(self):
+            self += batou.lib.file.File('i-am-ubuntu')
+
+The platform is then defined in the environment::
+
+    [environment]
+    platform = default-platform
+
+    [host:nixos]
+    # Host specifc override:
+    platform = nixos
+    components = test
+
+    [host:ubuntu]
+    # Host specifc override:
+    platform = ubuntu
+    components = test
+
+
+
 
 context manager (TODO)
 ----------------------

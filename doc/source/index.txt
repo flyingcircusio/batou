@@ -87,11 +87,17 @@ hosts and provides an override for the publicly visible address.
     [environment]
     host_domain = fcio.net
 
-    [hosts]
-    host01 = nginx, haproxy, varnish
-    host02 = myapp
-    host03 = myapp
-    host04 = postgresql
+    [host:host01]
+    components = nginx, haproxy, varnish
+
+    [host:host02]
+    components = myapp
+
+    [host:host03]
+    components = myapp
+
+    [host:host04]
+    components = postgresql
 
     [component:nginx]
     server_name = staging.example.com
