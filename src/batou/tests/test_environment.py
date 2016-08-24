@@ -218,5 +218,4 @@ components = bar
 platform = specific
     """))
     e.load_hosts(config)
-    assert e.hosts['foo'].platform =='specific'
-
+    assert e.hosts['foo'].platform == 'specific'
