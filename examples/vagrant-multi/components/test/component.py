@@ -1,29 +1,22 @@
-from batou.utils import Address
-from batou.component import Component, Attribute, platform
-from batou.lib.file import File
-from batou.lib.buildout import Buildout
+import batou.component
+import batou.lib.file
 
 
-class Test(Component):
-
-    address = Attribute(Address, 'default:8080')
+class Test(batou.component.Component):
 
     def configure(self):
-        self += File('test', content='asdf {{component.address.listen}}')
-        self += Buildout(version='2.3.1',
-                         python='2.7',
-                         setuptools='17.1')
+        self += batou.lib.file.File('base-component')
 
 
-@platform('nixos')
-class TestNixos(Component):
+@batou.component.platform('nixos', Test)
+class TestNixos(batou.component.Component):
 
     def configure(self):
-        self += File('i-am-nixos')
+        self += batou.lib.file.File('i-am-nixos')
 
 
-@platform('ubuntu')
-class TestUbuntu(Component):
+@batou.component.platform('ubuntu', Test)
+class TestUbuntu(batou.component.Component):
 
     def configure(self):
-        self += File('i-am-ubuntu')
+        self += batou.lib.file.File('i-am-ubuntu')

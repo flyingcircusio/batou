@@ -12,12 +12,14 @@ Vagrant.configure(2) do |config|
 
     nixos.vm.provision :shell, \
       :inline => "
-      # ix-channel --add https://hydra.flyingcircus.io/channels/branches/webdata-blackbee/ nixos
       nix-channel --update", \
       :run => "always"
     nixos.vm.provision :nixos, :verbose => true,\
       :path => "provision.nix", \
       :run => "always"
+
+    nixos.vm.synced_folder "../../", "/opt/batou", :mount_options => ["dmode=777","fmode=666"]
+
 
   end
 
@@ -27,6 +29,15 @@ Vagrant.configure(2) do |config|
     ubuntu.vm.provider "virtualbox" do |v|
       v.memory = 1024
     end
+
+    ubuntu.vm.provision :shell, \
+      :inline => "
+      apt-get update
+      apt-get -y install python2.7 python-virtualenv
+      ", \
+      :run => "always"
+
+    ubuntu.vm.synced_folder "../../", "/opt/batou", :mount_options => ["dmode=777","fmode=666"]
 
   end
 end
