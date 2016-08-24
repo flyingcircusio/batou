@@ -2,17 +2,19 @@ from .component import load_components_from_file
 from .host import LocalHost, RemoteHost
 from .resources import Resources
 from .secrets import add_secrets_to_environment_override
-from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
+from ConfigParser import RawConfigParser
 from batou import MissingComponent
+from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
 from batou import NonConvergingWorkingSet, UnusedResources, ConfigurationError
 from batou import SuperfluousComponentSection, CycleErrorDetected
 from batou import UnknownComponentConfigurationError, UnsatisfiedResources
+from batou import DuplicateHostError
 from batou._output import output
 from batou.component import RootComponent
 from batou.repository import Repository
 from batou.utils import cmd
 from batou.utils import revert_graph, topological_sort, CycleError
-from ConfigParser import RawConfigParser
+import ast
 import batou.c
 import batou.vfs
 import glob
@@ -36,10 +38,12 @@ class ConfigSection(dict):
 
 
 class Config(object):
+
     def __init__(self, path):
         config = RawConfigParser()
         config.optionxform = lambda s: s
-        config.read(path)
+        if path:  # Test support
+            config.read(path)
         self.config = config
 
     def __contains__(self, section):
@@ -117,19 +121,7 @@ class Environment(object):
         config = Config(config_file)
 
         self.load_environment(config)
-        for literal_hostname in config.get('hosts', {}):
-            hostname = literal_hostname.strip('!')
-            host = self.add_host(hostname)
-            host.ignore = literal_hostname.startswith('!')
-            components = parse_host_components(
-                config['hosts'].as_list(literal_hostname))
-            for component, settings in components.items():
-                try:
-                    self.add_root(component, hostname,
-                                  settings['features'], settings['ignore'])
-                except KeyError as e:
-                    self.exceptions.append(
-                        MissingComponent(component, hostname))
+        self.load_hosts(config)
 
         # load overrides
         for section in config:
@@ -174,6 +166,43 @@ class Environment(object):
             sandbox = config['vfs']['sandbox']
             sandbox = getattr(batou.vfs, sandbox)(self, config['vfs'])
             self.vfs_sandbox = sandbox
+
+    def load_hosts(self, config):
+        self._load_hosts_single_section(config)
+        self._load_hosts_multi_secion(config)
+
+    def _load_hosts_single_section(self, config):
+        for literal_hostname in config.get('hosts', {}):
+            hostname = literal_hostname.strip('!')
+            host = self.add_host(hostname)
+            host.ignore = literal_hostname.startswith('!')
+            self._load_host_components(
+                hostname,
+                config['hosts'].as_list(literal_hostname))
+
+    def _load_hosts_multi_secion(self, config):
+        for section in config:
+            if not section.startswith('host:'):
+                continue
+            hostname = section.replace('host:', '', 1)
+            if hostname in self.hosts:
+                self.exceptions.append(DuplicateHostError(hostname))
+            host = self.add_host(hostname)
+            host.ignore = ast.literal_eval(
+                config[section].get('ignore', 'False'))
+            self._load_host_components(
+                hostname,
+               config[section].as_list('components'))
+
+    def _load_host_components(self, hostname, component_list):
+            components = parse_host_components(component_list)
+            for component, settings in components.items():
+                try:
+                    self.add_root(component, hostname,
+                                  settings['features'], settings['ignore'])
+                except KeyError:
+                    self.exceptions.append(
+                        MissingComponent(component, hostname))
 
     def _set_defaults(self):
         if self.update_method is None:

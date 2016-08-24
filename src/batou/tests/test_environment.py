@@ -1,6 +1,8 @@
-from batou.environment import Environment
+from StringIO import StringIO
 from batou import MissingEnvironment
+from batou.environment import Environment, Config
 from mock import Mock
+import mock
 import pytest
 
 
@@ -117,3 +119,59 @@ def test_parse_host_components():
 
     assert (parse_host_components(['asdf:test', 'asdf:bar']) ==
             {'asdf': {'features': ['test', 'bar'], 'ignore': False}})
+
+
+@mock.patch('batou.environment.Environment.add_root')
+def test_load_hosts_should_merge_single_and_multi_definition(add_root):
+    e = Environment(u'name')
+    config = Config(None)
+    config.config.readfp(StringIO("""
+[hosts]
+foo = bar
+[host:baz]
+components = bar
+    """))
+    e.load_hosts(config)
+    assert [mock.call('bar', 'foo', [], False),
+            mock.call('bar', 'baz', [], False)] == \
+        add_root.call_args_list
+
+
+@mock.patch('batou.environment.Environment.add_root')
+def test_load_hosts_should_load_single_hosts_section(add_root):
+    e = Environment(u'name')
+    config = Config(None)
+    config.config.readfp(StringIO("""
+[hosts]
+foo = bar
+    """))
+    e.load_hosts(config)
+    add_root.assert_called_once_with('bar', 'foo', [], False)
+
+
+@mock.patch('batou.environment.Environment.add_root')
+def test_load_hosts_should_load_multi_hosts_section(add_root):
+    pass
+    e = Environment(u'name')
+    config = Config(None)
+    config.config.readfp(StringIO("""
+[host:foo]
+components = bar
+    """))
+    e.load_hosts(config)
+    add_root.assert_called_once_with('bar', 'foo', [], False)
+
+
+@mock.patch('batou.environment.Environment.add_root')
+def test_load_hosts_should_break_on_duplicate_definition(add_root):
+    e = Environment(u'name')
+    config = Config(None)
+    config.config.readfp(StringIO("""
+[hosts]
+foo = bar
+[host:foo]
+components = bar
+    """))
+    e.load_hosts(config)
+    assert e.exceptions
+    assert 'foo' == e.exceptions[0].hostname
