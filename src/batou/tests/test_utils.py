@@ -1,6 +1,6 @@
 from batou.utils import hash, CmdExecutionError
 from batou.utils import remove_nodes_without_outgoing_edges, cmd
-from batou.utils import resolve, MultiFile, locked, notify, Address
+from batou.utils import resolve, resolve_v6, MultiFile, locked, notify, Address
 from batou.utils import revert_graph, topological_sort, flatten, NetLoc
 from StringIO import StringIO
 import mock
@@ -30,6 +30,12 @@ def test_socket_error_shows_hostname(ghbn):
     with pytest.raises(socket.gaierror) as e:
         resolve('localhost')
     assert str(e.value) == 'lookup failed (localhost)'
+
+
+@mock.patch('socket.getaddrinfo',
+            side_effect=socket.gaierror('lookup failed'))
+def test_resolve_v6_should_return_none_on_socket_error(gai):
+    assert resolve_v6('localhost', 22) is None
 
 
 def test_flatten():
@@ -134,6 +140,23 @@ class AddressNetLocTests(unittest.TestCase):
 
 def test_address_format_with_port():
     assert str(Address('127.0.0.1:8080').listen) == '127.0.0.1:8080'
+
+
+@mock.patch('socket.getaddrinfo')
+def test_address_should_contain_v6_address_if_available(gai):
+    gai.return_value = [(None, None, None, None, ('::1',))]
+    address = Address('localhost:8080')
+    assert address.listen_v6.host == '::1'
+
+
+@mock.patch('socket.getaddrinfo',
+            side_effect=socket.gaierror('lookup failed'))
+def test_address_should_not_contain_v6_address_if_not_resolvable(gai):
+    assert Address('localhost', 22).listen_v6 is None
+
+
+def test_netlock_str_should_brace_ipv6_addresses():
+    assert '[::1]:80' == str(NetLoc('::1', 80))
 
 
 def test_netloc_format_without_port():
