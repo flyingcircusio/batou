@@ -55,3 +55,20 @@ def test_venv_updates_if_python_changes(root):
         '{}/bin/python -c "import sys; print sys.version_info[:2]"'.format(
             playground.workdir))
     assert (2, 7) == ast.literal_eval(out)
+
+
+def test_venv_does_not_update_if_python_does_not_change(root):
+
+    class Playground(Component):
+        namevar = 'version'
+
+        def configure(self):
+            self.venv = VirtualEnv(self.version)
+            self += self.venv
+
+    playground = Playground('2.7')
+    root.component += playground
+    playground.deploy()
+    assert playground.changed
+    playground.deploy()
+    assert not playground.changed
