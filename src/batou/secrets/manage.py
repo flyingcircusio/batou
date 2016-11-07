@@ -109,10 +109,10 @@ def add_user(keyid, environments, fast):
 
 
 def remove_user(keyid, environments, fast):
-    """Add a user to a given environment.
+    """Remove a user from a given environment.
 
-    If environments is not given, a user is added
-    to all environments.
+    If environments is not given, the user is removedd
+    from all environments.
 
     """
     if not os.path.exists('secrets'):
