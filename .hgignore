@@ -40,3 +40,4 @@ src/batou/secrets/tests/fixture/gnupg/random_seed
 TAGS
 tags
 vagrant/.vagrant
+pip-selfcheck.json
