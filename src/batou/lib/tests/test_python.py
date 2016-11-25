@@ -1,5 +1,5 @@
 from batou.component import Component
-from batou.lib.python import VirtualEnv, Package
+from batou.lib.python import VirtualEnv
 from batou.update import update_bootstrap
 from batou.utils import cmd
 import os
@@ -24,40 +24,51 @@ def test_package_venv_installations(root):
 
     # run batou, hope for the best. ;)
     stdout, stderr = cmd('./batou deploy dev')
-    assert "Deploying component py24" in stdout
-    assert "Deploying component py25" in stdout
     assert "Deploying component py26" in stdout
     assert "Deploying component py27" in stdout
-    assert "Deploying component py32" in stdout
     assert "Deploying component py33" in stdout
     assert "Deploying component py34" in stdout
     assert "Deploying component py35" in stdout
     assert stderr == ""
 
 
-@pytest.mark.slow
-@pytest.mark.timeout(60)
-def test_updates_old_distribute_to_setuptools(root):
+def test_venv_updates_if_python_changes(root):
+    import ast
+
     class Playground(Component):
+        namevar = 'version'
+
         def configure(self):
-            self.venv = VirtualEnv('2.6')
+            self.venv = VirtualEnv(self.version)
             self += self.venv
 
-    distribute = Package('distribute', version='0.6.34', timeout=10)
-    setuptools = Package('setuptools', version='0.9.8', timeout=10)
-
-    playground = Playground()
+    playground = Playground('2.6')
     root.component += playground
-    playground.venv += distribute
+    playground.deploy()
+    root.component.sub_components.remove(playground)
+
+    playground = Playground('2.7')
+    root.component += playground
     playground.deploy()
 
-    playground.venv.sub_components.remove(distribute)
-    playground.venv += setuptools
-    playground.deploy()
+    out, err = playground.cmd(
+        '{}/bin/python -c "import sys; print sys.version_info[:2]"'.format(
+            playground.workdir))
+    assert (2, 7) == ast.literal_eval(out)
 
-    # We can't simply call verify, since distribute *still* manages to
-    # manipulate the installation process and update itself, so our version
-    # number is ignored and we get the most recent setuptools. *le major sigh*
-    assert 'distribute-' not in playground.cmd(
-        playground.workdir + '/bin/python -c '
-        '"import setuptools; print setuptools.__file__"')[0]
+
+def test_venv_does_not_update_if_python_does_not_change(root):
+
+    class Playground(Component):
+        namevar = 'version'
+
+        def configure(self):
+            self.venv = VirtualEnv(self.version)
+            self += self.venv
+
+    playground = Playground('2.7')
+    root.component += playground
+    playground.deploy()
+    assert playground.changed
+    playground.deploy()
+    assert not playground.changed

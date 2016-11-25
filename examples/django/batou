@@ -42,7 +42,7 @@ def install_venv():
 
 def install_pip():
     # XXX give advice if we can't get the right pip version
-    cmd('.batou/bin/pip install "pip>=1.4"')
+    cmd('.batou/bin/pip install "pip>=8.0"')
 
 
 base = os.path.dirname(__file__) or '.'
