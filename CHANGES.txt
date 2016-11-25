@@ -2,14 +2,35 @@
 Changelog
 =========
 
-1.3b4 (unreleased)
+1.3.3 (unreleased)
 ==================
+
+- Git: Clean workingcopy before merging changes.
+
+
+1.3.2 (2016-11-02)
+==================
+
+- Make virtualenv files writable before delete. On systems like NixOS the files
+  copied by virtualenv are read-only, hence `rm -rf` cannot remove them (#24427)
+
+
+1.3.1 (2016-10-13)
+==================
+
+- Bug fix: Don't update virtualenv on each run. (#23983)
+
+
+1.3.0 (2016-09-12)
+==================
+
+- Update virtualenv when the Python version changes (#22805)
+
+- Remove support for virtualenv with Python 2.4, 2.5 and 3.2.
 
 - Add way to set arbitrary environment variables in crontab.
 
 - Fix performance issue with git and mercurial Clone components.
-
-- Git: Clean workingcopy before merging changes.
 
 
 1.3b3 (2016-05-30)
