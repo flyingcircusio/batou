@@ -70,7 +70,7 @@ class VirtualEnvPyBase(Component):
         self.assert_cmd('bin/python -c "import pkg_resources"')
 
     def update(self):
-        self.cmd('chmod u+w bin/ lib/ include/ .Python || true')
+        self.cmd('chmod -R u+w bin/ lib/ include/ .Python || true')
         self.cmd('rm -rf bin/ lib/ include/ .Python')
         self.cmd('{} {} {} --python={} {}'.format(
             self.parent.executable,
