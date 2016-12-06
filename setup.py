@@ -10,7 +10,7 @@ import os.path
 
 
 def project_path(*names):
-    return os.path.join(os.path.dirname(__file__), *names)
+    return os.path.join(*names)
 
 
 version = open('src/batou/version.txt').read().strip()
