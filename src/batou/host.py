@@ -159,8 +159,14 @@ class RemoteHost(Host):
         env.repository.update(self)
 
         bootstrap = generate_bootstrap(env.version, env.develop)
+
+        args = []
+        if env.deployment.fast:
+            args.append('--fast')
+        if env.deployment.reset:
+            args.append('--reset')
         self.rpc.build_batou(
-            env.deployment_base, bootstrap, env.deployment.fast)
+            env.deployment_base, bootstrap, args)
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.

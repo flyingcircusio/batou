@@ -26,6 +26,7 @@ General options
       -d, --debug           Enable debug mode. (default: False)
       -F, --fast            Enable fast mode. Do not perform bootstrapping.
                             (default: False)
+      --reset               Reset batou environment. (default: False)
 
 
 batou deploy
