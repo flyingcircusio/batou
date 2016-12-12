@@ -4,6 +4,10 @@ import StringIO
 import fcntl
 import os
 import subprocess
+import tempfile
+
+# https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
+NULL = tempfile.TemporaryFile()
 
 
 NEW_FILE_TEMPLATE = """\
@@ -43,12 +47,12 @@ class EncryptedConfigFile(object):
         self.lockfd.close()
 
     def gpg(self, cmdline):
+        null = tempfile.TemporaryFile()
         for gpg in ['gpg2', 'gpg']:
             try:
                 subprocess.check_call(
                     [gpg, '--version'],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
+                    stdout=null, stderr=null)
             except (subprocess.CalledProcessError, OSError):
                 pass
             else:
@@ -102,7 +106,7 @@ class EncryptedConfigFile(object):
         self.cleartext = subprocess.check_output(
             [self.gpg('{} --decrypt {}'.format(
                 opts, self.encrypted_file))],
-            stderr=subprocess.PIPE,
+            stderr=NULL,
             shell=True)
 
     def get_members(self):

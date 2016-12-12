@@ -37,7 +37,7 @@ And here's a minimal environment::
     $ mkdir environments
     $ cat > environments/dev.cfg
     [environment]
-    mode = local
+    connect_method = local
 
     [hosts]
     localhost = myapp
