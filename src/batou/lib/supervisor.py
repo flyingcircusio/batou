@@ -205,11 +205,12 @@ class Supervisor(Component):
             self += RotatedLogfile('var/log/*.log', postrotate=postrotate)
 
         self += Service('bin/supervisord', pidfile=self.pidfile)
+        service = self._
 
         if self.enable:
-            self += RunningSupervisor()
+            self += RunningSupervisor(service)
         else:
-            self += StoppedSupervisor()
+            self += StoppedSupervisor(service)
 
         # Nagios check
         if self.nagios:
@@ -232,6 +233,8 @@ class RunningSupervisor(Component):
     action = None
     reload_timeout = 60
 
+    namevar = 'service'
+
     def verify(self):
         self.parent.assert_no_changes()
         self.assert_file_is_current(
@@ -249,7 +252,7 @@ class RunningSupervisor(Component):
 
     def update(self):
         if not self.is_running():
-            self.cmd('bin/supervisord')
+            self.service.start()
         else:
             self.reload_supervisor()
         if self.parent.wait_for_running:
