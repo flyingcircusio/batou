@@ -52,6 +52,11 @@ os.chdir(base)
 if 'PYTHONPATH' in os.environ:
     del os.environ['PYTHONPATH']
 
+if '--reset' in sys.argv:
+    print "Resetting batou env ..."
+    cmd('rm -rf .batou')
+
+
 # Do we have a virtualenv?
 if not os.path.exists(base + '/.batou'):
     install_venv()
