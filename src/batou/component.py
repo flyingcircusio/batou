@@ -211,6 +211,7 @@ class Component(object):
 
         self.configure()
         self += self._get_platform()
+        self._platform_component = self._
         self.__setup_event_handlers__()
         self._prepared = True
 
