@@ -24,6 +24,9 @@ def main():
     parser.add_argument(
         '-F', '--fast', action='store_true',
         help='Enable fast mode. Do not perform bootstrapping.')
+    parser.add_argument(
+        '--reset', action='store_true',
+        help='Reset batou environment.')
 
     subparsers = parser.add_subparsers()
 

@@ -5,6 +5,15 @@ import os.path
 import pytest
 
 
+@pytest.yield_fixture(autouse=True)
+def reset_global_vars():
+    yield
+    remote_core.target_directory = None
+    remote_core.environment = None
+    remote_core.deployment = None
+    remote_core.channel = None
+
+
 def test_deployment_and_channel_exist_as_names():
     assert remote_core.channel is None
     assert remote_core.deployment is None
@@ -90,7 +99,9 @@ changeset: 372:revision-b
     assert calls.next() == 'hg id -i'
 
 
-def test_build_batou_fresh_install(mock_remote_core):
+def test_build_batou_fresh_install(mock_remote_core, tmpdir):
+    remote_core.ensure_repository(str(tmpdir), 'hg-pull')
+    remote_core.cmd.reset_mock()
     remote_core.build_batou('.', 'asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 1
