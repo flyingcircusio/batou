@@ -11,7 +11,7 @@ def deploy_platform():
 @pytest.yield_fixture
 def service(root, tmpdir, request, deploy_platform):
     assert not hasattr(batou.lib.service.Service, '_platforms')
-    root.environment.platform = deploy_platform
+    root.host.platform = deploy_platform
 
     @batou.component.platform('test', batou.lib.service.Service)
     class TestPlatformService(batou.component.Component):
@@ -36,7 +36,9 @@ def service(root, tmpdir, request, deploy_platform):
 
 def test_start_delegates_to_platform_component(service, tmpdir):
     service.start()
+    # The platform specific start() was called
     assert service._platform_started
+    # The default implementation was not called
     assert not tmpdir.join('called').check()
 
 

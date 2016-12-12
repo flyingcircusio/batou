@@ -9,6 +9,7 @@ Changelog
 
 - added --reset switch to batou
 
+- Added a way to customize how supervisor is started on different platforms via `start()` on a Service platform component.
 
 1.3.5 (2016-12-06)
 ==================
