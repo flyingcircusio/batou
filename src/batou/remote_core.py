@@ -276,13 +276,18 @@ def git_update_working_copy(branch):
     return id.strip()
 
 
-def build_batou(deployment_base, bootstrap, fast=False):
+def build_batou(deployment_base, bootstrap, batou_args=()):
     target = target_directory
     os.chdir(os.path.join(target, deployment_base))
     with open('batou', 'w') as f:
         f.write(bootstrap)
     os.chmod('batou', 0o755)
-    cmd('./batou {}--help'.format('--fast ' if fast else ''))
+
+    args = ['--help']
+    if batou_args:
+        args.extend(args)
+
+    cmd('./batou {}'.format(' '.join(args)))
 
 
 def setup_deployment(
