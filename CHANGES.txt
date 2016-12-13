@@ -7,6 +7,8 @@ Changelog
 
 - Fix update and secrets commands, to be compatible with `--reset`.
 
+- Fix `batou init`.
+
 
 1.4.0b2 (2016-12-13)
 ====================
