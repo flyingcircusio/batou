@@ -7,10 +7,10 @@ import pkg_resources
 import shutil
 
 
-def main(destination):
+def main(destination, **kw):
     develop = os.environ['BATOU_DEVELOP']
     if develop:
-        output.warn(
+        output.annotate(
             'Initializing with a development copy of batou will cause your '
             'project to have a reference outside its repository. '
             'Use at your own risk. ')
