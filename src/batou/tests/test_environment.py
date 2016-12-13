@@ -219,3 +219,16 @@ platform = specific
     """))
     e.load_hosts(config)
     assert e.hosts['foo'].platform == 'specific'
+
+
+@mock.patch('batou.environment.Environment.add_root')
+def test_load_hosts_single_should_use_env_platform(add_root):
+    e = Environment(u'name')
+    e.platform = mock.sentinel.platform
+    config = Config(None)
+    config.config.readfp(StringIO("""
+[hosts]
+foo = bar
+    """))
+    e.load_hosts(config)
+    assert e.hosts['foo'].platform == mock.sentinel.platform
