@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.4.0b7 (unreleased)
+1.4.0b7 (2016-12-14)
 ====================
 
 - `batou.lib.mysql.User` and `batou.lib.mysql.Grant` use `hostname` for the
