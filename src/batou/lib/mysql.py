@@ -85,13 +85,13 @@ class User(Component):
 
     namevar = 'user'
     password = None
-    host = 'localhost'
+    hostname = 'localhost'
     admin_password = None
 
     def configure(self):
 
         create = self.expand("""\
-CREATE USER '{{component.user}}'@'{{component.host}}';
+CREATE USER '{{component.user}}'@'{{component.hostname}}';
 """)
         create_unless = self.expand("""\
 SELECT *
@@ -99,7 +99,7 @@ FROM user
 WHERE
     User = '{{component.user}}'
     AND
-    Host = '{{component.host}}';
+    Host = '{{component.hostname}}';
 """)
         self += Command(
             create, unless=create_unless, admin_password=self.admin_password)

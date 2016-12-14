@@ -5,7 +5,9 @@ Changelog
 1.4.0b5 (unreleased)
 ====================
 
-- Nothing changed yet.
+- `batou.lib.mysql.User` wrongly overwrote the `host` attribute. The `host`
+  attribute is reserved for host a component is configured on. Use
+  `User(..., hostname=...)` instead.
 
 
 1.4.0b4 (2016-12-14)
