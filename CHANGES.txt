@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.4.0b5 (unreleased)
+1.4.0b5 (2016-12-14)
 ====================
 
 - `batou.lib.mysql.User` wrongly overwrote the `host` attribute. The `host`
