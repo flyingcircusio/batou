@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.4.0b4 (unreleased)
+1.4.0b4 (2016-12-14)
 ====================
 
 - `batou.lib.mysql.Grant` wrongly overwrote the `host` attribute. The `host`
