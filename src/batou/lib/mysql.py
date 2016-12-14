@@ -106,7 +106,7 @@ WHERE
 
         set_password = self.expand("""\
 SET PASSWORD FOR
-    '{{component.user}}'@'{{component.host}}' =
+    '{{component.user}}'@'{{component.hostname}}' =
      PASSWORD('{{component.password}}');
 """)
         self += Command(set_password, admin_password=self.admin_password)
