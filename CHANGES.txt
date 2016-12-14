@@ -5,7 +5,7 @@ Changelog
 1.4.0b6 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Fix setting mysql password
 
 
 1.4.0b5 (2016-12-14)
