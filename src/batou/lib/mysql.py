@@ -116,9 +116,9 @@ class Grant(Command):
 
     namevar = 'grant_db'
     user = ''
-    host = 'localhost'
+    hostname = 'localhost'
     statement = """\
 GRANT ALL
     ON {{component.grant_db}}
-    TO '{{component.user}}'@'{{component.host}}';
+    TO '{{component.user}}'@'{{component.hostname}}';
 """

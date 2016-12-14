@@ -5,7 +5,9 @@ Changelog
 1.4.0b4 (unreleased)
 ====================
 
-- Nothing changed yet.
+- `batou.lib.mysql.Grant` wrongly overwrote the `host` attribute. The `host`
+  attribute is reserved for host a component is configured on. Use
+  `Grant(..., hostname=...)` instead.
 
 
 1.4.0b3 (2016-12-13)
