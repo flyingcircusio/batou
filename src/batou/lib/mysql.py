@@ -85,13 +85,13 @@ class User(Component):
 
     namevar = 'user'
     password = None
-    hostname = 'localhost'
+    allow_from_hostname = 'localhost'
     admin_password = None
 
     def configure(self):
 
         create = self.expand("""\
-CREATE USER '{{component.user}}'@'{{component.hostname}}';
+CREATE USER '{{component.user}}'@'{{component.allow_from_hostname}}';
 """)
         create_unless = self.expand("""\
 SELECT *
@@ -99,14 +99,14 @@ FROM user
 WHERE
     User = '{{component.user}}'
     AND
-    Host = '{{component.hostname}}';
+    Host = '{{component.allow_from_hostname}}';
 """)
         self += Command(
             create, unless=create_unless, admin_password=self.admin_password)
 
         set_password = self.expand("""\
 SET PASSWORD FOR
-    '{{component.user}}'@'{{component.hostname}}' =
+    '{{component.user}}'@'{{component.allow_from_hostname}}' =
      PASSWORD('{{component.password}}');
 """)
         self += Command(set_password, admin_password=self.admin_password)
@@ -116,9 +116,9 @@ class Grant(Command):
 
     namevar = 'grant_db'
     user = ''
-    hostname = 'localhost'
+    allow_from_hostname = 'localhost'
     statement = """\
 GRANT ALL
     ON {{component.grant_db}}
-    TO '{{component.user}}'@'{{component.hostname}}';
+    TO '{{component.user}}'@'{{component.allow_from_hostname}}';
 """
