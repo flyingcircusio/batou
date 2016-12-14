@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.4.0b6 (unreleased)
+1.4.0b6 (2016-12-14)
 ====================
 
 - Fix setting mysql password
