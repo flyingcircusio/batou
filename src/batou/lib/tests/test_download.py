@@ -48,8 +48,8 @@ class DownloadTest(unittest.TestCase):
 @pytest.mark.slow
 def test_downloads_file(root):
     root.component += Download(
-        'https://pypi.python.org/packages/source/b/batou/batou-0.2.zip',
-        checksum='md5:d91efa30c92d1574e1f7d9869bdf566d')
+        'http://speedtest.ftp.otenet.gr/files/test100k.db',
+        checksum='md5:4c6426ac7ef186464ecbb0d81cbfcb1e')
     root.component.deploy()
     assert os.path.isfile(os.path.join(
-        root.environment.workdir_base, 'mycomponent/batou-0.2.zip'))
+        root.environment.workdir_base, 'mycomponent/test100k.db'))
