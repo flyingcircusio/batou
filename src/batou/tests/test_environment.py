@@ -232,3 +232,15 @@ foo = bar
     """))
     e.load_hosts(config)
     assert e.hosts['foo'].platform == mock.sentinel.platform
+
+
+def test_host_data_is_passed_to_host_object():
+    e = Environment(u'name')
+    config = Config(None)
+    config.config.readfp(StringIO("""
+[host:foo]
+components = bar
+data-alias = baz
+    """))
+    e.load_hosts(config)
+    assert 'baz' == e.hosts['foo'].data('alias')

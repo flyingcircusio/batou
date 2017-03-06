@@ -37,8 +37,8 @@ Extended service discovery options (TODO)
 -----------------------------------------
 
 
-Platform-specific components (TODO)
------------------------------------
+Platform-specific components
+----------------------------
 
 Platform-specific components allow to customize behavior depending on the system or "platform" the target system runs as. Examples:
 
@@ -84,6 +84,24 @@ The platform is then defined in the environment::
     # Host specifc override:
     platform = ubuntu
     components = test
+
+
+Host-specific data
+------------------
+
+Host-specifc data allows to set environment depentend data for a certain *host*. It looks like this in an environment configuration::
+
+    [host:myhost00]
+    components = test
+    data-alias = nice-alias.for.my.host.example.com
+
+
+In a component you can access all data attributes via the host's `data()` method::
+
+    def configure(self):
+        alias = self.host.data('alias')
+
+The `data-` prefix was chosed in resemblence of the "HTML standard":http://w3c.github.io/html/dom.html#dom-htmlelement-dataset
 
 
 
