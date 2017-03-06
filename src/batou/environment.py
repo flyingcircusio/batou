@@ -25,6 +25,7 @@ import sys
 
 
 class ConfigSection(dict):
+
     def as_list(self, option):
         result = self[option]
         if ',' in result:
@@ -197,6 +198,10 @@ class Environment(object):
             self._load_host_components(
                 hostname,
                 config[section].as_list('components'))
+            for key, value in config[section].items():
+                if key.startswith('data-'):
+                    key = key.replace('data-', '', 1)
+                    host.data(key, value)
 
     def _load_host_components(self, hostname, component_list):
             components = parse_host_components(component_list)
