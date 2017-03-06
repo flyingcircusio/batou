@@ -2,10 +2,60 @@
 Changelog
 =========
 
-1.4.0b2 (unreleased)
-====================
+1.4.1 (unreleased)
+==================
 
 - Nothing changed yet.
+
+
+1.4.0 (2017-03-06)
+==================
+
+- Minor readability improvement for the parallel connection code. changed yet.
+
+
+1.4.0b7 (2016-12-14)
+====================
+
+- `batou.lib.mysql.User` and `batou.lib.mysql.Grant` use `hostname` for the
+  MySQL *server* and `allow_from_hostname` for granting the client access from.
+
+
+1.4.0b6 (2016-12-14)
+====================
+
+- Fix setting mysql password
+
+
+1.4.0b5 (2016-12-14)
+====================
+
+- `batou.lib.mysql.User` wrongly overwrote the `host` attribute. The `host`
+  attribute is reserved for host a component is configured on. Use
+  `User(..., hostname=...)` instead.
+
+
+1.4.0b4 (2016-12-14)
+====================
+
+- `batou.lib.mysql.Grant` wrongly overwrote the `host` attribute. The `host`
+  attribute is reserved for host a component is configured on. Use
+  `Grant(..., hostname=...)` instead.
+
+
+1.4.0b3 (2016-12-13)
+====================
+
+- Fix update and secrets commands, to be compatible with `--reset`.
+
+- Fix `batou init`.
+
+
+1.4.0b2 (2016-12-13)
+====================
+
+- Fix multiple platforms per environment backward compatibility: honor global
+  platform definition.
 
 
 1.4.0b1 (2016-12-13)
@@ -15,7 +65,8 @@ Changelog
 
 - added --reset switch to batou
 
-- Added a way to customize how supervisor is started on different platforms via `start()` on a Service platform component.
+- Added a way to customize how supervisor is started on different platforms via
+  `start()` on a Service platform component.
 
 1.3.5 (2016-12-06)
 ==================

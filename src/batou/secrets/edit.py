@@ -61,7 +61,7 @@ class Editor(object):
                 self.cleartext = new_clearfile.read()
 
 
-def main(editor, environment, fast):
+def main(editor, environment, **kw):
     """Secrets editor console script.
 
     The main focus here is to avoid having unencrypted files accidentally
