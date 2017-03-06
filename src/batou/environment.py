@@ -178,6 +178,7 @@ class Environment(object):
             hostname = literal_hostname.strip('!')
             host = self.add_host(hostname)
             host.ignore = literal_hostname.startswith('!')
+            host.platform = self.platform
             self._load_host_components(
                 hostname,
                 config['hosts'].as_list(literal_hostname))

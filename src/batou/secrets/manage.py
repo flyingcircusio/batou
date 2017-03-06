@@ -76,7 +76,7 @@ class Environment(object):
         self.summary()
 
 
-def summary(fast):
+def summary(**kw):
     """Secrets editor console script.
 
     The main focus here is to avoid having unencrypted files accidentally
@@ -92,7 +92,7 @@ def summary(fast):
         print
 
 
-def add_user(keyid, environments, fast):
+def add_user(keyid, environments, **kw):
     """Add a user to a given environment.
 
     If environments is not given, a user is added
@@ -108,7 +108,7 @@ def add_user(keyid, environments, fast):
         print
 
 
-def remove_user(keyid, environments, fast):
+def remove_user(keyid, environments, **kw):
     """Remove a user from a given environment.
 
     If environments is not given, the user is removedd

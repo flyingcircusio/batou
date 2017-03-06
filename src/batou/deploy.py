@@ -82,7 +82,9 @@ class Deployment(object):
     def connect(self):
         output.section("Connecting remaining hosts")
         # Consume the connection iterator to establish remaining connections.
-        [t.join() for t in list(self.connections)]
+        connecting = list(self.connections)
+        # Wait for all connections to finish
+        [c.join() for c in connecting]
 
     def deploy(self, predict_only=False):
         if predict_only:
