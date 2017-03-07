@@ -40,6 +40,8 @@ Extended service discovery options (TODO)
 Platform-specific components
 ----------------------------
 
+*New in version 1.4.*
+
 Platform-specific components allow to customize behavior depending on the system or "platform" the target system runs as. Examples:
 
 * Production system on Gentoo, local development on Ubuntu, or
@@ -89,6 +91,8 @@ The platform is then defined in the environment::
 Host-specific data
 ------------------
 
+*New in version 1.5.*
+
 Host-specifc data allows to set environment depentend data for a certain *host*. It looks like this in an environment configuration::
 
     [host:myhost00]
@@ -101,9 +105,7 @@ In a component you can access all data attributes via the host's `data()` method
     def configure(self):
         alias = self.host.data('alias')
 
-The `data-` prefix was chosed in resemblence of the "HTML standard":http://w3c.github.io/html/dom.html#dom-htmlelement-dataset
-
-
+The ``data-`` prefix was chosed in resemblence of the `HTML standard <http://w3c.github.io/html/dom.html#dom-htmlelement-dataset>`_.
 
 
 context manager (TODO)
