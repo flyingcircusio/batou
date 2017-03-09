@@ -201,7 +201,7 @@ class Environment(object):
             for key, value in config[section].items():
                 if key.startswith('data-'):
                     key = key.replace('data-', '', 1)
-                    host.data(key, value)
+                    host.data[key] = value
 
     def _load_host_components(self, hostname, component_list):
             components = parse_host_components(component_list)

@@ -243,4 +243,4 @@ components = bar
 data-alias = baz
     """))
     e.load_hosts(config)
-    assert 'baz' == e.hosts['foo'].data('alias')
+    assert 'baz' == e.hosts['foo'].data['alias']

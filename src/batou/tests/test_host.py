@@ -9,9 +9,6 @@ def host():
 
 
 def test_data_can_set_and_get(host):
-    host.data('foo', 'bar')
-    assert 'bar' == host.data('foo')
-
-
-def test_non_existing_key_returns_None(host):
-    assert host.data('foo') is None
+    # Okay, this test is almost too silly to have it here.
+    host.data['foo'] = 'bar'
+    assert 'bar' == host.data['foo']

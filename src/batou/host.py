@@ -72,7 +72,7 @@ class Host(object):
     def __init__(self, fqdn, environment):
         self.fqdn = fqdn
         self.name = self.fqdn.split('.')[0]
-        self._data = {}
+        self.data = {}
 
         self.rpc = RPCWrapper(self)
         self.environment = environment
@@ -82,12 +82,6 @@ class Host(object):
 
     def roots_in_order(self):
         return self.rpc.roots_in_order()
-
-    def data(self, key, value=_no_value_marker):
-        """Get and set arbitrary data for this host."""
-        if value is _no_value_marker:
-            return self._data.get(key)
-        self._data[key] = value
 
 
 class LocalHost(Host):

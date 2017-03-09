@@ -5,7 +5,7 @@ Changelog
 1.5.0a2 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Change `data-` attribute API to a simple dictionary. This is much more Python like.
 
 
 1.5.0a1 (2017-03-07)
