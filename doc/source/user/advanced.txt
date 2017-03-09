@@ -100,10 +100,10 @@ Host-specifc data allows to set environment depentend data for a certain *host*.
     data-alias = nice-alias.for.my.host.example.com
 
 
-In a component you can access all data attributes via the host's `data()` method::
+In a component you can access all data attributes via the host's `data` dictionary::
 
     def configure(self):
-        alias = self.host.data('alias')
+        alias = self.host.data['alias']
 
 The ``data-`` prefix was chosed in resemblence of the `HTML standard <http://w3c.github.io/html/dom.html#dom-htmlelement-dataset>`_.
 
