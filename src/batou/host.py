@@ -42,7 +42,8 @@ class RPCWrapper(object):
             self.host.channel.send((name, args, kw))
             while True:
                 message = self.host.channel.receive()
-                output.annotate('message: {}'.format(message), debug=True)
+                output.annotate('{}: message: {}'.format(
+                    self.host.fqdn, message), debug=True)
                 type = message[0]
                 if type == 'batou-result':
                     return message[1]
@@ -53,11 +54,20 @@ class RPCWrapper(object):
                     raise ConfigurationError(None)
                 elif type == 'batou-deployment-error':
                     raise DeploymentError()
-                elif type in ['batou-unknown-error']:
+                elif type == 'batou-unknown-error':
                     output.error(message[1])
-                    raise RuntimeError('Remote exception encountered.')
+                    raise RuntimeError(
+                        '{}: Remote exception encountered.'.format(
+                            self.host.fqdn))
+                elif type == 'batou-error':
+                    # Remote put out the details already.
+                    raise RuntimeError(
+                        '{}: Remote exception encountered.'.format(
+                            self.host.fqdn))
                 else:
-                    raise RuntimeError("Unknown message type {}".format(type))
+                    raise RuntimeError(
+                        "{}: Unknown message type {}".format(
+                            self.host.fqdn, type))
         return call
 
 
