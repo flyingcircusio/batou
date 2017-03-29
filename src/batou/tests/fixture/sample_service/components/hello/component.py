@@ -7,7 +7,11 @@ class Hello(Component):
 
     asdf = None
 
+    prov = None
+    req = None
+
     def verify(self):
+        self.log('%s verify: asdf=%s', self, self.asdf)
         if not os.path.exists(self.root.name):
             raise UpdateNeeded()
 
@@ -38,3 +42,25 @@ class Hello5(Hello):
 
 class Hello6(Hello):
     pass
+
+
+class HelloReq(Component):
+
+    def configure(self):
+        self.require('i-need')
+        self.log('Pre sub')
+        self += Sub()
+        self.log('Post sub')
+
+
+class HelloProv(Component):
+
+    def configure(self):
+        self.provide('i-need', self)
+        self.log('Provide')
+
+
+class Sub(Component):
+
+    def configure(self):
+        self.log('Sub!')
