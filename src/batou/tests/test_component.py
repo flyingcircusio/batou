@@ -168,6 +168,20 @@ def test_sub_components_are_deployed_first(root):
     assert [u'2:verify', u'2:update', u'1:verify', u'1:update'] == log
 
 
+def test_log_in_configure_is_stored_on_root_for_later(root):
+
+    class MyComponent(Component):
+
+        namevar = 'id'
+
+        def configure(self):
+            self.log('{}: configure'.format(self.id))
+
+    c1 = MyComponent('1')
+    root.component += c1
+    assert [('1: configure', ())] == c1.root._logs
+
+
 def test_adding_subcomponents_configures_them_immediately(root):
     class MyComponent(Component):
         configured = False

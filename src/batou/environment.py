@@ -293,6 +293,7 @@ class Environment(object):
 
         previous_working_sets = []
         exceptions = []
+        order = []
 
         while working_set:
             exceptions = []
@@ -324,7 +325,7 @@ class Environment(object):
             # have detected a dependency cycle and need to stop.
 
             try:
-                self.roots_in_order()
+                order = self.roots_in_order()
             except CycleError as e:
                 exceptions.append(CycleErrorDetected(e))
 
@@ -347,6 +348,9 @@ class Environment(object):
         # an error.
         if self.resources.unused:
             exceptions.append(UnusedResources(self.resources.unused))
+
+        for root in order:
+            root.log_finish_configure()
 
         self.exceptions.extend(exceptions)
         if self.exceptions:
