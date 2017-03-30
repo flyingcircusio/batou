@@ -265,5 +265,5 @@ Post sub""" == log
 
     log = '\n'.join(c[0][0] for c in output.call_args_list)
     assert """\
-<Hello (localhost) "Hello"> verify: asdf=None
+localhost: <Hello (localhost) "Hello"> verify: asdf=None
      Hello""" == log

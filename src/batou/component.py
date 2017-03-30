@@ -386,6 +386,23 @@ class Component(object):
         pass
 
     def log(self, message, *args):
+        """Log a message to console during deployment.
+
+        The message is %-substituted with *args, if it is put out. and prefixed
+        with the hostname automatically.
+
+        Use this message to add additional status to the deployment output,
+        i.e. "Deploying Version X".
+
+        .. note::
+            During ``configure()`` log messages are *not* put out immediately
+            but only after the configure phase is done, because ``configure()``
+            is called multiple times. Only the logs of the *last* call are put
+            out.
+
+            In ``verify()`` and ``update()`` messages are put out immediately.
+
+        """
         self.root.log(message, *args)
 
     # Event handling mechanics
@@ -919,6 +936,7 @@ class RootComponent(object):
 
     def log(self, msg, *args):
         if self._logs is None:
+            msg = '%s: %s' % (self.host.fqdn, msg)
             output.line(msg % args)
         self._logs.append((msg, args))
 
