@@ -413,7 +413,7 @@ Git
 
 .. code-block:: python
 
-    self += Clone('https://github.com/Pylons/pyramid', revision='tip')
+    self += Clone('https://github.com/Pylons/pyramid', revision='HEAD')
 
 
 .. py:class:: batou.lib.git.Clone(url)
