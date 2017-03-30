@@ -276,6 +276,7 @@ class CmdExecutionError(DeploymentError, RuntimeError):
         self.returncode = returncode
         self.stdout = stdout
         self.stderr = stderr
+        self.args = (cmd, returncode, stdout, stderr)
 
     def report(self):
         output.error(self.cmd)
