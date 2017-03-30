@@ -385,6 +385,26 @@ class Component(object):
         """Exit the component's context."""
         pass
 
+    def log(self, message, *args):
+        """Log a message to console during deployment.
+
+        The message is %-substituted with *args, if it is put out. and prefixed
+        with the hostname automatically.
+
+        Use this message to add additional status to the deployment output,
+        i.e. "Deploying Version X".
+
+        .. note::
+            During ``configure()`` log messages are *not* put out immediately
+            but only after the configure phase is done, because ``configure()``
+            is called multiple times. Only the logs of the *last* call are put
+            out.
+
+            In ``verify()`` and ``update()`` messages are put out immediately.
+
+        """
+        self.root.log(message, *args)
+
     # Event handling mechanics
 
     def __setup_event_handlers__(self):
@@ -890,6 +910,7 @@ class RootComponent(object):
     """
 
     ignore = False
+    _logs = None
 
     def __init__(self, name, environment, host, features, ignore,
                  factory, defdir, workdir, overrides=None):
@@ -904,6 +925,7 @@ class RootComponent(object):
         self.factory = factory
 
     def prepare(self):
+        self._logs = []
         self.component = self.factory()
         if self.features:
             # Only override the default defined on the component class
@@ -911,6 +933,17 @@ class RootComponent(object):
             # combination.
             self.component.features = self.features
         self.component.prepare(self)
+
+    def log(self, msg, *args):
+        if self._logs is None:
+            msg = '%s: %s' % (self.host.fqdn, msg)
+            output.line(msg % args)
+        self._logs.append((msg, args))
+
+    def log_finish_configure(self):
+        for msg, args in self._logs:
+            output.line(msg % args)
+        self._logs = None
 
     def __repr__(self):
         return '<%s "%s" object at %s>' % (

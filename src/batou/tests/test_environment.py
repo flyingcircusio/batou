@@ -193,7 +193,6 @@ components = bar
 
 @mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_multi_should_use_env_platform(add_root):
-    pass
     e = Environment(u'name')
     e.platform = mock.sentinel.platform
     config = Config(None)
@@ -244,3 +243,27 @@ data-alias = baz
     """))
     e.load_hosts(config)
     assert 'baz' == e.hosts['foo'].data['alias']
+
+
+@mock.patch('batou.remote_core.Output.line')
+def test_log_in_component_configure_is_put_out(
+        output, sample_service):
+    e = Environment('test-with-provide-require')
+    e.load()
+    e.configure()
+    log = '\n'.join(c[0][0] for c in output.call_args_list)
+    # Proivde is *always* logged first, due to provide/require ordering.
+    assert """\
+Provide
+Pre sub
+Sub!
+Post sub""" == log
+
+    output.reset_mock()
+    for root in e.roots_in_order():
+        root.component.deploy(True)
+
+    log = '\n'.join(c[0][0] for c in output.call_args_list)
+    assert """\
+localhost: <Hello (localhost) "Hello"> verify: asdf=None
+     Hello""" == log
