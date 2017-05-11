@@ -1,0 +1,46 @@
+.. _api:
+
+Component Python API
+====================
+
+.. module:: batou
+
+This part of the documentation covers all the interfaces of batou you
+can use to develop your deployments.
+
+Component
+---------
+
+.. autoclass:: batou.component.Component
+    :members:
+    :member-order: bysource
+    :special-members: __enter__, __exit__, __add__, __or__
+
+.. autoclass:: batou.component.HookComponent
+    :members:
+    :member-order: bysource
+
+.. autoclass:: batou.component.RootComponent
+    :members:
+    :member-order: bysource
+
+.. autofunction:: batou.component.platform
+
+.. autofunction:: batou.component.handle_event
+
+Attribute (TODO)
+----------------
+
+.. autoclass:: batou.component.Attribute
+    :members:
+    :member-order: bysource
+
+Host (TODO)
+-----------
+
+.. autoclass:: batou.host.Host
+
+Environment (TODO)
+------------------
+
+.. autoclass:: batou.environment.Environment

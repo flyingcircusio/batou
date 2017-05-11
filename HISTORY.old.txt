@@ -1,0 +1,1122 @@
+===================
+Historical releases
+===================
+
+
+1.5.0 (2017-06-23)
+==================
+
+- No changes to 1.5.0a6.
+
+
+1.5.0a6 (2017-05-29)
+====================
+
+- Detect "no change" when using long revision ids in `mercurial.Clone()`.
+
+
+1.5.0a5 (2017-05-21)
+====================
+
+- Fix `git.Clone()` verification of local state, so it only updates from remove
+  if necessary. (#26117)
+
+
+1.5.0a4 (2017-03-30)
+====================
+
+- Add `Component.log()` method to easily put out messages during configure/verify/update.
+
+
+1.5.0a3 (2017-03-09)
+====================
+
+- Improve error reporting in multi host environments.
+
+
+1.5.0a2 (2017-03-09)
+====================
+
+- Change `data-` attribute API to a simple dictionary. This is much more Python like.
+
+
+1.5.0a1 (2017-03-07)
+====================
+
+- Add `data-` attributes to host sections.
+
+
+1.4.0 (2017-03-06)
+==================
+
+- Minor readability improvement for the parallel connection code. changed yet.
+
+
+1.4.0b7 (2016-12-14)
+====================
+
+- `batou.lib.mysql.User` and `batou.lib.mysql.Grant` use `hostname` for the
+  MySQL *server* and `allow_from_hostname` for granting the client access from.
+
+
+1.4.0b6 (2016-12-14)
+====================
+
+- Fix setting mysql password
+
+
+1.4.0b5 (2016-12-14)
+====================
+
+- `batou.lib.mysql.User` wrongly overwrote the `host` attribute. The `host`
+  attribute is reserved for host a component is configured on. Use
+  `User(..., hostname=...)` instead.
+
+
+1.4.0b4 (2016-12-14)
+====================
+
+- `batou.lib.mysql.Grant` wrongly overwrote the `host` attribute. The `host`
+  attribute is reserved for host a component is configured on. Use
+  `Grant(..., hostname=...)` instead.
+
+
+1.4.0b3 (2016-12-13)
+====================
+
+- Fix update and secrets commands, to be compatible with `--reset`.
+
+- Fix `batou init`.
+
+
+1.4.0b2 (2016-12-13)
+====================
+
+- Fix multiple platforms per environment backward compatibility: honor global
+  platform definition.
+
+
+1.4.0b1 (2016-12-13)
+====================
+
+- Support multiple platforms per environment (#12405).
+
+- added --reset switch to batou
+
+- Added a way to customize how supervisor is started on different platforms via
+  `start()` on a Service platform component.
+
+1.3.5 (2016-12-06)
+==================
+
+- Fix installation of batou egg with recend setuptools version (#25089)
+
+
+1.3.4 (2016-11-25)
+==================
+
+- Fix for "make virtualenv files writable" (#24427)
+
+
+1.3.3 (2016-11-25)
+==================
+
+- Git: Clean workingcopy before merging changes.
+
+
+1.3.2 (2016-11-02)
+==================
+
+- Make virtualenv files writable before delete. On systems like NixOS the files
+  copied by virtualenv are read-only, hence `rm -rf` cannot remove them (#24427)
+
+
+1.3.1 (2016-10-13)
+==================
+
+- Bug fix: Don't update virtualenv on each run. (#23983)
+
+
+1.3.0 (2016-09-12)
+==================
+
+- Update virtualenv when the Python version changes (#22805)
+
+- Remove support for virtualenv with Python 2.4, 2.5 and 3.2.
+
+- Add way to set arbitrary environment variables in crontab.
+
+- Fix performance issue with git and mercurial Clone components.
+
+
+1.3b3 (2016-05-30)
+==================
+
+- Fix a crash in case of GnuPG2 is not installed at all.
+
+
+1.3b2 (2016-05-27)
+==================
+
+- Parallelize connect to remote hosts and bootstrapping of remote batou via
+  `./batou deploy`.
+
+- Support remote host/port for MySQL commands.
+
+- Copy virtualenv files instead of symlinking (for Python 2.7 and up).
+  Symlinking breaks especially on NixOS since the symlinks point directly to
+  the store.
+
+- Hide passwords from output of the `Download` component.
+
+- Add `dependencies` to `supervisor.Program`.
+
+- Fix disconnect error in consistency check.
+
+- Support gpg2.
+
+- Download virtualenv via PIP. This fixes an error caused by the PyPI
+  restructuring
+
+1.3b1 (2016-03-09)
+==================
+
+- Provided extended prediction support for deployments. In addition to ``-c``
+  which checks internal consistency of the configuration model you can pass
+  ``-P`` which causes verification to be run and predict which changes
+  will be applied when deploying.
+
+- Enhance support for multi-line members in secret files: order them and
+  indent them automatically. (#13040)
+
+1.2 (2016-01-29)
+================
+
+- Change default of supervisor PID file path to ensure it does something
+  useful out of the box.
+
+  It's still a good idea to place it on a temporary filesystem that is wiped
+  after a reboot to ensure the PID is from a current system environment.
+
+
+1.2b2 (2016-01-29)
+==================
+
+- Remove the deprecated 'remote' command alias.
+
+- Remove implicit dependency of Supervisor to Logrotation and Nagios.
+
+  Supervisor now has the options ``logrotate`` and ``nagios`` that can
+  be enabled per environment.
+
+  **Compatibility note:** if you update from an existing setup with supervisor
+  you should add this to your environments that actually use those features::
+
+    [component:supervisor]
+    logrotate = True
+    nagios = True
+
+  Otherwise environments will complain that the RotatedLogFile and
+  nagios.Service have unsatisfied resource requirements. Alternatively you
+  can drop the ``logrotate`` and ``nrpehost`` or ``nagiosserver`` components
+  in environments where you don't need them.
+
+1.2b1 (2016-01-28)
+==================
+
+- Add more utilities for managing secrets: get an overview of
+  all environments and what user keys are there, automatically
+  add or remove users to all, one, or multiple environments.
+
+- Improve component error reporting.
+
+- Add '--check' flag to deploy command. This causes batou to connect only
+  to the first host and report any configuration errors.
+
+  The target will have their batou repository updated, so here's a friendly
+  reminder that your deployment should not depend on the content of the
+  repository directly but always only on things copied to the work environment.
+
+- Make the '--fast' and '-F' flags more robust.
+
+- Fix up some outdated examples (not all of them, though).
+
+- Fix configuration error reporting. Removing some code that would
+  never get run. Do not report configuration errors as deployment errors.
+
+- Display ignored hosts during connection sequence to make numbers add
+  up and clarify what's going on.
+
+1.1.2 (2016-01-20)
+==================
+
+- Improve error reporting for crontab component.
+
+- Fix error ordering.
+
+- Introduce syntax to disable deployment of hosts and components.
+  Prefix a hostname with '!' or a component name with '!' to have
+  it configured but not deployed. This supports temporary adjustments
+  while keeping a consistent config.
+
+  We mark this red in the output because this really needs to be used
+  carefully.
+
+  It replaces the approach in batou 1.0 where one would set up dummy
+  hosts and use "batou local dev localhost".
+
+1.1.1 (2016-01-11)
+==================
+
+- Fix supervisor's buildout dependency to avoid non-convergence of
+  the pip-installed package.
+
+1.1 (2016-01-03)
+================
+
+- Fix Debian supervisor's pid file attribute.
+
+- Update supervisor to 3.2.
+
+
+1.1.0a12 (2015-11-24)
+=====================
+
+- Fix curl initial bootstrap.
+
+- Allow to set the contact group of the Supervisor service check from
+  the environment::
+
+    [component:supervisor]
+    check_contact_groups = group1, group2
+
+
+1.1.0a11 (2015-11-24)
+=====================
+
+- Allow to set the contact group of the Supervisor service check.
+
+
+1.1.0a10 (2015-11-11)
+=====================
+
+- Sort logfiles for logrotate to avoid superfluous reloading.
+
+
+1.1.0a9 (2015-10-14)
+====================
+
+- Do not implicitly perform attribute conversions when applying overrides.
+  Due to the behaviour of `hasattr` this shadowed conversion exceptions
+  and also performed unnecessary computation or network access (e.g. DNS).
+
+
+1.1.0a8 (2015-10-05)
+====================
+
+- Fix default pip arguments for installing packages. This stops rebuilds of
+  python/buildout components on each run.
+
+- Change default virtualenv download URL to https and use the current FCIO
+  mirror.
+
+
+1.1.0a7 (2015-09-18)
+====================
+
+- Support Git < 2.0
+
+- Add support for managing Python 3.5 environments.
+
+- Update virtualenv to newest version for Python 2.7+ and all
+  Python 3 versions.
+
+- Drop support for Python 3.1.
+
+- Update supervisor: 3.0 -> 3.1.3
+
+  Includes updated dependencies.
+
+- Make socketpath in supervisor configurable.
+
+- Fix broken Python compatibility tests.
+
+
+1.1.0a6 (2015-09-17)
+====================
+
+- Adjust Git repositories to correctly perform fast-forward
+  merges.
+
+- Fix Mercurial repository tests that broke without noticing.
+
+- Add end-to-end test for our new error reporting which got a
+  regression (#17617)
+
+1.1.0a5 (2015-09-09)
+====================
+
+- Fix Mercurial repositories after refactorings for Git broke it.
+
+
+1.1.0a4 (2015-09-06)
+====================
+
+- Actually get pull-based Git repositories to work. Still experimental, though.
+
+
+1.1.0a3 (2015-09-05)
+====================
+
+- Initial support for managing batou projects with git. Git repositories
+  support pull-based and bundle-based shipping.
+
+- Add backwards compatibility for `batou remote` to help users
+  migrate their fingers.
+
+1.1.0a2 (2015-09-03)
+====================
+
+- Fix updating from Batou 1.0
+
+
+1.1.0a1 (2015-09-03)
+====================
+
+- Do request an update for packages installed from requirements.txt within
+  the batou environment to help update VCS checkouts that are pinned.
+
+- Clear PYTHONPATH for bootstrapping to avoid accidental interaction with
+  unclean Python environments.
+
+- Provide '--fast' mode: do not perform bootstrapping.
+
+  This is a first step to improve bootstrapping times. The switch is rather dumb but allows us to work a) offline
+  in some cases and b) develop faster.
+
+- Fix unicode encoding/decoding in File handling. See #14944.
+  (Ported from 1.0)
+
+- Fold the runner invocation for `local` and `remote` into
+  a single `deploy` command:
+
+  $ ./batou deploy <environment>
+
+  By default batou will assume a remote environment. To configure an environment's deployment mode use the `connect_method` attribute in the `environment` section::
+
+      [environment]
+      connect_method = local
+
+- Improve bootstrapping to give developers a better way
+  to get started without installing batou system-wide
+  or in a temporary virtualenv.
+
+- Revamp README and documentation.
+
+- Rework error handling and output management.
+
+  batou will now show more errors at once, suppress unnecessary internal tracebacks and try to prioritize
+  different errors to make complex failure situations
+  easier to ingest.
+
+1.0.2 (2015-02-27)
+==================
+
+- Fix a bundle shipping issue: incorrect language settings caused us to
+  incorrectly parse the list of heads on the remote side.
+
+
+1.0.1 (2015-02-26)
+==================
+
+- Add virtualenv metadata for Python 2.4
+- Keep trailing newlines when rendering templates
+
+
+1.0 (2015-02-10)
+================
+
+- Add 'connect_method = vagrant' to the environment if you want to deploy
+  into vagrant and use the 'vagrant ssh' invocation.
+
+- Update internal buildout, setuptools, and execnet versions.
+
+- Add 'update_method = rsync' to provide a simple, non-VCS specific way
+  of shipping batou definitions to the remote side. This does not perform
+  any conflict resolution and is mainly intended for use with vagrant.
+
+- Supervisor: Assert that a Program should get to state "RUNNING" within
+  ``startsecs`` after restarting, instead of only waiting for ``startsecs``.
+
+
+1.0b33 (2015-01-28)
+===================
+
+- Fix bug in git Clone: Directly after cloning there is nothing to merge,
+  so don't attempt to.
+
+
+1.0b32 (2015-01-22)
+===================
+
+- Fix custom MySQL admin user when executing SQL statements.
+
+
+1.0b31 (2015-01-16)
+===================
+
+- Rename a variable in ServiceCheck that conflicted with NRPEService and
+  prevented custom naming of NRPE checks.
+
+
+1.0b30 (2015-01-09)
+===================
+
+- A special case in error reporting caused `batou local` to exit silently
+  on an error.
+
+- Provide an easier to read error message when encountering non-converging
+  working sets.
+
+- Provide an easier to read error message when encountering cycles
+  in the component dependencies.
+
+- Fix bug in git Clone that caused breakage during update() when a fixed
+  revision was specified.
+
+
+1.0b29 (2014-12-12)
+===================
+
+- Make target directory on remote side configurable via
+  Environment.target_directory (default is ``~/deployment``).
+
+- Improve installation documentation w.r.t more specific instructions for
+  various Linux distributions (deb- and rpm-based).
+
+- Change mode of files before changing content to allow self-fixing broken
+  modes.
+
+- Allow deleting symlinks (on OS X) if they point to directorys.
+
+
+1.0b28 (2014-10-10)
+===================
+
+- batou bootstrap script is more roboust now for cases where the virtualenv becomes
+  broken.
+
+
+1.0b27 (2014-09-15)
+===================
+
+- Do not configure environments locally when running remote deployments. Use
+  order as determined by one reference remote host. #13530
+
+- Nagios configuration now supports contact groups.
+
+
+1.0b26 (2014-08-05)
+===================
+
+- Enhance git Clone component to support the full suite of functionality the
+  mercurial one has (incoming/outgoing/local changes etc.).
+
+  NOTE: This changes ``batou.lib.git.Clone`` in backward-incompatible ways:
+
+  1. The namevar is now only the ``url``. The previously also accepted usage
+     of passing the ``target`` as the namevar no longer works.
+  2. ``update_unpinned`` is gone, use the ``branch``/``revision``/``vcs_update``
+     mechanism instead.
+
+
+1.0b25 (2014-07-31)
+===================
+
+- Improve gpg handling: don't do --no-tty or --batch any longer as we actually
+  only run the gpg code in (local) terminal environments usually.
+
+
+1.0b24 (2014-07-04)
+===================
+
+- Actually fix unzipping.
+
+- Remove environment option ``connect_method``, and use autodetection instead:
+  If we're not the configured ``service_user`` after the plain ssh connect,
+  run sudo.
+
+- Refactor attributes and overrides: attributes allow template expansion now
+  and also converting default values. The Attribute class has moved to the
+  batou component module.
+
+- Yield nonzero returncode on remote exceptions.
+
+- Add convenience converter for attributes "list" to handle comma separated
+  lists of strings.
+
+- Force safety of Nagios service description field: prohibit "," as its not
+  safe for Nagios business processes.
+
+- Allow specifying custom rsync options for SyncDir: the '--inplace' option
+  is a good idea in most cases, but not all. Fixes #11846.
+
+- Make supervisor restart/reload more robust towards non-running supervisors
+  with lying PID files. Fixes #12744.
+
+- Remove harmful decoding step in File verify that caused wrong results.
+
+
+1.0b23 (2014-06-30)
+===================
+
+- Allow unzip to overwrite existing files if the archive has newer copies.
+
+
+1.0b22 (2014-06-30)
+===================
+
+- Fix uncaught import-error on mysql module.
+
+
+1.0b21 (2014-06-30)
+===================
+
+- Fix bug in bundle shipping that made batou depend on the locale (#13465).
+
+- Add MySQL components.
+
+- Introduce batou.utils.Attribute() to avoid imperative type conversions in
+  configure().
+
+1.0b20 (2014-05-13)
+===================
+
+- Start using python-requests for HTTP/S downloads to support authentication
+  (and other goodies).
+
+- Improve error logging.
+
+
+1.0b19 (2014-04-07)
+===================
+
+- Allow specifying alternate find-links in requirements.txt
+
+- Remove remnants of the buildout component's ``extends`` option.
+
+
+
+1.0b18 (2014-03-31)
+===================
+
+- Introduce environment option ``connect_method``, either 'ssh+sudo' (default)
+  or plain 'ssh'.
+
+- Improve update code: existing installations would not update cleanly to a new
+  version due to wrong use of pkg_resources API.
+  Existing installations need to be cleaned manually. :/
+
+- Archive: recognize ``.tar.xz`` files and extract them with ``tar``.
+
+- Fix bug in CMMI verify that would always raise UpdateNeeded due to a path
+  mismatch (#13145).
+
+- Component.cmd() now performs expand() on the given command by
+  default. Saves typing:
+
+    self.cmd('rm -rf {{component.workdir}}')
+
+  instead of
+
+    self.cmd(self.expand('rm -rf {{component.workdir}}'))
+
+- File component: apply character encoding when reading and writing files.
+  (#13165)
+
+- Mercurial clone: changed update behaviour yet again: unless configured
+  differently, always achieve target state, even by losing uncommitted changes.
+
+- Allow unnamed access to the last added/ored component using the
+  'self._' attribute:
+
+  def configure(self):
+      self += Download(...)
+      self += Extract(self._.target)
+
+
+1.0b17 (2013-12-06)
+===================
+
+- Mercurial clone: refuse to update if there are uncommitted changes or
+  outgoing changesets.
+
+- Mercurial clone: added an option to avoid updating existing clones, which is
+  often desirable during development.
+
+
+1.0b16 (2013-11-29)
+===================
+
+- Improve the bootstrap/upgrade fix for #13049: the bootstrap template needed a
+  second improvement.
+
+1.0b15 (2013-11-29)
+===================
+
+- Try to fix #13049 - will only work once the dev version is already at least
+  at b15. Not sure whether it really does the job, though. Hard to test.
+
+- Make environment and host arguments for running ``batou local`` optional.
+  ``dev`` and ``localhost`` are the defaults now. Fixes #13034
+
+- Allow specifying secrets with [component:xy] in addition to [xy] to make it
+  easier to discover when used to the environment overrides. Both options are
+  supported now. Fixes #13003
+
+- Refactor Python virtualenv and package management. Provide explicit knowledge
+  about Python versions 2.4, 2.5, 2.6, 2.7, 3.1, 3.2, and 3.3 to use compatible
+  virtualenv/pip/setuptools versions and commands. Fixes #12941
+
+  NOTE: The API for batou.lib.python.Package has changed in
+  backwards-incompatible ways:
+
+  Package() needs to be added to a VirtualEnv component. Before::
+
+    self += VirtualEnv(...)
+    self += Package(...)
+
+  Now::
+
+    venv = VirtualEnv(...)
+    self += venv
+    venv += Package(...)
+
+  Package parameter ``pip_install_options`` has been renamed to
+  ``install_options``.
+
+- Use ``urllib`` module instead of ``wget`` command for cross platform
+  compatibility.
+
+
+1.0b14 (2013-11-26)
+===================
+
+- Make Buildout component install zc.buildout without dependencies (which is
+  just setuptools), since that can break the version pinning of setuptools.
+
+- Check whether packages required via a ``-e`` expression in the local
+  ``requirements.txt`` are already installed.
+
+- #12946: Make full path to python executable configurable for virtualenv
+  (and buildout) component.
+
+- Remove cleanup code that removes batou-0.2-style virtualenv directories (bin,
+  lib, include etc.) from remote deployments.
+
+- Add mailto setting to crontab component.
+
+- Added some documentation.
+
+
+1.0b13 (2013-11-19)
+===================
+
+- Introduce a plugin mechanism: if a local ``requirements.txt`` file is
+  present, install its contents into the ``.batou`` virtualenv.
+
+- Load components in alphabetical order. This enables importing from other
+  components (when naming the directories appropriately).
+
+- #12986: Only try to unbundle if there actually are changes to unbundle.
+
+- Raise an error if a cron job is configured without a timing value.
+
+- Add platform support for Debian (crontab, logrotate, supervisor).
+
+- Added some documentation.
+
+
+1.0b12 (2013-11-04)
+===================
+
+- Added ``branch`` argument to ``mercurial.Clone``. Setting a branch
+  automatically updates to the branch head on deploy. This is mostly useful for
+  development environments.
+
+- Create the 'secrets' directory if it doesn't exist, yet. Also, disallow
+  editing secret files for non-existing environments.
+
+- Support continuing remote bootstrapping if we failed after creating the
+  initial remote directory but were unable to use Mercurial.
+
+- #12898: build.Configure component was broken when using the default
+  prefix.
+
+
+1.0b11 (2013-10-17)
+===================
+
+- #12897: Use non-SSL pypi mirror for downloading virtualenv to fix tests
+  failing randomly on machines that (for some reason) can't validate PyPI's
+  certificate.
+
+- #12911: Ensure that we can configure file owners when they don't
+  exist during configure phase yet.
+
+- #12912: Fix untested and broken file ownership management.
+
+- #12847: Clean up unicode handling for File and Content components and
+  templating.
+
+- #12910: Remote deployments failed when using bundles for transfers if no
+  changes needed bundling.
+
+- #12766: Allow bootstrapping a batou project in an existing directory to
+  support migration from 0.2.
+
+- #12283: Recognize files as 'is_template' by default. Auto-detect source files
+  in the definition directory if they have the same basename. This is what you
+  want in 99% of all cases. Explicitly stating either the 'content' or 'source'
+  parameter disables auto-detection.
+
+  Now you can write this:
+
+  File('foo')
+
+  and have `components/x/foo` recognized as the source file and handled as a
+  template.
+
+- Use ConfigParser instead of configobj which is effectively unmaintained
+  (see https://twitter.com/voidspace/status/380699699042213889) and support
+  lists separated by newlines in addition to commas.
+
+
+1.0b10 (2013-09-27)
+===================
+
+- Package our own virtualenv instead of depending on the system-installed one.
+  This should alleviate troubles due to old virtualenv versions that package
+  ``distribute``, which causes conflicts with recent ``setuptools`` versions
+  (#12874).
+
+- Update supervisor version to 3.0.
+
+
+1.0b9 (2013-08-22)
+==================
+
+- Update Package component so it ignores installed packages when installing.
+  This way, we actually install setuptools even when distribute is installed.
+  (Otherwise it's a no-op since distribute tells pip that setuptools is
+  already satisfied).
+
+- Fix update process: wrong call to old '.batou/bin/batou' failed and early
+  bootstrapping would downgrade temporarily which is confusing and superfluous.
+  Fixes #12739.
+
+1.0b8 (2013-08-17)
+==================
+
+- Remove superfluous mkdir call during remote bootstrap.
+
+- Make ``batou init`` print that it's working. Bootstrapping can take a while,
+  so at least signal that something's going on.
+
+
+1.0b7 (2013-08-17)
+==================
+
+- Depend on Python2.7 to be available on the PATH during early bootstrap.
+  Otherwise our chances to get a 2.7 virtualenv are pretty small, too.
+
+- Improve project template: ignore the work/ directory by default.
+
+
+1.0b6 (2013-08-17)
+==================
+
+- More MANIFEST inclusions: bootstrap-template.
+
+
+1.0b5 (2013-08-17)
+==================
+
+- Improve MANIFEST so we actually package the init template and other generated
+  files, like version.txt and requirements.txt.
+
+1.0b4 (2013-08-17)
+==================
+
+- Provide a simple project-creation command, both for pip-installed batou's as
+  well as spawning new projects from existing ones. Fixes #12730
+
+- Fix #12679: make timeouts configurable.
+
+- Removed re-imports from batou main module to support light-weight
+  self-installation and bootstrapping. I.e. 'from batou import Component' no
+  longer works.
+
+- Provide a single main command together with a 'bootstrap' wrapper that you
+  can check into your project and that is maintained during updates
+  automatically. It also provides fully automatic bootstrapping, installation,
+  upgrading and other maintenance.
+
+- Fix Python package installation version check.
+
+- Don't use `bin/buildout bootstrap` command anymore. PIP installs a sufficient
+  `bin/buildout` so buildout can do the rest internally.
+
+- Install zc.buildout during bootstrapping phase using PIP to avoid
+  bootstrap.py problems.
+
+- Shorten URLs in the Build component to their basename.
+
+- Add 'assert_cmd' API to support simpler assertions for verify when needing to
+  check the result of an external command.
+
+- Switch to asking pip installing eggs instead of flat installations as
+  namespaces seem to collide otherwise.
+
+- Remove non-functional deprecated 'md5sum' attribute.
+
+- Components are context managers now. If you provide __enter__ it will be
+  called before verify() and if you provide __exit__ this will be called after
+  update (always - even if update isn't actually called). This allows you to
+  manage temporary state on the target system more gracefully. See the
+  DMGExtractor for an example.
+
+- Major refactoring of internal data structures to simplify and improve test
+  coverage. Some breakage to be expected:
+
+  * Components do not have a 'service' attribute any longer. If you need access
+    to the service base directory use 'environment.base_dir'.
+
+- Another attempt at getting convergency for package installation: actually
+  leverage pkg_resources to check what version of a package is installed. PIP
+  does not necessarily list or freeze setuptools, even if forced to reinstall.
+
+- Remove superfluous '--update' from pip calls that would temporarily install
+  the incorrect package version.
+
+- Improve convenience of the 'secrets-edit' wrapper script to allow
+  re-encrypting without re-entering the editor.
+
+- Consistently switch to using setuptools.
+
+- Fix #12399: incorrect stat attributes for Owner and Group
+
+- Add ``exclude`` parameter to Directory component.
+
+- Add ``env`` parameter to ``Component.cmd()`` (and corresponding
+  ``build_environment`` parameter to the Build component) to allow
+  adding/overriding environment variables.
+
+
+1.0b3 (2013-07-09)
+==================
+
+- Enable logging in the remote core to see what's going on on the remote side.
+
+- Try to better format exceptions from the remote side.
+
+- Try harder to get virtualenv back into a working state.
+
+- Allow remote deployments from root of repository.
+
+- Make PIP management more robust.
+
+1.0b2 (2013-07-09)
+==================
+
+- Add component to manage PIP within a virtual env.
+
+- Add component to manage packages with PIP within a virtual env.
+
+- Restructure buildout component to make it more robust regarding
+  setuptools/distribute preparation. Also remove usage of bootstrap completely
+  as we rely on virtualenv anyway.
+
+
+1.0b1 (2013-07-09)
+==================
+
+- Apply semantic versioning: initial development is over, so this is 1.0 now.
+
+- Major revamp of secrets management:
+
+  - switch to GPG (instead of aespipe)
+
+  - turn secrets into a core feature, removing the need for a special component
+
+- Add '--single' to suppress parallel bootstrapping.
+
+
+0.2.9 (2013-07-06)
+==================
+
+- Fix #12527: utils.cmd breaks on spacey arguments and embedded quotes.
+
+- Avoid accidentally creating incorrect directories in developer VFS mapping.
+
+- Switch testrunner to pytest. Refactor some tests to take advantage of its
+  capabilities.
+
+- Clean up PEP8 / pyflakes errors, integrate pytest plugin to ensure continued
+  compliance.
+
+- Clean up buildout versions specifications.
+
+- Fix .dmg extractor to copy symlinks as symlinks.
+
+- Fix remote sudo for Mac OS X target hosts.
+
+
+0.2.8 (2013-06-18)
+==================
+
+- Added archive extractor for .dmg files.
+
+- Added flag for supervisor to control whether global or individual restarts
+  wait until everything is running.
+
+0.2.7 (2013-05-22)
+==================
+
+- Fix template for Nagios check service dependencies.
+
+- Update bootstrap call for batou-internal bootstrapping.
+
+0.2.6 (2013-05-18)
+==================
+
+- Add component that clones from a Mercurial repository.
+
+- Write supervisord.pid into /run/local instead of ${workdir}/var to ensure
+  correct startup after machine crashes.
+
+- Add `ignore_returncode` parameter to Component.cmd() to suppress exceptions
+  on unsuccessful command execution.
+
+
+0.2.5 (2013-04-23)
+==================
+
+- Fix interaction between supervisor programs and disabled supervisors: don't
+  try to start those programs.
+
+
+0.2.4 (2013-04-22)
+==================
+
+- Force reread/update on supervisor after config changes.
+
+
+0.2.3 (2013-04-22)
+==================
+
+- supervisor: wait up to 60 seconds instead of 30 until supervisor responds to
+  a PID after triggering shutdown. Fix bug trying to detect shutdown:
+  RuntimeError would cause residual data in output variables.
+
+- supervisor: after reloading, wait as long as the highest startup delay was
+  configured on a program to avoid subsequent accidental restarts.
+
+- supervisor: remove 'restart' flag: always restart if we have a relevant
+  change.
+
+- supervisor: fix bug in reload logic: path to supervisord.conf was wrong
+
+0.2.2 (2013-04-19)
+==================
+
+- Allow specifying 'configure_args' on cmmi.Build or 'args' on cmmi.Configure.
+
+- Fix supervisor's path lookup for event listeners to support the automatically
+  installed superlance plugins better. This may change again in the future
+  depending on other event listener needs.
+
+
+0.2.1 (2013-04-18)
+==================
+
+- Fix supervisor refactoring: templates contained static paths from my
+  development machine. Event listeners were not formatting the event list
+  correctly.
+
+- Let RunningSupervisor wait (infinitely) long when reloading if the
+  supervisorctl command returns 'SHUTDOWN_STATE'. This supports large
+  installations with many services more gracefully but might get stuck.
+
+- Fix supervisor's Nagios check: I removed the bin/py custom interpreter and
+  didn't notice it was used by the check. Put it back.
+
+0.2 (2013-04-18)
+================
+
+- Lots of stuff that went on unreleased for way too long. Producing a release
+  to allow people to stop running from trunk.
+
+- Buildout component: Allow custom buildout.cfg names and pass the name to
+  bootstrap.
+
+- Improve SSH connection error logging: more readable now and hosts are
+  identifiable. (#12093)
+
+- Do not automatically add missing SSH host keys any longer. (#11606)
+
+- Use python version specific virtualenv, if availble. This helps with ancient
+  Python 2.4 components. For specific virtualenv versions no explicit python
+  executable is passed.
+
+- Internalize download hash handling using hashlib. Allow selection of hash
+  function. (Thanks to Christine Koppelt.)
+
+- Introduce new component modelling approach.
+
+- Start writing documentation.
+
+- Improve error message when download fails due to checksum mismatch.
+
+0.1.3 (unreleased)
+==================
+
+- Leave umask alone. If it must be set for service deployment, we'd better
+  resort to .bashrc or similar.
+
+
+0.1.2 (2012-04-12)
+==================
+
+- `self.config_attr('attribute', 'list')` syntax for list-valued types in
+  configuration files.
+- Call `setlocale` at batou-local startup to initialize locale settings
+  throughout component execution.
+
+
+0.1.1 (2012-04-02)
+==================
+
+- Add support for global find-links in Buildout. If a secret
+  [buildout]find-links is found, it will be put in component.find_links.
+
+
+0.1p2 (2012-04-02)
+==================
+
+- Packaging fix: include test fixtures to enable running tests on
+  installed eggs.
+
+
+0.1p1 (2012-04-02)
+==================
+
+- Correct packaging bugs: missing .txt files etc.
+- Unify license to state 'ZPL' consistently in all places. We used to
+  have a mix of ZPL/BSD license statements.
+
+
+0.1 (2012-04-02)
+================
+
+initial release

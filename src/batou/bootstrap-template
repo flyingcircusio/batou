@@ -1,0 +1,110 @@
+#!/usr/bin/env python2.7
+#
+# This file is managed by batou. Don't edit directly. Use the './batou update'
+# command to adjust versions.
+#
+# This file is intended to be as small as possible getting batou working
+# somehow and then use that code to continue.
+
+import os
+import shutil
+import sys
+import subprocess
+
+# We use this to trick the simple templating so you can
+# download and copy this file to bootstrap a new batou installation.
+BOOTSTRAP_VERSION_MARKER = '{' + '{version}' + '}'
+
+version = os.environ.get('BATOU_VERSION', '{{version}}')
+develop = os.environ.get('BATOU_DEVELOP', '{{develop}}')
+
+
+def cmd(c, quiet=False):
+    try:
+        subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
+    except subprocess.CalledProcessError as e:
+        if not quiet:
+            print("{} returned with exit code {}".format(c, e.returncode))
+            print(e.output)
+        raise
+
+
+def install_venv():
+    print('Preparing virtualenv in .batou ...')
+    # Discover the right venv cmd. Or let batou figure that out later in a
+    # second phase?
+    # XXX Give advice if virtualenv isn't there.
+    for fast in ['-F', '--fast']:
+        while fast in sys.argv:
+            sys.argv.remove(fast)
+    cmd('virtualenv --python=python2.7 .batou')
+
+
+def install_pip():
+    # XXX give advice if we can't get the right pip version
+    cmd('.batou/bin/pip install "pip>=8.0"')
+
+
+base = os.path.dirname(__file__) or '.'
+os.chdir(base)
+
+# clear PYTHONPATH variable to get a defined environment
+if 'PYTHONPATH' in os.environ:
+    del os.environ['PYTHONPATH']
+
+if '--reset' in sys.argv:
+    print "Resetting batou env ..."
+    cmd('rm -rf .batou')
+
+
+# Do we have a virtualenv?
+if not os.path.exists(base + '/.batou'):
+    install_venv()
+
+
+def prepare():
+    global version, develop
+
+    try:
+        install_pip()
+    except Exception:
+        # Hum. This venv is probably broken. Remove and restart."
+        shutil.rmtree('.batou')
+        install_venv()
+        install_pip()
+
+    try:
+        cmd('.batou/bin/python -c \'import batou.bootstrap\'', quiet=True)
+    except Exception:
+        missing = True
+    else:
+        missing = False
+
+    if missing or develop:
+        if missing:
+            print('Pre-installing batou - this can take a while...')
+        if version == BOOTSTRAP_VERSION_MARKER:
+            # we're bootstrapping a new project. just get whatever version.
+            # this will self-destruct this file later. :)
+            develop = ''
+            spec = 'batou --pre'
+        elif develop:
+            spec = '-e {}'.format(develop)
+        else:
+            spec = 'batou=={}'.format(version)
+
+        cmd('.batou/bin/pip install --ignore-installed {}'.format(spec))
+
+
+if '--fast' not in sys.argv and '-F' not in sys.argv:
+    prepare()
+
+
+os.environ['BATOU_VERSION'] = version
+os.environ['BATOU_DEVELOP'] = develop
+
+
+# Pass control over the bare-bone batou's bootstrapping code. Good luck!
+os.execv('.batou/bin/python',
+         ['.batou/bin/python', '-c',
+          'import batou.bootstrap; batou.bootstrap.bootstrap()'] + sys.argv)

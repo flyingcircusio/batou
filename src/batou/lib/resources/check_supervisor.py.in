@@ -1,0 +1,81 @@
+#!{{component.workdir}}/bin/py
+
+"""Check supervisord programs."""
+
+from __future__ import print_function, unicode_literals
+import collections
+import nagiosplugin
+import subprocess
+import re
+
+SUPERVISORCTL = '{{component.workdir}}/bin/supervisorctl'
+
+
+class BucketMeasure(nagiosplugin.Measure):
+    """Specialized measure to evaluate bucket contents."""
+
+    def __init__(self, name, bucket, warning=None, critical=None,
+                 minimum=None, maximum=None):
+        super(BucketMeasure, self).__init__(
+            name, len(bucket), None, warning, critical, minimum, maximum)
+        self.bucket = bucket
+
+    def state(self):
+        s = super(BucketMeasure, self).state()
+        s.messages = ['%s: %s' % (self.name, ', '.join(self.bucket) or '-')]
+        return s
+
+
+class SupervisorCheck(nagiosplugin.Check):
+    """Check that all programs defined in supervisor config are running.
+
+    We define three buckets according to the colors of the supervisor
+    manual at <http://supervisord.org/subprocess.html#process-states>.
+    If there are any programs found in the `undecided` or `inactive`
+    buckets, return WARNING or CRITICAL state respectively.
+    """
+
+    name = 'supervisor'
+    version = '0.1'
+    statemap = dict(
+        STOPPED='inactive',
+        STARTING='active',
+        RUNNING='active',
+        BACKOFF='undecided',
+        STOPPING='inactive',
+        EXITED='inactive',
+        FATAL='inactive',
+    )
+
+    def __init__(self, optparser, logger):
+        self.log = logger
+        self.bucket = collections.defaultdict(list)
+        self.lines = []
+        self.measures = []
+
+    def obtain_data(self):
+        """Parse supervisorctl output."""
+        status = subprocess.check_output([SUPERVISORCTL, 'status'])
+        self.log.info(status)
+        self.lines = status.strip().split('\n')
+        for line in self.lines:
+            # kludge: append '.' in case a line has too few columns
+            program, procstate, _rest = re.split(r'\s+', line + ' .', 2)
+            self.bucket[self.statemap[procstate]].append(program)
+        self.log.debug('buckets: %r' % self.bucket)
+        self.measures = [
+            BucketMeasure('active', self.bucket['active'],
+                          minimum=0, maximum=len(self.lines)),
+            BucketMeasure('undecided', self.bucket['undecided'],
+                          warning='0:0', minimum=0, maximum=len(self.lines)),
+            BucketMeasure('inactive', self.bucket['inactive'],
+                          critical='0:0', minimum=0, maximum=len(self.lines))
+        ]
+
+    def default_message(self):
+        return '%s active programs' % len(self.lines)
+
+
+main = nagiosplugin.Controller(SupervisorCheck)
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,1308 @@
+Quickstart
+==========
+
+Do you want to get started? We'll go through the steps of developing a project
+with batou. The steps are built on top of each other, so if you have trouble
+with a specific step, it might help to review what happened earlier.
+
+Create a new project
+--------------------
+
+Deployments with batou are placed in a new directory. For this tutorial
+we will assume that you're using git as your version control system. Feel
+feel free to follow along using Mercurial -- batou can handle both.
+
+.. code-block:: console
+
+  $ mkdir myproject
+  $ cd myproject
+  $ curl -L https://batou.readthedocs.io/en/latest/batou -o batou
+  $ chmod +x batou
+  $ git init
+  $ git add batou
+  $ git commit
+  $ ./batou
+  Preparing virtualenv in .batou ...
+  Pre-installing batou - this can take a while...
+  Installing Jinja2==2.7.3
+  Installing requests==2.6.0
+  Installing setuptools==18.3.1
+  Installing execnet==1.3.0
+  Installing py==1.4.26
+  usage: batou [-h] [-d] [-F] {deploy,remote,secrets,init,update} ...
+  batou: error: too few arguments
+
+The project is now initialized and batou is ready to be used.
+
+Writing a component configuration
+---------------------------------
+
+Once you bootstrapped your batou project you start modelling your
+configuration. This is done by creating a directory in the ``components``
+directory and a ``component.py`` file in there. You can use those sub-
+directories to group together things that belong to each component:
+
+.. code-block:: console
+
+  $ cd myproject
+  $ mkdir -p components/myapp
+
+In ``components/myapp/component.py`` put the following to manage a very
+simple application:
+
+.. code-block:: python
+  :caption: components/myapp/component.py (v1)
+
+  from batou.component import Component
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      def configure(self):
+          self += File(
+              'tick.sh',
+              mode=0755,
+              content="""\
+  #!/bin/bash
+  while true; do
+    date
+    sleep 1
+  done
+  """)
+
+The component has a ``configure`` method that is used to build a model of your
+configuration as a tree of components. By using the syntax ``self += File(...)``
+you add a File component as a sub-component to your Tick component. Components
+can thus recursively combine configurations into larger, more complex setups.
+
+The order of sub-components is given by the order they are added to their
+parent.
+
+Local environments
+------------------
+
+Now, to deploy this "application" we can specify a local environment to deploy
+directly on the machine you are working on:
+
+.. code-block:: console
+
+  $ mkdir environments
+
+Put the following in ``environments/local.cfg`` to specify a local
+configuration that will deploy the "Tick" component:
+
+.. code-block:: ini
+  :caption: environments/local.cfg (v1)
+
+  [environment]
+  connect_method = local
+
+  [hosts]
+  localhost = tick
+
+Your project now looks like this:
+
+.. code-block:: console
+
+  $ tree
+  .
+  ├── batou
+  ├── components
+  │   └── myapp
+  │       └── component.py
+  └── environments
+      └── local.cfg
+
+You can now deploy this environment:
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  ============================== Preparing ===============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ======================= Configuring first host =========================
+  localhost: Connecting via local (1/1)
+  ===================== Connecting remaining hosts =======================
+  ============================== Deploying ===============================
+  localhost: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Presence(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Mode(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ========================= DEPLOYMENT FINISHED ==========================
+
+When deploying, batou creates a working directory for each component. Your
+project directory now looks like this:
+
+.. code-block:: console
+
+  $ tree
+  .
+  ├── batou
+  ├── components
+  │   └── myapp
+  │       └── component.py
+  ├── environments
+  │   └── local.cfg
+  └── work
+      └── tick
+          └── tick.sh
+
+The application has been copied over to the work directory and the mode has
+been set. We can now use it:
+
+.. code-block:: console
+
+  $ ./work/tick/tick.sh
+  Thu Jan 28 21:47:58 CET 2016
+  Thu Jan 28 21:47:59 CET 2016
+  Thu Jan 28 21:48:00 CET 2016
+  Thu Jan 28 21:48:01 CET 2016
+  Thu Jan 28 21:48:02 CET 2016
+  Thu Jan 28 21:48:03 CET 2016
+  ^C
+
+When running the deployment again, you see that batou knows what has been
+deployed and that no action is necessary:
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  ============================== Preparing ===============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ======================= Configuring first host =========================
+  localhost: Connecting via local (1/1)
+  ===================== Connecting remaining hosts =======================
+  ============================== Deploying ===============================
+  localhost: Deploying component tick ...
+  ========================= DEPLOYMENT FINISHED ==========================
+
+.. note::
+
+  Things in the work directory are generated or data from your application --
+  you should thus add the ``work`` directory to your version control systems'
+  ignore file.
+
+
+Vagrant environments
+--------------------
+
+If you would like to deploy a more complex application, that may involve
+a webserver, databases, and other auxiliary services, you may prefer to
+deploy into a virtual machine, instead of deploying those to your local
+work environment.
+
+For this, batou supports `Vagrant <http://vagrantup.com>`_. Once you have
+Vagrant (and VirtualBox) installed, place a `Vagrantfile` directory in
+your batou project:
+
+.. code-block:: ruby
+  :caption: Vagrantfile
+
+  # -*- mode: ruby -*-
+  # vi: set ft=ruby :
+
+  Vagrant.configure("2") do |config|
+    config.vm.box = "flyingcircus/nixos-15.09-x86_64"
+    config.vm.box_version = ">= 1.2"
+
+    config.vm.network "private_network", ip: "192.168.50.4"
+    config.vm.hostname = "default"
+  end
+
+Now, we add a second environment that uses Vagrant to connect and rsync
+to ensure that our batou project gets synced. The user we want to deploy
+to in a vagrant box is `vagrant` and we specify that as the service user.
+The machine in our Vagrant file is "default", so we use that as the hostname:
+
+.. code-block:: ini
+  :caption: environments/vagrant.cfg
+
+  [environment]
+  connect_method = vagrant
+  update_method = rsync
+  service_user = vagrant
+
+  [hosts]
+  default = tick
+
+The deployment is invoked similar to the local deployment. Getting the
+vagrant machine up and running may take a while, though:
+
+.. code-block:: console
+
+  $ ./batou deploy vagrant
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `vagrant`...
+  main: Verifying repository ...
+       You are using rsync. This is a non-verifying repository --
+       continuing on your own risk!
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  vagrant: Ensuring machines are up ...
+  default: Connecting via vagrant (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  default: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Presence(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Mode(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ====================== DEPLOYMENT FINISHED =======================
+
+Now, the tick component has been deployed on the virtual machine. We can
+connect there and see that the same structure has been deployed as previously
+for our local environment. batou places deployments in the service user's
+home directory in a directory named `deployment` by default:
+
+.. code-block:: console
+
+  $ vagrant ssh
+  [vagrant@nixos:~]$ tree
+  .
+  └── deployment
+      ├── batou
+      ├── components
+      │   └── myapp
+      │       └── component.py
+      ├── environments
+      │   ├── local.cfg
+      │   └── vagrant.cfg
+      ├── Vagrantfile
+      └── work
+          └── tick
+              └── tick.sh
+  [vagrant@nixos:~]$ ./deployment/work/tick/tick.sh
+  Thu Jan 28 21:02:31 UTC 2016
+  Thu Jan 28 21:02:32 UTC 2016
+  Thu Jan 28 21:02:33 UTC 2016
+  ^C
+
+
+Remote environments
+-------------------
+
+To deploy your application into a production environment you will typically
+use SSH to log in to the remote servers. This works similar to Vagrant
+environments. To try this out, you will have to replace the host name you
+see here, with a host that you have access to.
+
+.. note::
+
+  Make sure that the few but important
+  :any:`installation requirements <install>` requirements for remote hosts
+  are satisfied!
+
+Let's add a third environment that uses SSH to connect and rsync
+to ensure that our batou project gets synced. We do not specify the user to
+deploy to, which means batou will use whatever your SSH configuration is set
+up to use. To save some typing (and for some other features) we specify
+a domain name that should be appended to all hosts.
+
+Here's the full environment configuration:
+
+.. code-block:: ini
+  :caption: environments/production.cfg (v2)
+
+  [environment]
+  connect_method = ssh
+  update_method = rsync
+  host_domain = fcio.net
+
+  [hosts]
+  test01 = tick
+
+Now, to deploy to the remote host:
+
+.. code-block:: console
+
+  $ ./batou deploy production
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+       You are using rsync. This is a non-verifying repository --
+       continuing on your own risk!
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  test01.gocept.net: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Presence(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Mode(work/tick/tick.sh)
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ====================== DEPLOYMENT FINISHED =======================
+
+
+Overriding configuration per environment
+----------------------------------------
+
+Every environment is currently deploying the same configuration of our
+application. It often is necessary to customize applications based on the
+environment: either your setup is larger or smaller, or you are using
+a different web address to access it, or ...
+
+To make a component configurable, we add an attribute to the component
+class:
+
+.. code-block:: python
+  :caption: components/myapp/component.py (v2)
+
+  from batou.component import Component, Attribute
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      sleep = Attribute(int, 1)
+
+      def configure(self):
+          self += File(
+              'tick.sh',
+              mode=0755,
+              content="""\
+  #!/bin/bash
+  while true; do
+    date
+    sleep {}
+  done
+  """.format(self.sleep))
+
+Attributes are specified with a conversion function or type, to help batou
+convert them from strings. The second argument given is the default that will
+be used when attribute is not specified explicitly otherwise. The attribute
+can then be accessed as usual during the configure method and include this in
+our application configuration.
+
+To adjust the application for the development environment, we add a new
+section ``[component:tick]`` to the configuration:
+
+.. code-block:: ini
+  :caption: environments/local.cfg (v2)
+
+  [environment]
+  connect_method = local
+
+  [hosts]
+  localhost = tick
+
+  [component:tick]
+  sleep = 10
+
+Now, let's deploy this:
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ====================== DEPLOYMENT FINISHED =======================
+
+  $ cat work/tick/tick.sh
+  #!/bin/bash
+  while true; do
+    date
+    sleep 10
+  done
+
+  $ ./work/tick/tick.sh
+  Fri Jan 29 09:44:18 CET 2016
+  Fri Jan 29 09:44:28 CET 2016
+  ^C
+
+Now, our model specific the default configuration and environment-specific
+overrides allow us to document variations between environments easily.
+
+Templating from files
+---------------------
+
+Currently our application configuration has been written directly in Python
+code. This quickly becomes unwieldy. File components can be used to pull their
+content from files by specifying the ``source`` parameter. The filename is
+relative to the directory that the ``component.py`` is placed in:
+
+.. code-block:: python
+  :caption: components/myapp/component.py (v3)
+
+  from batou.component import Component, Attribute
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      sleep = Attribute(int, 1)
+
+      def configure(self):
+          self += File(
+              'tick.sh',
+              mode=0755,
+              source='tick.sh')
+
+Also, templating with Python format strings is very limited. batou thus
+includes Jinja2 templating, which is enabled by default for all content
+(independent of whether you specify the content inline or in a separate file).
+
+.. code-block:: bash
+  :caption: components/myapp/tick.sh (v1)
+
+  #!/bin/bash
+  while true; do
+    date
+    sleep {{component.sleep}}
+  done
+
+As a simplification, you can leave out the ``source`` parameter if the
+filename of your template is identical to the name you want it to be in the
+work directory:
+
+
+.. code-block:: python
+  :caption: components/myapp/component.py (v4)
+
+  from batou.component import Component, Attribute
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      sleep = Attribute(int, 1)
+
+      def configure(self):
+          self += File('tick.sh', mode=0755)
+
+To disable templating and encoding handling, you can use the ``BinaryFile``
+component:
+
+.. code-block:: python
+
+  from batou.component import Component
+  from batou.lib.file import BinaryFile
+
+  class Example(Component):
+
+      def configure(self):
+          self += BinaryFile('something.zip')
+
+
+Storing secrets as encrypted overrides
+--------------------------------------
+
+To deploy services we need to move secret data, like database passwords,
+third party API tokens, SSL certificates, SSH keys, etc. to the target
+environment. Simply adding those to your deployment scripts has a huge
+drawback:
+
+* it's unsafe to pass the scripts to a third party like Github
+* you can't let others review your code without accidentally revealing those
+* you can't manage which of your colleagues can access development, staging, or
+  production secrets.
+
+batou has a built-in method to store secrets in a secure and flexible fashion:
+secrets are an encrypted version of the overrides we have already used: they
+are stored in one file per environment, in the same format as the environment
+configuration, and they control which of your users have access to them.
+
+To start managing a secret, first add a new override attribute
+``database_password`` to your component:
+
+.. code-block:: python
+  :caption: components/myapp/component.py (v5)
+
+  from batou.component import Component, Attribute
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      database_password = Attribute(str, None)
+      sleep = Attribute(int, 1)
+
+      def configure(self):
+          self += File('tick.sh', mode=0755)
+
+.. code-block:: bash
+  :caption: components/myapp/tick.sh (v2)
+
+  #!/bin/bash
+  while true; do
+    date
+    echo "The database password is {{component.database_password}}"
+    sleep {{component.sleep}}
+  done
+
+Now, to edit the secret, batou provides a set of commands. Let's edit the
+secrets file for our production environment:
+
+.. code-block:: console
+
+  $ ./batou secrets edit production
+
+This opens up your preferred editor and provides you with a template file:
+
+.. code-block:: ini
+  :caption: secrets/production.cfg (decrypted) (v1)
+
+  [batou]
+  members =
+
+The ``members`` option is used to control who the file will be encrypted for --
+and thus who can decrypt it in the future. You can specify any ID that GnuPG
+will accept as a key ID, which usually means you use your email address
+associated with your key.
+
+To get started with GPG, check the
+`GnuPG HOWTOs <https://www.gnupg.org/documentation/howtos.html>`_.
+
+In addition to your own key, you will have to add the IDs of any of your colleagues
+that should be able to access this file.
+
+Adding the database password works similar to the environment overrides. Our
+final file then looks like this:
+
+
+.. code-block:: ini
+  :caption: secrets/production.cfg (decrypted) (v2)
+
+  [batou]
+  members = bob@example.com, alice@example.com
+
+  [component:tick]
+  database_password = AfMhV3EDznGbNnzVdxE8
+
+To finish, save the file and exit your editor. batou will be careful not to
+leave any unencrypted copy of the file around so you do not accidentally check
+in the unencrypted version.
+
+The encrypted version of the file is now stored in ``secrets/production.cfg``
+and might look like this:
+
+
+.. code-block:: hexdump
+  :caption: secrets/production.cfg (encrypted, hexdump -C)
+
+  00000000  85 02 0c 03 e4 fa c7 12  8f d9 8a 97 01 0f fe 32  |...............2|
+  00000010  d0 f7 f2 51 77 b5 89 9c  cb 3f 78 15 94 20 d9 dd  |...Qw....?x.. ..|
+  00000020  7d c3 52 93 e0 cc c5 09  c8 01 bc 32 11 fc 0c d0  |}.R........2....|
+  00000030  04 13 09 47 ab 2b e2 f0  12 51 fe 26 23 84 5d d6  |...G.+...Q.&#.].|
+  00000040  19 28 8f 6b f1 4b dc 39  cb 95 dd 31 52 09 b8 f0  |.(.k.K.9...1R...|
+  00000050  c8 99 0a 86 d3 f1 28 e6  6a 41 39 45 d3 ae 9a 01  |......(.jA9E....|
+  00000060  07 22 7b ce 7d b4 7c d5  22 16 11 8a 1d a5 9f cb  |."{.}.|.".......|
+  00000070  96 50 1e 30 16 ec 45 44  10 c0 73 40 e0 97 23 bf  |.P.0..ED..s@..#.|
+  00000080  ac b9 ea 46 df c4 67 a4  83 ae 4a 24 e4 6e 13 f9  |...F..g...J$.n..|
+  00000090  ad 9d 87 07 59 d4 46 0b  53 80 50 c1 e0 1d 79 be  |....Y.F.S.P...y.|
+  000000a0  53 e5 25 15 de 54 6d 65  be 37 35 81 4d 34 55 35  |S.%..Tme.75.M4U5|
+  000000b0  3c 08 13 db cf 0e e8 f5  9d fb f2 09 ca 22 f2 97  |<............"..|
+  000000c0  8d bb bb 7c 6e e4 b9 7a  92 eb 75 08 43 15 f9 07  |...|n..z..u.C...|
+  000000d0  40 24 a8 8e a1 4d 53 6f  7b fe df 07 d8 89 29 ad  |@$...MSo{.....).|
+  000000e0  a2 df 0d 40 d4 7e 25 b4  b7 cd e9 e8 71 de ff df  |...@.~%.....q...|
+  000000f0  b8 0d 4f bd 83 63 c0 02  88 d2 79 48 f6 05 76 66  |..O..c....yH..vf|
+  00000100  76 b3 44 34 36 74 16 b6  1d f1 c0 38 9a ac 33 e5  |v.D46t.....8..3.|
+  00000110  99 1c 69 10 45 72 28 8f  f8 b5 e1 71 71 fb 8e 8a  |..i.Er(....qq...|
+  00000120  e7 13 a4 0d dc 1e 42 f1  82 c6 83 cf a0 d8 ef e9  |......B.........|
+  00000130  f8 33 0c 8c 10 f8 5a 56  69 47 3f d4 65 57 10 1d  |.3....ZViG?.eW..|
+  00000140  cb 19 4d 51 68 d5 68 fe  82 c1 4f 7b e9 b9 23 12  |..MQh.h...O{..#.|
+  00000150  04 41 a0 88 14 85 27 23  86 92 77 62 7a 20 80 74  |.A....'#..wbz .t|
+  00000160  14 9e c7 e8 82 79 1c 10  04 f5 f4 67 94 b7 3e 8e  |.....y.....g..>.|
+  00000170  30 95 57 ab 0e 20 fb 4a  1f 10 c2 60 38 63 78 41  |0.W.. .J...`8cxA|
+  00000180  38 32 0d 48 35 3e b2 d1  19 9e 37 02 26 6f 11 c3  |82.H5>....7.&o..|
+  00000190  83 8f dd fe 11 12 8b c8  43 96 dd 49 b7 db f1 b7  |........C..I....|
+  000001a0  e9 09 44 8b 23 0d 71 3e  cc f8 a7 d2 e2 79 65 94  |..D.#.q>.....ye.|
+  000001b0  53 36 c6 43 19 df 7d 69  33 cb c0 ab 4c c3 db 7f  |S6.C..}i3...L...|
+  000001c0  b3 8f a9 35 a6 7d fb 94  6f df 04 37 88 44 a4 df  |...5.}..o..7.D..|
+  000001d0  66 39 2d 17 f2 a9 57 60  2f 11 10 ff 43 03 58 4c  |f9-...W`/...C.XL|
+  000001e0  5f bd f1 17 0c e8 c6 60  69 fe 6e 86 65 fa 12 2f  |_......`i.n.e../|
+  000001f0  12 91 80 9e 5d f7 da df  c0 6c 2a 90 40 94 f0 07  |....]....l*.@...|
+  00000200  3e a2 d6 07 83 71 28 e0  d3 26 76 51 d6 23 49 d2  |>....q(..&vQ.#I.|
+  00000210  95 01 24 3c 40 18 2c 05  65 4b c4 4a 86 3f 67 db  |..$<@.,.eK.J.?g.|
+  00000220  ac 5c e8 3e 49 90 5f f9  66 e5 0f 35 ad e8 99 57  |.\.>I._.f..5...W|
+  00000230  13 b5 4a b4 59 38 de a0  1c 89 67 e3 2f 3e b1 d8  |..J.Y8....g./>..|
+  00000240  0b 37 b4 d6 58 ee bf 47  f6 53 64 ed 70 ba 37 f5  |.7..X..G.Sd.p.7.|
+  00000250  be 56 e0 69 52 18 0e 04  ff e4 2d 05 43 c5 a5 4f  |.V.iR.....-.C..O|
+  00000260  04 a5 4e a1 d7 c4 5f 65  02 02 5c 29 fe 2c 34 c5  |..N..._e..\).,4.|
+  00000270  1b 65 4c 88 85 8c 6f ce  15 4e e7 43 2d db fb eb  |.eL...o..N.C-...|
+  00000280  28 b6 b2 2b b1 cc b2 04  1b bd 17 a5 89 5c fd 3f  |(..+.........\.?|
+  00000290  c7 bf 60 df 58 8d 41 35  2a 14 9f e5 99 83 a1 97  |..`.X.A5*.......|
+  000002a0  84 5a 5d ae 83 0e                                 |.Z]...|
+  000002a6
+
+Now, deploying this will cause GPG to be invoked on your local machine (there is no need to install GPG on the remote hosts) and transfer the decrypted secrets securely through
+the SSH connection:
+
+.. code-block:: console
+
+  $ ./batou deploy production
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+       You are using rsync. This is a non-verifying repository --
+       continuing on your own risk!
+  main: Loading secrets ...
+
+  You need a passphrase to unlock the secret key for
+  user: "Bob Sample <bob@example.com>"
+  4096-bit RSA key, ID 4DE34B34, created 2013-10-05 (main key ID 4DE34B34)
+
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  test01.gocept.net: Deploying component tick ...
+       Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+  ====================== DEPLOYMENT FINISHED =======================
+
+  $ ssh test01.fcio.net
+  $ cat ./deployment/work/tick/tick.sh
+  while true; do
+    date
+    echo "The database password is AfMhV3EDznGbNnzVdxE8"
+    sleep 1
+  done
+
+If you deal with a growing number of environments and users, you can use the
+commands ``batou secrets add`` and ``batou secrets remove`` to manage access
+for users to multiple or all environments quickly.
+
+Using version control to ensure consistent deployments
+------------------------------------------------------
+
+Working in a team means that some of your colleagues may be deploying code
+independent of you. Deploying when a colleague may have deployed last Friday
+and forgot to push his code can lead to bad things happening ...
+
+batou supports integrating with Git or Mercurial to verify the repository
+integrity on the target systems. This consists of multiple steps:
+
+1. Ensuring you do not have uncommitted changes and no unpushed commits in
+   your repository.
+
+2. Shipping changes to the remote servers (either via pulling from a central
+   server or using an export/import mechanism if you server has no access
+   to your central repository).
+
+3. Switching to an environment-specific branch.
+
+4. Ensuring the local working copy and the remote working copy
+   are the same.
+
+To leverage those features in batou, you have to select an update method in
+your environment that is not ``rsync``. batou supports ``git-pull``, ``git-
+bundle``, ``hg-pull`` and ``hg-bundle``.
+
+Lets use ``git-bundle`` for this example:
+
+.. code-block:: ini
+  :caption: environments/production.cfg (v1)
+
+  [environment]
+  connect_method = ssh
+  update_method = git-bundle
+  branch = production
+  host_domain = fcio.net
+
+  [hosts]
+  test01 = tick
+
+To deploy to production we now end up with the following workflow:
+
+.. code-block:: console
+
+  $ git checkout -tb production
+  $ git merge master
+  $ ./batou deploy production
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  test01.gocept.net: Deploying component tick ...
+  ====================== DEPLOYMENT FINISHED =======================
+
+Now, if the remote server would have incompatible changes, batou would
+inform you and refuse to deploy until you clean up the situation:
+
+.. code-block:: console
+
+  $ ./batou deploy remote
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  ERROR: LANG=C LC_ALL=C LANGUAGE=C git bundle create /var/folders/
+  24/4w5jy6r532d0k5mgrrgkt0qm0000gn/T/tmp1ezxQj
+  36052b45d6cfd7ec7202cf34301fba76c1360c0e..production
+       Return code: 1
+  STDOUT
+
+  STDERR
+       fatal: Invalid revision range
+        36052b45d6cfd7ec7202cf34301fba76c1360c0e..production
+       error: rev-list died
+
+  ======================= DEPLOYMENT FAILED ========================
+
+.. note::
+
+  The error message may be cryptic at times, depending on the error situation of
+  your version control system, but you'll get the gist to look at the repository
+  situation.
+
+
+Downloading and building software
+---------------------------------
+
+A typical action that you encounter when configuring software is to download
+and compile them. This is also known as the "CMMI" method: configure, make,
+make install.
+
+batou provides a standard library component that subsumes downloading and
+building standard packages:
+
+.. code-block:: python
+  :caption: components/zlib/component.py
+
+  from batou.component import Component
+  from batou.lib.cmmi import Build
+
+  class Zlib(Component):
+
+    def configure(self):
+      self += Build(
+        'http://zlib.net/zlib-1.2.8.tar.gz',
+        checksum='md5:1142191120b845f4ed8c8c17455420ac')
+
+Deploying this demonstrates how the build component includes sub-components,
+which you can also use to perform more fine-grained builds:
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component zlib ...
+     Zlib > Build(zlib-1.2.8.tar.gz) > Extract(zlib-1.2.8.tar.gz) >
+        Untar(zlib-1.2.8.tar.gz) > Directory(work/zlib/zlib-1.2.8)
+     Zlib > Build(zlib-1.2.8.tar.gz) > Extract(zlib-1.2.8.tar.gz) >
+        Untar(zlib-1.2.8.tar.gz)
+     Zlib > Build(zlib-1.2.8.tar.gz) >
+        Configure(/private/tmp/myproject/work/zlib/zlib-1.2.8)
+     Zlib > Build(zlib-1.2.8.tar.gz) >
+        Make(/private/tmp/myproject/work/zlib/zlib-1.2.8)
+  localhost: Deploying component tick ...
+  ====================== DEPLOYMENT FINISHED =======================
+
+
+Managing Python environments with VirtualEnv and Pip
+----------------------------------------------------
+
+Installing Python software has some best practices, that involve managing
+virtual environments, using Pip or zc.buildout. batou provides components
+that let you manage virtual environments (and automatically update them
+and keep them in order) for different Python versions.
+
+batou includes pre-defined versions of virtualenv and Pip for the various
+supported Python versions.
+
+Here is how a component installing Python packages looks like:
+
+.. code-block:: python
+  :caption: components/flask/component.py (v1)
+
+  from batou.component import Component
+  from batou.lib.python import VirtualEnv, Package
+
+
+  class Flask(Component):
+
+      def configure(self):
+          venv = VirtualEnv('2.7')
+          self += venv
+
+          venv += Package('Flask', version='0.10.1')
+          
+          
+Add the "Flask" compoment to your local configuration:
+
+.. code-block:: ini
+  :caption: environments/local.cfg (v3)
+
+  [environment]
+  connect_method = local
+
+  [hosts]
+  localhost = tick, flask
+
+  [component:tick]
+  sleep = 10
+
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component tick ...
+  localhost: Deploying component zlib ...
+  localhost: Deploying component flask ...
+    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7 >
+      VirtualEnvDownload(13.1.2) > Download(https://pypi.fcio.net/packages/source/v/virtualenv/virtualenv-13.1.2.tar.gz)
+    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7 >
+      VirtualEnvDownload(13.1.2) > Extract(virtualenv-13.1.2.tar.gz) >
+      Untar(virtualenv-13.1.2.tar.gz)
+    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7 > VirtualEnvDownload(13.1.2)
+    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7
+    Flask > VirtualEnv(2.7) > Package(Flask==0.10.1)
+  ====================== DEPLOYMENT FINISHED =======================
+
+.. note::
+
+  Due to the ``work`` directory separation for each component you can easily
+  manage many different virtual environments with different packages and
+  different Python versions.
+
+
+Managing Python environments with zc.buildout
+---------------------------------------------
+
+If you manage your Python environment with zc.buildout, you can automate that
+easily as well. Place your ``buildout.cfg`` next to your component.py and
+use the following component:
+
+.. code-block:: python
+  :caption: components/flask/component.py (v2)
+
+  from batou.component import Component
+  from batou.lib.python import VirtualEnv, Package
+
+
+  class Flask(Component):
+
+      def configure(self):
+          venv = VirtualEnv('2.7')
+          self += venv
+
+          venv += Package('Flask', version='0.10.1')
+
+
+.. code-block:: ini
+  :caption: components/flask/buildout.cfg
+
+  [buildout]
+  parts = flask
+  allow-picked-versions = false
+  versions = versions
+
+  [flask]
+  recipe = zc.recipe.egg
+  eggs = Flask
+
+  [versions]
+  zc.recipe.egg = 2.0.3
+  zc.buildout = 2.5.0
+  setuptools = 19.6.1
+  Flask = 0.10.1
+  itsdangerous = 0.24
+  Jinja2 = 2.8
+  Werkzeug = 0.11.3
+  MarkupSafe = 0.23
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component flask ...
+     Flask > Buildout > File(work/flask/buildout.cfg) >
+        Presence(work/flask/buildout.cfg)
+     Flask > Buildout > File(work/flask/buildout.cfg) >
+        Content(work/flask/buildout.cfg)
+     Flask > Buildout > VirtualEnv(2.7) > VirtualEnvPy2_7
+     Flask > Buildout > VirtualEnv(2.7) > Package(setuptools==19.6.1)
+     Flask > Buildout > VirtualEnv(2.7) > Package(zc.buildout==2.5.0)
+     Flask > Buildout
+  ====================== DEPLOYMENT FINISHED =======================
+
+
+Registering programs with supervisor
+------------------------------------
+
+If you're used to running your programs in supervisor, batou can help you with
+a pre-made Supervisor component. You can simply enable it by importing it
+into a component file and registering it with your environment:
+
+.. code-block:: python
+  :caption: components/supervisor/component.py
+
+  from batou.lib.supervisor import Supervisor
+
+.. code-block:: ini
+  :caption: environments/local.cfg (v4)
+
+  [environment]
+  connect_method = local
+
+  [hosts]
+  localhost = tick, supervisor
+
+To make your program run within supervisor, you register it by configuring
+a program component:
+
+.. code-block:: python
+  :caption: components/myapp/component.py (v6)
+
+  from batou.component import Component, Attribute
+  from batou.lib.file import File
+  from batou.lib.supervisor import Program
+
+  class Tick(Component):
+
+      sleep = Attribute(int, 1)
+
+      def configure(self):
+          self += File('tick.sh', mode=0755)
+          self += Program('tick', command='tick.sh')
+
+Deploying it enables supervisor in its own virtualenv and starts the
+registered program:
+
+.. code-block:: console
+
+  $ ./batou deploy local
+  batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `local`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  localhost: Connecting via local (1/1)
+  =================== Connecting remaining hosts ===================
+  =========================== Deploying ============================
+  localhost: Deploying component supervisor ...
+    Supervisor > Buildout > File(work/supervisor/buildout.cfg) >
+      Presence(work/supervisor/buildout.cfg)
+    Supervisor > Buildout > File(work/supervisor/buildout.cfg) >
+      Content(work/supervisor/buildout.cfg)
+    Supervisor > Buildout > VirtualEnv(2.7) > VirtualEnvPy2_7
+    Supervisor > Buildout > VirtualEnv(2.7) >
+      Package(setuptools==19.2)
+    Supervisor > Buildout > VirtualEnv(2.7) >
+      Package(zc.buildout==2.5.0)
+    Supervisor > Buildout
+    Supervisor > Directory(work/supervisor/etc/supervisor.d)
+    Supervisor > File(work/supervisor/etc/supervisord.conf) >
+      Presence(work/supervisor/etc/supervisord.conf)
+    Supervisor > File(work/supervisor/etc/supervisord.conf) >
+      Content(work/supervisor/etc/supervisord.conf)
+    Supervisor > Directory(work/supervisor/var/log)
+    Supervisor > RunningSupervisor
+  localhost: Deploying component tick ...
+    Tick > Program(tick) > File(work/supervisor/etc/supervisor.d/tick.conf)
+      > Presence(work/supervisor/etc/supervisor.d/tick.conf)
+    Tick > Program(tick) > File(work/supervisor/etc/supervisor.d/tick.conf)
+      > Content(work/supervisor/etc/supervisor.d/tick.conf)
+    Tick > Program(tick)
+  ====================== DEPLOYMENT FINISHED =======================
+  $ ./work/supervisor/bin/supervisorctl
+  tick                             RUNNING   pid 30992, uptime 0:01:37
+  supervisor> ^D
+
+
+Working with network addresses
+------------------------------
+
+Network addresses in batou typically appear in various config files:
+for clients to find their servers and for servers to configure their bind
+addresses.
+
+A good practice is to use hostnames when configuring a client, so the IP of
+the server can be dynamically resolved when connecting. For servers, bind
+addresses should be configured with IPs because resolvers may not be
+reachable at the time the server is started and the server may not start
+reliably under that condition.
+
+batou has a utility object ``Address`` that can be used for doing DNS lookups
+depending on what you're doing:
+
+.. code-block:: pycon
+
+    >>> from batou.utils import Address
+    >>> address = Address('localhost', 8080)
+    >>> str(address.listen)
+    '127.0.0.1:8080'
+    >>> str(address.connect)
+    'localhost:8080'
+
+You can also use the ``Address`` type for converting overrides automatically:
+
+.. code-block:: python
+
+    from batou.component import Component, Attribute
+    from batou.utils import Address
+
+    class MyApp(Component):
+
+        address = Attribute(Address, 'localhost:8080')
+
+To have services talk to each other on different machines, you can use the
+``host`` attribute of a component to get the name of the host that the
+component is configured on. Specifically we recommend using ``host.fqdn``,
+which can be used with the built-in Jinja2 templating:
+
+.. code-block:: python
+
+    from batou.component import Component, Attribute
+    from batou.utils import Address
+
+    class MyApp(Component):
+
+        address = Attribute(Address, '{{host.fqdn}}:8080')
+
+        # address is now environment- and host-specific, e.g.:
+        # address == Address('test01.fcio.net', 8080)
+
+To override this attribute in an environment configuration you simply do
+a regular override using templating:
+
+.. code-block:: ini
+
+  [component:myapp]
+  address = {{host.fqdn}}:9000
+
+or static addresses:
+
+.. code-block:: ini
+
+  [component:myapp]
+  address = 192.168.0.1:8080
+
+
+Registering and discovering services
+------------------------------------
+
+If you deploy your application on multiple hosts, you need to communicate
+between components what is configured where and how often. For example,
+to configure a load balancer, you need to see where the application servers
+are installed.
+
+batou provides an API that allows a component to ``provide`` a resource
+and other components to ``require`` a resource. This API has the following
+features:
+
+* handling scalars (single values) and list-oriented resources
+* filtering for resources by key and by host
+* warning if provided resources are never used
+* warning if required resources are never provided
+* warning if multiple resources are provided where exactly one is expected
+
+Additionally, batou orders components based on their resource requirements:
+a component that provides a resource will be deployed before the component
+requiring it. This has component granularity, so batou may switch deploying
+components between hosts if that is what the dependencies require.
+
+To provide a resource, you call ``provide`` with a key (that you can define
+as you like.)
+
+.. code-block:: python
+
+    from batou.component import Component, Attribute
+    from batou.utils import Address
+
+    class MyApp(Component):
+
+        address = Attribute(Address, '{{host.fqdn}}:8080')
+
+        def configure(self):
+            self.provide('application', self.address)
+
+If you call ``provide`` from multiple components, then batou will automatically
+maintain a list of those items.
+
+To get the registered resources for a key, you call ``require`` with the
+key you are interested in:
+
+.. code-block:: python
+
+    from batou.component import Component
+    from batou.lib.file import File
+
+    class Loadbalancer(Component):
+
+        def configure(self):
+            application_servers = self.require('application')
+
+            self += File('loadbalancer', content='''\
+    {% for server in component.application_servers %}
+    server connect={{server.connect}}
+    {% endfor %}
+    ''')
+
+To filter for resources from the same host as your component and you
+expect a single value, you can do this:
+
+.. code-block:: python
+
+    from batou.component import Component
+
+    class Nginx(Component):
+
+        def configure(self):
+            varnish = self.require_one('varnish', host=self.host)
+
+
+.. note::
+
+    You can pick keys as you like, but if you re-used standard components
+    then you may need to consider collisions.
+
+Checking a deployment configuration before running it
+-----------------------------------------------------
+
+If you are ready to deploy something but want to wait until a certain point in
+time, then you can use ``-c`` (aka ``--consistency-only``) with the deployment
+to see whether the configuration for the target environment is consistent
+without performing any action. This lets you debug your deployments early in
+the release cycle:
+
+.. code-block:: console
+
+  $ ./batou deploy -c production
+  batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  ========================= CHECK FINISHED =========================
+
+If the check fails you get the error message that you would otherwise have
+gotten when running the deployment for real:
+
+.. code-block:: console
+
+  $ ./batou deploy -c production
+  batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  =========================== Preparing ============================
+  main: Loading environment `production`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ===================== Configuring first host =====================
+  test01: Connecting via ssh (1/1)
+  ERROR: Overrides for undefined attributes
+             Host: test01
+        Component: Tick
+       Attributes: foobar
+  ERROR: Unused provided resources
+       supervisor: [<Supervisor (test01) "Supervisor">]
+  ERROR: 1 remaining unconfigured component(s)
+  ================ 3 ERRORS - CONFIGURATION FAILED =================
+  ========================== CHECK FAILED ==========================
+
+
+Predicting the changes a deployment will cause
+----------------------------------------------
+
+In addition to performing a consistency check, you can also perform a
+prediction which changes would during a deployment. This is more expensive than
+a pure consistency check, because it connects to all hosts and runs all
+``verify()`` commands. However, it gives you a rough estimate of the changes
+that would happen.
+
+.. code-block:: console
+
+    $ ./batou deploy tutorial -P
+    batou/1.3b1.dev0 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+    ============================ Preparing ============================
+    main: Loading environment `tutorial`...
+    main: Verifying repository ...
+    main: Loading secrets ...
+    ====================== Configuring first host =====================
+    localhost: Connecting via local (1/1)
+    ==================== Connecting remaining hosts ===================
+    ================== Predicting deployment actions ==================
+    localhost: Deploying component tick ...
+         Tick > File(work/tick/tick.sh) > Content(work/tick/tick.sh)
+    localhost: Deploying component supervisor ...
+         Supervisor
+    ================== DEPLOYMENT PREDICTION FINISHED =================
+
+
+The prediction assumes that an exception during ``verify()`` indicates
+that a previous component that had changes would have performed an
+action that would trigger the component with a failing verification to
+perform an update. Under very specific conditions this could also be
+a real error when deploying, but in most cases this is not true.
+
+**batou can not predict all possible changes**, especially if you depend on
+timestamps of files on the disk that are updated due to performing an
+action (which doesn't happen when predicting).
+
+Remember, the prediction is intended to give you a rough estimate in which top-
+level components you can expect changes. There should always be an indicator
+for some change if a component is affected. After that you can consider the
+implications, e.g. to determine when would be a good time to run the deployment
+if you expect downtime.
+
+
+Updating batou in an existing project
+-------------------------------------
+
+You can update batou to a specific version for your project with a single
+command:
+
+.. code-block:: console
+
+  $ ./batou update --version 1.2
+  Updating batou to 1.2
+  See the changelog at https://batou.readthedocs.io/en/latest/changes.html
+
+  $ git add batou
+  $ git commit -m 'Update batou to 1.2'
+
+Now, check in the changed ``batou`` file and all your colleagues will
+get the new batou version automatically the next time the pull and run
+``batou``.
+

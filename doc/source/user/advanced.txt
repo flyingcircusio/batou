@@ -1,0 +1,154 @@
+Advanced Usage
+==============
+
+
+Writing a custom component (TODO)
+---------------------------------
+
+
+
+Multiple components in a single component.py (TODO)
+---------------------------------------------------
+
+Skipping individual hosts or components when deploying (TODO)
+-------------------------------------------------------------
+
+
+Events (TODO)
+-------------
+
+
+Using bundle transfers if the repository server is not reachable from your remote server (TODO)
+-----------------------------------------------------------------------------------------------
+
+Timeout (TODO)
+--------------
+
+
+
+VFS mapping for development (TODO)
+----------------------------------
+
+VFS mapping with explicit rewrite rules (TODO)
+----------------------------------------------
+
+
+Extended service discovery options (TODO)
+-----------------------------------------
+
+
+Platform-specific components
+----------------------------
+
+*New in version 1.4.*
+
+Platform-specific components allow to customize behavior depending on the system or "platform" the target system runs as. Examples:
+
+* Production system on Gentoo, local development on Ubuntu, or
+* All VMs on Ubuntu but Oracle is being  run with RedHat.
+
+To define a platform specific aspects, you use the `platform` class decorator. Example::
+
+    import batou.component
+    import batou.lib.file
+
+
+    class Test(batou.component.Component):
+
+        def configure(self):
+            self += batou.lib.file.File('base-component')
+
+
+    @batou.component.platform('nixos', Test)
+    class TestNixos(batou.component.Component):
+
+        def configure(self):
+            self += batou.lib.file.File('i-am-nixos')
+
+
+    @batou.component.platform('ubuntu', Test)
+    class TestUbuntu(batou.component.Component):
+
+        def configure(self):
+            self += batou.lib.file.File('i-am-ubuntu')
+
+The platform is then defined in the environment::
+
+    [environment]
+    platform = default-platform
+
+    [host:nixos]
+    # Host specifc override:
+    platform = nixos
+    components = test
+
+    [host:ubuntu]
+    # Host specifc override:
+    platform = ubuntu
+    components = test
+
+
+Host-specific data
+------------------
+
+*New in version 1.5.*
+
+Host-specifc data allows to set environment depentend data for a certain *host*. It looks like this in an environment configuration::
+
+    [host:myhost00]
+    components = test
+    data-alias = nice-alias.for.my.host.example.com
+
+
+In a component you can access all data attributes via the host's `data` dictionary::
+
+    def configure(self):
+        alias = self.host.data['alias']
+
+The ``data-`` prefix was chosen in resemblance of the `HTML standard <http://w3c.github.io/html/dom.html#dom-htmlelement-dataset>`_.
+
+
+
+DNS overrides
+-------------
+
+*New in version 1.6*
+
+When migrating services automatic DNS lookup of IP addresses to listen on can be cumbersome. You want to deploy the service before the DNS changes become active. This is where DNS overrides can help.
+
+The DNS overrides short circuit the resolving completely for the given host names.
+
+Example::
+
+    [environment]
+    ...
+
+    [resolver]
+    www.example.com =
+        3.2.1.4
+        ::2
+
+Whenever batou *configuration* (i.e. ``batou.utils.Address``) looks up ``www.example.com`` it will result in the addresses ``3.2.1.4`` and ``::2``.
+
+
+The overrides support IPv4 and IPv6. You should only set one IP address per type for each host name.
+
+.. NOTE:: You *cannot* override the addresses of the configured hosts. The SSH connection will always use genuine name resolving.
+
+
+context manager (TODO)
+----------------------
+
+last_updated (TODO)
+-------------------
+
+prepare, ``|=``, ``component._`` (TODO)
+---------------------------------------
+
+workdir overriding (TODO)
+-------------------------
+
+batou.c (TODO)
+--------------
+
+ordered alphabetically (significant for imports)

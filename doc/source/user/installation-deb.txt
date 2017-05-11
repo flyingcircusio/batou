@@ -1,0 +1,142 @@
+Install batou's requirements on Debian / Ubuntu / Mint
+------------------------------------------------------
+
+Depending on you specific distribution, software packages either need to be
+installed using ``apt-get`` or ``aptitude``. ``apt-get`` is more specific to
+Ubuntu and its derivates, whereas ``aptitude`` is typically used on Debian. In
+our examples below, we will stick to ``apt-get``.
+
+Python 2.7
+~~~~~~~~~~
+
+In many distributions, Python 2.7 should ship as the default system Python and
+should therefore already be installed. If not, you can install it by executing:
+
+.. code-block:: bash
+
+	sudo apt-get install python2.7-dev
+
+.. note:: Although installing using ``sudo apt-get install python2.7`` would be
+	sufficient, we choose to ``python2.7-dev`` because having the additional
+	development packages installed does not hurt and may help in situations
+	that require functionality that is not included in the base package.
+
+virtualenv
+~~~~~~~~~~
+
+virtualenv creates isolated environments for Python, where you can install and
+upgrade libraries isolated from the system libraries and other environments on
+the system. You can install virtualenv by executing:
+
+.. code-block:: bash
+
+	sudo apt-get install python-virtualenv
+
+Mercurial
+~~~~~~~~~
+
+Mercurial is a distributed source control management tool. You can install
+Mercurial by executing:
+
+.. code-block:: bash
+
+	sudo apt-get install mercurial
+
+SSH client
+~~~~~~~~~~
+
+The OpenSSH client should ship with nearly any distribution and should already
+be installed. If not, you can install it by executing:
+
+.. code-block:: bash
+
+	sudo apt-get install openssh-client
+
+Git
+~~~
+
+Git is a distributed revision control and source code management system. You can
+install Git by executing:
+
+.. code-block:: bash
+
+	sudo apt-get install git
+
+In some cases you may want more functionality than the basic ``git`` package
+offers. To get a list of software packages related to ``git``, execute:
+
+.. code-block:: bash
+
+	sudo apt-cache search . | grep ^git
+
+You can then install the respective package with ``apt-get`` like we did for
+``git``.
+
+make
+~~~~
+
+GNU Make is a tool which controls the generation of executables and other
+non-source files of a program from the program's source files. It is typically
+available on nearly any Linux distribution.
+
+Since it is heavily involved in self-compiling software, it is advisable to
+additionally install a useful set of packages that helps compiling software:
+
+.. code-block:: bash
+
+	sudo apt-get install build-essential
+
+NRPE
+~~~~
+
+NRPE is an add-on for Nagios that allows you to execute plugins and commands on
+remote Linux/Unix machines. NRPE can be installed by executing:
+
+.. code-block:: bash
+
+	sudo apt-get install nagios-nrpe-server
+
+rsync
+~~~~~
+
+rsync is a file synchronization and file transfer program for Unix-like systems.
+You can install rsync by executing:
+
+.. code-block:: bash
+
+	sudo apt-get install rsync
+
+Subversion
+~~~~~~~~~~
+
+Subversion is a software versioning and revision control system. To install it,
+execute:
+
+.. code-block:: bash
+
+	sudo apt-get install subversion
+
+.. note:: Additionally installing the package ``subversion-tools`` may be
+	helpful when you need more functionality and helper tools for
+	Subversion.
+
+UnZip
+~~~~~
+
+UnZip is an extraction utility for archives compressed in .zip format. You can
+install it by executing:
+
+.. code-block:: bash
+
+	sudo apt-get install unzip
+
+Tar
+~~~
+
+GNU Tar provides the ability to create tar archives, as well as various other
+kinds of manipulation. It should already ship with nearly any Linux
+distribution. If not, you can install it by executing:
+
+.. code-block:: bash
+
+	sudo apt-get install tar

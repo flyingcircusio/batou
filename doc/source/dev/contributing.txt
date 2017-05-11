@@ -1,0 +1,215 @@
+Contributor's guide
+===================
+
+If you’re reading this you’re probably interested in contributing to batou.
+First, we’d like to say: thank you! Open source projects live-and-die based on
+the support they receive from others, and the fact that you’re even considering
+supporting batou is very generous of you.
+
+This document lays out guidelines and advice for contributing to batou. If
+you’re thinking of contributing, start by reading this thoroughly and getting a
+feel for how contributing to the project works. If you have any questions, feel
+free to reach out to Christian Theune, the primary maintainer.
+
+The guide is split into sections based on the type of contribution you’re
+thinking of making, with a section that covers general guidelines for all
+contributors.
+
+All Contributions
+-----------------
+
+Be Cordial
+~~~~~~~~~~
+
+Be cordial or be on your way.
+
+batou has adopted this very important rule from the
+`Requests <python-requests.org>`_ library. This rule governs all forms of
+contribution, including reporting bugs or requesting features. This golden
+rule is `be cordial or be on your way
+<http://kennethreitz.org/be-cordial-or-be-on-your-way/>`_. **All contributions
+are welcome**, as long as everyone involved is treated with respect.
+
+Get Early Feedback
+~~~~~~~~~~~~~~~~~~
+
+If you are contributing, do not feel the need to sit on your contribution until
+it is perfectly polished and complete. It helps everyone involved for you to
+seek feedback as early as you possibly can. Submitting an early, unfinished
+version of your contribution for feedback in no way prejudices your chances of
+getting that contribution accepted, and can save you from putting a lot of work
+into a contribution that is not suitable for the project.
+
+Contribution Suitability
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The project maintainer has the last word on whether or not a contribution is
+suitable for batou. All contributions will be considered, but from time to
+time contributions will be rejected because they do not suit the project.
+
+If your contribution is rejected, don’t despair! So long as you followed these
+guidelines, you’ll have a much better chance of getting your next contribution
+accepted.
+
+
+Code Contributions
+------------------
+
+When contributing code, you’ll want to follow this checklist:
+
+1. Fork the repository on
+   `bitbucket <https://bitbucket.org/flyingcircus/batou>`_.
+2. Run the tests to confirm they all pass on your system. If they don’t,
+   you’ll need to investigate why they fail. If you’re unable to diagnose
+   this yourself, raise it as a bug report by following the guidelines in
+   this document.
+3. Write tests that demonstrate your bug or feature. Ensure that they fail.
+   Make your change.
+4. Run the entire test suite again, confirming that all tests pass including
+   the ones you just added.
+5. Send a Pull Request to the main repository’s master branch. Pull Requests
+   are the expected method of code collaboration on this project.
+
+The following sub-sections go into more detail on some of the points above.
+
+Code Review
+~~~~~~~~~~~
+
+Contributions will not be merged until they’ve been code reviewed. You should
+implement any code review feedback unless you strongly object to it. In the
+event that you object to the code review feedback, you should make your case
+clearly and calmly. If, after doing so, the feedback is judged to still apply,
+you must either apply the feedback or withdraw your contribution.
+
+New Contributors
+~~~~~~~~~~~~~~~~
+
+If you are new or relatively new to Open Source, welcome! batou aims to be a
+gentle introduction to the world of Open Source. If you’re concerned about how
+best to contribute, please consider mailing a maintainer (listed above) and
+asking for help.
+
+Please also check the "Get Early Feedback" section.
+
+Documentation Contributions
+---------------------------
+
+Documentation improvements are always welcome! The documentation files live in
+the ``doc/`` directory of the codebase. They’re written in reStructuredText,
+and use Sphinx to generate the full suite of documentation.
+
+When contributing documentation, please attempt to follow the style of the
+documentation files. This means a soft-limit of 79 characters wide in your text
+files and a semi-formal prose style.
+
+Bug Reports
+-----------
+
+Bug reports are hugely important! Before you raise one, though, please check
+through the bugtracker issues, both open and closed, to confirm that the bug
+hasn’t been reported before. Duplicate bug reports are a huge drain on the time
+of other contributors, and should be avoided as much as possible.
+
+When reporting a bug, make sure to include the batou version and platform
+identifier, e.g.:
+
+.. code-block:: console
+
+    $ ./batou
+    batou/1.2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+    ...
+
+Also, include console output, relevant component code and maybe environment
+configuration if reporting errors.
+
+Feature Requests
+----------------
+
+batou is under development. We have a strong idea about our architecture,
+though.
+
+If you believe there is a feature missing, feel free to raise a feature
+request, but please demonstrate the issue you want to solve instead of
+only suggesting a certain function or feature. We want batou's architecture
+to remain as small and clean as possible and thus we're heavily interested
+in understanding the problem you are trying to solve.
+
+
+Code of Conduct
+---------------
+
+Our Pledge
+~~~~~~~~~~
+
+In the interest of fostering an open and welcoming environment, we as
+contributors and maintainers pledge to making participation in our project and
+our community a harassment-free experience for everyone, regardless of age,
+body size, disability, ethnicity, gender identity and expression, level of
+experience, nationality, personal appearance, race, religion, or sexual
+identity and orientation.
+
+Our Standards
+~~~~~~~~~~~~~
+
+Examples of behavior that contributes to creating a positive environment
+include:
+
+* Using welcoming and inclusive language
+* Being respectful of differing viewpoints and experiences
+* Gracefully accepting constructive criticism
+* Focusing on what is best for the community
+* Showing empathy towards other community members
+
+Examples of unacceptable behavior by participants include:
+
+* The use of sexualized language or imagery and unwelcome sexual attention or
+  advances
+* Trolling, insulting/derogatory comments, and personal or political attacks
+* Public or private harassment
+* Publishing others' private information, such as a physical or electronic
+  address, without explicit permission
+* Other conduct which could reasonably be considered inappropriate in a
+  professional setting
+
+Our Responsibilities
+~~~~~~~~~~~~~~~~~~~~
+
+Project maintainers are responsible for clarifying the standards of acceptable
+behavior and are expected to take appropriate and fair corrective action in
+response to any instances of unacceptable behavior.
+
+Project maintainers have the right and responsibility to remove, edit, or
+reject comments, commits, code, wiki edits, issues, and other contributions
+that are not aligned to this Code of Conduct, or to ban temporarily or
+permanently any contributor for other behaviors that they deem inappropriate,
+threatening, offensive, or harmful.
+
+Scope
+~~~~~
+
+This Code of Conduct applies both within project spaces and in public spaces
+when an individual is representing the project or its community. Examples of
+representing a project or community include using an official project e-mail
+address, posting via an official social media account, or acting as an appointed
+representative at an online or offline event. Representation of a project may be
+further defined and clarified by project maintainers.
+
+Enforcement
+~~~~~~~~~~~
+
+Instances of abusive, harassing, or otherwise unacceptable behavior may be
+reported by contacting the project team at mail@flyingcircus.io. All
+complaints will be reviewed and investigated and will result in a response that
+is deemed necessary and appropriate to the circumstances. The project team is
+obligated to maintain confidentiality with regard to the reporter of an incident.
+Further details of specific enforcement policies may be posted separately.
+
+Project maintainers who do not follow or enforce the Code of Conduct in good
+faith may face temporary or permanent repercussions as determined by other
+members of the project's leadership.
+
+Attribution
+~~~~~~~~~~~
+
+This Code of Conduct is adapted from the Contributor Covenant, version 1.4,
+available at http://contributor-covenant.org/version/1/4

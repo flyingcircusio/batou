@@ -1,0 +1,92 @@
+Installation
+============
+
+batou is installed in each of your projects to ensure
+that every project is run with the correct version of batou and possibly other dependencies.
+
+Starting a new batou project
+----------------------------
+
+A new project is started by placing the batou master command into the project and adding that to your repository:
+
+.. code-block:: console
+
+    $ mkdir myproject
+    $ cd myproject
+    $ git init
+    $ curl -L https://batou.readthedocs.io/en/latest/batou -o batou
+    $ chmod +x batou
+    $ ./batou
+    Preparing virtualenv in .batou ...
+    Pre-installing batou - this can take a while...
+    Installing Jinja2==2.7.3
+    Installing requests==2.6.0
+    Installing setuptools==18.3.1
+    Installing execnet==1.3.0
+    Installing py==1.4.26
+    usage: batou [-h] [-d] [-F] {deploy,remote,secrets,init,update} ...
+    batou: error: too few arguments
+    $ git add batou
+    $ git commit -m "Start a batou project."
+
+Local
+-----
+
+To run the master command on your machine you will need to have the following dependencies installed:
+
+* Python 2.7
+* virtualenv
+* OpenSSH
+* GPG *(optional, if you want to use encrypted secrets support)*
+* Mercurial, git, or rsync *(you only need to have the one installed you actually use to transfer your repository)*
+
+
+Remote
+------
+
+To deploy on a remote server, that server needs to have installed:
+
+* Python 2.7
+* virtualenv
+* OpenSSH
+* Mercurial, git or rsync *(you only need to have the one installed you actually use to transfer your repository)*
+
+Supported Platforms
+-------------------
+
+batou is being tested to run on Linux and Mac OS X.
+
+We do *not* support deploying from or to non-UNIX targets.
+
+batou is written in Python and requires to be run with **Python 2.7**.
+
+
+Optional requirements
+---------------------
+
+Depending on the actual components you are going to install, you may need to have those packages installed on your remote machines:
+
+* `git <http://git-scm.com/>`_ if using the :ref:`batou.lib.git.Clone
+  <download-git>` component
+* `make <http://www.gnu.org/software/make/>`_ if using the
+  :ref:`batou.lib.cmmi.Build <cmmi-build>` component
+* `nrpe
+  <http://exchange.nagios.org/directory/Addons/Monitoring-Agents/NRPE--2D-Nagios-Remote-Plugin-Executor/details>`_
+  if using the ``batou.lib.nagios.NRPEHost`` component
+* `rsync <http://rsync.samba.org/>`_ if using the :ref:`batou.lib.file.Directory
+  <file-directory>` component
+* `subversion <http://subversion.apache.org/>`_ if using the
+  :ref:`batou.lib.svn.Checkout <download-subversion>` component
+* `unzip <http://www.info-zip.org/UnZip.html>`_ and `tar
+  <http://www.gnu.org/software/tar/tar.html>`_ if using the
+  :ref:`batou.lib.archive.Extract <file-extract>` component
+
+Distribution-specific installation instructions
+-----------------------------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   installation-deb
+   installation-rpm
+
