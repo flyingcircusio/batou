@@ -3,10 +3,26 @@ from batou import remote_core
 from batou.update import generate_bootstrap
 import execnet.gateway_io
 import os
+import yaml
+import subprocess
 import sys
 
-# Monkeypatch execnet to support vagrant ssh. Can be removed
-# with execnet release 1.4
+# Monkeypatch execnet to support 'vagrant ssh' and 'kitchen exec'.
+# 'vagrant' support has been added to 'execnet' release 1.4.
+
+
+def get_kitchen_ssh_connection_info(name):
+    cmd = 'kitchen', 'diagnose', name
+    info = yaml.load(subprocess.check_output(cmd))
+    (instance,) = info['instances'].values()
+    state = instance['state_file']
+    return [
+        '-o', 'StrictHostKeyChecking=no',
+        '-i', state['ssh_key'],
+        '-p', state['port'],
+        '-l', state['username'],
+        state['hostname'],
+    ]
 
 
 def new_ssh_args(spec):
@@ -14,12 +30,17 @@ def new_ssh_args(spec):
     remotepython = spec.python or 'python'
     if spec.type == 'vagrant':
         args = ['vagrant', 'ssh', spec.ssh, '--', '-C']
+    elif spec.type == 'kitchen':
+        # TODO: this should really use:
+        #   args = ['kitchen', 'exec', spec.ssh, '-c']
+        # but `exec` apparently doesn't connect stdin (yet)...
+        args = ['ssh', '-C'] + get_kitchen_ssh_connection_info(spec.ssh)
     else:
         args = ['ssh', '-C']
     if spec.ssh_config is not None:
         args.extend(['-F', str(spec.ssh_config)])
     remotecmd = '%s -c "%s"' % (remotepython, popen_bootstrapline)
-    if spec.type == 'vagrant':
+    if spec.type == 'vagrant' or spec.type == 'kitchen':
         args.extend([remotecmd])
     else:
         args.extend([spec.ssh, remotecmd])

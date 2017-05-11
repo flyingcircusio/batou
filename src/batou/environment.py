@@ -303,6 +303,9 @@ class Environment(object):
         if self.connect_method == 'vagrant':
             output.step("vagrant", "Ensuring machines are up ...")
             cmd('vagrant up')
+        elif self.connect_method == 'kitchen':
+            output.step("kitchen", "Ensuring machines are up ...")
+            cmd('kitchen converge')
 
     # Deployment API (implements the configure-verify-update cycle)
 
