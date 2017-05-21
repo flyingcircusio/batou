@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.5.0a5 (unreleased)
+1.5.0a5 (2017-05-21)
 ====================
 
 - Fix `git.Clone()` verification of local state, so it only updates from remove
