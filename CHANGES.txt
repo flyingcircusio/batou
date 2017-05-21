@@ -5,7 +5,8 @@ Changelog
 1.5.0a5 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Fix `git.Clone()` verification of local state, so it only updates from remove
+  if necessary. (#26117)
 
 
 1.5.0a4 (2017-03-30)
