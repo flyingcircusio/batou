@@ -42,7 +42,7 @@ class Clone(Component):
                         self.target), red=True)
                 raise UpdateNeeded()
 
-            if self.revision and self.current_revision != self.revision:
+            if self.revision and self.current_revision() != self.revision:
                 raise UpdateNeeded()
             if (self.branch and (
                     self.current_branch() != self.branch) or
