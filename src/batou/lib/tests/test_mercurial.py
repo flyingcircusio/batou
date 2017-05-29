@@ -64,6 +64,23 @@ def test_set_revision_does_not_pull_when_revision_matches(root, repos_path):
 
 
 @pytest.mark.slow
+def test_set_revision_does_not_change_when_long_revision_matches(
+        root, repos_path):
+    clone = batou.lib.mercurial.Clone(
+        repos_path, target='clone', branch='default')
+    root.component += clone
+    root.component.deploy()
+    stdout, stderr = clone.cmd(
+        clone.expand(
+            'LANG=C hg --cwd {{component.target}} --debug tip | head -n1'))
+    _, _, revision = stdout.split(':')
+    clone.revision = revision.strip()
+    clone.branch = None
+    root.component.deploy()
+    assert not clone.changed
+
+
+@pytest.mark.slow
 def test_has_changes_counts_changes_to_tracked_files(root, repos_path):
     clone = batou.lib.mercurial.Clone(
         repos_path, target='clone', branch='default')

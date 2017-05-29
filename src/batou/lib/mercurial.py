@@ -14,7 +14,7 @@ class Clone(Component):
     branch = None
     vcs_update = True
 
-    _revision_pattern = re.compile('parent: \d+:([a-f0-9]+) ')
+    _revision_pattern = re.compile('changeset: +\d+:([a-f0-9]+)')
 
     def configure(self):
         if (not self.revision_or_branch) or (self.revision and self.branch):
@@ -42,8 +42,10 @@ class Clone(Component):
                         self.target), red=True)
                 raise UpdateNeeded()
 
-            if self.revision and self.current_revision() != self.revision:
-                raise UpdateNeeded()
+            if self.revision:
+                long_rev = len(self.revision) == 40
+                if self.current_revision(long_rev) != self.revision:
+                    raise UpdateNeeded()
             if (self.branch and (
                     self.current_branch() != self.branch or
                     self.has_incoming_changesets())):
@@ -54,10 +56,13 @@ class Clone(Component):
         # Mercurial often takes either a revision or a branch.
         return self.revision or self.branch
 
-    def current_revision(self):
+    def current_revision(self, long=False):
+        debug = '--debug' if long else ''
         stdout, stderr = self.cmd(
-            self.expand('LANG=C hg --cwd {{component.target}} summary | '
-                        'grep parent:'))
+            self.expand(
+                'LANG=C hg --cwd {{component.target}} {{debug}} parent | '
+                'grep changeset:',
+                debug=debug))
         match = self._revision_pattern.search(stdout)
         if not match:
             return None
