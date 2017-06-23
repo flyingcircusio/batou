@@ -3,12 +3,12 @@ from .host import LocalHost, RemoteHost
 from .resources import Resources
 from .secrets import add_secrets_to_environment_override
 from ConfigParser import RawConfigParser
+from batou import DuplicateHostError, InvalidIPAddressError
 from batou import MissingComponent
 from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
 from batou import NonConvergingWorkingSet, UnusedResources, ConfigurationError
 from batou import SuperfluousComponentSection, CycleErrorDetected
 from batou import UnknownComponentConfigurationError, UnsatisfiedResources
-from batou import DuplicateHostError
 from batou._output import output
 from batou.component import RootComponent
 from batou.repository import Repository
@@ -16,6 +16,7 @@ from batou.utils import cmd
 from batou.utils import revert_graph, topological_sort, CycleError
 import ast
 import batou.c
+import batou.utils
 import batou.vfs
 import glob
 import os
@@ -123,13 +124,14 @@ class Environment(object):
 
         self.load_environment(config)
         self.load_hosts(config)
+        self.load_resolver(config)
 
         # load overrides
         for section in config:
             if section.startswith('host:'):
                 continue
             if not section.startswith('component:'):
-                if section not in ['hosts', 'environment', 'vfs']:
+                if section not in ['hosts', 'environment', 'vfs', 'resolver']:
                     self.exceptions.append(SuperfluousSection(section))
                 continue
             root_name = section.replace('component:', '')
@@ -169,6 +171,28 @@ class Environment(object):
             sandbox = config['vfs']['sandbox']
             sandbox = getattr(batou.vfs, sandbox)(self, config['vfs'])
             self.vfs_sandbox = sandbox
+
+    def load_resolver(self, config):
+        resolver = config.get('resolver', {})
+        self._resolve_override = v4 = {}
+        self._resolve_v6_override = v6 = {}
+
+        for key, value in resolver.items():
+            for ip in value.splitlines():
+                ip = ip.strip()
+                if not ip:
+                    continue
+                if '.' in ip:
+                    v4[key] = ip
+                elif ':' in ip:
+                    v6[key] = ip
+                else:
+                    self.exceptions.append(InvalidIPAddressError(ip))
+
+        batou.utils.resolve_override.clear()
+        batou.utils.resolve_override.update(v4)
+        batou.utils.resolve_v6_override.clear()
+        batou.utils.resolve_v6_override.update(v6)
 
     def load_hosts(self, config):
         self._load_hosts_single_section(config)

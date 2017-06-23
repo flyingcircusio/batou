@@ -369,3 +369,16 @@ class DuplicateHostError(ConfigurationError):
 
     def report(self):
         output.error("Duplicate definition of host: {}".format(self.hostname))
+
+
+class InvalidIPAddressError(ConfigurationError):
+
+    @property
+    def sort_key(self):
+        return (0, )
+
+    def __init__(self, address):
+        self.address = address
+
+    def report(self):
+        output.error("Not a valid IP address: {}".format(self.address))

@@ -1,14 +1,15 @@
 from StringIO import StringIO
-from batou import MissingEnvironment
 from batou.environment import Environment, Config
 from mock import Mock
+import batou
+import batou.utils
 import mock
 import pytest
 
 
 def test_environment_should_raise_if_no_config_file(tmpdir):
     e = Environment(u'foobar')
-    with pytest.raises(MissingEnvironment):
+    with pytest.raises(batou.MissingEnvironment):
         e.load()
 
 
@@ -267,3 +268,22 @@ Post sub""" == log
     assert """\
 localhost: <Hello (localhost) "Hello"> verify: asdf=None
      Hello""" == log
+
+
+def test_resolver_overrides(sample_service):
+    e = Environment(u'test-resolver')
+    e.load()
+    assert {'localhost': '127.0.0.2'} == e._resolve_override
+    assert {'localhost': '::2'} == e._resolve_v6_override
+
+    assert '127.0.0.2' == batou.utils.resolve('localhost')
+    assert '::2' == batou.utils.resolve_v6('localhost', 0)
+
+
+def test_resolver_overrides_invalid_address(sample_service):
+    e = Environment(u'test-resolver-invalid')
+    e.load()
+
+    with pytest.raises(batou.InvalidIPAddressError) as err:
+        e.configure()
+    assert "thisisinvalid" == err.value.address

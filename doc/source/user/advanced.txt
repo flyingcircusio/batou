@@ -105,7 +105,35 @@ In a component you can access all data attributes via the host's `data` dictiona
     def configure(self):
         alias = self.host.data['alias']
 
-The ``data-`` prefix was chosed in resemblence of the `HTML standard <http://w3c.github.io/html/dom.html#dom-htmlelement-dataset>`_.
+The ``data-`` prefix was chosen in resemblance of the `HTML standard <http://w3c.github.io/html/dom.html#dom-htmlelement-dataset>`_.
+
+
+
+DNS overrides
+-------------
+
+*New in version 1.6*
+
+When migrating services automatic DNS lookup of IP addresses to listen on can be cumbersome. You want to deploy the service before the DNS changes become active. This is where DNS overrides can help.
+
+The DNS overrides short circuit the resolving completely for the given host names.
+
+Example::
+
+    [environment]
+    ...
+
+    [resolver]
+    www.example.com =
+        3.2.1.4
+        ::2
+
+Whenever batou *configuration* (i.e. ``batou.utils.Address``) looks up ``www.example.com`` it will result in the addresses ``3.2.1.4`` and ``::2``.
+
+
+The overrides support IPv4 and IPv6. You should only set one IP address per type for each host name.
+
+.. NOTE:: You *cannot* override the addresses of the configured hosts. The SSH connection will always use genuine name resolving.
 
 
 context manager (TODO)
