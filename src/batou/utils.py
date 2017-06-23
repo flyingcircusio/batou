@@ -89,27 +89,37 @@ except (subprocess.CalledProcessError, OSError):
         notify = notify_none
 
 
-def resolve(address):
+resolve_override = {}
+resolve_v6_override = {}
+
+
+def resolve(address, resolve_override=resolve_override):
     if ':' in address:
         host, port = address.split(':')
     else:
         host, port = address, None
-    try:
-        address = socket.gethostbyname(host)
-    except socket.gaierror as e:
-        raise socket.gaierror('%s (%s)' % (str(e), host))
+
+    address = resolve_override.get(host)
+    if not address:
+        try:
+            address = socket.gethostbyname(host)
+        except socket.gaierror as e:
+            raise socket.gaierror('%s (%s)' % (str(e), host))
     if port:
         address += ':%s' % port
     return address
 
 
-def resolve_v6(host, port):
-    try:
-        return socket.getaddrinfo(
-            host, int(port),
-            socket.AF_INET6)[0][4][0]
-    except socket.gaierror:
-        return None
+def resolve_v6(host, port, resolve_override=resolve_v6_override):
+    address = resolve_override.get(host)
+    if not address:
+        try:
+            address = socket.getaddrinfo(
+                host, int(port),
+                socket.AF_INET6)[0][4][0]
+        except socket.gaierror:
+            address = None
+    return address
 
 
 class Address(object):

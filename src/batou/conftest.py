@@ -1,5 +1,6 @@
 from batou.component import Component, ComponentDefinition
 from batou.environment import Environment
+import batou.utils
 import os
 import pytest
 
@@ -34,3 +35,9 @@ def pytest_assertrepr_compare(op, left, right):
         return left.compare(right).diff
     elif right.__class__.__name__ == 'Ellipsis':
         return right.compare(left).diff
+
+
+@pytest.fixture(autouse=True)
+def reset_resolve_overrides():
+    batou.utils.resolve_override.clear()
+    batou.utils.resolve_v6_override.clear()

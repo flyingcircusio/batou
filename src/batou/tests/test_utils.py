@@ -38,6 +38,16 @@ def test_resolve_v6_should_return_none_on_socket_error(gai):
     assert resolve_v6('localhost', 22) is None
 
 
+def test_resolve_override():
+    ov = {'foo.example.com': '1.2.3.4'}
+    assert '1.2.3.4' == resolve('foo.example.com', resolve_override=ov)
+
+
+def test_resolve_v6_override():
+    ov = {'foo.example.com': '::27'}
+    assert '::27' == resolve_v6('foo.example.com', 80, resolve_override=ov)
+
+
 def test_flatten():
     assert [1, 2, 3, 4] == flatten([[1, 2], [3, 4]])
 
