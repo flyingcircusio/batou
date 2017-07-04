@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.6.0a2 (unreleased)
+1.6.0a2 (2017-07-04)
 ====================
 
 - General update of batou's dependencies.
