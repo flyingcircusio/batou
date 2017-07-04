@@ -201,7 +201,7 @@ class PipDownload(Component):
     def update(self):
         self.cmd(
             '{{component.pip}} --isolated --disable-pip-version-check'
-            ' download'
+            ' install --download .'
             ' --no-binary=:all: {{component.package}}=={{component.version}}'
             ' --no-deps')
         target_checksum = batou.utils.hash(self.target, self.checksum_function)
