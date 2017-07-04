@@ -5,7 +5,8 @@ Changelog
 1.6.0a2 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Fix: Don't update ``git.Clone`` when there are incoming changes but the
+  revision is fixed.
 
 
 1.6.0a1 (2017-07-03)

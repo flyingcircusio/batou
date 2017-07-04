@@ -45,8 +45,8 @@ class Clone(Component):
             if self.revision and self.current_revision() != self.revision:
                 raise UpdateNeeded()
             if (self.branch and (
-                    self.current_branch() != self.branch) or
-                    self.has_incoming_changesets()):
+                    self.current_branch() != self.branch or
+                    self.has_incoming_changesets())):
                 raise UpdateNeeded()
 
     @property
