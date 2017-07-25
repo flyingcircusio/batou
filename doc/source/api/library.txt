@@ -89,7 +89,7 @@ Creates a file. The main parameter for File is the target path. A ``File`` insta
 
 .. py:attribute:: link_to
 
-    Source of symlink (for :py:attr:`ensure` = 'smylink')
+    Source of symlink (for :py:attr:`ensure` = 'symlink')
 
 
 XXX explain detailed factoring of Presence and Content
