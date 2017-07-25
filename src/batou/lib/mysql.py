@@ -119,6 +119,6 @@ class Grant(Command):
     allow_from_hostname = 'localhost'
     statement = """\
 GRANT ALL
-    ON {{component.grant_db}}
+    ON {{component.grant_db}}.*
     TO '{{component.user}}'@'{{component.allow_from_hostname}}';
 """
