@@ -48,6 +48,11 @@ def test_resolve_v6_override():
     assert '::27' == resolve_v6('foo.example.com', 80, resolve_override=ov)
 
 
+def test_resolve_v6_does_not_return_link_local_addresses():
+    ov = {'foo.example.com': 'fe80::8bf:8387:1234:5678'}
+    assert resolve_v6('foo.example.com', 80, resolve_override=ov) is None
+
+
 def test_flatten():
     assert [1, 2, 3, 4] == flatten([[1, 2], [3, 4]])
 

@@ -5,6 +5,8 @@ Changelog
 1.6.0a3 (unreleased)
 ====================
 
+- Ignore link-local (fe80::/64) IPv6 addresses in ``batou.utils.Address``.
+
 - Fix: Grant database.* when using ``mysql.Grant``
 
 
