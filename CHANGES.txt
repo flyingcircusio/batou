@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.6.0a3 (unreleased)
+1.6.0a3 (2017-08-09)
 ====================
 
 - Ignore link-local (fe80::/64) IPv6 addresses in ``batou.utils.Address``.
