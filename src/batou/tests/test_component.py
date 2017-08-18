@@ -182,6 +182,22 @@ def test_log_in_configure_is_stored_on_root_for_later(root):
     assert [('1: configure', ())] == c1.root._logs
 
 
+def test_log_in_verify(root):
+
+    class MyComponent(Component):
+
+        namevar = 'id'
+
+        def verify(self):
+            self.log('{}: verify'.format(self.id))
+
+    c1 = MyComponent('1')
+    root.component += c1
+    root.log_finish_configure()
+    c1.verify()
+    assert c1.root._logs is None
+
+
 def test_adding_subcomponents_configures_them_immediately(root):
     class MyComponent(Component):
         configured = False
