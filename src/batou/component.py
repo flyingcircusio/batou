@@ -937,12 +937,13 @@ class RootComponent(object):
     def log(self, msg, *args):
         if self._logs is None:
             msg = '%s: %s' % (self.host.fqdn, msg)
-            output.line(msg % args)
-        self._logs.append((msg, args))
+            output.annotate(msg % args)
+        else:
+            self._logs.append((msg, args))
 
     def log_finish_configure(self):
         for msg, args in self._logs:
-            output.line(msg % args)
+            output.annotate(msg % args)
         self._logs = None
 
     def __repr__(self):
