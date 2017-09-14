@@ -252,8 +252,8 @@ def test_log_in_component_configure_is_put_out(
     e = Environment('test-with-provide-require')
     e.load()
     e.configure()
-    log = '\n'.join(c[0][0] for c in output.call_args_list)
-    # Proivde is *always* logged first, due to provide/require ordering.
+    log = '\n'.join(c[0][0].strip() for c in output.call_args_list)
+    # Provide is *always* logged first, due to provide/require ordering.
     assert """\
 Provide
 Pre sub
@@ -264,10 +264,10 @@ Post sub""" == log
     for root in e.roots_in_order():
         root.component.deploy(True)
 
-    log = '\n'.join(c[0][0] for c in output.call_args_list)
+    log = '\n'.join(c[0][0].strip() for c in output.call_args_list)
     assert """\
 localhost: <Hello (localhost) "Hello"> verify: asdf=None
-     Hello""" == log
+Hello""" == log
 
 
 def test_resolver_overrides(sample_service):
