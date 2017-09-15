@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from batou.lib.file import Content, Mode, Symlink, File
+from batou.lib.file import Content, Mode, Symlink, File, Purge
 from batou.lib.file import ensure_path_nonexistent
 from batou.lib.file import Presence, Directory, FileComponent
 from mock import Mock, patch
@@ -601,3 +601,12 @@ def test_owner_is_configurable_when_user_doesnt_exist_yet(root):
     # This is a regression test against #12911 and ensures that we can
     # configure a file component's owner even if the owner doesn't exist yet.
     root.component += file
+
+
+def test_purge_globs_and_deletes_tree(root):
+    os.mkdir('work/mycomponent/source')
+    open('work/mycomponent/source/one', 'w').close()
+    open('work/mycomponent/source/two', 'w').close()
+    root.component += Purge('sourc*')
+    root.component.deploy()
+    assert sorted(os.listdir('work/mycomponent')) == []
