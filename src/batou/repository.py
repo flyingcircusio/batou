@@ -80,7 +80,7 @@ class RSyncRepository(Repository):
             output.annotate("rsync: {} -> {}".format(source, target),
                             debug=True)
             rsync = execnet.RSync(source, verbose=False)
-            rsync.add_target(host.gateway, target)
+            rsync.add_target(host.gateway, target, delete=True)
             rsync.send()
 
 
