@@ -5,8 +5,17 @@ Changelog
 1.6.0a4 (unreleased)
 ====================
 
-- Fix `self.log()` after `configure()` when no log was emitted during `configure()`
+- Fix `self.log()` after `configure()` when no log was emitted during
+  `configure()`
 
+- The Purge component now includes directories.
+
+  This is not made an option as previously trying to purge directories would
+  have raised an error and thus made deployments unusable anyway. Relying
+  on this would be considered at least very bad practice and was never promised
+  anyway.
+
+- The `rsync` update method now deletes files on the target.
 
 1.6.0a3 (2017-08-09)
 ====================
