@@ -399,4 +399,4 @@ class Purge(Component):
 
     def update(self):
         for filename in glob.glob(self.pattern):
-            os.unlink(filename)
+            shutil.rmtree(filename)
