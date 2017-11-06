@@ -17,6 +17,10 @@ Changelog
 
 - The `rsync` update method now deletes files on the target.
 
+- The supervisor component uses current versions of buildout and setuptools,
+  so they still work after PyPI recently disabled http without ssl.
+
+
 1.6.0a3 (2017-08-09)
 ====================
 
