@@ -263,7 +263,7 @@ def topological_sort(graph):
     #
     # {node: [dependency, dependency], ...}
     #
-    # If the graph has cycles a ValueError will be raised.
+    # If the graph has cycles a CycleError will be raised.
 
     graph = ensure_graph_data(graph)
     sorted = []
