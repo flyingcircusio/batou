@@ -2,8 +2,8 @@
 Changelog
 =========
 
-1.6.0a4 (unreleased)
-====================
+1.6.0 (2017-11-07)
+==================
 
 - Fix `self.log()` after `configure()` when no log was emitted during
   `configure()`
