@@ -65,7 +65,7 @@ def test_dmg_extracts_archive_to_target_directory(root):
     root.component += extract
     root.component.deploy()
 
-    assert os.listdir(unicode(extract.target)) == [
+    assert sorted(os.listdir(unicode(extract.target))) == [
         u' ', u'a\u0308sdf.txt', u'example.app']
 
     # ' ' is a symlink which stays one after copying:
