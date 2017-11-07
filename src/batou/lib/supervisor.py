@@ -47,9 +47,6 @@ redirect_stderr = true
     directory = None
     dependencies = None
 
-    program_template = ('{priority} {name} ({options}) {command} '
-                        '{args} {directory} true')
-
     def configure(self):
         self.supervisor = self.require_one('supervisor', self.host)
         if self.dependencies is None:
