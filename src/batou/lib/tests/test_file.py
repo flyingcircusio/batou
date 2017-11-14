@@ -355,6 +355,17 @@ def test_content_from_file_as_template_guessed(root):
         assert f.read() == 'content from source file bar'
 
 
+def test_content_source_unclear(root):
+    path = 'path'
+    p = File(path)
+    with pytest.raises(ValueError) as e:
+        root.component += p
+    assert str(e.value) == (
+        "Missing implicit template file {}/path. "
+        "Or did you want to create a empty file? "
+        "Then use File('path', content='').".format(root.defdir))
+
+
 def test_content_passed_by_file_using_path_as_default(root):
     path = 'path'
     with open(path, 'w') as f:

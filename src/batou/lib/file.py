@@ -50,6 +50,7 @@ class File(Component):
     leading = False
 
     def configure(self):
+        self._unmapped_path = self.path
         self.path = self.map(self.path)
         if self.ensure == 'file':
             self += Presence(self.path, leading=self.leading)
@@ -77,6 +78,23 @@ class File(Component):
                 self.root.defdir + '/' + os.path.basename(self.path))
             if os.path.isfile(guess_source):
                 self.source = guess_source
+            else:
+                # Avoid the edge case where we want to support a very simple
+                # case: specify File('asdf') and have an identical named file
+                # in the component definition directory that will be templated
+                # to the work directory.
+                #
+                # However, if you mis-spell the file, then you might
+                # accidentally end up with an empty file in the work directory.
+                # If you really want an empty File then you can either use
+                # Presence(), or (recommended) use File('asdf', content='') to
+                # make this explicit. We don't want to accidentally confuse the
+                # convenience case (template a simple file) and an edge case
+                # (have an empty file)
+                raise ValueError(
+                    "Missing implicit template file {}. Or did you want "
+                    "to create an empty file? Then use File('{}', content='')."
+                    .format(guess_source, self._unmapped_path))
 
         if self.content or self.source:
             if self.template_args is None:
