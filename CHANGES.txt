@@ -5,7 +5,13 @@ Changelog
 1.6.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Using File('foo') with implicitly picking up the source `foo` was confusing
+  as it also would create (and enforce!) an empty file silently 
+  if the source did not exist.
+
+  File('foo') now expects that the source `foo` exists and if you really want
+  an empty file you have to explicitly say File('foo', content='') or if you
+  don't care about the content use Presence('foo').
 
 
 1.6.0 (2017-11-07)
