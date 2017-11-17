@@ -103,7 +103,7 @@ def test_consumer_without_provider_raises_error(env):
         env.configure()
     for exc in env.exceptions:
         if isinstance(exc, UnsatisfiedResources):
-            assert set(['the-answer']) == exc.resources
+            assert set(['the-answer']) == set(exc.resources)
             break
     else:
         assert False, "Did not find exception"
@@ -115,7 +115,7 @@ def test_aggressive_consumer_raises_unsatisfiedrequirement(env):
         env.configure()
     for exc in env.exceptions:
         if isinstance(exc, UnsatisfiedResources):
-            assert set(['the-answer']) == exc.resources
+            assert set(['the-answer']) == set(exc.resources)
             break
     else:
         assert False, "Did not find expected exception."

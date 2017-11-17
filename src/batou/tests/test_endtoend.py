@@ -56,11 +56,11 @@ ERROR: Failed override attribute conversion
      Conversion: Address(u'localhost')
           Error: Need port for service address.
 ERROR: Unused provided resources
-        backend: ['192.168.0.1']
-       frontend: ['test00.gocept.net']
-            sub: [<SubComponent (localhost) "Component3 > SubComponent(sub sub)">]
+    Resource "backend" provided by component3 with value ['192.168.0.1']
+    Resource "frontend" provided by component3 with value ['test00.gocept.net']
+    Resource "sub" provided by component3 with value [<SubComponent (localhost) "Component3 > SubComponent(sub sub)">]
 ERROR: Unsatisfied resource requirements
-     application: <undefined>
+    Resource "application" required by component4
 ERROR: Found dependency cycle
      cycle1 depends on
              cycle2
