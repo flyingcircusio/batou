@@ -58,6 +58,22 @@ def test_jinja2_template_file():
         assert ref.read() == result
 
 
+@mock.patch('batou.remote_core.Output.line')
+def test_jinja2_large_template_str(output):
+    tmpl = TemplateEngine.get('jinja2')
+    result = tmpl.expand('hello {{hello}}' * 15000, sample_dict)
+    assert result.startswith('hello world')
+
+    log = '\n'.join(c[0][0].strip() for c in output.call_args_list)
+
+    assert """\
+ERROR: You are trying to render a template that is bigger than 100KiB we've \
+seen that Jinja can crash at large templates and suggest you find \
+alternatives for this. The affected template starts with:
+hello {{hello}}hello {{hello}}hello {{hello}}hello {{hello}}hello \
+{{hello}}hello {{hello}}hello {{he""" == log
+
+
 def test_jinja2_unknown_variable_should_fail():
     tmpl = TemplateEngine.get('jinja2')
     with pytest.raises(jinja2.UndefinedError):

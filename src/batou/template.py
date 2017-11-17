@@ -12,6 +12,7 @@ Jinja2::
 from __future__ import print_function, unicode_literals
 import jinja2
 import StringIO
+from batou import output
 
 
 class TemplateEngine(object):
@@ -58,6 +59,13 @@ class Jinja2Engine(TemplateEngine):
         return output
 
     def expand(self, templatestr, args, identifier='<template>'):
+        if len(templatestr) > 100*1024:
+            output.error(
+                "You are trying to render a template that is bigger than "
+                "100KiB we've seen that Jinja can crash at large templates "
+                "and suggest you find alternatives for this. The affected "
+                "template starts with:")
+            output.annotate(templatestr[:100])
         tmpl = self.env.from_string(templatestr)
         tmpl.filename = identifier
         return tmpl.render(**args)
