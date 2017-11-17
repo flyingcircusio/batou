@@ -15,7 +15,7 @@ def buildout(**kw):
 def test_update_should_pass_config_file_name(root):
     b = buildout(
         python='2.7', setuptools='1.0',
-        config=File('myown.cfg'))
+        config=File('myown.cfg', content=''))
     root.component += b
     b.update()
 
@@ -39,7 +39,7 @@ def test_update_should_pass_custom_timeout(root):
 @pytest.mark.timeout(60)
 def test_runs_buildout_successfully(root):
     b = Buildout(
-        python='2.7', version='2.4.3', setuptools='18.3.1',
+        python='2.7', version='2.9.5', setuptools='36.7.2',
         config=File('buildout.cfg', source=pkg_resources.resource_filename(
             __name__, 'buildout-example.cfg')))
     root.component += b
