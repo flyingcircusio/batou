@@ -362,7 +362,7 @@ def test_content_source_unclear(root):
         root.component += p
     assert str(e.value) == (
         "Missing implicit template file {}/path. "
-        "Or did you want to create a empty file? "
+        "Or did you want to create an empty file? "
         "Then use File('path', content='').".format(root.defdir))
 
 
@@ -535,7 +535,7 @@ def test_symlink_updates_existing_link(root):
 
 def test_file_creates_subcomponent_for_presence(root):
     path = 'path'
-    file = File(path)
+    file = File(path, content='')
     assert file.ensure == 'file'
     root.component += file
     assert isinstance(file.sub_components[0], Presence)
@@ -601,14 +601,14 @@ def test_owner_calls_chown(chown, stat, root):
     os.stat.return_value = Mock()
     os.stat.return_value.st_uid = 0
     os.stat.return_value.st_mode = 0
-    file = File('asdf', owner=getpass.getuser())
+    file = File('asdf', owner=getpass.getuser(), content='')
     root.component += file
     root.component.deploy()
     assert os.chown.called
 
 
 def test_owner_is_configurable_when_user_doesnt_exist_yet(root):
-    file = File('asdf', owner='foobar')
+    file = File('asdf', owner='foobar', content='')
     # This is a regression test against #12911 and ensures that we can
     # configure a file component's owner even if the owner doesn't exist yet.
     root.component += file
