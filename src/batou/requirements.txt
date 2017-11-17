@@ -7,6 +7,6 @@ certifi==2017.4.17
 apipkg==1.4
 Jinja2==2.9.6
 requests==2.18.1
-setuptools==36.0.1
+setuptools==36.7.2
 execnet==1.4.1
 py==1.4.34
