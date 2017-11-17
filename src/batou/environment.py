@@ -358,7 +358,7 @@ class Environment(object):
                 # them.
                 if self.resources.unsatisfied:
                     exceptions.append(UnsatisfiedResources(
-                        self.resources.unsatisfied))
+                        self.resources.unsatisfied_keys_and_components))
 
                 # We did not manage to improve on our last working set, so we
                 # give up.

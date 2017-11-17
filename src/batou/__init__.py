@@ -170,10 +170,11 @@ class UnusedResources(ConfigurationError):
     def report(self):
         output.error("Unused provided resources")
         for key in sorted(self.resources):
-            values = []
-            for v in self.resources[key].values():
-                values.extend(v)
-            output.tabular(key, repr(values), red=True)
+            for component, value in self.resources[key].items():
+                output.line(
+                    '    Resource "{}" provided by {} with value {}'.format(
+                        key, component.name, value),
+                    red=True)
 
 
 class UnsatisfiedResources(ConfigurationError):
@@ -189,7 +190,9 @@ class UnsatisfiedResources(ConfigurationError):
     def report(self):
         output.error("Unsatisfied resource requirements")
         for key in sorted(self.resources):
-            output.tabular(key, '<undefined>', red=True)
+            output.line('    Resource "{}" required by {}'.format(
+                key, ','.join(r.name for r in self.resources[key])),
+                red=True)
 
 
 class MissingEnvironment(ConfigurationError):

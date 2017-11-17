@@ -5,6 +5,8 @@ Changelog
 1.6.1 (unreleased)
 ==================
 
+- Improve error reporting for missing our superfluous resources.
+
 - Using File('foo') with implicitly picking up the source `foo` was confusing
   as it also would create (and enforce!) an empty file silently 
   if the source did not exist.
