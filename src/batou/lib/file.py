@@ -73,7 +73,7 @@ class File(Component):
 
         # no content or source given but file with same name
         # exists
-        if self.ensure == 'file' and not self.content and not self.source:
+        if self.ensure == 'file' and self.content is None and not self.source:
             guess_source = (
                 self.root.defdir + '/' + os.path.basename(self.path))
             if os.path.isfile(guess_source):
@@ -157,6 +157,11 @@ class Presence(Component):
     @property
     def namevar_for_breadcrumb(self):
         return os.path.relpath(self.path, self.environment.base_dir)
+
+    def last_updated(self, key='st_mtime'):
+        if not os.path.exists(self.path):
+            return None
+        return getattr(os.stat(self.path), key)
 
 
 class SyncDirectory(Component):
