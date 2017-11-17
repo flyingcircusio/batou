@@ -5,6 +5,14 @@ Changelog
 1.6.1 (unreleased)
 ==================
 
+- Log very large (100k+) templates as dangerous. We've seen Jinja/Python
+  segfault when users started using massively large (8MiB+) template files
+  and this really isn't a good idea to start with. For example it increases
+  computing time even at 100k quite a lot.
+
+  We try to keep going, though. But in the case of segfaults the user sees a 
+  reasonable error message and knows what to do.
+
 - Improve error reporting for missing our superfluous resources.
 
 - Using File('foo') with implicitly picking up the source `foo` was confusing
