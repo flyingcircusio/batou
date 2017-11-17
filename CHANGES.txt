@@ -23,7 +23,9 @@ Changelog
   an empty file you have to explicitly say File('foo', content='') or if you
   don't care about the content use Presence('foo').
 
-
+- Do not use '--always-copy' in VirtualEnv's any longer. This caused more pain
+  and inconsistencies than it provided value.
+  
 1.6.0 (2017-11-07)
 ==================
 
