@@ -148,6 +148,14 @@ class Resources(object):
                 [s.root for s in self._subscriptions(resource, None)])
         return components
 
+    @property
+    def unsatisfied_keys_and_components(self):
+        keys = {}
+        for resource in self.unsatisfied:
+            keys[resource] = set(
+                [s.root for s in self._subscriptions(resource, None)])
+        return keys
+
     def get_dependency_graph(self):
         """Return a dependency graph as a dict of lists:
 
