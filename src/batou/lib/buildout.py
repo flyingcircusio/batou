@@ -1,5 +1,5 @@
 from batou.component import Component
-from batou.lib.file import File
+from batou.lib.file import File, Presence
 from batou.lib.python import VirtualEnv, Package
 import contextlib
 import os
@@ -65,10 +65,10 @@ class Buildout(Component):
     def verify(self):
         self.assert_file_is_current('bin/buildout')
         # XXX we can't be sure that all config objects are files!
-        installed = File('.installed.cfg')
+        installed = Presence('.installed.cfg')
         self |= installed
         installed.assert_component_is_current(
-            [File('bin/buildout')] + self.config)
+            [Presence('bin/buildout')] + self.config)
         self.assert_file_is_current(
             '.batou.buildout.success', ['.installed.cfg'])
         self.assert_no_subcomponent_changes()

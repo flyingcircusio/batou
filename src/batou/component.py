@@ -597,11 +597,11 @@ class Component(object):
             ``requirements``.
 
         """
-        from batou.lib.file import BinaryFile
-        reference = BinaryFile(reference)
+        from batou.lib.file import Presence
+        reference = Presence(reference)
         self |= reference
         reference.assert_component_is_current(
-            [BinaryFile(r) for r in requirements], **kw)
+            [Presence(r) for r in requirements], **kw)
 
     def assert_component_is_current(self, requirements=[], **kw):
         """Assert that this component has been updated more recently
