@@ -82,3 +82,7 @@ Changelog
  migration scenarios.
 
 
+The change log of older releases is in `Historical releases`_.
+
+.. _`Historical releases` : https://bitbucket.org/flyingcircus/batou/raw/tip/HISTORY.old.txt
+
