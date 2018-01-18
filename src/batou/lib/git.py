@@ -92,11 +92,12 @@ class Clone(Component):
                 os.unlink(os.path.join(self.target, filepath))
             if not just_cloned:
                 self.cmd('git fetch')
-                if self.branch:
-                    self.cmd(self.expand(
-                        'git merge origin/{{component.branch}}'))
-            self.cmd(self.expand(
-                'git checkout --force {{component.revision_or_branch}}'))
+            if self.branch:
+                self.cmd(self.expand(
+                    'git reset --hard origin/{{component.branch}}'))
+            else:
+                self.cmd(self.expand(
+                    'git reset --hard {{component.revision}}'))
 
             # XXX We should re-think submodule support; e.g. which revision
             # shall the submodules be updated to?

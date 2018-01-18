@@ -4,7 +4,8 @@ Changelog
 1.6.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- `git.Clone` uses `git reset` instead of merge/checkout to get the defined
+   state.
 
 
 1.6.1 (2017-11-27)
@@ -15,13 +16,13 @@ Changelog
   and this really isn't a good idea to start with. For example it increases
   computing time even at 100k quite a lot.
 
-  We try to keep going, though. But in the case of segfaults the user sees a 
+  We try to keep going, though. But in the case of segfaults the user sees a
   reasonable error message and knows what to do.
 
 - Improve error reporting for missing our superfluous resources.
 
 - Using File('foo') with implicitly picking up the source `foo` was confusing
-  as it also would create (and enforce!) an empty file silently 
+  as it also would create (and enforce!) an empty file silently
   if the source did not exist.
 
   File('foo') now expects that the source `foo` exists and if you really want
@@ -29,7 +30,7 @@ Changelog
   don't care about the content use Presence('foo').
 
 - Using File('foo') with implicitly picking up the source `foo` was confusing
-  as it also would create (and enforce!) an empty file silently 
+  as it also would create (and enforce!) an empty file silently
   if the source did not exist.
 
   File('foo') now expects that the source `foo` exists and if you really want
@@ -38,7 +39,7 @@ Changelog
 
 - Do not use '--always-copy' in VirtualEnv's any longer. This caused more pain
   and inconsistencies than it provided value.
-  
+
 1.6.0 (2017-11-07)
 ------------------
 
