@@ -7,6 +7,9 @@ Changelog
 - `git.Clone` uses `git reset` instead of merge/checkout to get the defined
    state.
 
+- batou uses `git reset` instead of merge/checkout to update the remote
+  deployment repository.
+
 
 1.6.1 (2017-11-27)
 ------------------
