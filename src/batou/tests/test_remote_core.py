@@ -226,3 +226,21 @@ def test_channelexec_handle_exception(remote_core_mod):
          ('     /bin/sh: fdjkahfkjdasbfda: command not found\n     ',),
          {}),
         ('batou-error', None)]
+
+
+def test_git_update_working_copy(tmpdir):
+    with tmpdir.as_cwd():
+        remote_core.cmd('git init')
+        tmpdir.join('foo.txt').write('bar')
+        remote_core.cmd('git add foo.txt')
+        remote_core.cmd('git commit -m bar')
+        remote_core.cmd('git checkout -b abranch')
+        tmpdir.join('foo.txt').write('baz')
+        remote_core.cmd('git commit -m baz -a')
+
+        tmpdir.join('untracked-file').write('untracked')
+
+        remote_core.git_update_working_copy('master')
+
+        assert 'bar' == tmpdir.join('foo.txt').read()
+        assert 'untracked' == tmpdir.join('untracked-file').read()
