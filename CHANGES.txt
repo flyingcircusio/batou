@@ -84,7 +84,7 @@ Changelog
 --------------------
 
 - Add a way to override DNS lookup during configuration, to better support
- migration scenarios.
+  migration scenarios.
 
 
 The change log of older releases is in `Historical releases`_.
