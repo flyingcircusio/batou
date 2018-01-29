@@ -4,7 +4,7 @@ Changelog
 1.7.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix git deployment repository handling.
 
 
 1.7.0 (2018-01-29)
