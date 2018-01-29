@@ -228,19 +228,35 @@ def test_channelexec_handle_exception(remote_core_mod):
         ('batou-error', None)]
 
 
-def test_git_update_working_copy(tmpdir):
-    with tmpdir.as_cwd():
+def test_git_remote_init_bundle(tmpdir):
+    source = tmpdir.mkdir('source')
+    dest = tmpdir.mkdir('dest')
+    with source.as_cwd():
         remote_core.cmd('git init')
-        tmpdir.join('foo.txt').write('bar')
+        source.join('foo.txt').write('bar')
         remote_core.cmd('git add foo.txt')
         remote_core.cmd('git commit -m bar')
-        remote_core.cmd('git checkout -b abranch')
-        tmpdir.join('foo.txt').write('baz')
-        remote_core.cmd('git commit -m baz -a')
+        remote_core.cmd('git bundle create {} master '.format(
+            dest.join('batou-bundle.git')))
 
-        tmpdir.join('untracked-file').write('untracked')
+    remote_core.ensure_repository(str(dest), 'git-bundle')
+    remote_core.git_unbundle_code()
+    remote_core.git_update_working_copy('master')
 
+    assert 'bar' == dest.join('foo.txt').read()
+
+
+def test_git_remote_init_pull(tmpdir):
+    source = tmpdir.mkdir('source')
+    dest = tmpdir.mkdir('dest')
+    with source.as_cwd():
+        remote_core.cmd('git init')
+        source.join('foo.txt').write('bar')
+        remote_core.cmd('git add foo.txt')
+        remote_core.cmd('git commit -m bar')
+
+        remote_core.ensure_repository(str(dest), 'git-bundle')
+        remote_core.git_pull_code(str(source), 'master')
         remote_core.git_update_working_copy('master')
 
-        assert 'bar' == tmpdir.join('foo.txt').read()
-        assert 'untracked' == tmpdir.join('untracked-file').read()
+    assert 'bar' == dest.join('foo.txt').read()

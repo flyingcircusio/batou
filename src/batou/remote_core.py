@@ -227,6 +227,9 @@ def hg_update_working_copy(branch):
     return id
 
 
+git_origin = None
+
+
 def git_current_head(branch):
     target = target_directory
     os.chdir(target)
@@ -237,6 +240,8 @@ def git_current_head(branch):
 
 
 def git_pull_code(upstream, branch):
+    global git_origin
+    git_origin = 'batou-pull'
     target = target_directory
     os.chdir(target)
     out, err = cmd('git remote -v')
@@ -246,28 +251,33 @@ def git_pull_code(upstream, branch):
         if not line:
             continue
         name, remote, _ = line.split('\t', 3)
-        if name != 'batou-pull':
+        if name != git_origin:
             continue
         if remote != upstream:
-            cmd('git remote remove batou-pull')
+            cmd('git remote remove {origin}'.format(origin=git_origin))
         # The batou-pull remote is correctly configured.
         break
     else:
-        cmd('git remote add batou-pull {upstream}'.format(upstream=upstream))
+        cmd('git remote add {origin} {upstream}'.format(origin=git_origin,
+                                                       upstream=upstream))
     cmd('git fetch batou-pull')
 
 
 def git_unbundle_code():
+    global git_origin
+    git_origin = 'batou-bundle'
     target = target_directory
     os.chdir(target)
     out, err = cmd('git remote -v')
     if 'batou-bundle' not in out:
-        cmd('git remote add batou-bundle batou-bundle.git')
-    cmd('git fetch batou-bundle')
+        cmd('git remote add {origin} batou-bundle.git'.format(
+                origin=git_origin))
+    cmd('git fetch {origin}'.format(origin=git_origin))
 
 
 def git_update_working_copy(branch):
-    cmd('git reset --hard {branch}'.format(branch=branch))
+    cmd('git reset --hard {origin}/{branch}'.format(origin=git_origin,
+                                                    branch=branch))
     id, _ = cmd('git rev-parse HEAD')
     return id.strip()
 
