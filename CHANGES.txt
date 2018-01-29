@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.6.2 (unreleased)
+1.7.0 (2018-01-29)
 ------------------
 
 - `git.Clone` uses `git reset` instead of merge/checkout to get the defined
