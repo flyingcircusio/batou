@@ -14,6 +14,21 @@ cleartext_file = os.path.join(FIXTURE, 'cleartext.cfg')
 encrypted_file = os.path.join(FIXTURE, 'encrypted.cfg')
 
 
+@pytest.fixture(scope='session', autouse=True)
+def cleanup_gpg_sockets():
+    yield
+    for path in [
+            'S.dirmngr',
+            'S.gpg-agent',
+            'S.gpg-agent.browser',
+            'S.gpg-agent.extra',
+            'S.gpg-agent.ssh']:
+        try:
+            os.remove(os.path.join(FIXTURE, 'gnupg', path))
+        except OSError:
+            pass
+
+
 class EncryptedConfigFile(BaseEncConfigFile):
 
     gpg_homedir = os.path.join(FIXTURE, 'gnupg')
