@@ -356,7 +356,8 @@ class RepositoryDifferentError(DeploymentError):
 
     def report(self):
         output.error(
-            "The remote working copy is based on a different revision.")
+            "The remote working copy is based on a different revision. "
+            "Maybe you tried to deploy from the wrong branch.")
         output.tabular("Local", self.local, red=True)
         output.tabular("Remote", self.remote, red=True)
 

@@ -10,6 +10,7 @@ Changelog
 - batou uses `git reset` instead of merge/checkout to update the remote
   deployment repository.
 
+- Improve error message when deploying a wrong branch.
 
 1.6.1 (2017-11-27)
 ------------------
