@@ -305,7 +305,8 @@ class Environment(object):
             cmd('vagrant up')
         elif self.connect_method == 'kitchen':
             output.step("kitchen", "Ensuring machines are up ...")
-            cmd('kitchen create')
+            for fqdn in self.hosts:
+                cmd('kitchen create {}'.format(fqdn))
             if 'BATOU_POST_KITCHEN_CREATE_CMD' in os.environ:
                 cmd("kitchen exec -c '{}'".format(
                     os.environ['BATOU_POST_KITCHEN_CREATE_CMD']))
