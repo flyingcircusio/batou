@@ -621,3 +621,11 @@ def test_purge_globs_and_deletes_tree(root):
     root.component += Purge('sourc*')
     root.component.deploy()
     assert sorted(os.listdir('work/mycomponent')) == []
+
+
+def test_purge_globs_and_deletes_files(root):
+    os.mkdir('work/mycomponent/source-one')
+    open('work/mycomponent/source-two', 'w').close()
+    root.component += Purge('sourc*')
+    root.component.deploy()
+    assert sorted(os.listdir('work/mycomponent')) == []

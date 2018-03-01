@@ -422,4 +422,7 @@ class Purge(Component):
 
     def update(self):
         for filename in glob.glob(self.pattern):
-            shutil.rmtree(filename)
+            if os.path.isdir(filename):
+                shutil.rmtree(filename)
+            else:
+                os.remove(filename)
