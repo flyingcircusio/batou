@@ -259,7 +259,7 @@ def git_pull_code(upstream, branch):
         break
     else:
         cmd('git remote add {origin} {upstream}'.format(origin=git_origin,
-                                                       upstream=upstream))
+                                                        upstream=upstream))
     cmd('git fetch batou-pull')
 
 
