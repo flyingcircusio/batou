@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.7.2 (unreleased)
+1.7.2 (2018-03-01)
 ------------------
 
 - Fix `batou.lib.file.Purge` to be able to delete files again.
