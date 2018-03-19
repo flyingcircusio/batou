@@ -227,7 +227,11 @@ def hg_update_working_copy(branch):
     return id
 
 
-git_origin = None
+# Unbundle is only called if there actually is something to unbundle (see
+# `GitBundleRepository`). Hence setting the origin inside `git_unbundle_code`
+# doesn't work very well. OTOH `git_pull_code` is called regardles of the
+# repository state. So default to `git-bundle`, and only change for pull.
+git_origin = 'batou-bundle'
 
 
 def git_current_head(branch):
@@ -264,8 +268,6 @@ def git_pull_code(upstream, branch):
 
 
 def git_unbundle_code():
-    global git_origin
-    git_origin = 'batou-bundle'
     target = target_directory
     os.chdir(target)
     out, err = cmd('git remote -v')
