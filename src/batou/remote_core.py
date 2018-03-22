@@ -293,7 +293,7 @@ def build_batou(deployment_base, bootstrap, batou_args=()):
 
     args = ['--help']
     if batou_args:
-        args.extend(args)
+        args.extend(batou_args)
 
     cmd('./batou {}'.format(' '.join(args)))
 
