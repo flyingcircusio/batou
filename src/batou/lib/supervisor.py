@@ -161,6 +161,8 @@ class Supervisor(Component):
     loglevel = 'info'
 
     logrotate = Attribute('literal', 'False')
+    logrotate_options = Attribute(str, '')
+
     nagios = Attribute('literal', 'False')
 
     # Allows turning "everything off" via environment configuration
@@ -199,7 +201,10 @@ class Supervisor(Component):
             'kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)')
 
         if self.logrotate:
-            self += RotatedLogfile('var/log/*.log', postrotate=postrotate)
+            self += RotatedLogfile(
+                'var/log/*.log',
+                args=self.logrotate_options,
+                postrotate=postrotate)
 
         self += Service('bin/supervisord', pidfile=self.pidfile)
         service = self._
