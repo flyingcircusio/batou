@@ -94,7 +94,7 @@ def bootstrap(activate=True):
                 needed = False
         if needed:
             print "Installing {}".format(req)
-            cmd('.batou/bin/pip install -U {} --egg --no-deps '
+            cmd('.batou/bin/pip install -U {} --no-deps '
                 '"{}"'.format(pip_options, req))
 
     if activate:

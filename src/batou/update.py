@@ -33,8 +33,8 @@ def main(version, develop, finish, fast=False, reset=False):
         print (
             "See the changelog at "
             "https://batou.readthedocs.org/en/latest/changes.html")
-        cmd('.batou/bin/pip install --egg batou=={}'.format(version))
+        cmd('.batou/bin/pip install batou=={}'.format(version))
     else:
-        cmd('.batou/bin/pip install --egg -e {}'.format(develop))
+        cmd('.batou/bin/pip install -e {}'.format(develop))
     cmd('./batou update --version=\'{}\' '
         '\'--develop={}\' --finish'.format(version, develop))
