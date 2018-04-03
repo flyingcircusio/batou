@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.7.4 (unreleased)
+1.7.4 (2018-04-03)
 ------------------
 
 - Fix compatability to `pip>=10.0` by no longer forcing eggs instead of wheels.
