@@ -88,7 +88,7 @@ def bootstrap(activate=True):
         if egg:
             try:
                 pkg_resources.require(egg)
-            except:
+            except Exception:
                 pass
             else:
                 needed = False
