@@ -139,7 +139,7 @@ class VirtualEnvPy2_6(VirtualEnvPyBase):
     venv_version = '15.0.3'
     venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
 
-    install_options = ('--ignore-installed', '--egg')
+    install_options = ('--ignore-installed', )
 
 
 class VirtualEnvPy2_7(VirtualEnvPyBase):
@@ -148,7 +148,7 @@ class VirtualEnvPy2_7(VirtualEnvPyBase):
     venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
     venv_options = ()
 
-    install_options = ('--egg', )
+    install_options = ()
 
 
 class VirtualEnvPy3_3(VirtualEnvPyBase):
@@ -157,7 +157,7 @@ class VirtualEnvPy3_3(VirtualEnvPyBase):
     venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
     venv_options = ()
 
-    install_options = ('--egg', )
+    install_options = ()
 
 
 class VirtualEnvPy3_4(VirtualEnvPyBase):
@@ -166,7 +166,7 @@ class VirtualEnvPy3_4(VirtualEnvPyBase):
     venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
     venv_options = ()
 
-    install_options = ('--egg', )
+    install_options = ()
 
 
 class VirtualEnvPy3_5(VirtualEnvPyBase):
@@ -175,7 +175,7 @@ class VirtualEnvPy3_5(VirtualEnvPyBase):
     venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
     venv_options = ()
 
-    install_options = ('--egg', )
+    install_options = ()
 
 
 class PipDownload(Component):

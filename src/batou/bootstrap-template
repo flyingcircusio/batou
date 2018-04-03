@@ -87,11 +87,11 @@ def prepare():
             # we're bootstrapping a new project. just get whatever version.
             # this will self-destruct this file later. :)
             develop = ''
-            spec = '--egg batou --pre'
+            spec = 'batou --pre'
         elif develop:
             spec = '-e {}'.format(develop)
         else:
-            spec = '--egg batou=={}'.format(version)
+            spec = 'batou=={}'.format(version)
 
         cmd('.batou/bin/pip install --ignore-installed {}'.format(spec))
 
