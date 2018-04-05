@@ -4,7 +4,8 @@ Changelog
 1.7.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix compatability to `pip>=10.0` by using the ``download`` command instead of
+  ``install --download``.
 
 
 1.7.4 (2018-04-03)
