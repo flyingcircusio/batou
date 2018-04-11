@@ -4,7 +4,8 @@ Changelog
 1.7.6 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Show stdout of rsync command at verification step of SyncDirectory when
+  running in debug mode.
 
 
 1.7.5 (2018-04-05)
