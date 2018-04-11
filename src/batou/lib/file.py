@@ -187,6 +187,11 @@ class SyncDirectory(Component):
     def verify(self):
         stdout, stderr = self.cmd('rsync {} {}{}/ {}'.format(
             self.verify_opts, self.exclude_arg, self.source, self.path))
+
+        # In case of we see non-convergent rsync runs
+        output.annotate('rsync result:', debug=True)
+        output.annotate(stdout, debug=True)
+
         if len(stdout.strip().splitlines()) - 4 > 0:
             raise batou.UpdateNeeded()
 
