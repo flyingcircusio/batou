@@ -848,6 +848,22 @@ Here is how a component installing Python packages looks like:
           self += venv
 
           venv += Package('Flask', version='0.10.1')
+          
+          
+Add the "Flask" compoment to your local configuration:
+
+.. code-block:: ini
+  :caption: environments/local.cfg (v3)
+
+  [environment]
+  connect_method = local
+
+  [hosts]
+  localhost = tick, flask
+
+  [component:tick]
+  sleep = 10
+
 
 .. code-block:: console
 
@@ -963,7 +979,7 @@ into a component file and registering it with your environment:
   from batou.lib.supervisor import Supervisor
 
 .. code-block:: ini
-  :caption: environments/local.cfg (v3)
+  :caption: environments/local.cfg (v4)
 
   [environment]
   connect_method = local
