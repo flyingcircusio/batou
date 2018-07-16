@@ -178,6 +178,15 @@ class VirtualEnvPy3_5(VirtualEnvPyBase):
     install_options = ()
 
 
+class VirtualEnvPy3_6(VirtualEnvPyBase):
+
+    venv_version = '15.0.3'
+    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
+    venv_options = ()
+
+    install_options = ()
+
+
 class PipDownload(Component):
 
     namevar = 'package'
