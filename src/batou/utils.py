@@ -170,6 +170,11 @@ class Address(object):
         if v6_address:
             self.listen_v6 = NetLoc(v6_address, str(port))
 
+    def __lt__(self, other):
+        if isinstance(other, Address):
+            return str(self) < str(other)
+        return NotImplemented
+
     def __str__(self):
         return str(self.connect)
 
