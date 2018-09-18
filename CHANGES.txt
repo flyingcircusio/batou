@@ -4,7 +4,7 @@ Changelog
 1.8.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Implement basic sorting for Address-objects allowing to sort list of addresses.
 
 
 1.8.0 (2018-08-16)
