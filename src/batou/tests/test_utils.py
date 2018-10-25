@@ -153,6 +153,16 @@ class AddressNetLocTests(unittest.TestCase):
         self.assertEquals('8080', address.connect.port)
 
 
+def test_address_sort():
+    address1 = Address('127.0.0.5:8080')
+    address2 = Address('localhost:8080')
+    address3 = Address('127.10.1.5:8080')
+    address4 = Address('127.122.122.133:8080')
+    list1 = sorted([address1, address2, address3, address4])
+    print(list1)
+    assert [address1, address3, address4, address2] == list1
+
+
 def test_address_format_with_port():
     assert str(Address('127.0.0.1:8080').listen) == '127.0.0.1:8080'
 
