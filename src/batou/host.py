@@ -137,7 +137,9 @@ class RemoteHost(Host):
                     self.fqdn, interpreter,
                     self.environment.connect_method))
             self.channel = self.gateway.remote_exec(remote_core)
-            if self.rpc.whoami() != self.environment.service_user:
+            if not self.environment.service_user:
+                self.environment.service_user = self.rpc.whoami()
+            elif self.rpc.whoami() != self.environment.service_user:
                 try_sudo = True
                 self.disconnect()
         except IOError:

@@ -243,9 +243,6 @@ class Environment(object):
         if self.connect_method is None:
             self.connect_method = 'ssh'
 
-        if self.service_user is None:
-            self.service_user = pwd.getpwuid(os.getuid()).pw_name
-
         if self.target_directory is None:
             self.target_directory = '~/deployment'
 
