@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.8.1 (unreleased)
+1.9.0 (2018-10-26)
 ------------------
 
 - Force clone of git repositories when the remote url changes (#106661).
