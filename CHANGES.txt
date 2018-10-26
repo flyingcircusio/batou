@@ -6,7 +6,7 @@ Changelog
 
 - Force clone of git repositories when the remote url changes (#106661).
 
-- Implement basic sorting for Address-objects allowing to sort list of addresses.
+- Implement basic sorting for Address-objects allowing to sort list of addresses (#100499)
 
 
 1.8.0 (2018-08-16)
