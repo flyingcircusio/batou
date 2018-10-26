@@ -1,6 +1,6 @@
 from batou import UpdateNeeded, output
 from batou.component import Component
-from batou.lib.file import Directory
+from batou.lib.file import Directory, ensure_path_nonexistent
 import os.path
 
 
@@ -20,12 +20,19 @@ class Clone(Component):
         self += Directory(self.target)
 
     def verify(self):
+        self._force_clone = False
         if not os.path.exists(self.target):
+            self._force_clone = True
             raise UpdateNeeded()
         # if the path does exist but isn't a directory, just let the error
         # bubble for now, the message will at least tell something useful
         with self.chdir(self.target):
             if not os.path.exists('.git'):
+                self._force_clone = True
+                raise UpdateNeeded()
+
+            if self.remote_url() != self.url:
+                self._force_clone = True
                 raise UpdateNeeded()
 
             if not self.vcs_update:
@@ -81,9 +88,15 @@ class Clone(Component):
             stdout, stderr = self.cmd('git status --porcelain')
         return bool(stdout.strip())
 
+    def remote_url(self):
+        with self.chdir(self.target):
+            stdout, stderr = self.cmd('git remote get-url origin')
+        return stdout.strip()
+
     def update(self):
         just_cloned = False
-        if not os.path.exists(self.expand('{{component.target}}/.git')):
+        if self._force_clone:
+            ensure_path_nonexistent(self.target)
             self.cmd(self.expand(
                 'git clone {{component.url}} {{component.target}}'))
             just_cloned = True

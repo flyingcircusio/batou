@@ -5,8 +5,8 @@ import pytest
 
 
 @pytest.fixture(scope='function')
-def repos_path(root):
-    repos_path = os.path.join(root.environment.workdir_base, 'upstream')
+def repos_path(root, name='upstream'):
+    repos_path = os.path.join(root.environment.workdir_base, name)
     cmd('mkdir {dir}; cd {dir}; git init;'
         'git config user.name Jenkins;'
         'git config user.email jenkins@example.com;'
@@ -164,3 +164,20 @@ def test_clean_clone_vcs_update_false_leaves_changes_intact(root, repos_path):
     root.component.deploy()
     assert 'asdf\n' == open(root.component.map('clone/foo')).read()
     assert not os.path.exists(root.component.map('clone/bar'))
+
+
+@pytest.mark.slow
+def test_changed_remote_is_updated(root, repos_path):
+    git = batou.lib.git.Clone(repos_path, target='clone', branch='master')
+    root.component += git
+
+    # Fresh, unrelated repos
+    repos2_path = globals()['repos_path'](root, name='upstream2')
+    cmd('cd {dir}; echo baz >bar; git add .;'
+        'git commit -m "commit"'.format(dir=repos2_path))
+
+    root.component.deploy()
+    assert not os.path.exists(root.component.map('clone/bar'))
+    git.url = repos2_path
+    root.component.deploy()
+    assert os.path.exists(root.component.map('clone/bar'))
