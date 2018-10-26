@@ -4,6 +4,8 @@ Changelog
 1.8.1 (unreleased)
 ------------------
 
+- Force clone of git repositories when the remote url changes (#106661).
+
 - Implement basic sorting for Address-objects allowing to sort list of addresses.
 
 
