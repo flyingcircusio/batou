@@ -4,7 +4,7 @@ Changelog
 1.9.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed deploying into "own" user (no service user defined in environment) when remote and local user names are different (#106809, wosc).
 
 
 1.9.0 (2018-10-26)
