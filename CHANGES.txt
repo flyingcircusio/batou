@@ -6,6 +6,8 @@ Changelog
 
 - Fixed deploying into "own" user (no service user defined in environment) when remote and local user names are different (#106809, wosc).
 
+- Use Python's built-in `-m venv` to create virtualenvs for Python >=3.3 (#107117).
+
 
 1.9.0 (2018-10-26)
 ------------------

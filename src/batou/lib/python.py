@@ -35,8 +35,8 @@ class VirtualEnv(Component):
         return 'bin/python{}'.format(self.version)
 
     def configure(self):
-        self.venv = globals()[
-            'VirtualEnvPy{}'.format(self.version.replace('.', '_'))]()
+        class_name = 'VirtualEnvPy{}'.format(self.version.replace('.', '_'))
+        self.venv = globals().get(class_name, VirtualEnvPy)()
         self += self.venv
 
         if not self.executable:
@@ -52,15 +52,7 @@ class VirtualEnvPyBase(Component):
     installer = 'pip'
     install_options = ('--ignore-installed',)
 
-    def configure(self):
-        self.base = VirtualEnvDownload(
-            self.venv_version,
-            checksum=self.venv_checksum)
-        self += self.base
-
     def verify(self):
-        # Did we install an updated virtualenv package in between?
-        self.assert_file_is_current('bin/python', [self.base.venv_cmd])
         self.assert_cmd(
             'bin/python -c "import sys; '
             'assert sys.version_info[:2] == {}"'.format(repr(
@@ -72,11 +64,6 @@ class VirtualEnvPyBase(Component):
     def update(self):
         self.cmd('chmod -R u+w bin/ lib/ include/ .Python || true')
         self.cmd('rm -rf bin/ lib/ include/ .Python')
-        self.cmd('{} {} {} --python={} {}'.format(
-            self.parent.executable,
-            self.base.venv_cmd,
-            ' '.join(self.venv_options),
-            self.parent.executable, self.workdir))
 
     def verify_pkg(self, pkg):
         try:
@@ -134,57 +121,41 @@ class VirtualEnvPyBase(Component):
                  env=pkg.env if pkg.env else {})
 
 
-class VirtualEnvPy2_6(VirtualEnvPyBase):
-
-    venv_version = '15.0.3'
-    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
-
-    install_options = ('--ignore-installed', )
-
-
 class VirtualEnvPy2_7(VirtualEnvPyBase):
 
-    venv_version = '15.0.3'
-    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
+    venv_version = '16.1.0'
+    venv_checksum = 'md5:c5cee0abd3051f51e2dfe8c48f1c0aa5'
     venv_options = ()
 
     install_options = ()
 
+    def configure(self):
+        self.base = VirtualEnvDownload(
+            self.venv_version,
+            checksum=self.venv_checksum)
+        self += self.base
 
-class VirtualEnvPy3_3(VirtualEnvPyBase):
+    def verify(self):
+        # Did we install an updated virtualenv package in between?
+        self.assert_file_is_current('bin/python', [self.base.venv_cmd])
+        super(VirtualEnvPy2_7, self).verify()
 
-    venv_version = '15.0.3'
-    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
-    venv_options = ()
-
-    install_options = ()
-
-
-class VirtualEnvPy3_4(VirtualEnvPyBase):
-
-    venv_version = '15.0.3'
-    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
-    venv_options = ()
-
-    install_options = ()
-
-
-class VirtualEnvPy3_5(VirtualEnvPyBase):
-
-    venv_version = '15.0.3'
-    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
-    venv_options = ()
-
-    install_options = ()
+    def update(self):
+        super(VirtualEnvPy2_7, self).update()
+        self.cmd('{} {} {} --python={} {}'.format(
+            self.parent.executable,
+            self.base.venv_cmd,
+            ' '.join(self.venv_options),
+            self.parent.executable, self.workdir))
 
 
-class VirtualEnvPy3_6(VirtualEnvPyBase):
+class VirtualEnvPy(VirtualEnvPyBase):
+    """VirtualEnv for Python with `-m venv` (>=3.3)"""
 
-    venv_version = '15.0.3'
-    venv_checksum = 'md5:a5a061ad8a37d973d27eb197d05d99bf'
-    venv_options = ()
-
-    install_options = ()
+    def update(self):
+        super(VirtualEnvPy, self).update()
+        self.cmd('{} -m venv {}'.format(
+            self.parent.executable, self.workdir))
 
 
 class PipDownload(Component):
@@ -239,7 +210,8 @@ class VirtualEnvDownload(Component):
         download = self._
         self += Extract(download.target, target='.')
         extracted_dir = os.path.basename(download.target).rstrip('.tar.gz')
-        self.venv_cmd = self.workdir + '/' + extracted_dir + '/virtualenv.py'
+        self.venv_cmd = (
+            self.workdir + '/' + extracted_dir + '/src/virtualenv.py')
 
     def verify(self):
         self.assert_no_subcomponent_changes()
