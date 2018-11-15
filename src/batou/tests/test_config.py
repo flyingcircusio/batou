@@ -55,7 +55,6 @@ def test_production_environment_is_loaded(env_prod):
 
 
 def test_dev_environment_is_loaded(env):
-    assert pwd.getpwuid(os.getuid()).pw_name == env.service_user
     assert env.branch == 'default'
     assert env.host_domain is None
     assert set(env.hosts.keys()) == set(['localhost', 'host2'])
