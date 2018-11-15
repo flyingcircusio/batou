@@ -21,7 +21,6 @@ import batou.vfs
 import glob
 import os
 import os.path
-import pwd
 import sys
 
 

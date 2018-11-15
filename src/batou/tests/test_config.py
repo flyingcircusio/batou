@@ -3,8 +3,7 @@ from batou.environment import Environment
 from batou import MissingEnvironment
 import os
 import os.path
-import pwd
-import pytest
+yimport pytest
 
 
 def test_parse_nonexisting_environment_raises_error(tmpdir):
