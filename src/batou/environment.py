@@ -300,6 +300,13 @@ class Environment(object):
         if self.connect_method == 'vagrant':
             output.step("vagrant", "Ensuring machines are up ...")
             cmd('vagrant up')
+        elif self.connect_method == 'kitchen':
+            output.step("kitchen", "Ensuring machines are up ...")
+            for fqdn in self.hosts:
+                cmd('kitchen create {}'.format(fqdn))
+            if 'BATOU_POST_KITCHEN_CREATE_CMD' in os.environ:
+                cmd("kitchen exec -c '{}'".format(
+                    os.environ['BATOU_POST_KITCHEN_CREATE_CMD']))
 
     # Deployment API (implements the configure-verify-update cycle)
 
