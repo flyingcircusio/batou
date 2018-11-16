@@ -284,6 +284,38 @@ home directory in a directory named `deployment` by default:
   ^C
 
 
+Similarly, you can deploy into VMs that were set up by the `test kitchen
+<https://kitchen.ci>`_ integration testing tool:
+
+.. code-block:: yaml
+  :caption: .kitchen.yml
+
+  ---
+  driver:
+    name: vagrant
+
+  platforms:
+    - name: ubuntu-16.04
+
+  suites:
+    - name: tick
+
+.. code-block:: ini
+  :caption: environments/kitchen.cfg
+
+  [environment]
+  connect_method = kitchen
+  update_method = rsync
+  service_user = vagrant
+
+  [hosts]
+  tick-ubuntu-1604 = tick
+
+.. code-block:: console
+
+  $ ./batou deploy kitchen
+
+
 Remote environments
 -------------------
 
