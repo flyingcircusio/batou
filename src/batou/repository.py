@@ -69,7 +69,7 @@ class RSyncRepository(Repository):
 
     def update(self, host):
         env = self.environment
-        blacklist = ['.batou', 'work', '.git', '.hg', '.vagrant',
+        blacklist = ['.batou', 'work', '.git', '.hg', '.vagrant', '.kitchen',
                      '.batou-lock']
         for candidate in os.listdir(env.base_dir):
             if candidate in blacklist:

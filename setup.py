@@ -23,6 +23,7 @@ setup(
         'requests',
         'setuptools',
         'execnet',
+        'pyyaml',
         'py'
     ],
     extras_require={
