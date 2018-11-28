@@ -1,8 +1,8 @@
 Changelog
 =========
 
-1.9.1 (unreleased)
-------------------
+1.10.0 (2018-11-28)
+-------------------
 
 - Add support for deploying via 'test kitchen' (http://kitchen.ci/)
 
