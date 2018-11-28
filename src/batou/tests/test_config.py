@@ -3,7 +3,6 @@ from batou.environment import Environment
 from batou import MissingEnvironment
 import os
 import os.path
-import pwd
 import pytest
 
 
