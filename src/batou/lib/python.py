@@ -1,5 +1,6 @@
 from batou.component import Component
 from batou.lib.archive import Extract
+from batou.lib.download import Download
 from batou.utils import CmdExecutionError
 import batou
 import os.path
@@ -124,7 +125,7 @@ class VirtualEnvPyBase(Component):
 class VirtualEnvPy2_7(VirtualEnvPyBase):
 
     venv_version = '16.1.0'
-    venv_checksum = 'md5:c5cee0abd3051f51e2dfe8c48f1c0aa5'
+    venv_checksum = 'md5:ad6d2ebd6885b3a2b4ff2030ce532a2f'
     venv_options = ()
 
     install_options = ()
@@ -158,39 +159,6 @@ class VirtualEnvPy(VirtualEnvPyBase):
             self.parent.executable, self.workdir))
 
 
-class PipDownload(Component):
-
-    namevar = 'package'
-    version = None
-    checksum = None
-    format = 'tar.gz'  # The format we expect pip to download
-
-    def configure(self):
-        self.target = self.expand(
-            '{{component.package}}-{{component.version}}.{{component.format}}')
-        self.checksum_function, self.checksum = self.checksum.split(':')
-        self.pip = os.path.join(os.path.dirname(sys.executable), 'pip')
-
-    def verify(self):
-        if not os.path.exists(self.target):
-            raise batou.UpdateNeeded()
-        if self.checksum != batou.utils.hash(self.target,
-                                             self.checksum_function):
-            raise batou.UpdateNeeded()
-
-    def update(self):
-        self.cmd(
-            '{{component.pip}} --isolated --disable-pip-version-check'
-            ' download --dest .'
-            ' --no-binary=:all: {{component.package}}=={{component.version}}'
-            ' --no-deps')
-        target_checksum = batou.utils.hash(self.target, self.checksum_function)
-        assert self.checksum == target_checksum, '''\
-Checksum mismatch!
-expected: %s
-got: %s''' % (self.checksum, target_checksum)
-
-
 class VirtualEnvDownload(Component):
     """Manage virtualenv package download and extraction.
 
@@ -199,17 +167,20 @@ class VirtualEnvDownload(Component):
 
     namevar = 'version'
     checksum = None
+    download_url = (
+        'https://github.com/pypa/virtualenv/tarball/{{component.version}}')
 
     def configure(self):
         # This will manage central, version-specific virtualenv base
         # installations for multiple components to share.
         self.workdir = self.environment.workdir_base + '/.virtualenv'
-        self += PipDownload(
-            'virtualenv', version=self.version,
+        self += Download(
+            self.expand(self.download_url),
+            target=self.version + '.tar.gz',  # so Extract knows what to do
             checksum=self.checksum)
         download = self._
-        self += Extract(download.target, target='.')
-        extracted_dir = os.path.basename(download.target).rstrip('.tar.gz')
+        extracted_dir = 'virtualenv-' + self.version
+        self += Extract(download.target, target=extracted_dir, strip=1)
         self.venv_cmd = (
             self.workdir + '/' + extracted_dir + '/src/virtualenv.py')
 
