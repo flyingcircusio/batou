@@ -3,8 +3,6 @@ from batou.lib.archive import Extract
 from batou.lib.download import Download
 from batou.utils import CmdExecutionError
 import batou
-import os.path
-import sys
 
 
 class VirtualEnv(Component):
