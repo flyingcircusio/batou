@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.10.1 (unreleased)
+1.10.1 (2019-01-31)
 -------------------
 
 - Download virtualenv directly from githup instead of using `pip download`. Using `pip download` makes no sense anymore, as does not only download anymore. (Thanks wosc)
