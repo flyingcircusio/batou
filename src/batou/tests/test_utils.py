@@ -53,6 +53,62 @@ def test_resolve_v6_does_not_return_link_local_addresses():
     assert resolve_v6('foo.example.com', 80, resolve_override=ov) is None
 
 
+def test_address_without_implicit_or_explicit_port_fails():
+    with pytest.raises(ValueError):
+        Address('localhost')
+    Address('localhost:8080')
+    Address('localhost', 8080)
+
+
+def test_address_resolves_listen_address():
+    address = Address('localhost:8080')
+    assert '127.0.0.1:8080' == str(address.listen)
+    assert 'localhost:8080' == str(address.connect)
+
+
+def test_address_netloc_attributes():
+    address = Address('localhost:8080')
+    assert '127.0.0.1' == address.listen.host
+    assert '8080' == address.listen.port
+    assert 'localhost' == address.connect.host
+    assert '8080' == address.connect.port
+
+
+def test_address_sort():
+    address1 = Address('127.0.0.5:8080')
+    address2 = Address('localhost:8080')
+    address3 = Address('127.10.1.5:8080')
+    address4 = Address('127.122.122.133:8080')
+    list1 = sorted([address1, address2, address3, address4])
+    print(list1)
+    assert [address1, address3, address4, address2] == list1
+
+
+def test_address_format_with_port():
+    assert str(Address('127.0.0.1:8080').listen) == '127.0.0.1:8080'
+
+
+@mock.patch('socket.getaddrinfo')
+def test_address_should_contain_v6_address_if_available(gai):
+    gai.return_value = [(None, None, None, None, ('::1',))]
+    address = Address('localhost:8080')
+    assert address.listen_v6.host == '::1'
+
+
+@mock.patch('socket.getaddrinfo',
+            side_effect=socket.gaierror('lookup failed'))
+def test_address_should_not_contain_v6_address_if_not_resolvable(gai):
+    assert Address('localhost', 22).listen_v6 is None
+
+
+def test_netlock_str_should_brace_ipv6_addresses():
+    assert '[::1]:80' == str(NetLoc('::1', 80))
+
+
+def test_netloc_format_without_port():
+    assert str(NetLoc('127.0.0.1')) == '127.0.0.1'
+
+
 def test_flatten():
     assert [1, 2, 3, 4] == flatten([[1, 2], [3, 4]])
 
@@ -131,61 +187,6 @@ class NotifyTests(unittest.TestCase):
     @mock.patch('subprocess.check_call', side_effect=OSError)
     def test_notify_does_not_fail_if_os_call_fails(self, call):
         notify('foo', 'bar')
-
-
-class AddressNetLocTests(unittest.TestCase):
-
-    def test_address_without_implicit_or_explicit_port_fails(self):
-        self.assertRaises(ValueError, Address, 'localhost')
-        Address('localhost:8080')
-        Address('localhost', 8080)
-
-    def test_address_resolves_listen_address(self):
-        address = Address('localhost:8080')
-        self.assertEquals('127.0.0.1:8080', str(address.listen))
-        self.assertEquals('localhost:8080', str(address.connect))
-
-    def test_address_netloc_attributes(self):
-        address = Address('localhost:8080')
-        self.assertEquals('127.0.0.1', address.listen.host)
-        self.assertEquals('8080', address.listen.port)
-        self.assertEquals('localhost', address.connect.host)
-        self.assertEquals('8080', address.connect.port)
-
-
-def test_address_sort():
-    address1 = Address('127.0.0.5:8080')
-    address2 = Address('localhost:8080')
-    address3 = Address('127.10.1.5:8080')
-    address4 = Address('127.122.122.133:8080')
-    list1 = sorted([address1, address2, address3, address4])
-    print(list1)
-    assert [address1, address3, address4, address2] == list1
-
-
-def test_address_format_with_port():
-    assert str(Address('127.0.0.1:8080').listen) == '127.0.0.1:8080'
-
-
-@mock.patch('socket.getaddrinfo')
-def test_address_should_contain_v6_address_if_available(gai):
-    gai.return_value = [(None, None, None, None, ('::1',))]
-    address = Address('localhost:8080')
-    assert address.listen_v6.host == '::1'
-
-
-@mock.patch('socket.getaddrinfo',
-            side_effect=socket.gaierror('lookup failed'))
-def test_address_should_not_contain_v6_address_if_not_resolvable(gai):
-    assert Address('localhost', 22).listen_v6 is None
-
-
-def test_netlock_str_should_brace_ipv6_addresses():
-    assert '[::1]:80' == str(NetLoc('::1', 80))
-
-
-def test_netloc_format_without_port():
-    assert str(NetLoc('127.0.0.1')) == '127.0.0.1'
 
 
 def test_revert_graph_no_edges_is_identical():
