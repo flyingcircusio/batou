@@ -18,18 +18,10 @@ def test_host_without_port_resolves(ghbn):
     assert resolve('localhost') == '127.0.0.1'
 
 
-@mock.patch('socket.gethostbyname')
-def test_host_with_port_resolves_and_keeps_port(ghbn):
-    ghbn.return_value = '127.0.0.1'
-    assert resolve('localhost:8080') == '127.0.0.1:8080'
-
-
 @mock.patch('socket.gethostbyname',
             side_effect=socket.gaierror('lookup failed'))
-def test_socket_error_shows_hostname(ghbn):
-    with pytest.raises(socket.gaierror) as e:
-        resolve('localhost')
-    assert str(e.value) == 'lookup failed (localhost)'
+def test_resolve_v4_socket_error_returns_none(ghbn):
+    assert resolve('localhost') is None
 
 
 @mock.patch('socket.getaddrinfo',
@@ -82,6 +74,23 @@ def test_address_sort():
     list1 = sorted([address1, address2, address3, address4])
     print(list1)
     assert [address1, address3, address4, address2] == list1
+
+
+def test_address_v6_only():
+    from batou.utils import resolve_v6_override
+    resolve_v6_override['v6only.example.com'] = '::346'
+    try:
+        address = Address("v6only.example.com:42")
+        assert address.listen is None
+        assert address.listen_v6.host == '::346'
+    finally:
+        resolve_v6_override.clear()
+
+
+def test_address_fails_when_name_cannot_be_looked_up_at_all():
+    with pytest.raises(socket.gaierror) as f:
+        Address("does-not-exist.example.com:1234")
+    assert 'No v4 or v6 address for does-not-exist.example.com' == str(f.value)
 
 
 def test_address_format_with_port():

@@ -93,20 +93,13 @@ resolve_override = {}
 resolve_v6_override = {}
 
 
-def resolve(address, resolve_override=resolve_override):
-    if ':' in address:
-        host, port = address.split(':')
-    else:
-        host, port = address, None
-
+def resolve(host, resolve_override=resolve_override):
     address = resolve_override.get(host)
     if not address:
         try:
             address = socket.gethostbyname(host)
-        except socket.gaierror as e:
-            raise socket.gaierror('%s (%s)' % (str(e), host))
-    if port:
-        address += ':%s' % port
+        except socket.gaierror:
+            return None
     return address
 
 
@@ -165,10 +158,15 @@ class Address(object):
         if port is None:
             raise ValueError('Need port for service address.')
         self.connect = NetLoc(connect, str(port))
-        self.listen = NetLoc(resolve(connect), str(port))
+        v4_address = resolve(connect)
+        if v4_address:
+            self.listen = NetLoc(v4_address, str(port))
         v6_address = resolve_v6(connect, port)
         if v6_address:
             self.listen_v6 = NetLoc(v6_address, str(port))
+
+        if not self.listen and not self.listen_v6:
+            raise socket.gaierror("No v4 or v6 address for %s" % connect)
 
     def __lt__(self, other):
         if isinstance(other, Address):
