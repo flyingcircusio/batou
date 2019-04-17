@@ -110,7 +110,7 @@ def test_address_should_not_contain_v6_address_if_not_resolvable(gai):
     assert Address('localhost', 22).listen_v6 is None
 
 
-def test_netlock_str_should_brace_ipv6_addresses():
+def test_netloc_str_should_brace_ipv6_addresses():
     assert '[::1]:80' == str(NetLoc('::1', 80))
 
 
