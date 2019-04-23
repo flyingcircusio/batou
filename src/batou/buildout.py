@@ -24,8 +24,6 @@ class Requirements(object):
                     continue
                 seen.add(dep.key)
                 requirements_txt.write(str(dep) + '\n')
-        with open(self.options['path'] + '/version.txt', 'w') as f:
-            f.write('{}\n'.format(pkg_resources.require('batou')[0].version))
         return []
 
     update = install
