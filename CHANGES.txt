@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.10.2 (unreleased)
+1.11.0 (2019-04-23)
 -------------------
 
 - Support IPv6-only addresses in `batou.utils.Address`
