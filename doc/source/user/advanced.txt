@@ -7,6 +7,63 @@ Writing a custom component (TODO)
 
 
 
+Using 3rd party libraries within batou
+--------------------------------------
+
+Sometimes, when writing custom components, you may need additional Python
+packages, for example to configure databases by connecting directly to their
+SQL interface instead of using their command line clients.
+
+You can use additional Python packages by adding a  `requirements.txt` file to your batou project repository:
+
+.. code-block:: console
+
+  $ tree
+  .
+  ├── batou
+  ├── components
+  │   └── myapp
+  │       └── component.py
+  ├── environments
+  │   └── local.cfg
+  └── requirements.txt
+
+.. code-block:: text
+  :caption: requirements.txt
+
+  sqlalchemy
+
+The next time when you call batou the dependencies will be automatically
+updated. When deploying then the requirements will also be installed
+on the remote hosts.
+
+.. code-block:: console
+
+    $ ./batou
+    Installing sqlalchemy
+    usage: batou [-h] [-d] [-F] [--reset] {deploy,secrets,init,update} ...
+
+.. note::
+
+   batou currently parses the `requirements.txt` by itself
+   and only supports a sub-set of the official `requirements.txt file format <https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format>`_.
+
+   We support:
+
+   * `#egg` links
+   * `-f`
+   * a simple form of `+` VCS links
+   * all lines that can be passed directly as a requirement to `pip install`
+   * comments
+
+.. note::
+
+   batou already provides a number of packages that it depends on.
+   If you create contradicting requirements then this may lead to batou
+   failing. You will see pip complaining in that case.
+
+
+
 Multiple components in a single component.py (TODO)
 ---------------------------------------------------
 

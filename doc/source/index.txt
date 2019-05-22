@@ -134,12 +134,26 @@ This part of the documentation, begins with some background information about Re
 Command line
 ------------
 
-If you are looking for information on a specific function, class or method, this part of the documentation is for you.
+If you are looking for information on what commands the batou CLI provides then this is for you.
 
 .. toctree::
    :maxdepth: 2
 
    cli/index
+
+
+Components
+----------
+
+This is the list of components that batou provides -- builtin and through the `batou_ext` package:
+
+.. toctree::
+   :maxdepth: 2
+
+   components/files.txt
+   components/downloads-vcs.txt
+   components/cmmi.txt
+   components/python.txt
 
 
 API
@@ -152,7 +166,6 @@ If you are looking for information on a specific function, class or method, this
 
    api/component
    api/environment
-   api/library
    api/templates
    api/utilities
 
