@@ -301,6 +301,7 @@ class Component(object):
                         self.verify()
                     except Exception:
                         if predict_only:
+                            # XXX?!?!?
                             raise batou.UpdateNeeded()
                         raise
             except batou.UpdateNeeded:
