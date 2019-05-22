@@ -1,0 +1,147 @@
+
+
+Managing python installations
+-----------------------------
+
+virtualenv
+~~~~~~~~~~
+
+The basic building block for Python-based components is creation of virtualenvs
+(to separate package installations from each other):
+
+.. code-block:: python
+
+    self += VirtualEnv('2.7')
+
+
+.. py:class:: batou.lib.python.VirtualEnv(version)
+
+    Creates a virtualenv for the given Python version in the working directory
+    of the parent component. (Requires that ``pythonX.Y`` is in the ``PATH``)
+
+.. py:attribute:: executable
+
+    Full path to the Python executable to create the virtualenv for (default: ``pythonX.Y`` based on the version attribute).
+
+batou downloads a compatible version of  `virtualenv`_ (depending on the Python
+version you need) to ensure everything works as expected and to avoid problems
+with incompatibilities or unexpected behaviours of whatever version might be
+installed already on the system. (virtualenv base installations are shared by
+all components for creating new virtualenvs, it is installed to
+``work/.virtualenv``).
+
+.. _`virtualenv`: http://virtualenv.org/
+
+
+Installing packages
+~~~~~~~~~~~~~~~~~~~
+
+Python packages are installed from a package index such as `PyPI`_. batou uses
+`pip`_ or easy_install for this purpose (but that actually is an implementation detail and depends on the specifics of the Python and virtualenv version).
+
+Packages must be added to a virtual environment.
+
+.. _`PyPI`: https://pypi.python.org/
+.. _`pip`: http://www.pip-installer.org/
+
+.. code-block:: python
+
+    venv = VirtualEnv('2.7')
+    self += venv
+    venv += Package('Sphinx', version='1.1.3')
+
+
+.. py:class:: batou.lib.python.Package(package)
+
+    Install the Python package with the given name into the virtualenv of the
+    parent component. Using :py:class:`Package` requires that it is
+    added to a :py:class:`~batou.lib.python.VirtualEnv` instance.
+
+.. py:attribute:: version
+
+    The version of the package to install (**required**).
+
+.. py:attribute:: install_options
+
+    List of options that are passed to pip/easy_install on the command line.
+
+    [Default: depends on the Python/virtualenv version in use]
+
+.. py:attribute:: check_package_is_module
+
+    Verify that the package is installed by trying to ``import`` it (more
+    precisely, the first component of its dotted name). This is a stopgap
+    against https://github.com/pypa/pip/issues/3, but should be pretty safe to
+    disable if it causes trouble for specific packages (``distribute`` is a
+    notable example, since it installs a Python module named ``setuptools``).
+
+    [Default: True]
+
+.. py:attribute:: timeout
+
+    A timeout (in seconds) that the installer should use to limit stalling
+    network activity.
+
+    Only works when using ``pip``.
+
+    [Default: equal to the environment's timeout setting]
+
+.. py:attribute:: dependencies
+
+    Whether only the package itself or its dependencies should be installed.
+
+    [Default: True]
+
+
+zc.buildout
+~~~~~~~~~~~
+
+batou has in-depth support for managing installations that use buildout. It
+automatically wraps them in a virtualenv, installs the appropriate buildout
+version, and takes care of running buildout whenever changes to configuration
+files makes it necessary. A typical usage example:
+
+.. code-block:: python
+
+    self += Buildout(python='2.7', version='2.2', setuptools='1.0',
+                     additional_config=[Directory('profiles', source='profiles')])
+
+.. py:class:: batou.lib.buildout.Buildout()
+
+    Manage a buildout installation
+
+.. py:attribute:: python
+
+    Python version (**required**)
+
+.. py:attribute:: executable
+
+    Full path to the python executable to create the virtualenv for (used
+    instead of ``pythonX.Y``).
+
+.. py:attribute:: version
+
+    Version of zc.buildout to install (**required**)
+
+.. py:attribute:: setuptools
+
+    Version of setuptools to install into the virtualenv (must be appropriate
+    to the buildout version, e.g. since 2.2 buildout requires setuptools, but
+    some versions before that required distribute) (**required**)
+
+.. py:attribute:: distribute
+
+    Version of distribute to install into the virtualenv. Mutually exclusive
+    with :py:attr:`setuptools`, of course.
+
+.. py:attribute:: config
+
+    If a different configuration file name than ``buildout.cfg`` should be used,
+    pass in a :py:attr:`~batou.lib.file.File` or :py:attr:`Component` instance.
+
+.. py:attribute:: additional_config
+
+    Optional list of component instances (e.g. :py:attr:`~batou.lib.file.File`
+    or :py:attr:`~batou.lib.file.Directory`) that contain further configuration
+    files (so :py:attr:`~batou.lib.buildout.Buildout` knows when running
+    buildout is needed).

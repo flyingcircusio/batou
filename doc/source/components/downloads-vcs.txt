@@ -1,0 +1,124 @@
+
+
+
+Downloads and VCS checkouts
+---------------------------
+
+Downloading files
+~~~~~~~~~~~~~~~~~
+
+batou supports downloading files via HTTP(S) or FTP, for example:
+
+.. code-block:: python
+
+    self += Download(
+        'http://python.org/ftp/python/3.3.2/Python-3.3.2.tar.bz2',
+        checksum='md5:7dffe775f3bea68a44f762a3490e5e28')
+
+
+.. py:class:: batou.lib.download.Download(url)
+
+    Download from the given URL (uses ``urllib`` or ``requests`` internally).
+
+.. py:attribute:: requests_kwargs
+
+    Keyword arguments to pass to ``requests`` get method, e.g. to support
+    authentication.
+
+.. py:attribute:: checksum
+
+    Checksum of the file to be verified (**required**). Must be given in the
+    format ``algorithm:value``, where ``algorithm`` must be a function of the
+    `hashlib`_ stdlib module.
+
+.. _`hashlib`: http://docs.python.org/2/library/hashlib.html
+
+.. py:attribute:: target
+
+    Filename to save the download as. [Default: last component of the URL]
+
+
+
+Mercurial
+~~~~~~~~~
+
+.. code-block:: python
+
+    self += Clone('https://bitbucket.org/gocept/batou', revision='tip')
+
+
+.. py:class:: batou.lib.mercurial.Clone(url)
+
+    Clone a Mercurial repository from the given URL.
+
+.. py:attribute:: revision
+
+    Which revision to clone. At least one of ``revision`` or ``branch`` is
+    **required**. If both are given, ``revision`` will be used.
+
+.. py:attribute:: branch
+
+    The name of a branch to clone. At least one of ``revision`` or ``branch``
+    is **required**. If both are given, ``branch`` will be overridden by
+    ``revision``. A clone of a named branch will be updated to the most recent
+    upstream revision of the branch whenever batou is run.
+
+.. py:attribute:: target
+
+    Path to clone into (Default: workdir of parent component)
+
+.. py:attribute:: vcs_update
+
+    Whether to update the clone with incoming changesets (Default: True).
+    Leaving clones of source code unchanged is often desirable during
+    development.
+
+
+.. _download-git:
+
+Git
+~~~
+
+.. code-block:: python
+
+    self += Clone('https://github.com/Pylons/pyramid', revision='HEAD')
+
+
+.. py:class:: batou.lib.git.Clone(url)
+
+    Clone a Git repository from the given URL.
+
+.. py:attribute:: target
+
+    Path to clone into (Default: workdir of parent component)
+
+.. py:attribute:: update_unpinned
+
+    Update the clone on each batou run. If False, the repository is cloned once
+    and then never updated again. [Default: False]
+
+.. note:: :py:class:`git.Clone` does not support specifying a revision yet.
+
+
+.. _download-subversion:
+
+Subversion
+~~~~~~~~~~
+
+
+.. code-block:: python
+
+    self += Checkout('https://svn.zope.org/repos/main/zopetoolkit/trunk', revision='130345')
+
+
+.. py:class:: batou.lib.svn.Checkout(url)
+
+    Check out a Subversion repository from the given URL.
+
+.. py:attribute:: revision
+
+    Which revision to check out (**required**)
+
+.. py:attribute:: target
+
+    Path to clone into (Default: workdir of parent component)
