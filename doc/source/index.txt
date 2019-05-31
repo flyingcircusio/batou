@@ -154,6 +154,7 @@ This is the list of components that batou provides -- builtin and through the `b
    components/downloads-vcs.txt
    components/cmmi.txt
    components/python.txt
+   components/services.txt
 
 
 API

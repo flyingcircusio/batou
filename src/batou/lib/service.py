@@ -15,7 +15,7 @@ class Service(Component):
     def start(self):
         """Start service.
 
-        The actual work *should* be done by platform-specific componets. If
+        The actual work *should* be done by platform-specific components. If
         there is no platform-specific component handling the start, the
         executable is executed for reasons of backward compatibility.
 
@@ -27,3 +27,4 @@ class Service(Component):
                 start()
                 return
         self.cmd(self.executable)
+
