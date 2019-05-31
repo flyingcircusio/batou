@@ -1,0 +1,82 @@
+Managing services
+-----------------
+
+Aside from using batou's general purpose functions for creating files and running commands we have a few ready-to-use abilities for higher level service management.
+
+
+Supervisor (TODO)
+~~~~~~~~~~~~~~~~~
+
+Our built-in supervisor component allows you to run a supervisor process within your service user and has a simple API for declaring components that want to integrate with the supervisor config.
+
+The supervisor itself will be integrated into the system's startup automatically, depending on your platform.
+
+
+SystemD
+~~~~~~~
+
+.. note::
+
+    SystemD is a non-core component provided through the `batou_ext` package.
+
+Alternatively to using Supervisor you can register each program as a system-wide service managed by SystemD. You can also specify custom configuration in addition to (or overriding) the defaults:
+
+.. code-block:: python
+
+    from batou.component import Component
+    from batou.lib.file import File
+    from batou.lib.service import Service
+    import batou_ext.nix
+
+
+    class Tick(Component):
+
+        def configure(self):
+            self += File('tick.sh', mode=0755)
+
+            self += Service('tick.sh',
+                systemd=dict(Type='Simple',
+                             Unit_After='cron.service memcached.service',
+                             Service_RestartSec=11))
+
+This will result in the following unit file:
+
+.. code-block:: ini
+  :caption: /etc/local/systemd/tick.service
+
+    [Service]
+    Environment="LOCALE_ARCHIVE=/run/current-system/sw/lib/locale/locale-archive"
+    Environment=PATH=/home/ctheune/bin:/var/setuid-wrappers:/home/ctheune/.nix-profile/bin:/home/ctheune/.nix-profile/sbin:/home/ctheune/.nix-profile/lib/kde4/libexec:/nix/var/nix/profiles/default/bin:/nix/var/nix/profiles/default/sbin:/nix/var/nix/profiles/default/lib/kde4/libexec:/run/current-system/sw/bin:/run/current-system/sw/sbin:/run/current-system/sw/lib/kde4/libexec
+    Environment="TZDIR=/etc/zoneinfo"
+    ExecStart=/home/ctheune/deployment/work/tick/foobar.sh start
+    Group=service
+    LimitNOFILE=64000
+    LimitNPROC=64173
+    LimitSIGPENDING=64173
+    RestartSec=11
+    Type=Simple
+    User=ctheune
+
+    [Unit]
+    After=cron.service memcached.service
+
+If you want to leverage SystemD's ability to repeat a
+key in the configuration (like using multiple ExecStart statements) then you can simply pass that key as a list. This will be automatically expanded into multiple lines:
+
+.. code-block:: python
+
+    systemd=dict(Type='Simple',
+                 ExecStart=['command1', 'command2'])
+
+.. code-block:: ini
+
+    [Service]
+    ...
+    ExecStart=/home/ctheune/deployment/work/tick/command1
+    ExecStart=/home/ctheune/deployment/work/tick/command2
+    ...
+
+.. note::
+
+    The SystemD support is currently geared towards the NixOS-based environment provided by us on our Flying Circus platform. We're happy to extend and generalise this module upon request.
+
