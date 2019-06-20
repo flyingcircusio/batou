@@ -722,6 +722,8 @@ class Component(object):
         :param bool expand: Treat the ``cmd`` as a template and process it
             through Jinja2 in the context of this component.
 
+        :param dict env: Extends environment variables with given ones.
+
         :return: (stdout, stderr) if ``communicate`` is ``True``,
             otherwise the  :py:class:`Popen` process is returned.
 
