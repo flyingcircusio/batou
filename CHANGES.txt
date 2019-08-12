@@ -2,10 +2,12 @@ Changelog
 =========
 
 
-1.11.1 (unreleased)
+1.12.0 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Make fixtures reusable by calling ``pytest_plugins = 'batou.fixtures'``
+  in code depending on them instead of importing from conftest.py which is not
+  suggested by pytest.
 
 
 1.11.0 (2019-04-23)
