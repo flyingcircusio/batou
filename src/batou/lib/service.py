@@ -27,4 +27,3 @@ class Service(Component):
                 start()
                 return
         self.cmd(self.executable)
-
