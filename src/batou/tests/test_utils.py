@@ -243,11 +243,11 @@ class Checksum(unittest.TestCase):
 
     def test_hash_md5(self):
         self.assertEqual('ce0324fa445475e76182c0d114615c7b',
-                          hash(self.fixture, 'md5'))
+                         hash(self.fixture, 'md5'))
 
     def test_hash_sha1(self):
         self.assertEqual('164d8815aa839cca339e38054622b58ca80124a1',
-                          hash(self.fixture, 'sha1'))
+                         hash(self.fixture, 'sha1'))
 
 
 @mock.patch('subprocess.Popen')
