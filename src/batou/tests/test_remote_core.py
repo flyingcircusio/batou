@@ -25,7 +25,7 @@ def test_lock():
 
 def test_cmd():
     result = remote_core.cmd('echo "asdf"')
-    assert result == ('asdf\n', '')
+    assert result == (b'asdf\n', b'')
 
 
 @pytest.fixture
@@ -191,7 +191,7 @@ def test_channelexec_echo_cmd(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    assert channel.sendqueue == [('batou-result', ('asdf\n', ''))]
+    assert channel.sendqueue == [('batou-result', (b'asdf\n', b''))]
 
 
 def test_channelexec_multiple_echo_cmds(remote_core_mod):
@@ -201,8 +201,8 @@ def test_channelexec_multiple_echo_cmds(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    assert channel.sendqueue == [('batou-result', ('asdf1\n', '')),
-                                 ('batou-result', ('asdf2\n', ''))]
+    assert channel.sendqueue == [('batou-result', (b'asdf1\n', b'')),
+                                 ('batou-result', (b'asdf2\n', b''))]
 
 
 def test_channelexec_handle_exception(remote_core_mod):

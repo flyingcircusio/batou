@@ -152,6 +152,8 @@ def cmd(c, acceptable_returncodes=[0]):
         stdin=subprocess.PIPE,
         shell=True)
     stdout, stderr = process.communicate()
+    # We do not have enough knowledge here to decode so we keep
+    # stdout and stderr as byte strings for now.
     if process.returncode not in acceptable_returncodes:
         raise CmdError(c, process.returncode, stdout, stderr)
     return stdout, stderr
@@ -271,7 +273,7 @@ def git_unbundle_code():
     target = target_directory
     os.chdir(target)
     out, err = cmd('git remote -v')
-    if 'batou-bundle' not in out:
+    if b'batou-bundle' not in out:
         cmd('git remote add {origin} batou-bundle.git'.format(
                 origin=git_origin))
     cmd('git fetch {origin}'.format(origin=git_origin))
