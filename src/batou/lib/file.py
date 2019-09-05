@@ -307,7 +307,7 @@ class Content(FileComponent):
                 return
 
         # Phase 2: Decode, if we have an encoding.
-        if self.encoding and not isinstance(self.content, unicode):
+        if self.encoding and not isinstance(self.content, str):
             self.content = self.content.decode(self.encoding)
 
         # Phase 3: If we have a template, render it.

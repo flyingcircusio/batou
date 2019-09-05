@@ -47,9 +47,9 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
 
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert calls.next().startswith('hg init /')
-    assert calls.next() == 'hg pull http://bitbucket.org/flyingcircus/batou'
-    assert calls.next() == 'hg up -C default'
-    assert calls.next() == 'hg id -i'
+    assert next(calls) == 'hg pull http://bitbucket.org/flyingcircus/batou'
+    assert next(calls) == 'hg up -C default'
+    assert next(calls) == 'hg id -i'
     assert remote_core.cmd.call_count == 4
 
 
@@ -65,10 +65,10 @@ def test_update_code_new_target(mock_remote_core, tmpdir):
 
     assert remote_core.cmd.call_count == 4
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
-    assert calls.next() == 'hg init {}'.format(remote_core.target_directory)
-    assert calls.next() == 'hg pull http://bitbucket.org/flyingcircus/batou'
-    assert calls.next() == 'hg up -C default'
-    assert calls.next() == 'hg id -i'
+    assert next(calls) == 'hg init {}'.format(remote_core.target_directory)
+    assert next(calls) == 'hg pull http://bitbucket.org/flyingcircus/batou'
+    assert next(calls) == 'hg up -C default'
+    assert next(calls) == 'hg id -i'
 
 
 def test_hg_bundle_shipping(mock_remote_core, tmpdir):
@@ -91,12 +91,12 @@ changeset: 372:revision-b
 
     assert remote_core.cmd.call_count == 6
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
-    assert calls.next() == 'hg init {}'.format(remote_core.target_directory)
-    assert calls.next() == 'hg id -i'
-    assert calls.next() == 'hg heads'
-    assert calls.next() == 'hg -y unbundle batou-bundle.hg'
-    assert calls.next() == 'hg up -C default'
-    assert calls.next() == 'hg id -i'
+    assert next(calls) == 'hg init {}'.format(remote_core.target_directory)
+    assert next(calls) == 'hg id -i'
+    assert next(calls) == 'hg heads'
+    assert next(calls) == 'hg -y unbundle batou-bundle.hg'
+    assert next(calls) == 'hg up -C default'
+    assert next(calls) == 'hg id -i'
 
 
 def test_build_batou_fresh_install(mock_remote_core, tmpdir):
@@ -105,7 +105,7 @@ def test_build_batou_fresh_install(mock_remote_core, tmpdir):
     remote_core.build_batou('.', 'asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 1
-    assert calls.next() == './batou --help'
+    assert next(calls) == './batou --help'
 
 
 def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
@@ -115,8 +115,8 @@ def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
     remote_core.build_batou('.', 'asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 2
-    calls.next()  # skip ensure_repository
-    assert calls.next() == './batou --help'
+    next(calls)  # skip ensure_repository
+    assert next(calls) == './batou --help'
 
 
 def test_expand_deployment_base(tmpdir):
@@ -172,7 +172,7 @@ def remote_core_mod():
         'exec')
 
     def run():
-        exec remote_core_mod in local_namespace
+        exec(remote_core_mod, local_namespace)
 
     return (channel, run)
 

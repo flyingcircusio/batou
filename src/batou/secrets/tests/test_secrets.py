@@ -1,6 +1,6 @@
 from batou.secrets.encryption import EncryptedConfigFile as BaseEncConfigFile
 from batou.secrets.encryption import NEW_FILE_TEMPLATE
-import ConfigParser
+import configparser
 import os
 import os.path
 import pytest
@@ -86,7 +86,7 @@ def test_write_unparsable_raises_error():
         encrypted = EncryptedConfigFile(
             tf.name, write_lock=True)
         with encrypted as secrets:
-            with pytest.raises(ConfigParser.Error):
+            with pytest.raises(configparser.Error):
                 secrets.write('some new file contents\n')
 
 

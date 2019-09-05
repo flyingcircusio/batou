@@ -14,7 +14,7 @@ import sys
 def get_kitchen_ssh_connection_info(name):
     cmd = 'kitchen', 'diagnose', '--log-level=error', name
     info = yaml.load(subprocess.check_output(cmd))
-    (instance,) = info['instances'].values()
+    (instance,) = list(info['instances'].values())
     state = instance['state_file']
     return [
         '-o', 'StrictHostKeyChecking=no',

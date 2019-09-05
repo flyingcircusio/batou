@@ -32,7 +32,7 @@ def main():
 
     # Deploy
     p = subparsers.add_parser(
-        'deploy', help=u'Deploy an environment.')
+        'deploy', help='Deploy an environment.')
     p.add_argument(
         '-p', '--platform', default=None,
         help='Alternative platform to choose. Empty for no platform.')
@@ -124,7 +124,7 @@ If no directory is given, the current directory is used.
 
     # UPDATE
     p = subparsers.add_parser(
-        'update', help=u'Update the batou version.')
+        'update', help='Update the batou version.')
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument(
         '--version', help='Exact version to install.',

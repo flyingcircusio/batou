@@ -15,7 +15,7 @@ sample_dict = dict(
     config=dict(),
     servers=[Server('s1', '1.2.3.4'), Server('s2', '2.3.4.5')],
     hello='world',
-    hello2=u'wörld')
+    hello2='wörld')
 
 fixture = '%s/fixture/template' % os.path.dirname(__file__)
 
@@ -82,4 +82,4 @@ def test_jinja2_unknown_variable_should_fail():
 
 def test_jinja2_umlaut_variables():
     tmpl = TemplateEngine.get('jinja2')
-    assert u'hello wörld' == tmpl.expand('hello {{hello2}}', sample_dict)
+    assert 'hello wörld' == tmpl.expand('hello {{hello2}}', sample_dict)

@@ -9,9 +9,9 @@ Jinja2::
 
 """
 
-from __future__ import print_function, unicode_literals
+
 import jinja2
-import StringIO
+import io
 from batou import output
 
 
@@ -54,7 +54,7 @@ class Jinja2Engine(TemplateEngine):
     def _render_template_file(self, sourcefile, args):
         tmpl = open(sourcefile).read()
         tmpl = self.env.from_string(tmpl)
-        output = StringIO.StringIO()
+        output = io.StringIO()
         print(tmpl.render(args), file=output)
         return output
 

@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import StringIO
 from batou.lib.cmmi import Build, Configure, Make
 from batou.lib.file import File
 from datetime import datetime
@@ -90,7 +90,7 @@ def cmmi_tar(tmpdir):
     configure = CONFIGURE_TEMPLATE % sys.executable
     info = tarfile.TarInfo('folder/configure')
     info.size = len(configure)
-    info.mode = 0755
+    info.mode = 0o755
     info.mtime = now
     tar.addfile(info, StringIO(configure))
 

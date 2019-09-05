@@ -43,14 +43,14 @@ def locked(filename):
         try:
             fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
-            print >> sys.stderr, 'Could not acquire lock {}'.format(filename)
+            print('Could not acquire lock {}'.format(filename), file=sys.stderr)
             raise RuntimeError(
                 'cannot create lock "%s": more than one instance running '
                 'concurrently?' % lockfile, lockfile)
         # publishing the process id comes handy for debugging
         lockfile.seek(0)
         lockfile.truncate()
-        print >> lockfile, os.getpid()
+        print(os.getpid(), file=lockfile)
         lockfile.flush()
         yield
         lockfile.seek(0)
@@ -222,7 +222,7 @@ class NetLoc(object):
 def revert_graph(graph):
     graph = ensure_graph_data(graph)
     reverse_graph = defaultdict(set)
-    for node, dependencies in graph.items():
+    for node, dependencies in list(graph.items()):
         # Ensure all nodes will exist
         reverse_graph[node]
         for dependency in dependencies:
@@ -244,7 +244,7 @@ class CycleError(ValueError):
 
     def __str__(self):
         message = []
-        components = self.args[0].items()
+        components = list(self.args[0].items())
         components.sort(key=lambda x: x[0].name)
         for component, subs in components:
             message.append(component.name + ' depends on')
@@ -271,7 +271,7 @@ def topological_sort(graph):
     graph = ensure_graph_data(graph)
     sorted = []
     reverse_graph = revert_graph(graph)
-    roots = [node for node, incoming in reverse_graph.items()
+    roots = [node for node, incoming in list(reverse_graph.items())
              if not incoming]
     while roots:
         root = roots.pop()
@@ -308,7 +308,7 @@ class CmdExecutionError(DeploymentError, RuntimeError):
 
 def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
         env=None, acceptable_returncodes=[0]):
-    if not isinstance(cmd, basestring):
+    if not isinstance(cmd, str):
         # We use `shell=True`, so the command needs to be a single string and
         # we need to pay attention to shell quoting.
         quoted_args = []

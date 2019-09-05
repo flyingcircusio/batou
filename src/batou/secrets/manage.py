@@ -37,15 +37,15 @@ class Environment(object):
         try:
             self.f.read()
         except Exception:
-            print "\t<Can not decrypt. You seem to not have access.>"
+            print("\t<Can not decrypt. You seem to not have access.>")
             return
-        print "\t", self.f.config.get('batou', 'members')
+        print("\t", self.f.config.get('batou', 'members'))
 
     def add_user(self, keyid):
         try:
             self.f.read()
         except Exception:
-            print "\t<Can not decrypt. You seem to not have access.>"
+            print("\t<Can not decrypt. You seem to not have access.>")
             return
         members = self.f.get_members()
         if keyid not in members:
@@ -54,7 +54,7 @@ class Environment(object):
             try:
                 self.f.write_config()
             except Exception:
-                print "\t<Can not encrypt. You seem to be missing a key.>"
+                print("\t<Can not encrypt. You seem to be missing a key.>")
                 return
         self.summary()
 
@@ -62,7 +62,7 @@ class Environment(object):
         try:
             self.f.read()
         except Exception:
-            print "\t<Can not decrypt. You seem to not have access.>"
+            print("\t<Can not decrypt. You seem to not have access.>")
             return
         members = self.f.get_members()
         if keyid in members:
@@ -71,7 +71,7 @@ class Environment(object):
             try:
                 self.f.write_config()
             except Exception:
-                print "\t<Can not encrypt. You seem to be missing a key.>"
+                print("\t<Can not encrypt. You seem to be missing a key.>")
                 return
         self.summary()
 
@@ -84,12 +84,12 @@ def summary(**kw):
 
     """
     if not os.path.exists('secrets'):
-        print "No secrets."
+        print("No secrets.")
 
     for e in Environment.all():
-        print e.name
+        print(e.name)
         e.summary()
-        print
+        print()
 
 
 def add_user(keyid, environments, **kw):
@@ -100,12 +100,12 @@ def add_user(keyid, environments, **kw):
 
     """
     if not os.path.exists('secrets'):
-        print "No secrets."
+        print("No secrets.")
 
     for e in Environment.by_filter(environments):
-        print e.name
+        print(e.name)
         e.add_user(keyid)
-        print
+        print()
 
 
 def remove_user(keyid, environments, **kw):
@@ -116,9 +116,9 @@ def remove_user(keyid, environments, **kw):
 
     """
     if not os.path.exists('secrets'):
-        print "No secrets."
+        print("No secrets.")
 
     for e in Environment.by_filter(environments):
-        print e.name
+        print(e.name)
         e.remove_user(keyid)
-        print
+        print()

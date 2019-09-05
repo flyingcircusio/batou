@@ -22,13 +22,13 @@ class Editor(object):
             try:
                 self.process_cmd(cmd)
             except Exception as e:
-                print
-                print "Could not update due to error: {}".format(e)
-                print "Your changes are still available. You can try:"
-                print "\tedit (opens editor with current data again)"
-                print "\tencrypt (tries to encrypt current data again)"
-                print "\tquit (quits and loses your changes)"
-                cmd = raw_input("> ").strip()
+                print()
+                print("Could not update due to error: {}".format(e))
+                print("Your changes are still available. You can try:")
+                print("\tedit (opens editor with current data again)")
+                print("\tencrypt (tries to encrypt current data again)")
+                print("\tquit (quits and loses your changes)")
+                cmd = input("> ").strip()
             else:
                 break
 
@@ -39,11 +39,11 @@ class Editor(object):
             elif cmd == 'encrypt':
                 self.encrypt()
             else:
-                print "Did not understand command '{}'".format(cmd)
+                print("Did not understand command '{}'".format(cmd))
 
     def encrypt(self):
         if self.cleartext == self.original_cleartext:
-            print "No changes from original cleartext. Not updating."
+            print("No changes from original cleartext. Not updating.")
             return
         self.encrypted_file.write(self.cleartext)
 
@@ -71,9 +71,9 @@ def main(editor, environment, **kw):
     encrypted = 'secrets/{}.cfg'.format(environment)
 
     if not os.path.exists('environments/{}.cfg'.format(environment)):
-        print "Environment '{}' does not exist. Typo?".format(environment)
-        print "Existing environments:"
-        print "\n".join(os.listdir('environments')).replace('.cfg', '')
+        print("Environment '{}' does not exist. Typo?".format(environment))
+        print("Existing environments:")
+        print("\n".join(os.listdir('environments')).replace('.cfg', ''))
         sys.exit(1)
 
     if not os.path.isdir('secrets'):

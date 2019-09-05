@@ -23,7 +23,7 @@ class Map(object):
 
     def __init__(self, environment, config):
         self._map = []
-        for key, value in config.items():
+        for key, value in list(config.items()):
             if not key.startswith('/'):
                 continue
             self._map.append((key, value))

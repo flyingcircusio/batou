@@ -29,7 +29,7 @@ def main(version, develop, finish, fast=False, reset=False):
     if finish:
         return
     if version:
-        print "Updating batou to {}".format(version)
+        print("Updating batou to {}".format(version))
         print (
             "See the changelog at "
             "https://batou.readthedocs.org/en/latest/changes.html")

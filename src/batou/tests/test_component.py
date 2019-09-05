@@ -165,7 +165,7 @@ def test_sub_components_are_deployed_first(root):
     root.component += c1
     c1 += MyComponent('2')
     root.component.deploy()
-    assert [u'2:verify', u'2:update', u'1:verify', u'1:update'] == log
+    assert ['2:verify', '2:update', '1:verify', '1:update'] == log
 
 
 def test_log_in_configure_is_stored_on_root_for_later(root):

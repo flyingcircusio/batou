@@ -24,7 +24,7 @@ class Connector(threading.Thread):
     def join(self):
         super(Connector, self).join()
         if self.exc_info:
-            raise self.exc_info[0], self.exc_info[1], self.exc_info[2]
+            raise self.exc_info[0](self.exc_info[1]).with_traceback(self.exc_info[2])
 
 
 class Deployment(object):
@@ -66,7 +66,7 @@ class Deployment(object):
 
     def _connections(self):
         self.environment.prepare_connect()
-        for i, host in enumerate(self.environment.hosts.values(), 1):
+        for i, host in enumerate(list(self.environment.hosts.values()), 1):
             if host.ignore:
                 output.step(host.name, "Connection ignored ({}/{})".format(
                     i, len(self.environment.hosts)),
@@ -94,7 +94,7 @@ class Deployment(object):
 
         # Pick a reference remote (the last we initialised) that will pass us
         # the order we should be deploying components in.
-        reference_node = [h for h in self.environment.hosts.values()
+        reference_node = [h for h in list(self.environment.hosts.values())
                           if not h.ignore][0]
 
         for root in reference_node.roots_in_order():
@@ -118,7 +118,7 @@ class Deployment(object):
 
     def disconnect(self):
         output.step("main", "Disconnecting from nodes ...", debug=True)
-        for node in self.environment.hosts.values():
+        for node in list(self.environment.hosts.values()):
             node.disconnect()
 
 
