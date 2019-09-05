@@ -1,0 +1,10 @@
+.installed.cfg
+__pycache__/
+bin/
+develop-eggs/
+eggs/
+lib/
+pip-selfcheck.json
+pyvenv.cfg
+*src/batou.egg-info/
+__pycache__/
