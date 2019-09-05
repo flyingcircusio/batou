@@ -46,7 +46,7 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
     remote_core.hg_update_working_copy('default')
 
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
-    assert calls.next().startswith('hg init /')
+    assert next(calls).startswith('hg init /')
     assert next(calls) == 'hg pull http://bitbucket.org/flyingcircus/batou'
     assert next(calls) == 'hg up -C default'
     assert next(calls) == 'hg id -i'
