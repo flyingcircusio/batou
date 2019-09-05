@@ -67,7 +67,7 @@ class EncryptedConfigFile(object):
     @cleartext.setter
     def cleartext(self, value):
         self.config = configparser.ConfigParser()
-        self.config.readfp(io.StringIO(value))
+        self.config.read_string(io.StringIO(value))
         self.set_members(self.get_members())
         s = io.StringIO()
         self.config.write(s)
