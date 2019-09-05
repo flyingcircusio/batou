@@ -139,9 +139,9 @@ class CmdError(Exception):
         output.error(self.cmd)
         output.tabular("Return code", str(self.returncode), red=True)
         output.line('STDOUT', red=True)
-        output.annotate(self.stdout)
+        output.annotate(self.stdout.decode('utf-8', errors='replace'))
         output.line('STDERR', red=True)
-        output.annotate(self.stderr)
+        output.annotate(self.stderr.decode('utf-8', errors='replace'))
 
 
 def cmd(c, acceptable_returncodes=[0]):
