@@ -307,7 +307,7 @@ class CmdExecutionError(DeploymentError, RuntimeError):
 
 
 def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
-        env=None, acceptable_returncodes=[0]):
+        env=None, acceptable_returncodes=[0], encoding='utf-8'):
     if not isinstance(cmd, str):
         # We use `shell=True`, so the command needs to be a single string and
         # we need to pay attention to shell quoting.
@@ -334,6 +334,8 @@ def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
         # XXX See #12550
         return process
     stdout, stderr = process.communicate()
+    stdout = stdout.decode(encoding, errors='replace')
+    stderr = stderr.decode(encoding, errors='replace')
     if process.returncode not in acceptable_returncodes:
         if not ignore_returncode:
             raise CmdExecutionError(
