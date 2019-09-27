@@ -252,7 +252,7 @@ class Checksum(unittest.TestCase):
 
 @mock.patch('subprocess.Popen')
 def test_cmd_joins_list_args(popen):
-    popen().communicate.return_value = ('', '')
+    popen().communicate.return_value = (b'', b'')
     popen().returncode = 0
     cmd(['cat', 'foo', 'bar'])
     assert popen.call_args[0] == ('cat foo bar',)
@@ -260,7 +260,7 @@ def test_cmd_joins_list_args(popen):
 
 @mock.patch('subprocess.Popen')
 def test_cmd_quotes_spacey_args(popen):
-    popen().communicate.return_value = ('', '')
+    popen().communicate.return_value = (b'', b'')
     popen().returncode = 0
     cmd(['cat', 'foo', 'bar bz baz'])
     assert popen.call_args[0] == ("cat foo 'bar bz baz'",)
@@ -271,7 +271,7 @@ def test_cmd_quotes_spacey_args(popen):
 @mock.patch('subprocess.Popen')
 def test_cmd_ignores_specified_returncodes(popen):
     popen.return_value.returncode = 4
-    popen.return_value.communicate.return_value = '', ''
+    popen.return_value.communicate.return_value = b'', b''
     with pytest.raises(CmdExecutionError):
         cmd('asdf')
     cmd('asdf', acceptable_returncodes=[0, 4])
