@@ -1,6 +1,19 @@
 Changelog
 =========
 
+2.0 (unreleased)
+----------------
+
+- Drop support for Python 2.
+
+- Move to Python 3.5+.
+
+- The default hash function is now 'sha256', existing deployments
+  need to be migrated manually.
+
+  A smooth migration mechanism may become available in the future
+  based on users' needs.
+
 
 1.12.1 (unreleased)
 -------------------

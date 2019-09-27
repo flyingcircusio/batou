@@ -357,8 +357,11 @@ class Timer(object):
         output.annotate(self.note + ' took %fs' % self.duration, debug=True)
 
 
-def hash(path, function='md5'):
+def hash(path, function='sha_512'):
     h = getattr(hashlib, function)()
-    for line in open(path):
-        h.update(line)
+    with open(path, 'rb') as f:
+        chunk = f.read(64*1024)
+        while chunk:
+            h.update(chunk)
+            chunk = f.read(64*1024)
     return h.hexdigest()
