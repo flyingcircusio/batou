@@ -126,12 +126,12 @@ def test_parse_host_components():
 def test_load_hosts_should_merge_single_and_multi_definition(add_root):
     e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [hosts]
 foo = bar
 [host:baz]
 components = bar
-    """))
+    """)
     e.load_hosts(config)
     assert [mock.call('bar', 'foo', [], False),
             mock.call('bar', 'baz', [], False)] == \
@@ -142,10 +142,10 @@ components = bar
 def test_load_hosts_should_load_single_hosts_section(add_root):
     e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [hosts]
 foo = bar
-    """))
+    """)
     e.load_hosts(config)
     add_root.assert_called_once_with('bar', 'foo', [], False)
 
@@ -155,10 +155,10 @@ def test_load_hosts_should_load_multi_hosts_section(add_root):
     pass
     e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
-    """))
+    """)
     e.load_hosts(config)
     add_root.assert_called_once_with('bar', 'foo', [], False)
 
@@ -168,11 +168,11 @@ def test_load_hosts_multi_should_use_ignore_flag(add_root):
     pass
     e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
 ignore = True
-    """))
+    """)
     e.load_hosts(config)
     assert e.hosts['foo'].ignore
 
@@ -181,12 +181,12 @@ ignore = True
 def test_load_hosts_should_break_on_duplicate_definition(add_root):
     e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [hosts]
 foo = bar
 [host:foo]
 components = bar
-    """))
+    """)
     e.load_hosts(config)
     assert e.exceptions
     assert 'foo' == e.exceptions[0].hostname
@@ -197,11 +197,11 @@ def test_load_hosts_multi_should_use_env_platform(add_root):
     e = Environment('name')
     e.platform = mock.sentinel.platform
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
 ignore = True
-    """))
+    """)
     e.load_hosts(config)
     assert e.hosts['foo'].platform == mock.sentinel.platform
 
@@ -212,11 +212,11 @@ def test_load_hosts_multi_should_use_host_platform_if_given(add_root):
     e = Environment('name')
     e.platform = mock.sentinel.platform
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
 platform = specific
-    """))
+    """)
     e.load_hosts(config)
     assert e.hosts['foo'].platform == 'specific'
 
@@ -226,10 +226,10 @@ def test_load_hosts_single_should_use_env_platform(add_root):
     e = Environment('name')
     e.platform = mock.sentinel.platform
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [hosts]
 foo = bar
-    """))
+    """)
     e.load_hosts(config)
     assert e.hosts['foo'].platform == mock.sentinel.platform
 
@@ -237,11 +237,11 @@ foo = bar
 def test_host_data_is_passed_to_host_object():
     e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
 data-alias = baz
-    """))
+    """)
     e.load_hosts(config)
     assert 'baz' == e.hosts['foo'].data['alias']
 
