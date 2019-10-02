@@ -639,6 +639,8 @@ class Component(object):
         for requirement in requirements:
             self |= requirement
             required = requirement.last_updated(**kw)
+            if required is None:
+                continue
             if reference < required:
                 output.annotate(
                     'assert_component_is_current({}, {}): {} < {}'.format(
