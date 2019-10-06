@@ -1,4 +1,3 @@
-from io import StringIO
 from batou.environment import Environment, Config
 from mock import Mock
 import batou
