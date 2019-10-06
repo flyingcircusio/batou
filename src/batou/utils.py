@@ -43,7 +43,8 @@ def locked(filename):
         try:
             fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
-            print('Could not acquire lock {}'.format(filename), file=sys.stderr)
+            print('Could not acquire lock {}'.format(filename),
+                  file=sys.stderr)
             raise RuntimeError(
                 'cannot create lock "%s": more than one instance running '
                 'concurrently?' % lockfile, lockfile)
@@ -334,8 +335,9 @@ def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
         # XXX See #12550
         return process
     stdout, stderr = process.communicate()
-    stdout = stdout.decode(encoding, errors='replace')
-    stderr = stderr.decode(encoding, errors='replace')
+    if encoding is not None:
+        stdout = stdout.decode(encoding, errors='replace')
+        stderr = stderr.decode(encoding, errors='replace')
     if process.returncode not in acceptable_returncodes:
         if not ignore_returncode:
             raise CmdExecutionError(

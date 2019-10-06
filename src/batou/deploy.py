@@ -24,7 +24,8 @@ class Connector(threading.Thread):
     def join(self):
         super(Connector, self).join()
         if self.exc_info:
-            raise self.exc_info[0](self.exc_info[1]).with_traceback(self.exc_info[2])
+            exc_type, exc_value, exc_tb = self.exc_info
+            raise exc_type(exc_value).with_traceback(exc_tb)
 
 
 class Deployment(object):
@@ -150,7 +151,7 @@ def main(environment, platform, timeout, dirty, fast, consistency_only,
                    'Configuration for {} encountered an error.'.format(
                        environment))
             sys.exit(1)
-        except ConfigurationError as e:
+        except ConfigurationError as _:
             output.section("{} FAILED".format(ACTION), red=True)
             notify('{} FAILED'.format(ACTION),
                    'Configuration for {} encountered an error.'.format(

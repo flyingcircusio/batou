@@ -30,7 +30,7 @@ def main(version, develop, finish, fast=False, reset=False):
         return
     if version:
         print("Updating batou to {}".format(version))
-        print (
+        print(
             "See the changelog at "
             "https://batou.readthedocs.org/en/latest/changes.html")
         cmd('.batou/bin/pip install batou=={}'.format(version))
