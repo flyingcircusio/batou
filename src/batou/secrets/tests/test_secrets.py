@@ -137,4 +137,4 @@ members = foobar@example.com
 [asdf]
 x = 1
 """)
-        assert open(tf.name).read() == open(encrypted_file).read()
+        assert open(tf.name, 'rb').read() == open(encrypted_file, 'rb').read()

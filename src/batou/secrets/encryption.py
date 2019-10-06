@@ -67,7 +67,7 @@ class EncryptedConfigFile(object):
     @cleartext.setter
     def cleartext(self, value):
         self.config = configparser.ConfigParser()
-        self.config.read_string(io.StringIO(value))
+        self.config.read_string(value)
         self.set_members(self.get_members())
         s = io.StringIO()
         self.config.write(s)
@@ -107,7 +107,7 @@ class EncryptedConfigFile(object):
             [self.gpg('{} --decrypt {}'.format(
                 opts, self.encrypted_file))],
             stderr=NULL,
-            shell=True)
+            shell=True).decode('utf-8')
 
     def get_members(self):
         members = self.config.get('batou', 'members').split(',')
@@ -137,7 +137,7 @@ class EncryptedConfigFile(object):
                     self.gpg_opts, recipients, self.encrypted_file))],
                 stdin=subprocess.PIPE,
                 shell=True)
-            gpg.communicate(self.cleartext)
+            gpg.communicate(self.cleartext.encode('utf-8'))
             if gpg.returncode != 0:
                 raise RuntimeError('GPG returned non-zero exit code.')
         except Exception:
