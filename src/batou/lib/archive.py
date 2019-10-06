@@ -157,8 +157,8 @@ class DMGVolume(object):
             raise UserWarning('Path %r does not exist.' % self.path)
         volume_path = None
         mount_plist, _ = cmd(
-            [self.HDIUTIL, 'mount', '-plist', self.path])
-        mount_points = plistlib.readPlistFromString(
+            [self.HDIUTIL, 'mount', '-plist', self.path], encoding=None)
+        mount_points = plistlib.loads(
             mount_plist)['system-entities']
         if len(mount_points) == 1:
             # maybe there is no content-hint
