@@ -151,7 +151,7 @@ def main(environment, platform, timeout, dirty, fast, consistency_only,
                    'Configuration for {} encountered an error.'.format(
                        environment))
             sys.exit(1)
-        except ConfigurationError as _:
+        except ConfigurationError:
             output.section("{} FAILED".format(ACTION), red=True)
             notify('{} FAILED'.format(ACTION),
                    'Configuration for {} encountered an error.'.format(
