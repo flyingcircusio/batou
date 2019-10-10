@@ -422,11 +422,11 @@ class Environment(object):
 
     def components_for(self, host):
         """Return component names for given host name"""
-        result = []
+        result = {}
         for component in self.root_components:
             if component.host is host:
-                result.append(component.name)
-        return sorted(result)
+                result[component.name] = component
+        return result
 
 
 def parse_host_components(components):

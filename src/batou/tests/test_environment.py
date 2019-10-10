@@ -249,9 +249,13 @@ data-alias = baz
 def test_components_for_host_can_be_retrieved_from_environment(sample_service):
     e = Environment('test-overlapping-components')
     e.load()
-    assert ['hello1', 'hello2'] == e.components_for(host=e.hosts['localhost'])
-    assert ['hello3'] == e.components_for(host=e.hosts['other'])
-    assert ['hello2', 'hello3'] == e.components_for(host=e.hosts['this'])
+
+    def _get_components(hostname):
+        return sorted(e.components_for(host=e.hosts[hostname]).keys())
+
+    assert ['hello1', 'hello2'] == _get_components('localhost')
+    assert ['hello3'] == _get_components('other')
+    assert ['hello2', 'hello3'] == _get_components('this')
 
     localhost = e.hosts['localhost']
     assert 'hello1' in localhost.components
