@@ -424,7 +424,7 @@ class Environment(object):
         """Return component names for given host name"""
         result = []
         for component in self.root_components:
-            if component.host.name == host:
+            if component.host is host:
                 result.append(component.name)
         return sorted(result)
 
