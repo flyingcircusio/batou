@@ -246,6 +246,23 @@ data-alias = baz
     assert 'baz' == e.hosts['foo'].data['alias']
 
 
+def test_components_for_host_can_be_retrieved_from_environment(sample_service):
+    e = Environment('test-overlapping-components')
+    e.load()
+
+    def _get_components(hostname):
+        return sorted(e.components_for(host=e.hosts[hostname]).keys())
+
+    assert ['hello1', 'hello2'] == _get_components('localhost')
+    assert ['hello3'] == _get_components('other')
+    assert ['hello2', 'hello3'] == _get_components('this')
+
+    localhost = e.hosts['localhost']
+    assert 'hello1' in localhost.components
+    assert 'hello2' in localhost.components
+    assert 'hello3' not in localhost.components
+
+
 @mock.patch('batou.remote_core.Output.line')
 def test_log_in_component_configure_is_put_out(
         output, sample_service):

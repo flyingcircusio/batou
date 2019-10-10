@@ -9,6 +9,7 @@ Changelog
   in code depending on them instead of importing from conftest.py which is not
   suggested by pytest.
 
+- Add convencience function to get active components for a host.
 
 1.11.0 (2019-04-23)
 -------------------

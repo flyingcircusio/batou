@@ -114,6 +114,10 @@ class Host(object):
     def roots_in_order(self):
         return self.rpc.roots_in_order()
 
+    @property
+    def components(self):
+        return self.environment.components_for(self)
+
 
 class LocalHost(Host):
 
