@@ -11,6 +11,8 @@ Changelog
 
 - Add convencience function to get active components for a host.
 
+- Security updates for multiple dependencies.
+
 1.11.0 (2019-04-23)
 -------------------
 
