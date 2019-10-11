@@ -17,3 +17,5 @@ src/batou/secrets/tests/fixture/gnupg/random_seed
 src/batou/secrets/tests/fixture/gnupg/private-keys*/*.key
 src/batou/secrets/tests/fixture/gnupg/crls.d
 src/batou/secrets/tests/fixture/gnupg/.gpg-v21-migrated
+*.sublime-*
+.batou-lock
