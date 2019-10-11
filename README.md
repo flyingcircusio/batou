@@ -8,19 +8,22 @@ batou helps you to automate your application deployments:
 
 Getting started with a new project is easy:
 
-    $ mkdir myproject
-    $ cd myproject
-    $ curl https://bitbucket.org/flyingcircus/batou/raw/tip/src/batou/bootstrap-template -o batou
-    $ chmod +x batou
-    $ ./batou
+```
+$ mkdir myproject
+$ cd myproject
+$ curl https://bitbucket.org/flyingcircus/batou/raw/tip/src/batou/bootstrap-template -o batou
+$ chmod +x batou
+$ ./batou
+```
 
 Here's a minimal application model:
 
-    $ mkdir -p components/myapp
-    $ cat > components/myapp/component.py
-    from batou.component import Component
-    from batou.lib.python import VirtualEnv, Package
-    from batou.lib.supervisor import Program
+```
+$ mkdir -p components/myapp
+$ cat > components/myapp/component.py
+from batou.component import Component
+from batou.lib.python import VirtualEnv, Package
+from batou.lib.supervisor import Program
 
     class MyApp(Component):
 
@@ -30,9 +33,11 @@ Here's a minimal application model:
             venv += Package('myapp')
             self += Program('myapp',
                 command='bin/myapp')
+```
 
 And here's a minimal environment:
 
+```
     $ mkdir environments
     $ cat > environments/dev.cfg
     [environment]
@@ -40,10 +45,11 @@ And here's a minimal environment:
 
     [hosts]
     localhost = myapp
+```
 
 To deploy this, you run:
 
-```shell
+```bash session
 $ ./batou deploy dev
 ```
 
