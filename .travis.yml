@@ -4,6 +4,7 @@ python:
 
 install:
   - ls /usr/bin/python*
+  - python3.5
   - pyenv versions
   - ./bootstrap.sh
   - bin/buildout
