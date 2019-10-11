@@ -38,18 +38,18 @@ from batou.lib.supervisor import Program
 And here's a minimal environment:
 
 ```
-    $ mkdir environments
-    $ cat > environments/dev.cfg
-    [environment]
-    connect_method = local
+$ mkdir environments
+$ cat > environments/dev.cfg
+[environment]
+connect_method = local
 
-    [hosts]
-    localhost = myapp
+[hosts]
+localhost = myapp
 ```
 
 To deploy this, you run:
 
-```bash session
+```bash
 $ ./batou deploy dev
 ```
 
