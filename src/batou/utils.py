@@ -17,7 +17,7 @@ def self_id():
     system = os.uname()
     system = ' '.join([system[0], system[2], system[4]])
     version = pkg_resources.require("batou")[0].version
-    python = sys.subversion[0]
+    python = sys.implementation.name
     python += ' {0}.{1}.{2}-{3}{4}'.format(*sys.version_info)
     return template.format(**locals())
 

@@ -13,10 +13,13 @@ import sys
 
 def main():
     os.chdir(os.path.dirname(sys.argv[0]))
+    version = pkg_resources.resource_string(__name__, 'version.txt')
+    version = version.decode('ascii').strip()
     parser = argparse.ArgumentParser(
-        description='batou v%s '
-        'multi-(host|component|environment|version|platform) deployment'
-        % pkg_resources.resource_string(__name__, 'version.txt'),
+        description=(
+            'batou v{}: multi-(host|component|environment|version|platform)'
+            ' deployment'
+            ).format(version),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         '-d', '--debug', action='store_true',

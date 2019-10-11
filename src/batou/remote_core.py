@@ -14,7 +14,7 @@ except NameError:
 
 deployment = None
 environment = None
-target_directory = None
+target_directory = ''
 
 
 # The output class should really live in _output. However, to support
@@ -300,8 +300,7 @@ def build_batou(deployment_base, bootstrap, batou_args=()):
     cmd('./batou {}'.format(' '.join(args)))
 
 
-def setup_deployment(
-        deployment_base, *args):
+def setup_deployment(deployment_base, *args):
     target = target_directory
     os.chdir(os.path.join(target, deployment_base))
     global deployment

@@ -150,7 +150,7 @@ class RemoteHost(Host):
 
     gateway = None
 
-    def connect(self, interpreter='python2.7'):
+    def connect(self, interpreter='python3'):
         if self.gateway:
             output.annotate('Reconnecting ...', debug=True)
             self.disconnect()

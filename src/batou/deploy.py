@@ -63,7 +63,7 @@ class Deployment(object):
     def configure(self):
         output.section("Configuring first host")
         self.connections = iter(self._connections())
-        self.connections.next().join()
+        next(self.connections).join()
 
     def _connections(self):
         self.environment.prepare_connect()
