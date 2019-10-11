@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.12.0 (unreleased)
+1.12.0 (2019-10-11)
 -------------------
 
 - Make fixtures reusable by calling ``pytest_plugins = 'batou.fixtures'``
