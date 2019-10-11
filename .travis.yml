@@ -10,4 +10,4 @@ install:
   - bin/buildout
 
 script:
-  - bin/pytest
+  - bin/pytest -vv
