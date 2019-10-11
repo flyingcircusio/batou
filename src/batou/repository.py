@@ -3,6 +3,7 @@ from batou.utils import cmd as cmd_, CmdExecutionError
 import execnet
 import os
 import subprocess
+import sys
 import tempfile
 
 
@@ -91,7 +92,8 @@ class MercurialRepository(Repository):
 
     def __init__(self, environment):
         super(MercurialRepository, self).__init__(environment)
-        self.root = subprocess.check_output(['hg', 'root']).strip()
+        root_output = subprocess.check_output(['hg', 'root'])
+        self.root = root_output.decode(sys.getfilesystemencoding()).strip()
         self.branch = environment.branch or 'default'
         self.subdir = os.path.relpath(
             self.environment.base_dir, self.root)

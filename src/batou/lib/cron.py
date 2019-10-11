@@ -26,7 +26,7 @@ class CronJob(HookComponent):
 
 def ignore_comments(data):
     lines = data.splitlines()
-    lines = filter(lambda x: not x.startswith('#'), lines)
+    lines = [x for x in lines if not x.startswith('#')]
     return '\n'.join(lines)
 
 

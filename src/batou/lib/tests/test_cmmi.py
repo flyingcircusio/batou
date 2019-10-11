@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import BytesIO
 from batou.lib.cmmi import Build, Configure, Make
 from batou.lib.file import File
 from datetime import datetime
@@ -58,7 +58,7 @@ def test_make_verifies_against_success_file(root):
     assert 1 == make.cmd.call_count
 
 
-CONFIGURE_TEMPLATE = """#!%s
+CONFIGURE = """#!{}
 import sys
 open('configure-running', 'w').close()
 
@@ -71,7 +71,7 @@ install:
 '''
 
 open('Makefile', 'w').write(Makefile_template)
-"""
+""".format(sys.executable).encode('ascii')
 
 
 @pytest.fixture
@@ -87,18 +87,17 @@ def cmmi_tar(tmpdir):
     info.mtime = now
     tar.addfile(info)
 
-    configure = CONFIGURE_TEMPLATE % sys.executable
     info = tarfile.TarInfo('folder/configure')
-    info.size = len(configure)
-    info.mode = 0755
+    info.size = len(CONFIGURE)
+    info.mode = 0o755
     info.mtime = now
-    tar.addfile(info, StringIO(configure))
+    tar.addfile(info, BytesIO(CONFIGURE))
 
     tar.close()
 
     fixture = type('Dummy', (object,), {})()
     fixture.path = tarpath
-    fixture.checksum = hashlib.md5(open(tarpath, 'r').read()).hexdigest()
+    fixture.checksum = hashlib.md5(open(tarpath, 'rb').read()).hexdigest()
     return fixture
 
 

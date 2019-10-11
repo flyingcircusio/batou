@@ -63,7 +63,7 @@ class Resources(object):
 
     @property
     def strict_subscribers(self):
-        for key, subscribers in self.subscribers.items():
+        for key, subscribers in list(self.subscribers.items()):
             if any(s.strict for s in subscribers):
                 yield key
 
@@ -78,11 +78,11 @@ class Resources(object):
         """Return resource values without recording a dependency."""
         if host is not None:
             results = []
-            for root, values in self.resources.get(key, {}).items():
+            for root, values in list(self.resources.get(key, {}).items()):
                 if root.component.host is host:
                     results.extend(values)
         else:
-            results = flatten(self.resources.get(key, {}).values())
+            results = flatten(list(self.resources.get(key, {}).values()))
         return results
 
     def require(self, root, key, host=None, strict=True, reverse=False,
@@ -94,7 +94,7 @@ class Resources(object):
 
     def reset_component_resources(self, root):
         """Move all resources aside that were provided by this component."""
-        for key, resources in self.resources.items():
+        for key, resources in list(self.resources.items()):
             if root not in resources:
                 continue
             del resources[root]
@@ -109,7 +109,7 @@ class Resources(object):
         # A "one level deep" copy of the resources dict to be used by the
         # `unused` property.
         resources = {}
-        for key, providers in self.resources.items():
+        for key, providers in list(self.resources.items()):
             resources[key] = dict(providers)
         return resources
 
@@ -119,7 +119,7 @@ class Resources(object):
         # filter into account whether some of the values provided where never
         # used.
         resources = self.copy_resources()
-        for key, subscribers in self.subscribers.items():
+        for key, subscribers in list(self.subscribers.items()):
             if key not in resources:
                 continue
             for s in subscribers:
@@ -164,7 +164,7 @@ class Resources(object):
 
         """
         graph = defaultdict(set)
-        for key, providers in self.resources.items():
+        for key, providers in list(self.resources.items()):
             for s in self._subscriptions(key, None):
                 if s.reverse:
                     for provider in providers:

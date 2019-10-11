@@ -17,7 +17,7 @@ def self_id():
     system = os.uname()
     system = ' '.join([system[0], system[2], system[4]])
     version = pkg_resources.require("batou")[0].version
-    python = sys.subversion[0]
+    python = sys.implementation.name
     python += ' {0}.{1}.{2}-{3}{4}'.format(*sys.version_info)
     return template.format(**locals())
 
@@ -43,14 +43,15 @@ def locked(filename):
         try:
             fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
-            print >> sys.stderr, 'Could not acquire lock {}'.format(filename)
+            print('Could not acquire lock {}'.format(filename),
+                  file=sys.stderr)
             raise RuntimeError(
                 'cannot create lock "%s": more than one instance running '
                 'concurrently?' % lockfile, lockfile)
         # publishing the process id comes handy for debugging
         lockfile.seek(0)
         lockfile.truncate()
-        print >> lockfile, os.getpid()
+        print(os.getpid(), file=lockfile)
         lockfile.flush()
         yield
         lockfile.seek(0)
@@ -222,7 +223,7 @@ class NetLoc(object):
 def revert_graph(graph):
     graph = ensure_graph_data(graph)
     reverse_graph = defaultdict(set)
-    for node, dependencies in graph.items():
+    for node, dependencies in list(graph.items()):
         # Ensure all nodes will exist
         reverse_graph[node]
         for dependency in dependencies:
@@ -244,7 +245,7 @@ class CycleError(ValueError):
 
     def __str__(self):
         message = []
-        components = self.args[0].items()
+        components = list(self.args[0].items())
         components.sort(key=lambda x: x[0].name)
         for component, subs in components:
             message.append(component.name + ' depends on')
@@ -271,7 +272,7 @@ def topological_sort(graph):
     graph = ensure_graph_data(graph)
     sorted = []
     reverse_graph = revert_graph(graph)
-    roots = [node for node, incoming in reverse_graph.items()
+    roots = [node for node, incoming in list(reverse_graph.items())
              if not incoming]
     while roots:
         root = roots.pop()
@@ -307,8 +308,8 @@ class CmdExecutionError(DeploymentError, RuntimeError):
 
 
 def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
-        env=None, acceptable_returncodes=[0]):
-    if not isinstance(cmd, basestring):
+        env=None, acceptable_returncodes=[0], encoding='utf-8'):
+    if not isinstance(cmd, str):
         # We use `shell=True`, so the command needs to be a single string and
         # we need to pay attention to shell quoting.
         quoted_args = []
@@ -334,6 +335,9 @@ def cmd(cmd, silent=False, ignore_returncode=False, communicate=True,
         # XXX See #12550
         return process
     stdout, stderr = process.communicate()
+    if encoding is not None:
+        stdout = stdout.decode(encoding, errors='replace')
+        stderr = stderr.decode(encoding, errors='replace')
     if process.returncode not in acceptable_returncodes:
         if not ignore_returncode:
             raise CmdExecutionError(
@@ -355,8 +359,11 @@ class Timer(object):
         output.annotate(self.note + ' took %fs' % self.duration, debug=True)
 
 
-def hash(path, function='md5'):
+def hash(path, function='sha_512'):
     h = getattr(hashlib, function)()
-    for line in open(path):
-        h.update(line)
+    with open(path, 'rb') as f:
+        chunk = f.read(64*1024)
+        while chunk:
+            h.update(chunk)
+            chunk = f.read(64*1024)
     return h.hexdigest()

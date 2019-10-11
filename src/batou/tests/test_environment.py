@@ -1,4 +1,3 @@
-from StringIO import StringIO
 from batou.environment import Environment, Config
 from mock import Mock
 import batou
@@ -8,35 +7,35 @@ import pytest
 
 
 def test_environment_should_raise_if_no_config_file(tmpdir):
-    e = Environment(u'foobar')
+    e = Environment('foobar')
     with pytest.raises(batou.MissingEnvironment):
         e.load()
 
 
 def test_load_should_use_defaults(sample_service):
-    e = Environment(u'test-without-env-config')
+    e = Environment('test-without-env-config')
     e.load()
     assert e.host_domain is None
     assert e.branch is None
 
 
 def test_load_should_use_config(sample_service):
-    e = Environment(u'test-with-env-config')
+    e = Environment('test-with-env-config')
     e.load()
-    assert e.service_user == u'joe'
-    assert e.host_domain == u'example.com'
-    assert e.branch == u'release'
+    assert e.service_user == 'joe'
+    assert e.host_domain == 'example.com'
+    assert e.branch == 'release'
 
 
 def test_load_ignores_predefined_environment_settings(sample_service):
-    e = Environment(u'test-with-env-config')
-    e.service_user = u'bob'
-    e.host_domain = u'sample.com'
-    e.branch = u'default'
+    e = Environment('test-with-env-config')
+    e.service_user = 'bob'
+    e.host_domain = 'sample.com'
+    e.branch = 'default'
     e.load()
-    assert e.service_user == u'bob'
-    assert e.host_domain == u'sample.com'
-    assert e.branch == u'default'
+    assert e.service_user == 'bob'
+    assert e.host_domain == 'sample.com'
+    assert e.branch == 'default'
 
 
 def test_load_sets_up_overrides(sample_service):
@@ -53,18 +52,18 @@ def test_loads_configures_vfs_sandbox(sample_service):
 
 
 def test_default_sandbox_is_identity():
-    e = Environment(u'foo')
+    e = Environment('foo')
     assert e.map('/asdf') == '/asdf'
 
 
 def test_get_host_raises_keyerror_if_unknown():
-    e = Environment(u'name')
+    e = Environment('name')
     with pytest.raises(KeyError):
         e.get_host('asdf')
 
 
 def test_get_host_normalizes_hostname():
-    e = Environment(u'name')
+    e = Environment('name')
     e.hosts['asdf.example.com'] = host = Mock()
     e.host_domain = 'example.com'
     assert host == e.get_host('asdf')
@@ -76,27 +75,27 @@ def test_normalize_hostname_regression_11156():
     # not substrings. Having the domain (example.com) start with an eee
     # causes the hostname to get stripped of it's "eee"s ending in an
     # empty hostname accidentally.
-    e = Environment(u'name')
+    e = Environment('name')
     e.hosts['eee.example.com'] = host = Mock()
     e.host_domain = 'example.com'
     assert host == e.get_host('eee')
 
 
 def test_get_host_without_subdomain_also_works():
-    e = Environment(u'name')
+    e = Environment('name')
     e.hosts['example.com'] = host = Mock()
     e.host_domain = 'example.com'
     assert host == e.get_host('example.com')
 
 
 def test_get_root_raises_keyerror_on_nonassigned_component():
-    e = Environment(u'foo')
+    e = Environment('foo')
     with pytest.raises(KeyError):
         e.get_root('asdf', 'localhost')
 
 
 def test_multiple_components(sample_service):
-    e = Environment(u'test-multiple-components')
+    e = Environment('test-multiple-components')
     e.load()
     components = dict(
         (host, list(sorted(c.name for c in e.roots_in_order(host=host))))
@@ -124,14 +123,14 @@ def test_parse_host_components():
 
 @mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_should_merge_single_and_multi_definition(add_root):
-    e = Environment(u'name')
+    e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [hosts]
 foo = bar
 [host:baz]
 components = bar
-    """))
+    """)
     e.load_hosts(config)
     assert [mock.call('bar', 'foo', [], False),
             mock.call('bar', 'baz', [], False)] == \
@@ -140,12 +139,12 @@ components = bar
 
 @mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_should_load_single_hosts_section(add_root):
-    e = Environment(u'name')
+    e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [hosts]
 foo = bar
-    """))
+    """)
     e.load_hosts(config)
     add_root.assert_called_once_with('bar', 'foo', [], False)
 
@@ -153,12 +152,12 @@ foo = bar
 @mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_should_load_multi_hosts_section(add_root):
     pass
-    e = Environment(u'name')
+    e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
-    """))
+    """)
     e.load_hosts(config)
     add_root.assert_called_once_with('bar', 'foo', [], False)
 
@@ -166,27 +165,27 @@ components = bar
 @mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_multi_should_use_ignore_flag(add_root):
     pass
-    e = Environment(u'name')
+    e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
 ignore = True
-    """))
+    """)
     e.load_hosts(config)
     assert e.hosts['foo'].ignore
 
 
 @mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_should_break_on_duplicate_definition(add_root):
-    e = Environment(u'name')
+    e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [hosts]
 foo = bar
 [host:foo]
 components = bar
-    """))
+    """)
     e.load_hosts(config)
     assert e.exceptions
     assert 'foo' == e.exceptions[0].hostname
@@ -194,14 +193,14 @@ components = bar
 
 @mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_multi_should_use_env_platform(add_root):
-    e = Environment(u'name')
+    e = Environment('name')
     e.platform = mock.sentinel.platform
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
 ignore = True
-    """))
+    """)
     e.load_hosts(config)
     assert e.hosts['foo'].platform == mock.sentinel.platform
 
@@ -209,39 +208,39 @@ ignore = True
 @mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_multi_should_use_host_platform_if_given(add_root):
     pass
-    e = Environment(u'name')
+    e = Environment('name')
     e.platform = mock.sentinel.platform
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
 platform = specific
-    """))
+    """)
     e.load_hosts(config)
     assert e.hosts['foo'].platform == 'specific'
 
 
 @mock.patch('batou.environment.Environment.add_root')
 def test_load_hosts_single_should_use_env_platform(add_root):
-    e = Environment(u'name')
+    e = Environment('name')
     e.platform = mock.sentinel.platform
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [hosts]
 foo = bar
-    """))
+    """)
     e.load_hosts(config)
     assert e.hosts['foo'].platform == mock.sentinel.platform
 
 
 def test_host_data_is_passed_to_host_object():
-    e = Environment(u'name')
+    e = Environment('name')
     config = Config(None)
-    config.config.readfp(StringIO("""
+    config.config.read_string("""
 [host:foo]
 components = bar
 data-alias = baz
-    """))
+    """)
     e.load_hosts(config)
     assert 'baz' == e.hosts['foo'].data['alias']
 
@@ -288,7 +287,7 @@ Hello""" == log
 
 
 def test_resolver_overrides(sample_service):
-    e = Environment(u'test-resolver')
+    e = Environment('test-resolver')
     e.load()
     assert {'localhost': '127.0.0.2'} == e._resolve_override
     assert {'localhost': '::2'} == e._resolve_v6_override
@@ -298,7 +297,7 @@ def test_resolver_overrides(sample_service):
 
 
 def test_resolver_overrides_invalid_address(sample_service):
-    e = Environment(u'test-resolver-invalid')
+    e = Environment('test-resolver-invalid')
     e.load()
 
     with pytest.raises(batou.InvalidIPAddressError) as err:

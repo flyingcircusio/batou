@@ -29,8 +29,8 @@ def main(version, develop, finish, fast=False, reset=False):
     if finish:
         return
     if version:
-        print "Updating batou to {}".format(version)
-        print (
+        print("Updating batou to {}".format(version))
+        print(
             "See the changelog at "
             "https://batou.readthedocs.org/en/latest/changes.html")
         cmd('.batou/bin/pip install batou=={}'.format(version))

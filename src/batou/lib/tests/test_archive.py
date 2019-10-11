@@ -19,7 +19,7 @@ def test_untar_extracts_archive_to_target_directory(root):
         target='example')
     root.component += extract
     root.component.deploy()
-    assert os.listdir(unicode(extract.target)) == [u'foo']
+    assert os.listdir(str(extract.target)) == ['foo']
 
 
 def test_untar_can_strip_paths_off_archived_files(root):
@@ -28,7 +28,7 @@ def test_untar_can_strip_paths_off_archived_files(root):
         target='example', strip=1)
     root.component += extract
     root.component.deploy()
-    assert os.listdir(unicode(extract.target)) == [u'bar']
+    assert os.listdir(str(extract.target)) == ['bar']
 
 
 def test_zip_extracts_archive_to_target_directory(root):
@@ -37,7 +37,7 @@ def test_zip_extracts_archive_to_target_directory(root):
         target='example')
     root.component += extract
     root.component.deploy()
-    assert os.listdir(unicode(extract.target)) == [u'foo']
+    assert os.listdir(str(extract.target)) == ['foo']
 
 
 def test_zip_overwrites_existing_files(root):
@@ -65,8 +65,8 @@ def test_dmg_extracts_archive_to_target_directory(root):
     root.component += extract
     root.component.deploy()
 
-    assert sorted(os.listdir(unicode(extract.target))) == [
-        u' ', u'a\u0308sdf.txt', u'example.app']
+    assert sorted(os.listdir(str(extract.target))) == [
+        ' ', 'a\u0308sdf.txt', 'example.app']
 
     # ' ' is a symlink which stays one after copying:
     assert os.path.islink(extract.target + '/ ')

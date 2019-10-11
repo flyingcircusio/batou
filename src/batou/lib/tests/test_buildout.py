@@ -21,7 +21,7 @@ def test_update_should_pass_config_file_name(root):
 
     assert b.cmd.call_count == 1
     calls = iter(x[1][0] for x in b.cmd.mock_calls)
-    assert calls.next() == 'bin/buildout -t 3 -c "myown.cfg"'
+    assert next(calls) == 'bin/buildout -t 3 -c "myown.cfg"'
 
 
 def test_update_should_pass_custom_timeout(root):
@@ -32,7 +32,7 @@ def test_update_should_pass_custom_timeout(root):
 
     assert b.cmd.call_count == 1
     calls = iter(x[1][0] for x in b.cmd.mock_calls)
-    assert calls.next() == 'bin/buildout -t 40 -c "buildout.cfg"'
+    assert next(calls) == 'bin/buildout -t 40 -c "buildout.cfg"'
 
 
 @pytest.mark.slow

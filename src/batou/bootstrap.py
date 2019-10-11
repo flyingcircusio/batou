@@ -55,7 +55,7 @@ def bootstrap(activate=True):
             except pkg_resources.VersionConflict:
                 need_update = True
         if need_update:
-            print "Updating to batou=={}".format(expected)
+            print("Updating to batou=={}".format(expected))
             cmd('.batou/bin/pip install --no-deps batou=={}'.format(expected))
             restart(False)
 
@@ -93,7 +93,7 @@ def bootstrap(activate=True):
             else:
                 needed = False
         if needed:
-            print "Installing {}".format(req)
+            print("Installing {}".format(req))
             cmd('.batou/bin/pip install -U {} --no-deps '
                 '"{}"'.format(pip_options, req))
 

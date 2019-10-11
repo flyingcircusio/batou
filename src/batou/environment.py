@@ -2,7 +2,7 @@ from .component import load_components_from_file
 from .host import LocalHost, RemoteHost
 from .resources import Resources
 from .secrets import add_secrets_to_environment_override
-from ConfigParser import RawConfigParser
+from configparser import RawConfigParser
 from batou import DuplicateHostError, InvalidIPAddressError
 from batou import MissingComponent
 from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
@@ -176,7 +176,7 @@ class Environment(object):
         self._resolve_override = v4 = {}
         self._resolve_v6_override = v6 = {}
 
-        for key, value in resolver.items():
+        for key, value in list(resolver.items()):
             for ip in value.splitlines():
                 ip = ip.strip()
                 if not ip:
@@ -221,14 +221,14 @@ class Environment(object):
             self._load_host_components(
                 hostname,
                 config[section].as_list('components'))
-            for key, value in config[section].items():
+            for key, value in list(config[section].items()):
                 if key.startswith('data-'):
                     key = key.replace('data-', '', 1)
                     host.data[key] = value
 
     def _load_host_components(self, hostname, component_list):
             components = parse_host_components(component_list)
-            for component, settings in components.items():
+            for component, settings in list(components.items()):
                 try:
                     self.add_root(component, hostname,
                                   settings['features'], settings['ignore'])
@@ -402,7 +402,7 @@ class Environment(object):
         roots = topological_sort(revert_graph(dependencies))
         if host is not None:
             host = self.get_host(host)
-            roots = filter(lambda x: x.host is host, roots)
+            roots = [x for x in roots if x.host is host]
         return roots
 
     def normalize_host_name(self, hostname):

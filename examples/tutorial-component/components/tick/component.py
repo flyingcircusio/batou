@@ -7,7 +7,7 @@ class Tick(Component):
     def configure(self):
         tick = File('tick.sh',
                     source='tick.sh',
-                    mode=0755)
+                    mode=0o755)
         self += tick
         self.provide('programs',
                      dict(name='tick',

@@ -296,7 +296,7 @@ class Content(FileComponent):
         # Phase 1: acquire the source data into self.content
         if self.source:
             if os.path.exists(self.source):
-                with open(self.source, 'r') as f:
+                with open(self.source, 'r', encoding=self.encoding) as f:
                     self.content = f.read()
             else:
                 if self._delayed:
@@ -307,7 +307,7 @@ class Content(FileComponent):
                 return
 
         # Phase 2: Decode, if we have an encoding.
-        if self.encoding and not isinstance(self.content, unicode):
+        if self.encoding and not isinstance(self.content, str):
             self.content = self.content.decode(self.encoding)
 
         # Phase 3: If we have a template, render it.
@@ -319,23 +319,28 @@ class Content(FileComponent):
             self.content = self.expand(
                 self.content, self.template_context, args=self.template_args)
 
-        # Phase 4: If we have an encoding, encode the content again
+        # Phase 4: If we have an encoding, encode the content (again)
         if self.encoding:
             self.content = self.content.encode(self.encoding)
 
     def verify(self):
         if self._delayed:
             self._render()
-        with open(self.path, 'r') as target:
+        with open(self.path, 'rb') as target:
             current = target.read()
-            if current != self.content:
-                for line in difflib.unified_diff(current.splitlines(),
-                                                 self.content.splitlines()):
+            if current == self.content:
+                return
+            if self.encoding:
+                current_text = current.decode(self.encoding, errors='replace')
+                wanted_text = self.content.decode(self.encoding)
+                for line in difflib.unified_diff(
+                        current_text.splitlines(),
+                        wanted_text.splitlines()):
                     output.annotate(line, debug=True)
-                raise batou.UpdateNeeded()
+            raise batou.UpdateNeeded()
 
     def update(self):
-        with open(self.path, 'w') as target:
+        with open(self.path, 'wb') as target:
             target.write(self.content)
 
 

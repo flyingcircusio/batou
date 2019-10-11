@@ -46,8 +46,8 @@ source_suffix = '.txt'
 master_doc = 'index'
 
 # General information about the project.
-project = u'batou'
-copyright = u'2015-2019, Flying Circus Internet Operations GmbH'
+project = 'batou'
+copyright = '2015-2019, Flying Circus Internet Operations GmbH'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -200,8 +200,8 @@ latex_elements = {}
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index2', 'batou.tex', u'batou Documentation',
-     u'Christian Theune', 'manual'),
+    ('index2', 'batou.tex', 'batou Documentation',
+     'Christian Theune', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -230,8 +230,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index2', 'batou', u'batou Documentation',
-     [u'Christian Theune'], 1)
+    ('index2', 'batou', 'batou Documentation',
+     ['Christian Theune'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -244,8 +244,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index2', 'batou', u'batou Documentation',
-     u'Christian Theune', 'batou', 'Automated application deployment.',
+    ('index2', 'batou', 'batou Documentation',
+     'Christian Theune', 'batou', 'Automated application deployment.',
      'Miscellaneous'),
 ]
 

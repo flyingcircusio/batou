@@ -14,7 +14,7 @@ except NameError:
 
 deployment = None
 environment = None
-target_directory = None
+target_directory = ''
 
 
 # The output class should really live in _output. However, to support
@@ -139,9 +139,9 @@ class CmdError(Exception):
         output.error(self.cmd)
         output.tabular("Return code", str(self.returncode), red=True)
         output.line('STDOUT', red=True)
-        output.annotate(self.stdout)
+        output.annotate(self.stdout.decode('utf-8', errors='replace'))
         output.line('STDERR', red=True)
-        output.annotate(self.stderr)
+        output.annotate(self.stderr.decode('utf-8', errors='replace'))
 
 
 def cmd(c, acceptable_returncodes=[0]):
@@ -152,6 +152,8 @@ def cmd(c, acceptable_returncodes=[0]):
         stdin=subprocess.PIPE,
         shell=True)
     stdout, stderr = process.communicate()
+    # We do not have enough knowledge here to decode so we keep
+    # stdout and stderr as byte strings for now.
     if process.returncode not in acceptable_returncodes:
         raise CmdError(c, process.returncode, stdout, stderr)
     return stdout, stderr
@@ -271,7 +273,7 @@ def git_unbundle_code():
     target = target_directory
     os.chdir(target)
     out, err = cmd('git remote -v')
-    if 'batou-bundle' not in out:
+    if b'batou-bundle' not in out:
         cmd('git remote add {origin} batou-bundle.git'.format(
                 origin=git_origin))
     cmd('git fetch {origin}'.format(origin=git_origin))
@@ -298,8 +300,7 @@ def build_batou(deployment_base, bootstrap, batou_args=()):
     cmd('./batou {}'.format(' '.join(args)))
 
 
-def setup_deployment(
-        deployment_base, *args):
+def setup_deployment(deployment_base, *args):
     target = target_directory
     os.chdir(os.path.join(target, deployment_base))
     global deployment

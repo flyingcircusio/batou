@@ -15,11 +15,11 @@ def main(destination, **kw):
             'project to have a reference outside its repository. '
             'Use at your own risk. ')
         develop = os.path.abspath(develop)
-    print('Bootstrapping new batou project in {}. This can take a while.'
-          .format(os.path.abspath(destination)))
+    print(('Bootstrapping new batou project in {}. This can take a while.'
+          .format(os.path.abspath(destination))))
     if os.path.exists(destination):
-        print('{} exists already. Not copying template structure.'.format(
-              destination))
+        print(('{} exists already. Not copying template structure.'.format(
+              destination)))
         os.chdir(destination)
     else:
         source = os.path.dirname(__file__) + '/init-template'

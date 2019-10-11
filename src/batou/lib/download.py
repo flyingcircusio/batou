@@ -2,12 +2,12 @@ from batou.component import Component
 import batou
 import batou.utils
 import os.path
-import urlparse
+import urllib.parse
 import requests
 try:
     from urllib.request import urlretrieve
 except ImportError:
-    from urllib import urlretrieve
+    from urllib.request import urlretrieve
 
 
 class Download(Component):
@@ -20,7 +20,7 @@ class Download(Component):
 
     def configure(self):
         if not self.target:
-            self.target = urlparse.urlsplit(self.uri).path.split('/')[-1]
+            self.target = urllib.parse.urlsplit(self.uri).path.split('/')[-1]
         if not self.target:
             raise KeyError('No target is given and the URI does not allow '
                            'deriving a filename.')
@@ -36,7 +36,7 @@ class Download(Component):
             raise batou.UpdateNeeded()
 
     def update(self):
-        scheme = urlparse.urlsplit(self.uri)[0]
+        scheme = urllib.parse.urlsplit(self.uri)[0]
         if scheme in ['http', 'https']:
             self._update_requests()
         else:
@@ -65,7 +65,7 @@ got: %s''' % (self.checksum, target_checksum)
     @property
     def namevar_for_breadcrumb(self):
         uri = self.uri
-        password = urlparse.urlsplit(uri).password
+        password = urllib.parse.urlsplit(uri).password
         if password:
             # Indeed, this is a very simple approach.
             uri = uri.replace(password, '*****')

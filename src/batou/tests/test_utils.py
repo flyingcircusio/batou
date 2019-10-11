@@ -2,7 +2,7 @@ from batou.utils import hash, CmdExecutionError
 from batou.utils import remove_nodes_without_outgoing_edges, cmd
 from batou.utils import resolve, resolve_v6, MultiFile, locked, notify, Address
 from batou.utils import revert_graph, topological_sort, flatten, NetLoc
-from StringIO import StringIO
+from io import StringIO
 import mock
 import os
 import pytest
@@ -130,8 +130,8 @@ class MultiFileTests(unittest.TestCase):
         multi = MultiFile([file1, file2])
         multi.write('asdf')
         multi.flush()
-        self.assertEquals('asdf', file1.getvalue())
-        self.assertEquals('asdf', file2.getvalue())
+        self.assertEqual('asdf', file1.getvalue())
+        self.assertEqual('asdf', file2.getvalue())
 
 
 the_fake_lock = threading.Lock()
@@ -150,7 +150,7 @@ class LockfileContextManagerTests(unittest.TestCase):
         self.files = []
 
     def tearDown(self):
-        map(os.unlink, self.files)
+        list(map(os.unlink, self.files))
 
     def tempfile(self):
         f = tempfile.mktemp()
@@ -161,8 +161,8 @@ class LockfileContextManagerTests(unittest.TestCase):
         lockfile = self.tempfile()
         with locked(lockfile):
             pid = open(lockfile, 'r').read().strip()
-            self.assertEquals(os.getpid(), int(pid))
-        self.assertEquals('', open(lockfile, 'r').read())
+            self.assertEqual(os.getpid(), int(pid))
+        self.assertEqual('', open(lockfile, 'r').read())
 
     def test_lock_works_with_existing_file(self):
         lockfile = self.tempfile()
@@ -171,8 +171,8 @@ class LockfileContextManagerTests(unittest.TestCase):
         f.close()
         with locked(lockfile):
             pid = open(lockfile, 'r').read().strip()
-            self.assertEquals(os.getpid(), int(pid))
-        self.assertEquals('', open(lockfile, 'r').read())
+            self.assertEqual(os.getpid(), int(pid))
+        self.assertEqual('', open(lockfile, 'r').read())
 
     @mock.patch('fcntl.lockf', side_effect=fake_lock)
     def test_lock_cant_lock_twice(self, lockf):
@@ -242,17 +242,17 @@ class Checksum(unittest.TestCase):
         os.path.dirname(__file__), 'fixture', 'component', 'haproxy.cfg')
 
     def test_hash_md5(self):
-        self.assertEquals('ce0324fa445475e76182c0d114615c7b',
-                          hash(self.fixture, 'md5'))
+        self.assertEqual('ce0324fa445475e76182c0d114615c7b',
+                         hash(self.fixture, 'md5'))
 
     def test_hash_sha1(self):
-        self.assertEquals('164d8815aa839cca339e38054622b58ca80124a1',
-                          hash(self.fixture, 'sha1'))
+        self.assertEqual('164d8815aa839cca339e38054622b58ca80124a1',
+                         hash(self.fixture, 'sha1'))
 
 
 @mock.patch('subprocess.Popen')
 def test_cmd_joins_list_args(popen):
-    popen().communicate.return_value = ('', '')
+    popen().communicate.return_value = (b'', b'')
     popen().returncode = 0
     cmd(['cat', 'foo', 'bar'])
     assert popen.call_args[0] == ('cat foo bar',)
@@ -260,7 +260,7 @@ def test_cmd_joins_list_args(popen):
 
 @mock.patch('subprocess.Popen')
 def test_cmd_quotes_spacey_args(popen):
-    popen().communicate.return_value = ('', '')
+    popen().communicate.return_value = (b'', b'')
     popen().returncode = 0
     cmd(['cat', 'foo', 'bar bz baz'])
     assert popen.call_args[0] == ("cat foo 'bar bz baz'",)
@@ -271,7 +271,7 @@ def test_cmd_quotes_spacey_args(popen):
 @mock.patch('subprocess.Popen')
 def test_cmd_ignores_specified_returncodes(popen):
     popen.return_value.returncode = 4
-    popen.return_value.communicate.return_value = '', ''
+    popen.return_value.communicate.return_value = b'', b''
     with pytest.raises(CmdExecutionError):
         cmd('asdf')
     cmd('asdf', acceptable_returncodes=[0, 4])

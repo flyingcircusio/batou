@@ -18,7 +18,7 @@ def test_example_errors():
     os.chdir('examples/errors')
     out, _ = cmd('./batou deploy errors', acceptable_returncodes=[1])
     assert out == Ellipsis("""\
-batou/... (CPython 2.7..., ...)
+batou/2... (cpython 3...)
 ================================== Preparing =================================\
 ==
 main: Loading environment `errors`...
@@ -32,7 +32,7 @@ ERROR: Failed loading component file
       Exception: invalid syntax (component.py, line 1)
 ERROR: Failed loading component file
            File: .../component6/component.py
-      Exception: No module named asdf
+      Exception: No module named 'asdf'
 ERROR: Missing component
       Component: missingcomponent
            Host: localhost
@@ -44,8 +44,8 @@ ERROR: crontab@localhost: No cron jobs found.
 ERROR: Failed override attribute conversion
            Host: localhost
       Attribute: Component1.do_what_is_needed
-     Conversion: convert_literal(u'false')
-          Error: malformed string
+     Conversion: convert_literal('false')
+          Error: malformed node or string: <_ast.Name object at 0x...>
 ERROR: Overrides for undefined attributes
            Host: localhost
       Component: Component2
@@ -53,7 +53,7 @@ ERROR: Overrides for undefined attributes
 ERROR: Failed override attribute conversion
            Host: localhost
       Attribute: DNSProblem.attribute_with_problem
-     Conversion: Address(u'localhost')
+     Conversion: Address('localhost')
           Error: Need port for service address.
 ERROR: Unused provided resources
     Resource "backend" provided by component3 with value ['192.168.0.1']
@@ -78,7 +78,7 @@ def test_example_errors_missing_environment():
     os.chdir('examples/errors')
     out, _ = cmd('./batou deploy production', acceptable_returncodes=[1])
     assert out == Ellipsis("""\
-batou/... (CPython 2.7..., ...)
+batou/2... (cpython 3...)
 ================================== Preparing =================================\
 ==
 main: Loading environment `production`...
@@ -93,7 +93,7 @@ def test_example_ignores():
     os.chdir('examples/ignores')
     out, _ = cmd('./batou deploy ignores')
     assert out == Ellipsis("""\
-batou/... (CPython 2.7..., ...)
+batou/2... (cpython 3...)
 ================================== Preparing =================================\
 ==
 main: Loading environment `ignores`...
@@ -101,10 +101,10 @@ main: Verifying repository ...
 main: Loading secrets ...
 ============================ Configuring first host ==========================\
 ==
-otherhost: Connection ignored (1/2)
-localhost: Connecting via local (2/2)
+localhost: Connecting via local (1/2)
 ========================== Connecting remaining hosts ========================\
 ==
+otherhost: Connection ignored (2/2)
 ================================== Deploying =================================\
 ==
 localhost: Deploying component component1 ...

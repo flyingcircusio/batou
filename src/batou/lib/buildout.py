@@ -83,7 +83,7 @@ class Buildout(Component):
 @contextlib.contextmanager
 def safe_environment(environment):
     old_env = os.environ.copy()
-    for key, value in environment.items():
+    for key, value in list(environment.items()):
         old_env.setdefault(key, '')
         environment[key] = value.format(**old_env)
     try:

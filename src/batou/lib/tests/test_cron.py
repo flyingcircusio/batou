@@ -17,7 +17,7 @@ def test_collects_cronjobs_into_crontab(root):
     assert 'command2' in crontab
 
 
-def test_pruge_crontab_is_empty(root):
+def test_purge_crontab_is_empty(root):
     root.environment.vfs_sandbox = batou.vfs.Developer(root.environment, None)
     root.component += PurgeCronTab()
     root.component.deploy()
@@ -32,7 +32,7 @@ def test_empty_crontab_must_raise(root):
         root.component += CronTab()
 
 
-def test_non_empty_pruge_crontab_must_raise(root):
+def test_non_empty_purge_crontab_must_raise(root):
     root.environment.vfs_sandbox = batou.vfs.Developer(root.environment, None)
     root.component += CronJob('command1', timing='* * * * *')
     root.component += CronJob('command2', timing='* * * * *')

@@ -1,13 +1,19 @@
-language: python
-python:
-  - "2.7"
-addons:
-  apt:
-    packages:
-      - python3-venv
-install:
-  - ./bootstrap.sh
-  - bin/buildout
-
+language: generic
+matrix:
+  include:
+    - name: "Python 3.5"
+      env: PYTHON=3.5
+    - name: "Python 3.6"
+      env: PYTHON=3.6
+    - name: "Python 3.7"
+      env: PYTHON=3.7
+    - name: "Python 3.8-dev"
+      env: PYTHON=3.8-dev
+    - name: "Python nightly"
+      env: PYTHON=nightly
 script:
+  - sudo apt-get install python3-venv
+  - curl -sSf -o python-$PYTHON.tar.bz2 https://storage.googleapis.com/travis-ci-language-archives/python/binaries/ubuntu/16.04/x86_64/python-$PYTHON.tar.bz2
+  - sudo tar xjf python-$PYTHON.tar.bz2 --directory /
+  - ./bootstrap.sh
   - bin/pytest -vv

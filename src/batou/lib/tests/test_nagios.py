@@ -10,7 +10,7 @@ def test_server_template(root):
     root.component |= service
     server = NagiosServer()
     root.component += server
-    assert """\
+    assert b"""\
 # Generated from template; don't edit manually!
 
 #

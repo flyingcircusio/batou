@@ -4,8 +4,7 @@ import os.path
 import pytest
 
 
-@pytest.fixture(scope='function')
-def repos_path(root, name='upstream'):
+def _repos_path(root, name):
     repos_path = os.path.join(root.environment.workdir_base, name)
     cmd('mkdir {dir}; cd {dir}; git init;'
         'git config user.name Jenkins;'
@@ -14,6 +13,16 @@ def repos_path(root, name='upstream'):
         'git commit -am "foo"'.format(
             dir=repos_path))
     return repos_path
+
+
+@pytest.fixture(scope='function')
+def repos_path(root, name='upstream'):
+    return _repos_path(root, name)
+
+
+@pytest.fixture(scope='function')
+def repos_path2(root, name='upstream2'):
+    return _repos_path(root, name)
 
 
 @pytest.mark.slow
@@ -167,17 +176,16 @@ def test_clean_clone_vcs_update_false_leaves_changes_intact(root, repos_path):
 
 
 @pytest.mark.slow
-def test_changed_remote_is_updated(root, repos_path):
+def test_changed_remote_is_updated(root, repos_path, repos_path2):
     git = batou.lib.git.Clone(repos_path, target='clone', branch='master')
     root.component += git
 
-    # Fresh, unrelated repos
-    repos2_path = globals()['repos_path'](root, name='upstream2')
+    # Fresh, unrelated repo
     cmd('cd {dir}; echo baz >bar; git add .;'
-        'git commit -m "commit"'.format(dir=repos2_path))
+        'git commit -m "commit"'.format(dir=repos_path2))
 
     root.component.deploy()
     assert not os.path.exists(root.component.map('clone/bar'))
-    git.url = repos2_path
+    git.url = repos_path2
     root.component.deploy()
     assert os.path.exists(root.component.map('clone/bar'))

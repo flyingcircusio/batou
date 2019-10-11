@@ -170,7 +170,7 @@ class UnusedResources(ConfigurationError):
     def report(self):
         output.error("Unused provided resources")
         for key in sorted(self.resources):
-            for component, value in self.resources[key].items():
+            for component, value in list(self.resources[key].items()):
                 output.line(
                     '    Resource "{}" provided by {} with value {}'.format(
                         key, component.name, value),

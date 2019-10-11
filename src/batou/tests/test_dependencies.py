@@ -59,7 +59,7 @@ class DirtySingularCircularReverse(Component):
 @pytest.fixture
 def env():
     env = Environment('test')
-    for component in globals().values():
+    for component in list(globals().values()):
         if not isinstance(component, type):
             continue
         if issubclass(component, Component):

@@ -66,9 +66,9 @@ def load_components_from_file(filename):
         module_name, 'Component definition module for {}'.format(filename))
     sys.modules[module_path] = module
     setattr(batou.c, module_name, module)
-    execfile(filename, module.__dict__)
+    exec(compile(open(filename).read(), filename, 'exec'), module.__dict__)
 
-    for candidate in module.__dict__.values():
+    for candidate in list(module.__dict__.values()):
         if candidate in [Component]:
             continue
         if not (isinstance(candidate, type) and
@@ -201,7 +201,7 @@ class Component(object):
         if self.parent is self.root:
             self._overrides(self.root.overrides)
         # Fix up attributes that have been set through the constructor.
-        for k, v in self.__dict__.items():
+        for k, v in list(self.__dict__.items()):
             attribute = getattr(self.__class__, k, None)
             if not isinstance(attribute, Attribute):
                 continue
@@ -217,7 +217,7 @@ class Component(object):
 
     def _overrides(self, overrides={}):
         missing = []
-        for key, value in overrides.items():
+        for key, value in list(overrides.items()):
             # I explicity check whether we're overriding an attribute on the
             # class. a) that's the intended semantic I want to check for and
             # b) this suppresses implicit __get__ conversions of Attribute
@@ -432,7 +432,7 @@ class Component(object):
                 if predict_only:
                     output.annotate(
                         'Trigger {}: {}.{}'.
-                        format(event, handler.im_self, handler.__name__))
+                        format(event, handler.__self__, handler.__name__))
                     continue
                 handler(self)
 
@@ -639,6 +639,8 @@ class Component(object):
         for requirement in requirements:
             self |= requirement
             required = requirement.last_updated(**kw)
+            if required is None:
+                continue
             if reference < required:
                 output.annotate(
                     'assert_component_is_current({}, {}): {} < {}'.format(
@@ -1002,11 +1004,11 @@ class Attribute(object):
         return self.instances[obj]
 
     def __set__(self, obj, value):
-        if isinstance(value, basestring) and self.expand:
+        if isinstance(value, str) and self.expand:
             value = obj.expand(value)
-        if isinstance(value, basestring) and self.map:
+        if isinstance(value, str) and self.map:
             value = obj.map(value)
-        if isinstance(value, basestring) and self.conversion:
+        if isinstance(value, str) and self.conversion:
             try:
                 value = self.conversion(value)
             except Exception as e:
@@ -1026,5 +1028,5 @@ class Attribute(object):
     def convert_list(self, value):
         l = value.split(',')
         l = [x.strip() for x in l]
-        l = filter(None, l)
+        l = [_f for _f in l if _f]
         return l

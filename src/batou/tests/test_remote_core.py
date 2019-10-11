@@ -25,7 +25,7 @@ def test_lock():
 
 def test_cmd():
     result = remote_core.cmd('echo "asdf"')
-    assert result == ('asdf\n', '')
+    assert result == (b'asdf\n', b'')
 
 
 @pytest.fixture
@@ -46,10 +46,10 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
     remote_core.hg_update_working_copy('default')
 
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
-    assert calls.next().startswith('hg init /')
-    assert calls.next() == 'hg pull http://bitbucket.org/flyingcircus/batou'
-    assert calls.next() == 'hg up -C default'
-    assert calls.next() == 'hg id -i'
+    assert next(calls).startswith('hg init /')
+    assert next(calls) == 'hg pull http://bitbucket.org/flyingcircus/batou'
+    assert next(calls) == 'hg up -C default'
+    assert next(calls) == 'hg id -i'
     assert remote_core.cmd.call_count == 4
 
 
@@ -65,10 +65,10 @@ def test_update_code_new_target(mock_remote_core, tmpdir):
 
     assert remote_core.cmd.call_count == 4
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
-    assert calls.next() == 'hg init {}'.format(remote_core.target_directory)
-    assert calls.next() == 'hg pull http://bitbucket.org/flyingcircus/batou'
-    assert calls.next() == 'hg up -C default'
-    assert calls.next() == 'hg id -i'
+    assert next(calls) == 'hg init {}'.format(remote_core.target_directory)
+    assert next(calls) == 'hg pull http://bitbucket.org/flyingcircus/batou'
+    assert next(calls) == 'hg up -C default'
+    assert next(calls) == 'hg id -i'
 
 
 def test_hg_bundle_shipping(mock_remote_core, tmpdir):
@@ -91,12 +91,12 @@ changeset: 372:revision-b
 
     assert remote_core.cmd.call_count == 6
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
-    assert calls.next() == 'hg init {}'.format(remote_core.target_directory)
-    assert calls.next() == 'hg id -i'
-    assert calls.next() == 'hg heads'
-    assert calls.next() == 'hg -y unbundle batou-bundle.hg'
-    assert calls.next() == 'hg up -C default'
-    assert calls.next() == 'hg id -i'
+    assert next(calls) == 'hg init {}'.format(remote_core.target_directory)
+    assert next(calls) == 'hg id -i'
+    assert next(calls) == 'hg heads'
+    assert next(calls) == 'hg -y unbundle batou-bundle.hg'
+    assert next(calls) == 'hg up -C default'
+    assert next(calls) == 'hg id -i'
 
 
 def test_build_batou_fresh_install(mock_remote_core, tmpdir):
@@ -105,18 +105,18 @@ def test_build_batou_fresh_install(mock_remote_core, tmpdir):
     remote_core.build_batou('.', 'asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 1
-    assert calls.next() == './batou --help'
+    assert next(calls) == './batou --help'
 
 
 def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir), 'hg-pull')
     os.mkdir(remote_core.target_directory + '/bin')
-    open(remote_core.target_directory + '/bin/python2.7', 'w')
+    open(remote_core.target_directory + '/bin/python3', 'w')
     remote_core.build_batou('.', 'asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 2
-    calls.next()  # skip ensure_repository
-    assert calls.next() == './batou --help'
+    next(calls)  # skip ensure_repository
+    assert next(calls) == './batou --help'
 
 
 def test_expand_deployment_base(tmpdir):
@@ -172,7 +172,7 @@ def remote_core_mod():
         'exec')
 
     def run():
-        exec remote_core_mod in local_namespace
+        exec(remote_core_mod, local_namespace)
 
     return (channel, run)
 
@@ -191,7 +191,7 @@ def test_channelexec_echo_cmd(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    assert channel.sendqueue == [('batou-result', ('asdf\n', ''))]
+    assert channel.sendqueue == [('batou-result', (b'asdf\n', b''))]
 
 
 def test_channelexec_multiple_echo_cmds(remote_core_mod):
@@ -201,8 +201,8 @@ def test_channelexec_multiple_echo_cmds(remote_core_mod):
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
-    assert channel.sendqueue == [('batou-result', ('asdf1\n', '')),
-                                 ('batou-result', ('asdf2\n', ''))]
+    assert channel.sendqueue == [('batou-result', (b'asdf1\n', b'')),
+                                 ('batou-result', (b'asdf2\n', b''))]
 
 
 def test_channelexec_handle_exception(remote_core_mod):
@@ -213,32 +213,32 @@ def test_channelexec_handle_exception(remote_core_mod):
     assert channel.receivequeue == []
     response = iter(channel.sendqueue)
 
-    assert response.next() == (
+    assert next(response) == (
         'batou-output', 'line', ('ERROR: fdjkahfkjdasbfda',),
         {'bold': True, 'red': True})
 
-    assert response.next() == (
+    assert next(response) == (
         'batou-output', 'line', ('     Return code: 127',), {'red': True})
 
-    assert response.next() == (
+    assert next(response) == (
         'batou-output', 'line', ('STDOUT',), {'red': True})
 
-    assert response.next() == ('batou-output', 'line', ('     ',), {})
+    assert next(response) == ('batou-output', 'line', ('     ',), {})
 
-    assert response.next() == (
+    assert next(response) == (
         'batou-output', 'line', ('STDERR',), {'red': True})
 
     # Different /bin/sh versions have different error reporting
-    assert response.next() in [
+    assert next(response) in [
         ('batou-output', 'line',
             ('     /bin/sh: fdjkahfkjdasbfda: command not found\n     ',), {}),
         ('batou-output', 'line',
             ('     /bin/sh: 1: fdjkahfkjdasbfda: not found\n     ',), {})]
 
-    assert response.next() == ('batou-error', None)
+    assert next(response) == ('batou-error', None)
 
     with pytest.raises(StopIteration):
-        response.next()
+        next(response)
 
 
 def test_git_remote_init_bundle(tmpdir):
