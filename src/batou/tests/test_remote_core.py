@@ -213,32 +213,32 @@ def test_channelexec_handle_exception(remote_core_mod):
     assert channel.receivequeue == []
     response = iter(channel.sendqueue)
 
-    assert response.next() == (
+    assert next(response) == (
         'batou-output', 'line', ('ERROR: fdjkahfkjdasbfda',),
         {'bold': True, 'red': True})
 
-    assert response.next() == (
+    assert next(response) == (
         'batou-output', 'line', ('     Return code: 127',), {'red': True})
 
-    assert response.next() == (
+    assert next(response) == (
         'batou-output', 'line', ('STDOUT',), {'red': True})
 
-    assert response.next() == ('batou-output', 'line', ('     ',), {})
+    assert next(response) == ('batou-output', 'line', ('     ',), {})
 
-    assert response.next() == (
+    assert next(response) == (
         'batou-output', 'line', ('STDERR',), {'red': True})
 
     # Different /bin/sh versions have different error reporting
-    assert response.next() in [
+    assert next(response) in [
         ('batou-output', 'line',
             ('     /bin/sh: fdjkahfkjdasbfda: command not found\n     ',), {}),
         ('batou-output', 'line',
             ('     /bin/sh: 1: fdjkahfkjdasbfda: not found\n     ',), {})]
 
-    assert response.next() == ('batou-error', None)
+    assert next(response) == ('batou-error', None)
 
     with pytest.raises(StopIteration):
-        response.next()
+        next(response)
 
 
 def test_git_remote_init_bundle(tmpdir):
