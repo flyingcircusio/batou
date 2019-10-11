@@ -8,7 +8,7 @@ batou helps you to automate your application deployments:
 
 Getting started with a new project is easy:
 
-```
+```console
 $ mkdir myproject
 $ cd myproject
 $ curl https://bitbucket.org/flyingcircus/batou/raw/tip/src/batou/bootstrap-template -o batou
