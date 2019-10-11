@@ -6,8 +6,8 @@ python:
   - "3.8-dev"
   - "nightly"
 install:
-  - ./bootstrap.sh
-  - bin/buildout
+  - pip install zc.buildout
+  - buildout
 
 script:
   - bin/pytest -vv
