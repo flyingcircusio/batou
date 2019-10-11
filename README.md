@@ -14,7 +14,7 @@ Getting started with a new project is easy:
     $ chmod +x batou
     $ ./batou
 
-Here's a minimal application model::
+Here's a minimal application model:
 
     $ mkdir -p components/myapp
     $ cat > components/myapp/component.py
@@ -31,7 +31,7 @@ Here's a minimal application model::
             self += Program('myapp',
                 command='bin/myapp')
 
-And here's a minimal environment::
+And here's a minimal environment:
 
     $ mkdir environments
     $ cat > environments/dev.cfg
@@ -43,7 +43,7 @@ And here's a minimal environment::
 
 To deploy this, you run:
 
-```Shell Session
+```shell
 $ ./batou deploy dev
 ```
 
