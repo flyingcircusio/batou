@@ -18,7 +18,7 @@ $ ./batou
 
 Here's a minimal application model:
 
-```
+```console
 $ mkdir -p components/myapp
 $ cat > components/myapp/component.py
 from batou.component import Component
@@ -37,7 +37,7 @@ from batou.lib.supervisor import Program
 
 And here's a minimal environment:
 
-```
+```console
 $ mkdir environments
 $ cat > environments/dev.cfg
 [environment]
@@ -49,7 +49,7 @@ localhost = myapp
 
 To deploy this, you run:
 
-```bash
+```console
 $ ./batou deploy dev
 ```
 
