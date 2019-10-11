@@ -1,5 +1,4 @@
-batou
-=====
+![Current Build Status](https://travis-ci.org/flyingcircusio/batou.svg?branch=master)
 
 batou helps you to automate your application deployments:
 
@@ -49,8 +48,7 @@ To deploy this, you run::
 Check the `detailed documentation <http://batou.readthedocs.org>`_ to get going with a more ambitious project.
 
 
-Features
---------
+## Features
 
 * Separate your application model from environments
 * Supports idempotent operation for incremental deployments
@@ -68,20 +66,6 @@ Features
 * self-bootstrapping and self-updating - no additional
   scripting needed
 
-
-Contribute
-----------
-
-- `Issue Tracker: <https://plan.flyingcircus.io/projects/batou>`_
-- `Source Code: <https://bitbucket.org/flyingcircus/batou>`_
-
-Support
--------
-
-If you are having issues, please let us know.
-We're around on IRC in #batou on freenode.
-
-License
--------
+## License
 
 The project is licensed under the 2-clause BSD license.
