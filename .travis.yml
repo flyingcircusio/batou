@@ -3,6 +3,7 @@ python:
   - "2.7"
 
 install:
+  - pyenv versions
   - ./bootstrap.sh
   - bin/buildout
 
