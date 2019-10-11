@@ -47,14 +47,14 @@ def test_venv_updates_if_python_changes(root):
     playground.deploy()
     root.component.sub_components.remove(playground)
 
-    playground = Playground('3.7')
+    playground = Playground('3.6')
     root.component += playground
     playground.deploy()
 
     out, err = playground.cmd(
         '{}/bin/python -c "import sys; print(sys.version_info[:2])"'.format(
             playground.workdir))
-    assert (3, 7) == ast.literal_eval(out)
+    assert (3, 6) == ast.literal_eval(out)
 
 
 def test_venv_does_not_update_if_python_does_not_change(root):
