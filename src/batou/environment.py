@@ -420,6 +420,14 @@ class Environment(object):
             return self.vfs_sandbox.map(path)
         return path
 
+    def components_for(self, host):
+        """Return component names for given host name"""
+        result = {}
+        for component in self.root_components:
+            if component.host is host:
+                result[component.name] = component
+        return result
+
 
 def parse_host_components(components):
     """Parse a component list as given in an environment config for a host

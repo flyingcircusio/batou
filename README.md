@@ -1,5 +1,4 @@
-batou
-=====
+![Current Build Status](https://travis-ci.org/flyingcircusio/batou.svg?branch=master)
 
 batou helps you to automate your application deployments:
 
@@ -7,21 +6,24 @@ batou helps you to automate your application deployments:
 * You configure how the model applies to hosts in different environments.
 * You verify and run the deployment with the batou utility.
 
-Getting started with a new project is easy::
+Getting started with a new project is easy:
 
-    $ mkdir myproject
-    $ cd myproject
-    $ curl https://bitbucket.org/flyingcircus/batou/raw/tip/src/batou/bootstrap-template -o batou
-    $ chmod +x batou
-    $ ./batou
+```console
+$ mkdir myproject
+$ cd myproject
+$ curl https://bitbucket.org/flyingcircus/batou/raw/tip/src/batou/bootstrap-template -o batou
+$ chmod +x batou
+$ ./batou
+```
 
-Here's a minimal application model::
+Here's a minimal application model:
 
-    $ mkdir -p components/myapp
-    $ cat > components/myapp/component.py
-    from batou.component import Component
-    from batou.lib.python import VirtualEnv, Package
-    from batou.lib.supervisor import Program
+```console
+$ mkdir -p components/myapp
+$ cat > components/myapp/component.py
+from batou.component import Component
+from batou.lib.python import VirtualEnv, Package
+from batou.lib.supervisor import Program
 
     class MyApp(Component):
 
@@ -31,26 +33,30 @@ Here's a minimal application model::
             venv += Package('myapp')
             self += Program('myapp',
                 command='bin/myapp')
+```
 
-And here's a minimal environment::
+And here's a minimal environment:
 
-    $ mkdir environments
-    $ cat > environments/dev.cfg
-    [environment]
-    connect_method = local
+```console
+$ mkdir environments
+$ cat > environments/dev.cfg
+[environment]
+connect_method = local
 
-    [hosts]
-    localhost = myapp
+[hosts]
+localhost = myapp
+```
 
-To deploy this, you run::
+To deploy this, you run:
 
-    $ ./batou deploy dev
+```console
+$ ./batou deploy dev
+```
 
-Check the `detailed documentation <http://batou.readthedocs.org>`_ to get going with a more ambitious project.
+Check the [detailed documentation](http://batou.readthedocs.org) to get going with a more ambitious project.
 
 
-Features
---------
+## Features
 
 * Separate your application model from environments
 * Supports idempotent operation for incremental deployments
@@ -68,20 +74,6 @@ Features
 * self-bootstrapping and self-updating - no additional
   scripting needed
 
-
-Contribute
-----------
-
-- `Issue Tracker: <https://plan.flyingcircus.io/projects/batou>`_
-- `Source Code: <https://bitbucket.org/flyingcircus/batou>`_
-
-Support
--------
-
-If you are having issues, please let us know.
-We're around on IRC in #batou on freenode.
-
-License
--------
+## License
 
 The project is licensed under the 2-clause BSD license.

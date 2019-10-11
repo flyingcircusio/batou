@@ -1,0 +1,13 @@
+language: python
+python:
+  - "2.7"
+addons:
+  apt:
+    packages:
+      - python3-venv
+install:
+  - ./bootstrap.sh
+  - bin/buildout
+
+script:
+  - bin/pytest -vv
