@@ -67,13 +67,15 @@ class Deployment(object):
 
     def _connections(self):
         self.environment.prepare_connect()
-        for i, host in enumerate(list(self.environment.hosts.values()), 1):
+        hosts = sorted(self.environment.hosts)
+        for i, hostname in enumerate(hosts, 1):
+            host = self.environment.hosts[hostname]
             if host.ignore:
-                output.step(host.name, "Connection ignored ({}/{})".format(
+                output.step(hostname, "Connection ignored ({}/{})".format(
                     i, len(self.environment.hosts)),
                     bold=False, red=True)
                 continue
-            output.step(host.name, "Connecting via {} ({}/{})".format(
+            output.step(hostname, "Connecting via {} ({}/{})".format(
                         self.environment.connect_method, i,
                         len(self.environment.hosts)))
             c = Connector(host)
