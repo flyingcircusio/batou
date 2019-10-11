@@ -6,7 +6,7 @@ batou helps you to automate your application deployments:
 * You configure how the model applies to hosts in different environments.
 * You verify and run the deployment with the batou utility.
 
-Getting started with a new project is easy::
+Getting started with a new project is easy:
 
     $ mkdir myproject
     $ cd myproject
@@ -41,11 +41,13 @@ And here's a minimal environment::
     [hosts]
     localhost = myapp
 
-To deploy this, you run::
+To deploy this, you run:
 
-    $ ./batou deploy dev
+```Shell Session
+$ ./batou deploy dev
+```
 
-Check the `detailed documentation <http://batou.readthedocs.org>`_ to get going with a more ambitious project.
+Check the [detailed documentation](http://batou.readthedocs.org) to get going with a more ambitious project.
 
 
 ## Features
