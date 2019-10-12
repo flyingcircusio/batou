@@ -25,21 +25,21 @@ class Editor(object):
                 print()
                 print("Could not update due to error: {}".format(e))
                 print("Your changes are still available. You can try:")
-                print("\tedit (opens editor with current data again)")
-                print("\tencrypt (tries to encrypt current data again)")
-                print("\tquit (quits and loses your changes)")
+                print("\tedit       -- opens editor with current data again")
+                print("\tencrypt    -- tries to encrypt current data again")
+                print("\tquit       -- quits and loses your changes")
                 cmd = input("> ").strip()
             else:
                 break
 
     def process_cmd(self, cmd):
-            if cmd == 'edit':
-                self.edit()
-                self.encrypt()
-            elif cmd == 'encrypt':
-                self.encrypt()
-            else:
-                print("Did not understand command '{}'".format(cmd))
+        if cmd == 'edit':
+            self.edit()
+            self.encrypt()
+        elif cmd == 'encrypt':
+            self.encrypt()
+        else:
+            print("Did not understand command '{}'".format(cmd))
 
     def encrypt(self):
         if self.cleartext == self.original_cleartext:
