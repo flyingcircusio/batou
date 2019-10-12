@@ -1,6 +1,8 @@
 from batou.secrets.encryption import EncryptedConfigFile as BaseEncConfigFile
 from batou.secrets.encryption import NEW_FILE_TEMPLATE
+from batou.secrets import add_secrets_to_environment_override
 import configparser
+import mock
 import os
 import os.path
 import pytest
@@ -138,3 +140,27 @@ members = foobar@example.com
 x = 1
 """)
         assert open(tf.name, 'rb').read() == open(encrypted_file, 'rb').read()
+
+
+def test_no_interpolation(tmpdir):
+    os.makedirs(str(tmpdir / 'secrets'))
+    os.chdir(tmpdir)
+    secret_file = str(tmpdir / 'secrets' / 'env.cfg')
+    encrypted = EncryptedConfigFile(secret_file, write_lock=True)
+    with encrypted as secrets:
+        secrets.write("""\
+[batou]
+members = batou
+[asdf]
+x = asdf%asdf%
+""")
+
+    env = mock.Mock()
+    env.name = 'env'
+    env.components = ['asdf']
+    env.overrides = {}
+
+    add_secrets_to_environment_override(
+        env, enc_file_class=EncryptedConfigFile)
+
+    assert env.overrides == {'asdf': {'x': 'asdf%asdf%'}}

@@ -25,11 +25,12 @@ from .encryption import EncryptedConfigFile
 import os.path
 
 
-def add_secrets_to_environment_override(environment):
+def add_secrets_to_environment_override(
+        environment, enc_file_class=EncryptedConfigFile):
     secrets_file = 'secrets/{}.cfg'.format(environment.name)
     if not os.path.exists(secrets_file):
         return
-    with EncryptedConfigFile(secrets_file) as f:
+    with enc_file_class(secrets_file) as f:
         f.read()
         for section_ in f.config.sections():
             if section_ == 'batou':
