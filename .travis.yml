@@ -18,7 +18,9 @@ matrix:
         - PYTHON=3.8-dev
         - PYTHONCMD=python3.8
     - name: "Python nightly"
-      env: PYTHON=python3.8
+      env:
+        - PYTHON=python-nightly
+        - PYTHONCMD=python3.8
 script:
   - sudo apt-get install python3-venv
   - curl -sSf -o python-$PYTHON.tar.bz2 https://storage.googleapis.com/travis-ci-language-archives/python/binaries/ubuntu/16.04/x86_64/python-$PYTHON.tar.bz2
