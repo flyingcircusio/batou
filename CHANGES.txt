@@ -4,7 +4,42 @@ Changelog
 2.0b2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+General
+~~~~~~~
+
+- Make encryption/decryption error prompt more readable.
+
+- Fix coding style issues.
+
+Bugs
+~~~~
+
+- Fix issue #5: allow using % in secrets similar to regular overrides.
+
+- Fix secrets editing, add test coverage for the affected code.
+
+Testing
+~~~~~~~
+
+- Relax global pytest timeouts to avoid slow network failures.
+
+- Switch from broken/abandoned pytest-codecheckers to pytest-flake8
+
+- Enable flake8, remove unused pytest markers.
+
+- Fix warnings
+
+- Make warnings errors.
+
+Build system / Development environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Update example batou scripts
+
+- Fix travis build environments. Support Python 3.5, 3.6, 3.7, 3.8-dev and
+  nightly (also 3.8 currently).
+
+- Generalize development bootstrapping code for dual use in local and travis environments.
 
 
 2.0b1 (2019-10-11)
