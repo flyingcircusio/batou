@@ -1,6 +1,6 @@
-<img align="right" width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
+<img width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
 
-[![Current Build Status](https://travis-ci.org/flyingcircusio/batou.svg?branch=master)](https://travis-ci.org/flyingcircusio/batou)
+<a href="https://travis-ci.org/flyingcircusio/batou" align="right"><img title="Current Build Status" src="https://travis-ci.org/flyingcircusio/batou.svg?branch=master)"></a>
 
 batou helps you to automate your application deployments:
 
