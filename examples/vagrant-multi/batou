@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 #
 # This file is managed by batou. Don't edit directly. Use the './batou update'
 # command to adjust versions.
@@ -37,7 +37,7 @@ def install_venv():
     for fast in ['-F', '--fast']:
         while fast in sys.argv:
             sys.argv.remove(fast)
-    cmd('virtualenv --python=python2.7 .batou')
+    cmd('python3 -m venv .batou')
 
 
 def install_pip():
@@ -51,6 +51,18 @@ os.chdir(base)
 # clear PYTHONPATH variable to get a defined environment
 if 'PYTHONPATH' in os.environ:
     del os.environ['PYTHONPATH']
+
+needs_reset = False
+
+if os.path.exists('.batou/bin/python2'):
+    needs_reset = True
+
+if '--reset' in sys.argv:
+    needs_reset = True
+
+if needs_reset:
+    print("Resetting batou env ...")
+    cmd('rm -rf .batou')
 
 # Do we have a virtualenv?
 if not os.path.exists(base + '/.batou'):
@@ -82,11 +94,11 @@ def prepare():
             # we're bootstrapping a new project. just get whatever version.
             # this will self-destruct this file later. :)
             develop = ''
-            spec = '--egg batou --pre'
+            spec = 'batou --pre'
         elif develop:
             spec = '-e {}'.format(develop)
         else:
-            spec = '--egg batou=={}'.format(version)
+            spec = 'batou=={}'.format(version)
 
         cmd('.batou/bin/pip install --ignore-installed {}'.format(spec))
 
