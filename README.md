@@ -1,4 +1,4 @@
-<img align="right" width="100" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
+<img align="right" width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
 
 ![Current Build Status](https://travis-ci.org/flyingcircusio/batou.svg?branch=master)
 
