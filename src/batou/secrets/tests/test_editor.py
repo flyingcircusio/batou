@@ -1,9 +1,10 @@
 from batou.secrets.edit import Editor
-import mock
+from batou.secrets.encryption import EncryptedConfigFile
 
 
-def test_editor_exits_on_successful_command():
-    editor = Editor('vim', mock.Mock())
-    editor.edit = mock.Mock()
-    editor.encrypt = mock.Mock()
-    editor.main()
+def test_edit(tmpdir):
+    with EncryptedConfigFile(str(tmpdir / 'asdf'), write_lock=True) as sf:
+        editor = Editor('true', sf)
+        editor.cleartext = 'asdf'
+        editor.edit()
+        assert editor.cleartext == 'asdf'

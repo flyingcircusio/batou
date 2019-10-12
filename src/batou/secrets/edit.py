@@ -49,7 +49,8 @@ class Editor(object):
 
     def edit(self):
         with tempfile.NamedTemporaryFile(
-                prefix='edit', suffix='.cfg') as clearfile:
+                prefix='edit', suffix='.cfg',
+                mode='w+', encoding='utf-8', ) as clearfile:
             clearfile.write(self.cleartext)
             clearfile.flush()
 
