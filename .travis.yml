@@ -27,3 +27,5 @@ script:
   - sudo tar xjf python-$PYTHON.tar.bz2 --directory /
   - ./bootstrap.sh "/opt/python/$PYTHON/bin/$PYTHONCMD"
   - bin/pytest -vv
+notifications:
+  webhooks: https://rocketchat.flyingcircus.io/hooks/xhNDCt6oRGGXfd8aT/XJhLrmwoZuy5ms67bpjbvHGSnP3BzgbP98FwCHM4KGfGsdND
