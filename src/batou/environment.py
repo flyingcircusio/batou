@@ -227,14 +227,14 @@ class Environment(object):
                     host.data[key] = value
 
     def _load_host_components(self, hostname, component_list):
-            components = parse_host_components(component_list)
-            for component, settings in list(components.items()):
-                try:
-                    self.add_root(component, hostname,
-                                  settings['features'], settings['ignore'])
-                except KeyError:
-                    self.exceptions.append(
-                        MissingComponent(component, hostname))
+        components = parse_host_components(component_list)
+        for component, settings in list(components.items()):
+            try:
+                self.add_root(component, hostname,
+                              settings['features'], settings['ignore'])
+            except KeyError:
+                self.exceptions.append(
+                    MissingComponent(component, hostname))
 
     def _set_defaults(self):
         if self.update_method is None:

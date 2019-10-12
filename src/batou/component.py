@@ -1026,7 +1026,7 @@ class Attribute(object):
         return ast.literal_eval(value)
 
     def convert_list(self, value):
-        l = value.split(',')
-        l = [x.strip() for x in l]
-        l = [_f for _f in l if _f]
-        return l
+        list_ = value.split(',')
+        list_ = [x.strip() for x in list_]
+        list_ = [_f for _f in list_ if _f]
+        return list_

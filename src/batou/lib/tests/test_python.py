@@ -1,10 +1,5 @@
 from batou.component import Component
 from batou.lib.python import VirtualEnv
-from batou.update import update_bootstrap
-from batou.utils import cmd
-import os
-import os.path
-import pytest
 
 
 def test_venv_updates_if_python_changes(root):
