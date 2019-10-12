@@ -7,31 +7,6 @@ import os.path
 import pytest
 
 
-@pytest.mark.slow
-@pytest.mark.jenkinsonly
-@pytest.mark.timeout(240)
-def test_package_venv_installations(root):
-    # this is a really nasty test ...
-    base_dir = os.path.join(
-        os.path.dirname(__file__), '../../../../')
-
-    # copy the "venv" example
-    cmd('cp -a {}/examples/venvs/* .'.format(base_dir))
-    cmd('rm -rf work')
-
-    # ensure the dev link is OK
-    update_bootstrap('', base_dir)
-
-    # run batou, hope for the best. ;)
-    stdout, stderr = cmd('./batou deploy dev')
-    assert "Deploying component py26" in stdout
-    assert "Deploying component py27" in stdout
-    assert "Deploying component py33" in stdout
-    assert "Deploying component py34" in stdout
-    assert "Deploying component py35" in stdout
-    assert stderr == ""
-
-
 def test_venv_updates_if_python_changes(root):
     import ast
 
