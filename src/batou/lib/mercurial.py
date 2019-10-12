@@ -14,7 +14,7 @@ class Clone(Component):
     branch = None
     vcs_update = True
 
-    _revision_pattern = re.compile('changeset: +\d+:([a-f0-9]+)')
+    _revision_pattern = re.compile(r'changeset: +\d+:([a-f0-9]+)')
 
     def configure(self):
         if (not self.revision_or_branch) or (self.revision and self.branch):

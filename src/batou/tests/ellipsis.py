@@ -43,7 +43,7 @@ def match(pattern, line):
     pattern = pattern.replace('\t', ' ' * 8)
     line = line.replace('\t', ' ' * 8)
     pattern = re.escape(pattern)
-    pattern = pattern.replace('\.\.\.', '.+?')
+    pattern = pattern.replace(r'\.\.\.', '.+?')
     pattern = re.compile('^' + pattern + '$')
     return pattern.match(line)
 

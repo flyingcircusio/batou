@@ -75,7 +75,7 @@ CREATE DATABASE IF NOT EXISTS
 
         if self.base_import_file:
             self += Command(
-                self.expand('\. {{component.base_import_file}}\n'),
+                self.expand('\\. {{component.base_import_file}}\n'),
                 db=self.database,
                 unless=self.expand('show tables'),
                 admin_password=self.admin_password)
