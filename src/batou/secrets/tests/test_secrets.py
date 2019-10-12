@@ -144,7 +144,7 @@ x = 1
 
 def test_no_interpolation(tmpdir):
     os.makedirs(str(tmpdir / 'secrets'))
-    os.chdir(tmpdir)
+    os.chdir(str(tmpdir))
     secret_file = str(tmpdir / 'secrets' / 'env.cfg')
     encrypted = EncryptedConfigFile(secret_file, write_lock=True)
     with encrypted as secrets:
