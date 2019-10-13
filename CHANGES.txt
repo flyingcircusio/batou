@@ -11,6 +11,19 @@ General
 
 - Fix coding style issues.
 
+Features
+~~~~~~~~
+
+- Add coarse grained parallelization of deployments.
+
+  Using asyncio we now schedule rooot components for deployment as soon as all
+  their dependencies are completed. However, due to execnet being synchronous
+  this only has a visible effect for components on  multiple hosts. This will
+  speed up long running multi-host deployments.
+
+  In the future this will become more fine-grained so that we can even deploy
+  multiple independent components on the same host in parallel.
+
 Bugs
 ~~~~
 

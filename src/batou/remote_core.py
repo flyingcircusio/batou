@@ -312,11 +312,15 @@ def deploy(root, predict_only=False):
     deployment.deploy(root, predict_only)
 
 
-def roots_in_order():
-    result = []
-    for root in deployment.environment.roots_in_order():
-        result.append((root.host.fqdn, root.name, root.ignore))
-    return result
+def root_dependencies():
+    deps = {}
+    for root, dependencies in (
+            deployment.environment.root_dependencies().items()):
+        key = (root.host.name, root.name)
+        deps[key] = {
+            'dependencies': [(r.host.name, r.name) for r in dependencies],
+            'ignore': root.ignore}
+    return deps
 
 
 def whoami():

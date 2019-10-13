@@ -24,9 +24,11 @@ batou/2... (cpython 3...)
 main: Loading environment `errors`...
 main: Verifying repository ...
 main: Loading secrets ...
-============================ Configuring first host ==========================\
+================================ Connecting ... ==============================\
 ==
 localhost: Connecting via local (1/1)
+============================ Configuring model ... ===========================\
+==
 ERROR: Failed loading component file
            File: .../component5/component.py
       Exception: invalid syntax (component.py, line 1)
@@ -99,12 +101,14 @@ batou/2... (cpython 3...)
 main: Loading environment `ignores`...
 main: Verifying repository ...
 main: Loading secrets ...
-============================ Configuring first host ==========================\
+================================ Connecting ... ==============================\
 ==
 localhost: Connecting via local (1/2)
-========================== Connecting remaining hosts ========================\
-==
 otherhost: Connection ignored (2/2)
+============================ Configuring model ... ===========================\
+==
+==================== Waiting for remaining connections ... ===================\
+==
 ================================== Deploying =================================\
 ==
 localhost: Deploying component component1 ...
