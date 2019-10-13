@@ -1,5 +1,5 @@
 <p align="right">
-    <a href="https://travis-ci.org/flyingcircusio/batou"><img title="Current Build Status" src="https://travis-ci.org/flyingcircusio/batou.svg?branch=master)"></a>
+    <a href="https://travis-ci.org/flyingcircusio/batou"><img title="Current Build Status" src="https://travis-ci.org/flyingcircusio/batou.svg?branch=master"></a>
 </p>
 
 <img width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
