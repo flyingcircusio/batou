@@ -49,7 +49,7 @@ class Resources(object):
     # have subscribed to when they were configured earlier..
     dirty_dependencies = None
 
-    # {key: {host: [values]}}
+    # {key: {root: [values]}}
     resources = None
 
     def __init__(self):
@@ -166,9 +166,11 @@ class Resources(object):
         graph = defaultdict(set)
         for key, providers in list(self.resources.items()):
             for s in self._subscriptions(key, None):
-                if s.reverse:
-                    for provider in providers:
+                for provider in providers:
+                    if s.host is not None and s.host is not provider.host:
+                        continue
+                    if s.reverse:
                         graph[provider].add(s.root)
-                else:
-                    graph[s.root].update(providers)
+                    else:
+                        graph[s.root].add(provider)
         return graph

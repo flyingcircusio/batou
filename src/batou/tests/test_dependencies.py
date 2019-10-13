@@ -79,7 +79,8 @@ def test_consumer_retrieves_value_from_provider_order1(env):
     consumer = env.add_root('consumer', 'test')
     env.configure()
     assert list(consumer.component.the_answer) == [42]
-    assert env.roots_in_order() == [provider, consumer]
+    assert env.root_dependencies() == {
+        provider: set(), consumer: {provider}}
 
 
 def test_provider_with_consumer_limited_by_host_raises_error(env):
@@ -94,7 +95,8 @@ def test_consumer_retrieves_value_from_provider_order2(env):
     provider = env.add_root('provider', 'host')
     env.configure()
     assert list(consumer.component.the_answer) == [42]
-    assert env.roots_in_order() == [provider, consumer]
+    assert env.root_dependencies() == {
+        provider: set(), consumer: {provider}}
 
 
 def test_consumer_without_provider_raises_error(env):
@@ -135,9 +137,9 @@ def test_consumer_retrieves_value_from_provider_with_same_host(env):
     env.configure()
     assert list(consumer.component.the_answer) == [42]
     assert list(consumer2.component.the_answer) == [42]
-    components = env.roots_in_order()
-    assert set([provider2, provider]) == set(components[:2])
-    assert set([consumer, consumer2]) == set(components[2:])
+    assert env.root_dependencies() == {
+        consumer: {provider}, provider: set(),
+        consumer2: {provider2}, provider2: set()}
 
 
 def test_components_are_ordered_over_multiple_hosts(env):
@@ -146,9 +148,9 @@ def test_components_are_ordered_over_multiple_hosts(env):
     consumer1 = env.add_root('consumer', 'host')
     consumer2 = env.add_root('consumer', 'host2')
     env.configure()
-    components = env.roots_in_order()
-    assert set([provider1, provider2]) == set(components[:2])
-    assert set([consumer1, consumer2]) == set(components[2:])
+    assert env.root_dependencies() == {
+        consumer1: {provider1, provider2}, provider1: set(),
+        consumer2: {provider1, provider2}, provider2: set()}
 
 
 def test_circular_depending_component(env):

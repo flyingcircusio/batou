@@ -1,0 +1,41 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.define "v1" do |v1|
+
+    v1.vm.box = "flyingcircus/nixos-19.03-dev-x86_64"
+    v1.vm.box_version = "= 233.d76046d"
+
+    v1.vm.network "private_network", ip: "192.168.51.5"
+    v1.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+    end
+
+    v1.vm.provision :nixos, :verbose => true,\
+      :path => "provision.nix", \
+      :run => "always"
+
+    v1.vm.synced_folder "../../", "/opt/batou", :mount_options => ["dmode=777","fmode=666"]
+  end
+
+  config.vm.define "v2" do |v2|
+
+    v2.vm.box = "flyingcircus/nixos-19.03-dev-x86_64"
+    v2.vm.box_version = "= 233.d76046d"
+
+    v2.vm.network "private_network", ip: "192.168.51.5"
+    v2.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+    end
+
+    v2.vm.provision :nixos, :verbose => true,\
+      :path => "provision.nix", \
+      :run => "always"
+
+    v2.vm.synced_folder "../../", "/opt/batou", :mount_options => ["dmode=777","fmode=666"]
+  end
+
+
+
+end

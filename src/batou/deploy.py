@@ -3,6 +3,8 @@ from .utils import locked, self_id
 from .utils import notify
 from batou import DeploymentError, ConfigurationError
 from batou._output import output, TerminalBackend
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
 import sys
 import threading
 
@@ -33,12 +35,13 @@ class Deployment(object):
     _upstream = None
 
     def __init__(self, environment, platform, timeout, dirty, fast,
-                 reset=False):
+                 predict_only=False, reset=False):
         self.environment = environment
         self.platform = platform
         self.timeout = timeout
         self.dirty = dirty
         self.fast = fast
+        self.predict_only = predict_only
         self.reset = reset
 
     def load(self):
@@ -61,9 +64,8 @@ class Deployment(object):
         self.environment.load_secrets()
 
     def configure(self):
-        output.section("Configuring first host")
-        self.connections = iter(self._connections())
-        next(self.connections).join()
+        output.section("Configuring model ...")
+        self.connections[0].join()
 
     def _connections(self):
         self.environment.prepare_connect()
@@ -83,14 +85,49 @@ class Deployment(object):
             yield c
 
     def connect(self):
-        output.section("Connecting remaining hosts")
+        output.section("Connecting ...")
         # Consume the connection iterator to establish remaining connections.
-        connecting = list(self.connections)
-        # Wait for all connections to finish
-        [c.join() for c in connecting]
+        self.connections = list(self._connections())
 
-    def deploy(self, predict_only=False):
-        if predict_only:
+    def _launch_components(self, todolist):
+        for key, info in list(todolist.items()):
+            if info['dependencies']:
+                continue
+            del todolist[key]
+            asyncio.ensure_future(self._deploy_component(key, info, todolist))
+
+    async def _deploy_component(self, key, info, todolist):
+        hostname, component = key
+        host = self.environment.hosts[hostname]
+        if host.ignore:
+            output.step(
+                hostname,
+                "Skipping component {} ... (Host ignored)".format(
+                    component), red=True)
+        elif info['ignore']:
+            output.step(
+                hostname, "Skipping component {} ... (Component ignored)".
+                format(component), red=True)
+        else:
+            output.step(
+                hostname, "Deploying component {} ...".format(component))
+            await self.loop.run_in_executor(
+                None, host.deploy_component, component, self.predict_only)
+
+        # Clear dependency from todolist
+        for other_component in todolist.values():
+            if key in other_component['dependencies']:
+                other_component['dependencies'].remove(key)
+
+        # Trigger start of unblocked dependencies
+        self._launch_components(todolist)
+
+    def deploy(self):
+        # Wait for all connections to finish
+        output.section("Waiting for remaining connections ...")
+        [c.join() for c in self.connections]
+
+        if self.predict_only:
             output.section("Predicting deployment actions")
         else:
             output.section("Deploying")
@@ -100,24 +137,15 @@ class Deployment(object):
         reference_node = [h for h in list(self.environment.hosts.values())
                           if not h.ignore][0]
 
-        for root in reference_node.roots_in_order():
-            hostname, component, ignore_component = root
-            host = self.environment.hosts[hostname]
-            if host.ignore:
-                output.step(
-                    hostname,
-                    "Skipping component {} ... (Host ignored)".format(
-                        component), red=True)
-                continue
-            if ignore_component:
-                output.step(
-                    hostname, "Skipping component {} ... (Component ignored)".
-                    format(component), red=True)
-                continue
+        self.loop = asyncio.get_event_loop()
+        self.taskpool = ThreadPoolExecutor(10)
+        self.loop.set_default_executor(self.taskpool)
+        self._launch_components(reference_node.root_dependencies())
 
-            output.step(
-                hostname, "Deploying component {} ...".format(component))
-            host.deploy_component(component, predict_only)
+        pending = asyncio.Task.all_tasks()
+        while pending:
+            self.loop.run_until_complete(asyncio.gather(*pending))
+            pending = {t for t in asyncio.Task.all_tasks() if not t.done()}
 
     def disconnect(self):
         output.step("main", "Disconnecting from nodes ...", debug=True)
@@ -138,13 +166,13 @@ def main(environment, platform, timeout, dirty, fast, consistency_only,
     with locked('.batou-lock'):
         try:
             deployment = Deployment(
-                environment, platform, timeout, dirty, fast,
+                environment, platform, timeout, dirty, fast, predict_only,
                 reset=reset)
             deployment.load()
+            deployment.connect()
             deployment.configure()
             if not consistency_only:
-                deployment.connect()
-                deployment.deploy(predict_only)
+                deployment.deploy()
             deployment.disconnect()
         except MissingEnvironment as e:
             e.report()

@@ -98,7 +98,7 @@ def test_multiple_components(sample_service):
     e = Environment('test-multiple-components')
     e.load()
     components = dict(
-        (host, list(sorted(c.name for c in e.roots_in_order(host=host))))
+        (host, list(sorted(c.name for c in e.root_dependencies(host=host))))
         for host in sorted(e.hosts.keys()))
     assert components == dict(
         localhost=['hello1', 'hello2'],
@@ -277,7 +277,7 @@ Sub!
 Post sub""" == log
 
     output.reset_mock()
-    for root in e.roots_in_order():
+    for root in e.root_dependencies():
         root.component.deploy(True)
 
     log = '\n'.join(c[0][0].strip() for c in output.call_args_list)

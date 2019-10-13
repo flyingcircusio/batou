@@ -111,8 +111,8 @@ class Host(object):
     def deploy_component(self, component, predict_only):
         self.rpc.deploy(component, predict_only)
 
-    def roots_in_order(self):
-        return self.rpc.roots_in_order()
+    def root_dependencies(self):
+        return self.rpc.root_dependencies()
 
     @property
     def components(self):

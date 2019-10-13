@@ -13,7 +13,7 @@ from batou._output import output
 from batou.component import RootComponent
 from batou.repository import Repository
 from batou.utils import cmd
-from batou.utils import revert_graph, topological_sort, CycleError
+from batou.utils import CycleError
 import ast
 import batou.c
 import batou.utils
@@ -321,6 +321,7 @@ class Environment(object):
         previous_working_sets = []
         exceptions = []
         order = []
+        root_dependencies = None
 
         while working_set:
             exceptions = []
@@ -336,6 +337,7 @@ class Environment(object):
                 except ConfigurationError as e:
                     # A known exception which we can report gracefully later.
                     exceptions.append(e)
+                    print(root, e)
                     retry.add(root)
                 except Exception as e:
                     # An unknown exception which we have to work harder
@@ -343,6 +345,7 @@ class Environment(object):
                     ex_type, ex, tb = sys.exc_info()
                     exceptions.append(
                         UnknownComponentConfigurationError(root, e, tb))
+                    print(root, e)
                     retry.add(root)
 
             retry.update(self.resources.dirty_dependencies)
@@ -351,8 +354,10 @@ class Environment(object):
             # Try to find a valid order of the components. If we can't then we
             # have detected a dependency cycle and need to stop.
 
+            root_dependencies = self.root_dependencies()
             try:
-                order = self.roots_in_order()
+                order = batou.utils.topological_sort(
+                    batou.utils.revert_graph(root_dependencies))
             except CycleError as e:
                 exceptions.append(CycleErrorDetected(e))
 
@@ -386,11 +391,11 @@ class Environment(object):
             # attribute anyway.
             raise self.exceptions[0]
 
-    def roots_in_order(self, host=None):
-        """Return a list of root components sorted by their resource
-        dependencies, filtered by host if specified.
+    def root_dependencies(self, host=None):
+        """Return all roots (host/component) with their direct dependencies.
 
-        Raises ValueError if component dependencies have cycles.
+        This can be used as a "todo" list where all things that have no
+        dependencies left can be started to be worked on.
 
         """
         dependencies = self.resources.get_dependency_graph()
@@ -399,11 +404,11 @@ class Environment(object):
         for root in self.root_components:
             if root not in dependencies:
                 dependencies[root] = set()
-        roots = topological_sort(revert_graph(dependencies))
         if host is not None:
-            host = self.get_host(host)
-            roots = [x for x in roots if x.host is host]
-        return roots
+            for root in list(dependencies):
+                if root.host.name is not host:
+                    del dependencies[root]
+        return dependencies
 
     def normalize_host_name(self, hostname):
         """Ensure the given host name is an FQDN for this environment."""
