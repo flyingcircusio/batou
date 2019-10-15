@@ -43,7 +43,7 @@ setup(
     author='Christian Theune',
     author_email='ct@flyingcircus.io',
     license='BSD (2-clause)',
-    url='https://plan.flyingcircus.io/projects/batou',
+    url='https://batou.readthedocs.io/en/latest/',
     keywords='deployment',
     classifiers="""\
 License :: OSI Approved :: BSD License
