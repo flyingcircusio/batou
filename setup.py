@@ -13,7 +13,14 @@ def project_path(*names):
     return os.path.join(*names)
 
 
-version = open('src/batou/version.txt').read().strip()
+version = open(project_path('src/batou/version.txt')).read().strip()
+
+
+with open(project_path('README.md'), 'w') as out:
+    for f in ['README.md.in', 'CHANGES.md']:
+        with open(project_path(f), 'r') as f:
+            out.write(f.read())
+
 
 setup(
     name='batou',
@@ -53,9 +60,7 @@ Programming Language :: Python :: 2.7
 Programming Language :: Python :: 2 :: Only
 """[:-1].split('\n'),
     description=__doc__.strip(),
-    long_description='\n\n'.join(open(project_path(name)).read() for name in (
-            'README.md', 'CHANGES.md'
-            )),
+    long_description=open(project_path('README.md')),
     long_description_content_type='text/markdown',
     packages=find_packages('src'),
     package_dir={'': 'src'},
