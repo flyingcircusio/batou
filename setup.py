@@ -60,7 +60,7 @@ Programming Language :: Python :: 2.7
 Programming Language :: Python :: 2 :: Only
 """[:-1].split('\n'),
     description=__doc__.strip(),
-    long_description=open(project_path('README.md')),
+    long_description=open(project_path('README.md')).read(),
     long_description_content_type='text/markdown',
     packages=find_packages('src'),
     package_dir={'': 'src'},
