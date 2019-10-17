@@ -17,11 +17,10 @@ class Tick(Component):
                           priority=10))
 
     def verify(self):
-        return
         raise UpdateNeeded()
 
     def update(self):
-        time.sleep(2)
+        time.sleep(5)
 
 
 class Tick2(Tick):
