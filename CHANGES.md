@@ -3,7 +3,7 @@
 
 ### 2.0b3 (unreleased)
 
-- Nothing changed yet.
+- Improve error message in case of a DNS error during address resolution
 
 
 ### 2.0b2 (2019-10-15)

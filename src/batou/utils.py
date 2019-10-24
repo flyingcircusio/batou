@@ -167,7 +167,8 @@ class Address(object):
             self.listen_v6 = NetLoc(v6_address, str(port))
 
         if not self.listen and not self.listen_v6:
-            raise socket.gaierror("No v4 or v6 address for %s" % connect)
+            raise socket.gaierror(
+                "No v4 or v6 address for '{}'.".format(connect))
 
     def __lt__(self, other):
         if isinstance(other, Address):
