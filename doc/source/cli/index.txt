@@ -70,8 +70,8 @@ batou secrets edit
       --editor EDITOR, -e EDITOR
                             Invoke EDITOR to edit (default: $EDITOR or vi)
 
-batou secrets overview
-----------------------
+batou secrets summary
+---------------------
 
 Show an overview of which users have access to what encrypted secrets.
 
