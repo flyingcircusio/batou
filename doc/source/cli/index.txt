@@ -55,6 +55,10 @@ batou deploy
       -P, --predict-only    Only predict what updates would happen. Do not change
                             anything.
 
+
+The SSH command and arguments used can be overriden via the ``BATOU_SSH_COMMAND`` environment variable, e.g. ``BATOU_SSH_COMMAND="ssh -l myotheruser" ./batou deploy otherenv``
+
+
 batou secrets edit
 ------------------
 

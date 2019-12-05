@@ -5,7 +5,7 @@ Changelog
 1.12.1 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Add ``BATOU_SSH_COMMAND`` environment variable to control SSH invocation (#17)
 
 
 1.12.0 (2019-10-11)
