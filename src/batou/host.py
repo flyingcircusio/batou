@@ -40,8 +40,8 @@ def new_ssh_args(spec):
         # TODO: this should really use:
         #   args = ['kitchen', 'exec', spec.ssh, '-c']
         # but `exec` apparently doesn't connect stdin (yet)...
-        args = (['ssh', '-C'] + get_kitchen_ssh_connection_info(spec.ssh)
-                + [remote_cmd])
+        args = (['ssh', '-C'] + get_kitchen_ssh_connection_info(spec.ssh) +
+                [remote_cmd])
     else:
         args = ['ssh', '-C', spec.ssh, remote_cmd]
     return args
