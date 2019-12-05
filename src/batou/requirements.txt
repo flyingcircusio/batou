@@ -3,11 +3,11 @@ MarkupSafe==1.0
 certifi==2017.4.17
 chardet==3.0.4
 idna==2.5
-urllib3==1.21.1
+urllib3==1.25.6
 apipkg==1.4
-Jinja2==2.9.6
-requests==2.19.1
+Jinja2==2.10.3
+requests==2.22.0
 setuptools==40.0.0
 execnet==1.4.1
-PyYAML==3.13
+PyYAML==5.1.2
 py==1.5.2
