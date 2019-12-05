@@ -18,7 +18,7 @@ Getting started with a new project is easy:
 ```console
 $ mkdir myproject
 $ cd myproject
-$ curl https://bitbucket.org/flyingcircus/batou/raw/tip/src/batou/bootstrap-template -o batou
+$ curl https://raw.githubusercontent.com/flyingcircusio/batou/master/src/batou/bootstrap-template -o batou
 $ chmod +x batou
 $ ./batou
 ```
