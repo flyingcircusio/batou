@@ -6,6 +6,10 @@
 
 - Add ability to disable supervisor programs.
 
+- Update supervisor to 4.x (so it supports Python 3)
+  Currently you have to explictly set the python version you want on the
+  `Supervisor` component.
+
 
 2.0b5 (2020-04-15)
 

@@ -165,6 +165,8 @@ class Supervisor(Component):
     supervisor_conf = os.path.join(
         os.path.dirname(__file__), 'resources', 'supervisor.conf')
 
+    python = '2.7'
+
     program_config_dir = None
     logdir = None
     loglevel = 'info'
@@ -192,10 +194,10 @@ class Supervisor(Component):
         buildout_cfg = File('buildout.cfg',
                             source=self.buildout_cfg)
         self += Buildout('buildout',
-                         version='2.9.5',
-                         setuptools='36.6.0',
+                         version='2.13.2',
+                         setuptools='42.0.2',
                          config=buildout_cfg,
-                         python='2.7')
+                         python=self.python)
 
         self.program_config_dir = Directory('etc/supervisor.d', leading=True)
         self += self.program_config_dir
@@ -249,7 +251,7 @@ class RunningSupervisor(Component):
             raise UpdateNeeded()
 
     def is_running(self):
-        pid, err = self.cmd('bin/supervisorctl pid')
+        pid, err = self.cmd('bin/supervisorctl pid', ignore_returncode=True)
         try:
             int(pid) > 0
         except ValueError:
