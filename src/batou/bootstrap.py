@@ -81,6 +81,10 @@ def bootstrap(activate=True):
         elif req.startswith('-f'):
             pip_options += " " + req
             continue
+        elif ' @ ' in req:
+            # PEP 440 direct reference
+            # Not setting egg will cause forced update below.
+            pass
         else:
             egg = req
 

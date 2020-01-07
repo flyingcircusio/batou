@@ -1,13 +1,12 @@
 ## Changelog
 
 
-2.0b5 (unreleased)
-------------------
+### 2.0b5 (unreleased)
 
-- Nothing changed yet.
+- Fix updating direct references in requirements.txt (#22)
 
 
-2.0b4 (2020-01-13)
+### 2.0b4 (2020-01-13)
 
 - Fix incorrect long->int conversion from 2to3. (Mercurial support)
 
