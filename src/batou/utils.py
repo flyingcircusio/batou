@@ -116,7 +116,7 @@ def resolve_v6(host, port, resolve_override=resolve_v6_override):
     if address and address.startswith('fe80:'):
         # Don't hand out link-local addresses. This happes with
         # vagrant, and does not help as services cannot bind those
-        # addresses without additional configuration, # i.e. the
+        # addresses without additional configuration, i.e. the
         # interface.
         address = None
     return address
