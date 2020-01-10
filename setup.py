@@ -31,7 +31,7 @@ setup(
         'setuptools',
         'execnet',
         'pyyaml',
-        'py'
+        'py',
         'six',
     ],
     extras_require={
