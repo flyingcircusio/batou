@@ -3,7 +3,7 @@
 
 ### 2.0b3 (unreleased)
 
-- Nothing changed yet.
+- Fix Python3 compatibility for logrotate and crontab
 
 
 ### 2.0b2 (2019-10-15)
