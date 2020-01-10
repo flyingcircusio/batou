@@ -87,7 +87,7 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-### 2.0b3 (unreleased)
+2.0b3 (2020-01-10)
 
 - Fix Python3 compatibility for logrotate and crontab
 

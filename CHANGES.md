@@ -1,6 +1,12 @@
 ## Changelog
 
 
+2.0b4 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.0b3 (2020-01-10)
 
 - Fix Python3 compatibility for logrotate and crontab
