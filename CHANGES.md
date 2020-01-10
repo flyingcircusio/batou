@@ -5,6 +5,8 @@
 
 - Fix Python3 compatibility for logrotate and crontab
 
+- Add six as dependency, so deployments can be made compatible to both Python 2 and 3 more easy.
+
 
 ### 2.0b2 (2019-10-15)
 
