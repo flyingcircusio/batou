@@ -1,5 +1,6 @@
 .installed.cfg
 __pycache__/
+.pytest_cache
 bin/
 develop-eggs/
 eggs/
@@ -21,3 +22,4 @@ src/batou/secrets/tests/fixture/gnupg/.gpg-v21-migrated
 .batou-lock
 .vagrant
 examples/*/work
+doc/build
