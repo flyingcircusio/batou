@@ -151,5 +151,5 @@ The project is licensed under the 2-clause BSD license.
   A smooth migration mechanism may become available in the future
   based on users' needs.
 
-- The default hash function is now 'sha256', existing deployments
+- The default hash function is now 'sha512', existing deployments
   need to be migrated manually.
