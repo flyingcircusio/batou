@@ -1,13 +1,14 @@
 ## Changelog
 
 
-2.0b4 (unreleased)
-------------------
+### 2.0b4 (unreleased)
 
-- Nothing changed yet.
+- Fix incorrect long->int conversion from 2to3. (Mercurial support)
+
+- Fix brownbag release due to missing support files.
 
 
-2.0b3 (2020-01-10)
+### 2.0b3 (2020-01-10)
 
 - Fix Python3 compatibility for logrotate and crontab
 

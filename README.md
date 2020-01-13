@@ -87,7 +87,14 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.0b3 (2020-01-10)
+### 2.0b4 (unreleased)
+
+- Fix incorrect long->int conversion from 2to3. (Mercurial support)
+
+- Fix brownbag release due to missing support files.
+
+
+### 2.0b3 (2020-01-10)
 
 - Fix Python3 compatibility for logrotate and crontab
 
