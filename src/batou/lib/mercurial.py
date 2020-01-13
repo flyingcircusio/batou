@@ -57,7 +57,7 @@ class Clone(Component):
         return self.revision or self.branch
 
     def current_revision(self, long=False):
-        debug = '--debug' if int else ''
+        debug = '--debug' if long else ''
         stdout, stderr = self.cmd(
             self.expand(
                 'LANG=C hg --cwd {{component.target}} {{debug}} parent | '
