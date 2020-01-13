@@ -17,14 +17,18 @@ matrix:
       env:
         - PYTHON=3.8
         - PYTHONCMD=python3.8
-    - name: "Python 3.9-dev"
-      env:
-        - PYTHON=3.9-dev
-        - PYTHONCMD=python3.9
-    - name: "Python nightly"
-      env:
-        - PYTHON=nightly
-        - PYTHONCMD=python3.9
+    # requires zc.buildout to become compatible
+    #   https://github.com/buildout/buildout/issues/497
+    # (yes we could ask buildout to run against a different python version
+    #  but that would make the travis setup explode even more ...)
+    # - name: "Python 3.9-dev"
+    #   env:
+    #     - PYTHON=3.9-dev
+    #     - PYTHONCMD=python3.9
+    # - name: "Python nightly"
+    #   env:
+    #     - PYTHON=nightly
+    #     - PYTHONCMD=python3.9
 script:
   - sudo apt-get install python3-venv libyaml-dev
   - curl -sSf -o python-$PYTHON.tar.bz2 https://storage.googleapis.com/travis-ci-language-archives/python/binaries/ubuntu/16.04/x86_64/python-$PYTHON.tar.bz2
