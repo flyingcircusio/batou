@@ -1,6 +1,12 @@
 ## Changelog
 
 
+2.0b5 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.0b4 (2020-01-13)
 
 - Fix incorrect long->int conversion from 2to3. (Mercurial support)

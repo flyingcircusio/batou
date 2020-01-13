@@ -87,7 +87,7 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-### 2.0b4 (unreleased)
+2.0b4 (2020-01-13)
 
 - Fix incorrect long->int conversion from 2to3. (Mercurial support)
 
