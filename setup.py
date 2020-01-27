@@ -21,7 +21,7 @@ setup(
     install_requires=[
         'Jinja2',
         'requests',
-        'setuptools',
+        'setuptools < 45',
         'execnet',
         'pyyaml',
         'py'

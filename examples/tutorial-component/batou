@@ -37,7 +37,7 @@ def install_venv():
     for fast in ['-F', '--fast']:
         while fast in sys.argv:
             sys.argv.remove(fast)
-    cmd('virtualenv --python=python2.7 .batou')
+    cmd('virtualenv --python=python2.7 --no-download .batou')
 
 
 def install_pip():

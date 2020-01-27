@@ -34,7 +34,7 @@ def install_venv():
     # Discover the right venv cmd. Or let batou figure that out later in a
     # second phase?
     # XXX Give advice if virtualenv isn't there.
-    cmd('virtualenv --python=python2.7 .batou')
+    cmd('virtualenv --python=python2.7 --no-download .batou')
 
 
 def install_pip():
