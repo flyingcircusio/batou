@@ -124,7 +124,7 @@ class VirtualEnvPy2_7(VirtualEnvPyBase):
 
     venv_version = '16.1.0'
     venv_checksum = 'md5:ad6d2ebd6885b3a2b4ff2030ce532a2f'
-    venv_options = ()
+    venv_options = ('--no-download', )
 
     install_options = ()
 
