@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.12.2 (unreleased)
+1.12.2 (2020-02-17)
 -------------------
 
 - Fix virtualenv creation on Python 2.7 (#25). Thanks icemac.
