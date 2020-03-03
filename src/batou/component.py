@@ -139,7 +139,8 @@ class Component(object):
 
     @property
     def defdir(self):
-        """(*readonly*) The definition directory (where the ``component.py`` lives).
+        """(*readonly*) The definition directory
+           (where the ``component.py`` lives).
 
         Built-in components treat all path names of source files as relative
         to the definition directory.
