@@ -117,3 +117,18 @@ otherhost: Skipping component fail2 ... (Host ignored)
 ============================= DEPLOYMENT FINISHED ============================\
 ==
 """)
+
+
+def test_example_async_sync_deployment():
+    os.chdir('examples/sync_async')
+    out, _ = cmd('./batou deploy default')
+    print(out)
+    assert "concurrency_model: async" in out
+
+    out, _ = cmd('./batou deploy sync')
+    print(out)
+    assert "concurrency_model: sync" in out
+
+    out, _ = cmd('./batou deploy async')
+    print(out)
+    assert "concurrency_model: async" in out

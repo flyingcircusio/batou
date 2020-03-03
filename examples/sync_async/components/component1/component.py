@@ -7,7 +7,7 @@ class Component1(Component):
         pass
 
 
-class ComponentSub(Component):
+class Component2(Component):
 
     def configure(self):
         pass
