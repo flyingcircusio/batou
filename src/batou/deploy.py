@@ -35,7 +35,7 @@ class Deployment(object):
     _upstream = None
 
     def __init__(self, environment, platform, timeout, dirty, fast,
-                 predict_only=False, reset=False):
+                 run_serial, predict_only=False, reset=False):
         self.environment = environment
         self.platform = platform
         self.timeout = timeout
@@ -43,6 +43,7 @@ class Deployment(object):
         self.fast = fast
         self.predict_only = predict_only
         self.reset = reset
+        self.run_serial = run_serial
 
     def load(self):
         output.section("Preparing")
@@ -54,6 +55,12 @@ class Deployment(object):
             self.environment, self.timeout, self.platform)
         self.environment.deployment = self
         self.environment.load()
+
+        if getattr(self.environment, 'concurrency_model', None) == 'sync':
+            self.run_serial = True
+
+        output.step("main", "concurrency_model: %s" % (
+            'sync' if self.run_serial else 'async'))
 
         # This is located here to avoid duplicating the verification check
         # when loading the repository on the remote environment object.
@@ -137,8 +144,9 @@ class Deployment(object):
         reference_node = [h for h in list(self.environment.hosts.values())
                           if not h.ignore][0]
 
+        number_of_threads = 1 if self.run_serial else 10
         self.loop = asyncio.get_event_loop()
-        self.taskpool = ThreadPoolExecutor(10)
+        self.taskpool = ThreadPoolExecutor(number_of_threads)
         self.loop.set_default_executor(self.taskpool)
         self._launch_components(reference_node.root_dependencies())
 
@@ -154,7 +162,7 @@ class Deployment(object):
 
 
 def main(environment, platform, timeout, dirty, fast, consistency_only,
-         predict_only, reset):
+         predict_only, reset, run_serial):
     output.backend = TerminalBackend()
     output.line(self_id())
     if consistency_only:
@@ -167,7 +175,7 @@ def main(environment, platform, timeout, dirty, fast, consistency_only,
         try:
             deployment = Deployment(
                 environment, platform, timeout, dirty, fast, predict_only,
-                reset=reset)
+                run_serial, reset=reset)
             deployment.load()
             deployment.connect()
             deployment.configure()
