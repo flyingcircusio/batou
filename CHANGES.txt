@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.12.3 (unreleased)
+1.12.3 (2020-03-05)
 -------------------
 
 - Install at least pip 10.0 so we officially support the `@ url` syntax from PEP 508 (#30)
