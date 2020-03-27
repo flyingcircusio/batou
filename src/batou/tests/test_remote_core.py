@@ -12,15 +12,12 @@ def reset_global_vars():
     remote_core.environment = None
     remote_core.deployment = None
     remote_core.channel = None
+    remote_core.lockfile = None
 
 
 def test_deployment_and_channel_exist_as_names():
     assert remote_core.channel is None
     assert remote_core.deployment is None
-
-
-def test_lock():
-    remote_core.lock()
 
 
 def test_cmd():
@@ -41,7 +38,8 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
         ('', ''),
         ('', '')]
 
-    remote_core.ensure_repository(str(tmpdir), 'hg-pull')
+    remote_core.ensure_target_and_base(str(tmpdir), '.')
+    remote_core.ensure_repository('hg-pull')
     remote_core.hg_pull_code('http://bitbucket.org/flyingcircus/batou')
     remote_core.hg_update_working_copy('default')
 
@@ -59,7 +57,8 @@ def test_update_code_new_target(mock_remote_core, tmpdir):
         ('', ''),
         ('', ''),
         ('', '')]
-    remote_core.ensure_repository(str(tmpdir) + '/foo', 'hg-bundle')
+    remote_core.ensure_target_and_base(str(tmpdir / 'foo'), '.')
+    remote_core.ensure_repository('hg-bundle')
     remote_core.hg_pull_code('http://bitbucket.org/flyingcircus/batou')
     remote_core.hg_update_working_copy('default')
 
@@ -72,7 +71,8 @@ def test_update_code_new_target(mock_remote_core, tmpdir):
 
 
 def test_hg_bundle_shipping(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir) + '/foo', 'hg-bundle')
+    remote_core.ensure_target_and_base(str(tmpdir / 'foo'), '.')
+    remote_core.ensure_repository('hg-bundle')
     remote_core.cmd.side_effect = [
         ("41fea38ce5d3", None),
         ("""\
@@ -100,19 +100,21 @@ changeset: 372:revision-b
 
 
 def test_build_batou_fresh_install(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir), 'hg-pull')
+    remote_core.ensure_target_and_base(str(tmpdir), '.')
+    remote_core.ensure_repository('hg-pull')
     remote_core.cmd.reset_mock()
-    remote_core.build_batou('.', 'asdf')
+    remote_core.build_batou('asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 1
     assert calls.next() == './batou --help'
 
 
 def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
-    remote_core.ensure_repository(str(tmpdir), 'hg-pull')
+    remote_core.ensure_target_and_base(str(tmpdir), '.')
+    remote_core.ensure_repository('hg-pull')
     os.mkdir(remote_core.target_directory + '/bin')
     open(remote_core.target_directory + '/bin/python2.7', 'w')
-    remote_core.build_batou('.', 'asdf')
+    remote_core.build_batou('asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 2
     calls.next()  # skip ensure_repository
@@ -122,7 +124,8 @@ def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
 def test_expand_deployment_base(tmpdir):
     with mock.patch('os.path.expanduser') as expanduser:
         expanduser.return_value = str(tmpdir)
-        remote_core.ensure_repository('~/deployment', 'rsync')
+        remote_core.ensure_target_and_base('~/deployment', '.')
+        remote_core.ensure_repository('rsync')
     assert (remote_core.target_directory == str(tmpdir))
 
 
@@ -241,6 +244,24 @@ def test_channelexec_handle_exception(remote_core_mod):
         response.next()
 
 
+def test_remote_lock(tmpdir):
+    remote_core.ensure_target_and_base(str(tmpdir), '.')
+    remote_core.lock()
+    result = os.system(
+        'python -c \'import fcntl; '
+        'fcntl.lockf(open("{}", "a+"), '
+        'fcntl.LOCK_EX | fcntl.LOCK_NB);\''.format(
+            str(tmpdir / '.batou-lock')))
+    assert result != 0
+    remote_core.unlock()
+    result = os.system(
+        'python -c \'import fcntl; '
+        'fcntl.lockf(open("{}", "a+"), '
+        'fcntl.LOCK_EX | fcntl.LOCK_NB);\''.format(
+            str(tmpdir / '.batou-lock')))
+    assert result == 0
+
+
 def test_git_remote_init_bundle(tmpdir):
     source = tmpdir.mkdir('source')
     dest = tmpdir.mkdir('dest')
@@ -252,7 +273,8 @@ def test_git_remote_init_bundle(tmpdir):
         remote_core.cmd('git bundle create {} master '.format(
             dest.join('batou-bundle.git')))
 
-    remote_core.ensure_repository(str(dest), 'git-bundle')
+    remote_core.ensure_target_and_base(str(dest), '.')
+    remote_core.ensure_repository('git-bundle')
     remote_core.git_unbundle_code()
     remote_core.git_update_working_copy('master')
 
@@ -268,7 +290,8 @@ def test_git_remote_init_pull(tmpdir):
         remote_core.cmd('git add foo.txt')
         remote_core.cmd('git commit -m bar')
 
-        remote_core.ensure_repository(str(dest), 'git-bundle')
+        remote_core.ensure_target_and_base(str(dest), '.')
+        remote_core.ensure_repository('git-bundle')
         remote_core.git_pull_code(str(source), 'master')
         remote_core.git_update_working_copy('master')
 

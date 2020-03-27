@@ -1,3 +1,4 @@
+import fcntl
 import os
 import os.path
 import pwd
@@ -15,7 +16,8 @@ except NameError:
 deployment = None
 environment = None
 target_directory = None
-
+base_directory = None
+lockfile = None
 
 # The output class should really live in _output. However, to support
 # bootstrapping we define it here and then re-import in the _output module.
@@ -123,8 +125,32 @@ class Deployment(object):
 
 
 def lock():
-    # XXX implement!
-    pass
+    # XXX This is copied but restructured from utils and needed during early
+    # XXX phase bootstrap.
+    # XXX Can we make this not leave files around?
+    global lockfile
+    fname = os.path.join(target_directory, '.batou-lock')
+    lockfile = open(fname, 'a+')
+    try:
+        fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except IOError:
+        output.error('Could not acquire lock {}'.format(fname))
+        raise RuntimeError(
+            'cannot create lock "{}": more than one instance running '
+            'concurrently?'.format(fname), fname)
+    # publishing the process id comes handy for debugging
+    lockfile.seek(0)
+    lockfile.truncate()
+    print >> lockfile, os.getpid()
+    lockfile.flush()
+
+
+def unlock():
+    if lockfile is None:
+        return
+    lockfile.seek(0)
+    lockfile.truncate()
+    lockfile.close()
 
 
 class CmdError(Exception):
@@ -157,33 +183,30 @@ def cmd(c, acceptable_returncodes=[0]):
     return stdout, stderr
 
 
-def ensure_repository(target, method):
-    target = os.path.expanduser(target)
-    global target_directory
-    target_directory = target
-
-    if not os.path.exists(target):
-        os.makedirs(target)
-
+def ensure_repository(method):
     if method in ['hg-pull', 'hg-bundle']:
-        if not os.path.exists(target + '/.hg'):
-            cmd("hg init {}".format(target))
+        if not os.path.exists(target_directory + '/.hg'):
+            cmd("hg init {}".format(target_directory))
     elif method in ['git-pull', 'git-bundle']:
-        if not os.path.exists(target + '/.git'):
-            cmd("git init {}".format(target))
+        if not os.path.exists(target_directory + '/.git'):
+            cmd("git init {}".format(target_directory))
     elif method == 'rsync':
         pass
     else:
         raise RuntimeError("Unknown repository method: {}".format(method))
 
-    return target
 
+def ensure_target_and_base(target, base):
+    global target_directory
+    target_directory = os.path.expanduser(target)
+    if not os.path.exists(target_directory):
+        os.makedirs(target_directory)
 
-def ensure_base(base):
-    base = os.path.join(target_directory, base)
-    if not os.path.exists(base):
-        os.makedirs(base)
-    return base
+    global base_directory
+    base_directory = os.path.join(target_directory, base)
+    if not os.path.exists(base_directory):
+        os.makedirs(base_directory)
+    return target_directory, base_directory
 
 
 def hg_current_heads():
@@ -284,9 +307,9 @@ def git_update_working_copy(branch):
     return id.strip()
 
 
-def build_batou(deployment_base, bootstrap, batou_args=()):
+def build_batou(bootstrap, batou_args=()):
     target = target_directory
-    os.chdir(os.path.join(target, deployment_base))
+    os.chdir(os.path.join(target, base_directory))
     with open('batou', 'w') as f:
         f.write(bootstrap)
     os.chmod('batou', 0o755)
@@ -298,10 +321,9 @@ def build_batou(deployment_base, bootstrap, batou_args=()):
     cmd('./batou {}'.format(' '.join(args)))
 
 
-def setup_deployment(
-        deployment_base, *args):
+def setup_deployment(*args):
     target = target_directory
-    os.chdir(os.path.join(target, deployment_base))
+    os.chdir(os.path.join(target, base_directory))
     global deployment
     deployment = Deployment(*args)
     deployment.load()

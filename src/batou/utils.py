@@ -38,6 +38,8 @@ class MultiFile(object):
 
 @contextlib.contextmanager
 def locked(filename):
+    # XXX This is copied to remote_core and needs to be kept in sync.
+    #
     # XXX can we make this not leave files around?
     with open(filename, 'a+') as lockfile:
         try:

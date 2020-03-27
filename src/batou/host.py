@@ -127,18 +127,19 @@ class LocalHost(Host):
         self.channel = self.gateway.remote_exec(remote_core)
 
     def start(self):
-        self.rpc.lock()
-
         # Since we reconnected, any state on the remote side has been lost,
         # so we need to set the target directory again (which we only can
         # know about locally).
         self.rpc.setup_output()
 
         env = self.environment
+        self.remote_repository, self.remote_base = (
+            self.rpc.ensure_target_and_base(
+                os.getcwd(), '.'))
 
         # XXX the cwd isn't right.
         self.rpc.setup_deployment(
-            os.getcwd(), env.name, self.fqdn,
+            env.name, self.fqdn,
             env.overrides, env.deployment.timeout, env.deployment.platform)
 
     def disconnect(self):
@@ -188,13 +189,13 @@ class RemoteHost(Host):
 
     def start(self):
         output.step(self.name, 'Bootstrapping ...', debug=True)
-        self.rpc.lock()
-        env = self.environment
 
-        self.remote_repository = self.rpc.ensure_repository(
-            env.target_directory, env.update_method)
-        self.remote_base = self.rpc.ensure_base(
-            env.deployment_base)
+        env = self.environment
+        self.remote_repository, self.remote_base = (
+            self.rpc.ensure_target_and_base(
+                env.target_directory, env.deployment_base))
+        self.rpc.lock()
+        self.rpc.ensure_repository(env.update_method)
 
         output.step(self.name, 'Updating repository ...', debug=True)
         env.repository.update(self)
@@ -206,8 +207,7 @@ class RemoteHost(Host):
             args.append('--fast')
         if env.deployment.reset:
             args.append('--reset')
-        self.rpc.build_batou(
-            env.deployment_base, bootstrap, args)
+        self.rpc.build_batou(bootstrap, args)
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.
@@ -226,4 +226,5 @@ class RemoteHost(Host):
 
     def disconnect(self):
         if self.gateway is not None:
+            self.rpc.unlock()
             self.gateway.exit()

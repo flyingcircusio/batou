@@ -1,8 +1,16 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+required_plugins = %w( vagrant-nixos-plugin )
+required_plugins.each do |plugin|
+      abort("Plugin required: vagrant plugin install #{plugin}") unless Vagrant.has_plugin? plugin
+end
+
+
 Vagrant.configure(2) do |config|
-  config.vm.box = "flyingcircus/nixos-14.12-i686"
+  config.vm.box = "flyingcircus/nixos-19.03-dev-x86_64"
+  config.vm.box_version = "= 233.d76046d"
+
   config.vm.network "private_network", ip: "192.168.50.4"
   config.vm.provider "virtualbox" do |v|
     v.memory = 1024
