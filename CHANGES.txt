@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.12.4 (unreleased)
+1.12.4 (2020-03-27)
 -------------------
 
 - Fix locking remote batou processes to avoid interfering with other users' deployments. (#29)
