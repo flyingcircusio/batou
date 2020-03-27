@@ -213,13 +213,18 @@ class RemoteHost(Host):
         # that has all our dependencies installed.
         self.connect(self.remote_base + '/.batou/bin/python')
 
+        # We need to re-establish state from the new connection.
+        self.remote_repository, self.remote_base = (
+            self.rpc.ensure_target_and_base(
+                env.target_directory, env.deployment_base))
+        self.rpc.lock()
+
         # Since we reconnected, any state on the remote side has been lost,
         # so we need to set the target directory again (which we only can
         # know about locally)
         self.rpc.setup_output()
 
         self.rpc.setup_deployment(
-            self.remote_base,
             env.name,
             self.fqdn,
             env.overrides, env.deployment.timeout, env.deployment.platform)
