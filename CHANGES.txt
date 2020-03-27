@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.12.5 (unreleased)
+1.12.5 (2020-03-27)
 -------------------
 
 - Fix brown bag release: the test suite did _not_ complete succesfully for 1.12.4 and obviously things were broken. Connections to remote hosts now work properly again.
