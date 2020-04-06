@@ -27,6 +27,16 @@ def test_waits_for_start(root, supervisor):
 
 
 @pytest.mark.slow
+def test_does_not_start_disabled_program(root, supervisor):
+    root.component += batou.lib.supervisor.Program(
+        'foo', command_absolute=False,
+        command='bash', args='-c "sleep 1; touch %s/foo; sleep 3600"' % (
+            root.workdir), options=dict(startsecs=2), enable=False)
+    root.component.deploy()
+    assert not os.path.exists('%s/foo' % root.workdir)
+
+
+@pytest.mark.slow
 def test_program_does_not_start_within_startsecs_raises(root, supervisor):
     root.component += batou.lib.supervisor.Program(
         'foo', command_absolute=False, command='true',
