@@ -4,7 +4,7 @@
 2.0b6 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add ability to disable supervisor programs.
 
 
 2.0b5 (2020-04-15)
