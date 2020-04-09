@@ -55,9 +55,11 @@ def main():
         help='Only predict what updates would happen. '
              'Do not change anything.')
     p.add_argument(
-        '-s', '--run-serial', action='store_true',
-        help='Deploy components one after another. '
-             'Do not parallelize.')
+        '-j', '--jobs', default=None,
+        help='Defines number of jobs running parallel to deploy. '
+             'The default results in a serial deployment '
+             'of components. Will override the environment settings '
+             'for operational flexibility.')
     p.add_argument(
         'environment', help='Environment to deploy.',
         type=lambda x: x.replace('.cfg', ''))

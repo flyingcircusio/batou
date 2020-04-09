@@ -81,7 +81,7 @@ class Environment(object):
     vfs_sandbox = None
     timeout = None
     target_directory = None
-    concurrency_model = None
+    jobs = None
 
     repository_url = None
     version = None
@@ -157,7 +157,7 @@ class Environment(object):
         for key in ['service_user', 'host_domain', 'target_directory',
                     'connect_method', 'update_method', 'branch',
                     'platform', 'timeout', 'develop', 'repository_url',
-                    'concurrency_model']:
+                    'jobs']:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
