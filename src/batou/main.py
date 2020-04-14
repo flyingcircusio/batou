@@ -55,7 +55,7 @@ def main():
         help='Only predict what updates would happen. '
              'Do not change anything.')
     p.add_argument(
-        '-j', '--jobs', default=None,
+        '-j', '--jobs', type=int, default=None,
         help='Defines number of jobs running parallel to deploy. '
              'The default results in a serial deployment '
              'of components. Will override the environment settings '

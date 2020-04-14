@@ -57,12 +57,12 @@ class Deployment(object):
         self.environment.load()
 
         if self.jobs is not None:
-            self.jobs = int(self.jobs)
+            self.jobs = self.jobs
         elif self.environment.jobs is not None:
             self.jobs = int(self.environment.jobs)
         else:
             self.jobs = 1
-        output.step("main", "Number of jobs: %s" % self.jobs)
+        output.step("main", "Number of jobs: %s" % self.jobs, debug=True)
 
         # This is located here to avoid duplicating the verification check
         # when loading the repository on the remote environment object.
