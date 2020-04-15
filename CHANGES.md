@@ -1,6 +1,12 @@
 ## Changelog
 
 
+2.0b6 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.0b5 (2020-04-15)
 
 - Switch to new bootstrapping/self-installing pattern "appenv". See
