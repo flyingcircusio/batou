@@ -1,11 +1,10 @@
 from batou import output, DeploymentError, ConfigurationError
 from batou import remote_core
-from batou.update import generate_bootstrap
 import execnet.gateway_io
 import os
-import yaml
 import subprocess
 import sys
+import yaml
 
 # Monkeypatch execnet to support 'vagrant ssh' and 'kitchen exec'.
 # 'vagrant' support has been added to 'execnet' release 1.4.
@@ -199,15 +198,13 @@ class RemoteHost(Host):
         output.step(self.name, 'Updating repository ...', debug=True)
         env.repository.update(self)
 
-        bootstrap = generate_bootstrap(env.version, env.develop)
-
         args = []
         if env.deployment.fast:
             args.append('--fast')
         if env.deployment.reset:
             args.append('--reset')
         self.rpc.build_batou(
-            env.deployment_base, bootstrap, args)
+            env.deployment_base, args)
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.

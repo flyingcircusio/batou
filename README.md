@@ -87,7 +87,13 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.0b4 (2020-01-13)
+### 2.0b5 (unreleased)
+
+- Switch to new bootstrapping/self-installing pattern "appenv". See
+  `appenv.py` for a work-in-progress schema.
+
+
+### 2.0b4 (2020-01-13)
 
 - Fix incorrect long->int conversion from 2to3. (Mercurial support)
 

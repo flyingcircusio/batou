@@ -3,7 +3,8 @@
 
 ### 2.0b5 (unreleased)
 
-- Fix updating direct references in requirements.txt (#22)
+- Switch to new bootstrapping/self-installing pattern "appenv". See
+  `appenv.py` for a work-in-progress schema.
 
 
 ### 2.0b4 (2020-01-13)

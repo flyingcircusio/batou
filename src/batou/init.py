@@ -1,4 +1,3 @@
-from batou.update import update_bootstrap
 from batou.utils import cmd
 from batou import output
 import argparse
@@ -26,9 +25,6 @@ def main(destination, **kw):
         shutil.copytree(source, destination)
         os.chdir(destination)
         cmd('hg -y init .')
-    update_bootstrap(os.environ['BATOU_VERSION'], develop)
-    # Need to clean up to avoid inheriting info that we're bootstrapped
-    # already.
     for key in list(os.environ):
         if key.startswith('BATOU_'):
             del os.environ[key]

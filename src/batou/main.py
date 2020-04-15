@@ -4,7 +4,6 @@ import batou.deploy
 import batou.init
 import batou.secrets.edit
 import batou.secrets.manage
-import batou.update
 import os
 import os.path
 import pkg_resources
@@ -24,12 +23,6 @@ def main():
     parser.add_argument(
         '-d', '--debug', action='store_true',
         help='Enable debug mode.')
-    parser.add_argument(
-        '-F', '--fast', action='store_true',
-        help='Enable fast mode. Do not perform bootstrapping.')
-    parser.add_argument(
-        '--reset', action='store_true',
-        help='Reset batou environment.')
 
     subparsers = parser.add_subparsers()
 
@@ -124,20 +117,6 @@ If no directory is given, the current directory is used.
 """)
     p.add_argument('destination')
     p.set_defaults(func=batou.init.main)
-
-    # UPDATE
-    p = subparsers.add_parser(
-        'update', help='Update the batou version.')
-    group = p.add_mutually_exclusive_group(required=True)
-    group.add_argument(
-        '--version', help='Exact version to install.',
-        default='')
-    group.add_argument(
-        '--develop', help='Path to checkout of batou to install in edit mode.',
-        default='')
-    p.add_argument(
-        '--finish', help='(internal)', action='store_true')
-    p.set_defaults(func=batou.update.main)
 
     args = parser.parse_args()
 
