@@ -125,6 +125,10 @@ If no directory is given, the current directory is used.
 
     # Pass over to function
     func_args = dict(args._get_kwargs())
+    if not 'func' in func_args:
+        parser.print_usage()
+        sys.exit(1)
+
     del func_args['func']
     del func_args['debug']
     args.func(**func_args)
