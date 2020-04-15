@@ -1,7 +1,7 @@
 ## Changelog
 
 
-### 2.0b5 (unreleased)
+2.0b5 (2020-04-15)
 
 - Switch to new bootstrapping/self-installing pattern "appenv". See
   `appenv.py` for a work-in-progress schema.
