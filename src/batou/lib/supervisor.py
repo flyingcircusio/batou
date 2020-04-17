@@ -46,6 +46,7 @@ redirect_stderr = true
     priority = 10
     directory = None
     dependencies = None
+    enable = True
 
     def configure(self):
         self.supervisor = self.require_one('supervisor', self.host)
@@ -82,22 +83,30 @@ redirect_stderr = true
             return
         for dependency in self.dependencies:
             dependency.assert_no_changes()
-        out, err = self.ctl('status {}'.format(self.name))
-        if 'RUNNING' not in out:
+        running = self.is_running()
+        if (self.enable and not running) or (not self.enable and running):
             raise UpdateNeeded()
 
     def update(self):
         self.ctl('reread')
         self.ctl('update')
-        self.ctl('restart {}'.format(self.name))
+        if self.enable:
+            self.ctl('restart {}'.format(self.name))
+        else:
+            if self.is_running():
+                self.ctl('stop {}'.format(self.name))
+            return
         if self.supervisor.wait_for_running:
             for retry in range(self.options['startsecs']):
                 time.sleep(1)
-                out, err = self.ctl('status {}'.format(self.name))
-                if 'RUNNING' in out:
+                if self.is_running():
                     return
             raise RuntimeError(
                 'Program "{}" did not start up'.format(self.name))
+
+    def is_running(self):
+        out, err = self.ctl('status {}'.format(self.name))
+        return 'RUNNING' in out
 
     # Keep track whether
     _evaded = False
