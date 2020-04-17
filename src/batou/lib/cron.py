@@ -26,8 +26,8 @@ class CronJob(HookComponent):
 
 def ignore_comments(data):
     lines = data.splitlines()
-    lines = [x for x in lines if not x.startswith('#')]
-    return '\n'.join(lines)
+    lines = [x for x in lines if not x.startswith(b'#')]
+    return b'\n'.join(lines)
 
 
 class CronTab(Component):
@@ -65,7 +65,7 @@ class InstallCrontab(Component):
 
     def verify(self):
         try:
-            current, _ = self.cmd('crontab -l')
+            current, _ = self.cmd('crontab -l', encoding=None)
         except Exception:
             current = ''
         current = ignore_comments(current)

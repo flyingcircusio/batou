@@ -34,15 +34,13 @@ class Deployment(object):
 
     _upstream = None
 
-    def __init__(self, environment, platform, timeout, dirty, fast,
-                 jobs, predict_only=False, reset=False):
+    def __init__(self, environment, platform, timeout, dirty,
+                 jobs, predict_only=False):
         self.environment = environment
         self.platform = platform
         self.timeout = timeout
         self.dirty = dirty
-        self.fast = fast
         self.predict_only = predict_only
-        self.reset = reset
         self.jobs = jobs
 
     def load(self):
@@ -162,8 +160,8 @@ class Deployment(object):
             node.disconnect()
 
 
-def main(environment, platform, timeout, dirty, fast, consistency_only,
-         predict_only, reset, jobs):
+def main(environment, platform, timeout, dirty, consistency_only,
+         predict_only, jobs):
     output.backend = TerminalBackend()
     output.line(self_id())
     if consistency_only:
@@ -175,8 +173,7 @@ def main(environment, platform, timeout, dirty, fast, consistency_only,
     with locked('.batou-lock'):
         try:
             deployment = Deployment(
-                environment, platform, timeout, dirty, fast, jobs,
-                predict_only, reset=reset)
+                environment, platform, timeout, dirty, jobs, predict_only)
             deployment.load()
             deployment.connect()
             deployment.configure()

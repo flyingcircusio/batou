@@ -1,9 +1,30 @@
 ## Changelog
 
 
-### 2.0b3 (unreleased)
+2.0b6 (unreleased)
+------------------
 
-- Nothing changed yet.
+- Add ability to disable supervisor programs.
+
+
+2.0b5 (2020-04-15)
+
+- Switch to new bootstrapping/self-installing pattern "appenv". See
+  `appenv.py` for a work-in-progress schema.
+
+
+### 2.0b4 (2020-01-13)
+
+- Fix incorrect long->int conversion from 2to3. (Mercurial support)
+
+- Fix brownbag release due to missing support files.
+
+
+### 2.0b3 (2020-01-10)
+
+- Fix Python3 compatibility for logrotate and crontab
+
+- Add six as dependency, so deployments can be made compatible to both Python 2 and 3 more easy.
 
 
 ### 2.0b2 (2019-10-15)
@@ -63,5 +84,5 @@
   A smooth migration mechanism may become available in the future
   based on users' needs.
 
-- The default hash function is now 'sha256', existing deployments
+- The default hash function is now 'sha512', existing deployments
   need to be migrated manually.

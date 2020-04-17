@@ -116,7 +116,7 @@ def resolve_v6(host, port, resolve_override=resolve_v6_override):
     if address and address.startswith('fe80:'):
         # Don't hand out link-local addresses. This happes with
         # vagrant, and does not help as services cannot bind those
-        # addresses without additional configuration, # i.e. the
+        # addresses without additional configuration, i.e. the
         # interface.
         address = None
     return address
@@ -167,7 +167,7 @@ class Address(object):
             self.listen_v6 = NetLoc(v6_address, str(port))
 
         if not self.listen and not self.listen_v6:
-            raise socket.gaierror("No v4 or v6 address for %s" % connect)
+            raise socket.gaierror("No v4 or v6 address for %r" % connect)
 
     def __lt__(self, other):
         if isinstance(other, Address):

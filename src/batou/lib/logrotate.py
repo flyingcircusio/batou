@@ -22,7 +22,7 @@ class RotatedLogfile(HookComponent):
 
 class Logrotate(Component):
 
-    common_config = ''
+    common_config = b''
     logrotate_template = pkg_resources.resource_string(
         __name__, 'resources/logrotate.in')
 

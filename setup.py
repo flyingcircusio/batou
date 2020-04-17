@@ -31,7 +31,8 @@ setup(
         'setuptools',
         'execnet',
         'pyyaml',
-        'py'
+        'py',
+        'six',
     ],
     extras_require={
         'test': [
@@ -39,7 +40,7 @@ setup(
     },
     entry_points="""
         [console_scripts]
-            batou-init = batou.init:console_main
+            batou = batou.main:main
         [zc.buildout]
             requirements = batou.buildout:Requirements
         [zest.releaser.prereleaser.after]
@@ -55,9 +56,12 @@ setup(
     classifiers="""\
 License :: OSI Approved :: BSD License
 Programming Language :: Python
-Programming Language :: Python :: 2
-Programming Language :: Python :: 2.7
-Programming Language :: Python :: 2 :: Only
+Programming Language :: Python :: 3
+Programming Language :: Python :: 3.5
+Programming Language :: Python :: 3.6
+Programming Language :: Python :: 3.7
+Programming Language :: Python :: 3.8
+Programming Language :: Python :: 3 :: Only
 """[:-1].split('\n'),
     description=__doc__.strip(),
     long_description=open(project_path('README.md')).read(),
@@ -65,7 +69,10 @@ Programming Language :: Python :: 2 :: Only
     packages=find_packages('src'),
     package_dir={'': 'src'},
     include_package_data=True,
-    data_files=[('', glob.glob(project_path('*.txt')))],
+    data_files=[('', glob.glob(project_path('*.txt')) +
+                     glob.glob(project_path('*.in')) +
+                     glob.glob(project_path('*.md')))],
     zip_safe=False,
     test_suite='batou.tests',
+    python_requires='>=3.5',
 )
