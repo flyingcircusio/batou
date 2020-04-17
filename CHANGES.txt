@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.12.6 (unreleased)
+1.13.0 (2020-04-17)
 -------------------
 
 - Add ability to disable supervisor programs.
