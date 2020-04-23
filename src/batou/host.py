@@ -196,7 +196,7 @@ class RemoteHost(Host):
         # that has all our dependencies installed.
         self.connect(self.remote_base + '/batou appenv-python')
 
-        # Reinit after reconnect ... 
+        # Reinit after reconnect ...
         self.rpc.lock()
         self.remote_repository = self.rpc.ensure_repository(
             env.target_directory, env.update_method)
