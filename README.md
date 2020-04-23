@@ -87,7 +87,20 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.0b5 (2020-04-15)
+### 2.0b6 (unreleased)
+------------------
+
+- Add ability to disable supervisor programs.
+
+- Remove '--fast' and '--reset' mode as this isn't needed/
+  supported by appenv at the moment.
+
+- Simplify SSH/sudo and try sudo first. Needs further fixing once
+  we're along the release cycle.
+
+- Fix Python 2.7 virtualenvs - upgrade to latest old-style release.
+
+### 2.0b5 (2020-04-15)
 
 - Switch to new bootstrapping/self-installing pattern "appenv". See
   `appenv.py` for a work-in-progress schema.

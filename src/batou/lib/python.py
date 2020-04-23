@@ -49,13 +49,13 @@ class VirtualEnvPyBase(Component):
     venv_options = ()
 
     installer = 'pip'
-    install_options = ('--ignore-installed',)
+    install_options = ('--ignore-installed', )
 
     def verify(self):
         self.assert_cmd(
             'bin/python -c "import sys; '
-            'assert sys.version_info[:2] == {}"'.format(repr(
-                tuple(int(x) for x in self.parent.version.split('.')))))
+            'assert sys.version_info[:2] == {}"'.format(
+                repr(tuple(int(x) for x in self.parent.version.split('.')))))
         # Is this Python (still) functional 'enough'
         # from a setuptools/distribute perspective?
         self.assert_cmd('bin/python -c "import pkg_resources"')
@@ -70,8 +70,8 @@ class VirtualEnvPyBase(Component):
                 'bin/python -c "'
                 'import pkg_resources; '
                 'assert pkg_resources.require(\'{}\')[0].parsed_version == '
-                'pkg_resources.parse_version(\'{}\')"'
-                .format(pkg.package, pkg.version))
+                'pkg_resources.parse_version(\'{}\')"'.format(
+                    pkg.package, pkg.version))
         except CmdExecutionError:
             raise batou.UpdateNeeded()
         # Is the package usable? Is the package a module?  This might be
@@ -97,11 +97,11 @@ class VirtualEnvPyBase(Component):
         options = self.install_options
         options += pkg.install_options
         if not pkg.dependencies:
-            options += ('--no-deps',)
+            options += ('--no-deps', )
         options = ' '.join(options)
         self.cmd('bin/pip --timeout={} install {} '
-                 '"{}=={}"'.format(
-                     pkg.timeout, options, pkg.package, pkg.version),
+                 '"{}=={}"'.format(pkg.timeout, options, pkg.package,
+                                   pkg.version),
                  env=pkg.env if pkg.env else {})
 
     def easy_install(self, pkg):
@@ -111,7 +111,7 @@ class VirtualEnvPyBase(Component):
         options = self.install_options
         options += pkg.install_options
         if not pkg.dependencies:
-            options += ('--no-deps',)
+            options += ('--no-deps', )
         options = ' '.join(options)
         # XXX does not implement timeout. could we just do this on
         # 'cmd' instead?
@@ -122,16 +122,21 @@ class VirtualEnvPyBase(Component):
 
 class VirtualEnvPy2_7(VirtualEnvPyBase):
 
-    venv_version = '16.1.0'
-    venv_checksum = 'md5:ad6d2ebd6885b3a2b4ff2030ce532a2f'
+    venv_version = '16.7.10'
+    venv_checksum = ('sha256:e88fdcb08b0ecb11da97868f463dd'
+                     '06275923f50d87f4b9c8b2fc0994eec40f4')
     venv_options = ()
 
     install_options = ()
 
+    pypi_url = ('https://files.pythonhosted.org/packages/a4/e3/'
+                '1f067de470e3a86875ed915438dc3bd781fb0346254'
+                'f541190a09472b677/virtualenv-16.7.10.tar.gz')
+
     def configure(self):
-        self.base = VirtualEnvDownload(
-            self.venv_version,
-            checksum=self.venv_checksum)
+        self.base = VirtualEnvDownload(self.venv_version,
+                                       download_url=self.pypi_url,
+                                       checksum=self.venv_checksum)
         self += self.base
 
     def verify(self):
@@ -141,20 +146,18 @@ class VirtualEnvPy2_7(VirtualEnvPyBase):
 
     def update(self):
         super(VirtualEnvPy2_7, self).update()
-        self.cmd('{} {} {} --python={} {}'.format(
-            self.parent.executable,
-            self.base.venv_cmd,
-            ' '.join(self.venv_options),
-            self.parent.executable, self.workdir))
+        self.cmd('{} {} {} --python={} {}'.format(self.parent.executable,
+                                                  self.base.venv_cmd,
+                                                  ' '.join(self.venv_options),
+                                                  self.parent.executable,
+                                                  self.workdir))
 
 
 class VirtualEnvPy(VirtualEnvPyBase):
     """VirtualEnv for Python with `-m venv` (>=3.3)"""
-
     def update(self):
         super(VirtualEnvPy, self).update()
-        self.cmd('{} -m venv {}'.format(
-            self.parent.executable, self.workdir))
+        self.cmd('{} -m venv {}'.format(self.parent.executable, self.workdir))
 
 
 class VirtualEnvDownload(Component):
@@ -165,8 +168,8 @@ class VirtualEnvDownload(Component):
 
     namevar = 'version'
     checksum = None
-    download_url = (
-        'https://github.com/pypa/virtualenv/tarball/{{component.version}}')
+    download_url = ('https://github.com/pypa/virtualenv/archive/'
+                    '{{component.version}}.tar.gz')
 
     def configure(self):
         # This will manage central, version-specific virtualenv base
@@ -179,8 +182,7 @@ class VirtualEnvDownload(Component):
         download = self._
         extracted_dir = 'virtualenv-' + self.version
         self += Extract(download.target, target=extracted_dir, strip=1)
-        self.venv_cmd = (
-            self.workdir + '/' + extracted_dir + '/src/virtualenv.py')
+        self.venv_cmd = (self.workdir + '/' + extracted_dir + '/virtualenv.py')
 
     def verify(self):
         self.assert_no_subcomponent_changes()
@@ -208,8 +210,7 @@ class Package(Component):
 
     def configure(self):
         if not isinstance(self.parent, VirtualEnv):
-            raise TypeError(
-                'Package() must be added to a virtual environment')
+            raise TypeError('Package() must be added to a virtual environment')
         if self.timeout is None:
             self.timeout = self.environment.timeout
 

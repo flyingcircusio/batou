@@ -296,8 +296,6 @@ class Environment(object):
             component_name, hostname))
 
     def prepare_connect(self):
-        if self.deployment.fast:
-            return
         if self.connect_method == 'vagrant':
             output.step("vagrant", "Ensuring machines are up ...")
             cmd('vagrant up')

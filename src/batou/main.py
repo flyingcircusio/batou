@@ -11,7 +11,7 @@ import sys
 
 
 def main():
-    os.chdir(os.path.dirname(sys.argv[0]))
+    os.chdir(os.environ.get('APPENV_BASEDIR', os.path.dirname(sys.argv[0])))
     version = pkg_resources.resource_string(__name__, 'version.txt')
     version = version.decode('ascii').strip()
     parser = argparse.ArgumentParser(
@@ -131,7 +131,7 @@ If no directory is given, the current directory is used.
 
     # Pass over to function
     func_args = dict(args._get_kwargs())
-    if not 'func' in func_args:
+    if 'func' not in func_args:
         parser.print_usage()
         sys.exit(1)
 

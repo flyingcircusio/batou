@@ -154,34 +154,20 @@ class RemoteHost(Host):
             output.annotate('Reconnecting ...', debug=True)
             self.disconnect()
 
-        try_sudo = False
-        try:
-            self.gateway = execnet.makegateway(
-                "ssh={}//python={}//type={}".format(
-                    self.fqdn, interpreter,
-                    self.environment.connect_method))
-            self.channel = self.gateway.remote_exec(remote_core)
-            if not self.environment.service_user:
-                self.environment.service_user = self.rpc.whoami()
-            elif self.rpc.whoami() != self.environment.service_user:
-                try_sudo = True
-                self.disconnect()
-        except IOError:
-            try_sudo = True
+        # Call sudo, ensuring:
+        # - no password will ever be asked (fail instead)
+        # - we ensure a consistent set of environment variables
+        #   irregardless of the local configuration of env_reset, etc.
 
-        if try_sudo:
-            output.annotate('Trying to switch to sudo ...', debug=True)
-            # Call sudo, ensuring:
-            # - no password will ever be asked (fail instead)
-            # - we ensure a consistent set of environment variables
-            #   irregardless of the local configuration of env_reset, etc.
-            self.gateway = execnet.makegateway(
-                "ssh={}//python=sudo -ni -u {} {}//type={}".format(
-                    self.fqdn,
-                    self.environment.service_user,
-                    interpreter,
-                    self.environment.connect_method))
-            self.channel = self.gateway.remote_exec(remote_core)
+        spec = "ssh={}//python=sudo -ni -u {} {}//type={}".format(
+            self.fqdn,
+            self.environment.service_user,
+            interpreter,
+            self.environment.connect_method)
+        if os.path.exists('ssh_config'):
+            spec += '//ssh_config=ssh_config'
+        self.gateway = execnet.makegateway(spec)
+        self.channel = self.gateway.remote_exec(remote_core)
 
         output.annotate('Connected ...', debug=True)
 
@@ -198,13 +184,7 @@ class RemoteHost(Host):
         output.step(self.name, 'Updating repository ...', debug=True)
         env.repository.update(self)
 
-        args = []
-        if env.deployment.fast:
-            args.append('--fast')
-        if env.deployment.reset:
-            args.append('--reset')
-        self.rpc.build_batou(
-            env.deployment_base, args)
+        self.rpc.build_batou()
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.

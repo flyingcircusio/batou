@@ -102,7 +102,8 @@ changeset: 372:revision-b
 def test_build_batou_fresh_install(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir), 'hg-pull')
     remote_core.cmd.reset_mock()
-    remote_core.build_batou('.', 'asdf')
+    os.mkdir(remote_core.target_directory + '/asdf')
+    remote_core.build_batou('asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 1
     assert next(calls) == './batou --help'
@@ -111,8 +112,9 @@ def test_build_batou_fresh_install(mock_remote_core, tmpdir):
 def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir), 'hg-pull')
     os.mkdir(remote_core.target_directory + '/bin')
+    os.mkdir(remote_core.target_directory + '/asdf')
     open(remote_core.target_directory + '/bin/python3', 'w')
-    remote_core.build_batou('.', 'asdf')
+    remote_core.build_batou('asdf')
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 2
     next(calls)  # skip ensure_repository

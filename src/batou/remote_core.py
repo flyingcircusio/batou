@@ -124,7 +124,7 @@ class Deployment(object):
 
 def lock():
     # XXX implement!
-    pass
+    return 'OK'
 
 
 class CmdError(Exception):
@@ -286,18 +286,10 @@ def git_update_working_copy(branch):
     return id.strip()
 
 
-def build_batou(deployment_base, bootstrap, batou_args=()):
+def build_batou(deployment_base):
     target = target_directory
     os.chdir(os.path.join(target, deployment_base))
-    with open('batou', 'w') as f:
-        f.write(bootstrap)
-    os.chmod('batou', 0o755)
-
-    args = ['--help']
-    if batou_args:
-        args.extend(batou_args)
-
-    cmd('./batou {}'.format(' '.join(args)))
+    cmd('./batou --help')
 
 
 def setup_deployment(deployment_base, *args):

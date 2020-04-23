@@ -6,7 +6,6 @@ import unittest
 
 
 class DownloadTest(unittest.TestCase):
-
     def test_verify_should_pass_checkum_function_to_hash(self):
         import batou
         component = Download('url', checksum='foobar:1234')
@@ -48,8 +47,9 @@ class DownloadTest(unittest.TestCase):
 @pytest.mark.slow
 def test_downloads_file(root):
     root.component += Download(
-        'http://speedtest.ftp.otenet.gr/files/test100k.db',
-        checksum='md5:4c6426ac7ef186464ecbb0d81cbfcb1e')
+        'https://downloads.fcio.net/batou-tests/test100k',
+        checksum='sha256:4e6424e0151f79bda49bd3769052b29'
+        '12793c258d066689865b69abe4e696452')
     root.component.deploy()
-    assert os.path.isfile(os.path.join(
-        root.environment.workdir_base, 'mycomponent/test100k.db'))
+    assert os.path.isfile(
+        os.path.join(root.environment.workdir_base, 'mycomponent/test100k'))
