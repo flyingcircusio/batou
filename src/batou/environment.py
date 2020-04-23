@@ -146,6 +146,9 @@ class Environment(object):
         # The deployment base is the path relative to the
         # repository where batou is located (with ./batou,
         # ./environments, and ./components)
+        if self.connect_method == 'local':
+            self.target_directory = self.repository.root
+
         self.deployment_base = os.path.relpath(
             self.base_dir, self.repository.root)
 

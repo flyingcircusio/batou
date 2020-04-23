@@ -128,7 +128,7 @@ def reset(argv, meta_args):
 
 
 def main():
-    base = os.path.dirname(__file__)
+    base = os.path.abspath(os.path.dirname(__file__))
     os.chdir(base)
 
     # Allow called programs to find out where the wrapper lives

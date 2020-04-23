@@ -135,9 +135,15 @@ class LocalHost(Host):
 
         env = self.environment
 
+        self.remote_repository = self.rpc.ensure_repository(
+            env.target_directory, 'local')
+
+        self.remote_base = self.rpc.ensure_base(
+            env.deployment_base)
+
         # XXX the cwd isn't right.
         self.rpc.setup_deployment(
-            os.getcwd(), env.name, self.fqdn,
+            env.name, self.fqdn,
             env.overrides, env.deployment.timeout, env.deployment.platform)
 
     def disconnect(self):

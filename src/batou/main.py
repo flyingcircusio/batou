@@ -11,7 +11,7 @@ import sys
 
 
 def main():
-    os.chdir(os.environ.get('APPENV_BASEDIR', os.path.dirname(sys.argv[0])))
+    os.chdir(os.environ['APPENV_BASEDIR'])
     version = pkg_resources.resource_string(__name__, 'version.txt')
     version = version.decode('ascii').strip()
     parser = argparse.ArgumentParser(

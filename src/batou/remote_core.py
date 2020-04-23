@@ -15,7 +15,7 @@ except NameError:
 deployment = None
 environment = None
 target_directory = ''
-
+deployment_base = ''
 
 # The output class should really live in _output. However, to support
 # bootstrapping we define it here and then re-import in the _output module.
@@ -175,6 +175,8 @@ def ensure_repository(target, method):
             cmd("git init {}".format(target))
     elif method == 'rsync':
         pass
+    elif method == 'local':
+        pass
     else:
         raise RuntimeError("Unknown repository method: {}".format(method))
 
@@ -182,10 +184,11 @@ def ensure_repository(target, method):
 
 
 def ensure_base(base):
-    base = os.path.join(target_directory, base)
-    if not os.path.exists(base):
-        os.makedirs(base)
-    return base
+    global deployment_base
+    deployment_base = os.path.join(target_directory, base)
+    if not os.path.exists(deployment_base):
+        os.makedirs(deployment_base)
+    return deployment_base
 
 
 def hg_current_heads():
@@ -286,15 +289,13 @@ def git_update_working_copy(branch):
     return id.strip()
 
 
-def build_batou(deployment_base):
-    target = target_directory
-    os.chdir(os.path.join(target, deployment_base))
+def build_batou():
+    os.chdir(deployment_base)
     cmd('./batou --help')
 
 
-def setup_deployment(deployment_base, *args):
-    target = target_directory
-    os.chdir(os.path.join(target, deployment_base))
+def setup_deployment(*args):
+    os.chdir(deployment_base)
     global deployment
     deployment = Deployment(*args)
     deployment.load()
