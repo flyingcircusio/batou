@@ -194,7 +194,7 @@ class RemoteHost(Host):
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.
-        self.connect(self.remote_base + '/.batou/bin/python')
+        self.connect(self.remote_base + '/batou appenv-python')
 
         # Since we reconnected, any state on the remote side has been lost,
         # so we need to set the target directory again (which we only can

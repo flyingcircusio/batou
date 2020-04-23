@@ -73,8 +73,7 @@ def update_lockfile(argv, meta_args):
     cmd(f'rm -rf {tmpdir}')
 
 
-def run(argv, meta_args):
-
+def _prepare(meta_args):
     # copy used requirements.txt into the target directory so we can use that
     # to check later
     # - when to clean up old versions? keep like one or two old revisions?
@@ -119,7 +118,17 @@ def run(argv, meta_args):
             with open(os.path.join(env_dir, 'appenv.ready'), 'w') as f:
                 f.write('Ready or not, here I come, you can\'t hide\n')
 
+    return env_dir
+
+
+def run(argv, meta_args):
+    env_dir = _prepare(meta_args)
     os.execv(f'{env_dir}/bin/{meta_args.appname}', argv)
+
+
+def python(argv, meta_args):
+    env_dir = _prepare(meta_args)
+    os.execv(f'{env_dir}/bin/python', ['python'])
 
 
 def reset(argv, meta_args):
@@ -182,6 +191,10 @@ def main():
     p = subparsers.add_parser(
         'reset', help='Reset the environment.')
     p.set_defaults(func=reset)
+
+    p = subparsers.add_parser(
+        'python', help='Spawn the embedded Python interpreter REPL')
+    p.set_defaults(func=python)
 
     meta_args = meta_parser.parse_args(meta_argv)
 
