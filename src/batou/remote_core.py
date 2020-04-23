@@ -286,7 +286,7 @@ def git_update_working_copy(branch):
     cmd('git reset --hard {origin}/{branch}'.format(origin=git_origin,
                                                     branch=branch))
     id, _ = cmd('git rev-parse HEAD')
-    return id.strip()
+    return id.strip().decode('ascii')
 
 
 def build_batou():
