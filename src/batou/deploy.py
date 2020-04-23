@@ -35,12 +35,13 @@ class Deployment(object):
     _upstream = None
 
     def __init__(self, environment, platform, timeout, dirty,
-                 predict_only=False):
+                 jobs, predict_only=False):
         self.environment = environment
         self.platform = platform
         self.timeout = timeout
         self.dirty = dirty
         self.predict_only = predict_only
+        self.jobs = jobs
 
     def load(self):
         output.section("Preparing")
@@ -52,6 +53,14 @@ class Deployment(object):
             self.environment, self.timeout, self.platform)
         self.environment.deployment = self
         self.environment.load()
+
+        if self.jobs is not None:
+            self.jobs = self.jobs
+        elif self.environment.jobs is not None:
+            self.jobs = int(self.environment.jobs)
+        else:
+            self.jobs = 1
+        output.step("main", "Number of jobs: %s" % self.jobs, debug=True)
 
         # This is located here to avoid duplicating the verification check
         # when loading the repository on the remote environment object.
@@ -136,7 +145,7 @@ class Deployment(object):
                           if not h.ignore][0]
 
         self.loop = asyncio.get_event_loop()
-        self.taskpool = ThreadPoolExecutor(10)
+        self.taskpool = ThreadPoolExecutor(self.jobs)
         self.loop.set_default_executor(self.taskpool)
         self._launch_components(reference_node.root_dependencies())
 
@@ -151,7 +160,8 @@ class Deployment(object):
             node.disconnect()
 
 
-def main(environment, platform, timeout, dirty, consistency_only, predict_only):
+def main(environment, platform, timeout, dirty, consistency_only,
+         predict_only, jobs):
     output.backend = TerminalBackend()
     output.line(self_id())
     if consistency_only:
@@ -163,7 +173,7 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only):
     with locked('.batou-lock'):
         try:
             deployment = Deployment(
-                environment, platform, timeout, dirty, predict_only)
+                environment, platform, timeout, dirty, jobs, predict_only)
             deployment.load()
             deployment.connect()
             deployment.configure()

@@ -117,3 +117,25 @@ otherhost: Skipping component fail2 ... (Host ignored)
 ============================= DEPLOYMENT FINISHED ============================\
 ==
 """)
+
+
+def test_example_async_sync_deployment():
+    os.chdir('examples/sync_async')
+    out, _ = cmd('./batou -d deploy default')
+    print(out)
+    assert "Number of jobs: 1" in out
+
+    out, _ = cmd('./batou -d deploy -j 2 default')
+    print(out)
+    assert "Number of jobs: 2" in out
+
+    out, _ = cmd('./batou -d deploy async')
+    print(out)
+    assert "Number of jobs: 2" in out
+
+
+def test_example_job_option_overrides_environment():
+    os.chdir('examples/sync_async')
+    out, _ = cmd('./batou -d deploy -j 5 async')
+    print(out)
+    assert "Number of jobs: 5" in out

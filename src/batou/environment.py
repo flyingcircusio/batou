@@ -81,6 +81,7 @@ class Environment(object):
     vfs_sandbox = None
     timeout = None
     target_directory = None
+    jobs = None
 
     repository_url = None
     version = None
@@ -155,7 +156,8 @@ class Environment(object):
         environment = config.get('environment', {})
         for key in ['service_user', 'host_domain', 'target_directory',
                     'connect_method', 'update_method', 'branch',
-                    'platform', 'timeout', 'develop', 'repository_url']:
+                    'platform', 'timeout', 'develop', 'repository_url',
+                    'jobs']:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
