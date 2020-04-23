@@ -16,10 +16,12 @@
 
 
 import argparse
+import glob
 import hashlib
 import os
 import os.path
 import shlex
+import shutil
 import subprocess
 import sys
 import venv
@@ -30,11 +32,11 @@ def cmd(c, quiet=False):
     # XXX better IO management for interactive output and seeing original errors
     # and output at appropriate places ...
     try:
-        return subprocess.check_output([c], stderr=subprocess.PIPE, shell=True)
+        return subprocess.check_output([c], stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError as e:
         if not quiet:
             print("{} returned with exit code {}".format(c, e.returncode))
-            print(e.output)
+            print(e.output.decode('ascii'))
         raise
 
 
@@ -47,7 +49,6 @@ def ensure_venv(target):
     if os.path.exists(target):
         cmd(f'rm -rf {target}')
 
-    print(f'Creating virtualenv in `{target}` ...')
     try:
         # This is trying to detect whether we're on a proper Python stdlib
         # or on a fucked up debian. See various StackOverflow questions about
@@ -87,12 +88,19 @@ def _prepare(meta_args):
         print("Ensuring unclean install ...")
         cmd(f'{env_dir}/bin/pip3 install -r requirements.txt --upgrade')
     else:
-        print('Running clean installation from requirements.lock')
         requirements = open('requirements.lock', 'rb').read()
         env_hash = hashlib.new('sha256', requirements).hexdigest()
         env_dir = os.path.join(meta_args.appenvdir, env_hash)
+
+        whitelist = set([env_dir, os.path.join(meta_args.appenvdir, 'unclean')])
+        for path in glob.glob(f'{meta_args.appenvdir}/*'):
+            if not path in whitelist:
+                print(f'Removing expired path: {path} ...')
+                if not os.path.isdir(path):
+                    os.unlink(path)
+                else:
+                    shutil.rmtree(path)
         if os.path.exists(env_dir):
-            print('Found existing envdir')
             # check whether the existing environment is OK, it might be nice
             # to rebuild in a separate place if necessary to avoid interruptions
             # to running services, but that isn't what we're using it for at the
@@ -110,7 +118,7 @@ def _prepare(meta_args):
             with open(f'{env_dir}/requirements.lock', 'wb') as f:
                 f.write(requirements)
 
-            print('Installing application ...')
+            print(f'Installing {meta_args.appname} ...')
             cmd(f'{env_dir}/bin/pip3 install --no-deps -r {env_dir}/requirements.lock')
 
             cmd(f'{env_dir}/bin/pip3 check')
@@ -128,7 +136,9 @@ def run(argv, meta_args):
 
 def python(argv, meta_args):
     env_dir = _prepare(meta_args)
-    os.execv(f'{env_dir}/bin/python', ['python'])
+    interpreter = f'{env_dir}/bin/python'
+    argv[0] = interpreter
+    os.execv(interpreter, argv)
 
 
 def reset(argv, meta_args):
