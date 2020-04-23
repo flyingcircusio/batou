@@ -202,7 +202,6 @@ class RemoteHost(Host):
         self.rpc.setup_output()
 
         self.rpc.setup_deployment(
-            self.remote_base,
             env.name,
             self.fqdn,
             env.overrides, env.deployment.timeout, env.deployment.platform)
