@@ -245,7 +245,7 @@ def git_current_head(branch):
     id, err = cmd('git rev-parse {branch}'.format(branch=branch),
                   acceptable_returncodes=[0, 128])
     id = id.strip()
-    return id if 'unknown revision' not in err else None
+    return id if b'unknown revision' not in err else None
 
 
 def git_pull_code(upstream, branch):

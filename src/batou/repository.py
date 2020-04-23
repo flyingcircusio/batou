@@ -197,8 +197,9 @@ class GitRepository(Repository):
     def __init__(self, environment):
         super(GitRepository, self).__init__(environment)
         self.branch = environment.branch or 'master'
-        self.root = subprocess.check_output(
+        root = subprocess.check_output(
             ['git', 'rev-parse', '--show-toplevel']).strip()
+        self.root = root.decode(sys.getfilesystemencoding())
         self.subdir = os.path.relpath(
             self.environment.base_dir, self.root)
 
