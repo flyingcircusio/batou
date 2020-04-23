@@ -324,6 +324,11 @@ def setup_output():
     output.backend = ChannelBackend(channel)
 
 
+class DummyException(Exception):
+    # Support bootstrapping.
+    pass
+
+
 if __name__ == '__channelexec__':
     output = Output(ChannelBackend(channel))
     while not channel.isclosed():
@@ -336,7 +341,7 @@ if __name__ == '__channelexec__':
         try:
             result = locals()[task](*args, **kw)
             channel.send(('batou-result', result))
-        except getattr(batou, 'ConfigurationError', None) as e:
+        except getattr(batou, 'ConfigurationError', DummyException) as e:
             if e not in deployment.environment.exceptions:
                 deployment.environment.exceptions.append(e)
             # Report on why configuration failed.
@@ -351,7 +356,7 @@ if __name__ == '__channelexec__':
                 "{} ERRORS - CONFIGURATION FAILED".format(
                     len(deployment.environment.exceptions)), red=True)
             channel.send(('batou-configuration-error', None))
-        except getattr(batou, 'DeploymentError', None) as e:
+        except getattr(batou, 'DeploymentError', DummyException) as e:
             e.report()
             channel.send(('batou-deployment-error', None))
         except Exception as e:
