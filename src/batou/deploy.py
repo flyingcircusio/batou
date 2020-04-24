@@ -27,7 +27,7 @@ class Connector(threading.Thread):
         super(Connector, self).join()
         if self.exc_info:
             exc_type, exc_value, exc_tb = self.exc_info
-            raise exc_type(exc_value).with_traceback(exc_tb)
+            raise exc_value.with_traceback(exc_tb)
 
 
 class Deployment(object):
