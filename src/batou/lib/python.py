@@ -52,10 +52,12 @@ class VirtualEnvPyBase(Component):
     install_options = ('--ignore-installed', )
 
     def verify(self):
-        self.assert_cmd(
-            'bin/python -c "import sys; '
-            'assert sys.version_info[:2] == {}"'.format(
-                repr(tuple(int(x) for x in self.parent.version.split('.')))))
+        expected_version = tuple(
+            int(x) for x in self.parent.version.split('.'))
+        version_specificity = len(expected_version)
+        self.assert_cmd('bin/python -c "import sys; '
+                        'assert sys.version_info[:{}] == {}"'.format(
+                            version_specificity, repr(expected_version)))
         # Is this Python (still) functional 'enough'
         # from a setuptools/distribute perspective?
         self.assert_cmd('bin/python -c "import pkg_resources"')
