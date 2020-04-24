@@ -4,10 +4,11 @@
 2.0b7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Update embedded `appenv` to support Python 3.4+.
 
 
 2.0b6 (2020-04-24)
+------------------
 
 - Various smaller fixes to get the remoting code working again.
 

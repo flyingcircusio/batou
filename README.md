@@ -87,7 +87,14 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.0b7 (unreleased)
+------------------
+
+- Update embedded `appenv` to support Python 3.4+.
+
+
 2.0b6 (2020-04-24)
+------------------
 
 - Various smaller fixes to get the remoting code working again.
 
