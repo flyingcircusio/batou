@@ -1,6 +1,12 @@
 ## Changelog
 
 
+2.0b7 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.0b6 (2020-04-24)
 
 - Various smaller fixes to get the remoting code working again.
