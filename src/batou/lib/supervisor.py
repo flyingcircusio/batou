@@ -5,7 +5,7 @@ from batou.lib.file import File, Directory
 from batou.lib.nagios import ServiceCheck
 from batou.lib.logrotate import RotatedLogfile
 from batou.lib.service import Service
-from batou.utils import Address
+from batou.utils import Address, CmdExecutionError
 import os
 import os.path
 import time
@@ -249,10 +249,13 @@ class RunningSupervisor(Component):
             raise UpdateNeeded()
 
     def is_running(self):
-        pid, err = self.cmd('bin/supervisorctl pid')
         try:
-            int(pid) > 0
-        except ValueError:
+            pid, err = self.cmd('bin/supervisorctl pid')
+            try:
+                int(pid) > 0
+            except ValueError:
+                return False
+        except CmdExecutionError:
             return False
         return True
 

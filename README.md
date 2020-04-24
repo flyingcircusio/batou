@@ -88,7 +88,8 @@ The project is licensed under the 2-clause BSD license.
 
 
 ### 2.0b6 (unreleased)
-------------------
+
+- Update supervisor to 4.1 and Python 3.
 
 - Add ability to disable supervisor programs.
 
