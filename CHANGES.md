@@ -3,17 +3,24 @@
 
 ### 2.0b6 (unreleased)
 
+- Various smaller fixes to get the remoting code working again.
+
 - Update supervisor to 4.1 and Python 3.
+
+- Allow specifying major versions for virtualenvs (i.e. '2' and '3') to get
+  convergence for virtualenvs where we don't control the minor version of the
+  targets.
 
 - Add ability to disable supervisor programs.
 
-- Remove '--fast' and '--reset' mode as this isn't needed/
-  supported by appenv at the moment.
+- Remove '--fast' and '--reset' mode as this isn't needed/ supported by
+  appenv at the moment.
 
-- Simplify SSH/sudo and try sudo first. Needs further fixing once
+- Simplify SSH/sudo and try sudo first. Probably needs further attention once
   we're along the release cycle.
 
-- Fix Python 2.7 virtualenvs - upgrade to latest old-style release.
+- Fix Python 2.7 virtualenvs - upgrade to latest old-style release of 
+  `virtualenv`.
 
 ### 2.0b5 (2020-04-15)
 
