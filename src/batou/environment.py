@@ -200,7 +200,7 @@ class Environment(object):
 
     def load_hosts(self, config):
         self._load_hosts_single_section(config)
-        self._load_hosts_multi_secion(config)
+        self._load_hosts_multi_section(config)
 
     def _load_hosts_single_section(self, config):
         for literal_hostname in config.get('hosts', {}):
@@ -212,7 +212,7 @@ class Environment(object):
                 hostname,
                 config['hosts'].as_list(literal_hostname))
 
-    def _load_hosts_multi_secion(self, config):
+    def _load_hosts_multi_section(self, config):
         for section in config:
             if not section.startswith('host:'):
                 continue
@@ -409,7 +409,7 @@ class Environment(object):
                 dependencies[root] = set()
         if host is not None:
             for root in list(dependencies):
-                if root.host.name is not host:
+                if root.host.fqdn is not host:
                     del dependencies[root]
         return dependencies
 
