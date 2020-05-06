@@ -6,6 +6,8 @@
 
 - Update embedded `appenv` to support Python 3.4+.
 
+- Allow using `assert` statements istead if `batou.UpdateNeeded`.
+
 
 2.0b6 (2020-04-24)
 ------------------

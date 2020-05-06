@@ -305,7 +305,7 @@ class Component(object):
                             # XXX?!?!?
                             raise batou.UpdateNeeded()
                         raise
-            except batou.UpdateNeeded:
+            except AssertionError:
                 self.__trigger_event__(
                     'before-update', predict_only=predict_only)
                 output.annotate(self._breadcrumbs)

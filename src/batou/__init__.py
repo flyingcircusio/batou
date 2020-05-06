@@ -6,7 +6,7 @@ import traceback
 __version__ = open(os.path.dirname(__file__) + '/version.txt').read().strip()
 
 
-class UpdateNeeded(Exception):
+class UpdateNeeded(AssertionError):
     """A component requires an update."""
 
 
