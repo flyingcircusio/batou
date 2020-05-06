@@ -210,7 +210,8 @@ class Component(object):
             # special attribute handling to catch up.
             setattr(self, k, v)
 
-        self.configure()
+        with self.chdir(self.defdir):
+            self.configure()
         self += self._get_platform()
         self._platform_component = self._
         self.__setup_event_handlers__()

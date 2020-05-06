@@ -8,6 +8,9 @@
 
 - Allow using `assert` statements istead if `batou.UpdateNeeded`.
 
+- Ensure the working dir is the `defdir` during `configure` phase to allow
+  using relative path names.
+
 
 2.0b6 (2020-04-24)
 ------------------
