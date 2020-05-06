@@ -1,8 +1,11 @@
 from batou.component import Component
 from batou.lib.archive import Extract
 from batou.lib.download import Download
+from batou.lib.file import ensure_path_nonexistent
 from batou.utils import CmdExecutionError
 import batou
+import hashlib
+import os.path
 
 
 class VirtualEnv(Component):
@@ -226,3 +229,53 @@ class Package(Component):
     @property
     def namevar_for_breadcrumb(self):
         return '{}=={}'.format(self.package, self.version)
+
+
+class AppEnv(Component):
+    """XXX docme"""
+
+    namevar = 'python_version'
+    env_hash = None
+
+    def configure(self):
+        self.requirements = open('requirements.lock', 'r').read()
+        hash_content = (
+            self.requirements +
+            self.python_version +
+            open(__file__, 'r').read())
+        hash_content = hash_content.encode('utf-8')
+        self.env_hash = hashlib.new('sha256', hash_content).hexdigest()
+        self.env_dir = os.path.join('.appenv', self.env_hash)
+        self.env_ready = os.path.join('.appenv', self.env_hash, 'appenv.ready')
+
+    def verify(self):
+        assert os.path.exists(self.env_ready)
+        # XXX Check if python is executable
+
+    def update(self):
+        ensure_path_nonexistent(self.env_dir)
+        self.cmd(
+            'python{{component.python_version}} -m venv {{component.env_dir}}')
+        with open(os.path.join(self.env_dir, 'requirements.lock'), 'w') as req:
+            req.write(self.requirements)
+
+        self.pip_path = os.path.join(self.env_dir, 'bin', 'pip3')
+        self.cmd(
+            '{{component.pip_path}} install --no-deps '
+            '-r {{component.env_dir}}/requirements.lock')
+        self.cmd('{{component.pip_path}} check')
+
+        with open(self.env_ready, 'w') as f:
+            f.write('Ready or not, here I come, you can\'t hide\n')
+
+        self.cmd('ln -sfn {{component.env_hash}} .appenv/current')
+        self.cmd('ln -sfn .appenv/current/bin bin')
+
+        for path in os.listdir('.appenv/'):
+            if path in (self.env_hash, 'current'):
+                continue
+            ensure_path_nonexistent(os.path.join('.appenv', path))
+
+    @property
+    def namevar_for_breadcrumb(self):
+        return self.env_hash

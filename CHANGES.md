@@ -6,6 +6,9 @@
 
 - Update embedded `appenv` to support Python 3.4+.
 
+- Add component `AppEnv` to manage virtualenvs similar to the `appenv` package
+  superseding previous virtualenv and buildout components.
+
 - Allow using `assert` statements istead if `batou.UpdateNeeded`.
 
 - Ensure the working dir is the `defdir` during `configure` phase to allow
