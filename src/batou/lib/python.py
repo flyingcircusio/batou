@@ -254,6 +254,8 @@ class AppEnv(Component):
 
     def update(self):
         ensure_path_nonexistent(self.env_dir)
+        if '__PYVENV_LAUNCHER__' in os.environ:
+            del os.environ['__PYVENV_LAUNCHER__']
         self.cmd(
             'python{{component.python_version}} -m venv {{component.env_dir}}')
         with open(os.path.join(self.env_dir, 'requirements.lock'), 'w') as req:
