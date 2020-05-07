@@ -9,8 +9,9 @@ import os.path
 import pytest
 
 
-def MockRoot():
-    return Mock(overrides={})
+@pytest.fixture
+def mockroot(tmpdir):
+    return Mock(overrides={}, defdir=str(tmpdir))
 
 
 class SampleComponent(Component):
@@ -95,10 +96,10 @@ def test_op_orassignment_ignores_already_preapred_component(root):
     assert c.x == 2
 
 
-def test_prepare_calls_configure():
+def test_prepare_calls_configure(mockroot):
     component = Component()
     component.configure = Mock()
-    component.prepare(MockRoot())
+    component.prepare(mockroot)
     assert component.configure.called
 
 
@@ -311,29 +312,29 @@ def test_acic_accepts_multiple_components(root):
         c.assert_component_is_current([c2, c2])
 
 
-def test_cmd_expands_jinja():
+def test_cmd_expands_jinja(mockroot):
     c = Component()
     c.foo = 'asdf'
-    c.prepare(MockRoot())
+    c.prepare(mockroot)
     assert ('asdf\n', '') == c.cmd('echo "{{component.foo}}"')
 
 
-def test_cmd_returns_output():
+def test_cmd_returns_output(mockroot):
     c = Component()
-    c.prepare(MockRoot())
+    c.prepare(mockroot)
     assert ('1\n', '') == c.cmd('echo 1')
 
 
-def test_cmd_raises_if_error():
+def test_cmd_raises_if_error(mockroot):
     c = Component()
-    c.prepare(MockRoot())
+    c.prepare(mockroot)
     with pytest.raises(CmdExecutionError):
         c.cmd('non-existing-command')
 
 
-def test_cmd_returns_output_if_ignore_returncode():
+def test_cmd_returns_output_if_ignore_returncode(mockroot):
     c = Component()
-    c.prepare(MockRoot())
+    c.prepare(mockroot)
     out, err = c.cmd('echo important output && false', ignore_returncode=True)
     assert 'important output\n' == out
 
@@ -414,18 +415,18 @@ def test_component_manages_working_dir(root):
     assert os.path.realpath(cwd) == os.path.realpath(previous_workdir)
 
 
-def test_cmd_execution_failed_gives_command_in_exception():
+def test_cmd_execution_failed_gives_command_in_exception(mockroot):
     c = Component()
-    c.prepare(MockRoot())
+    c.prepare(mockroot)
     with pytest.raises(CmdExecutionError) as e:
         c.cmd('asdf')
     assert e.value.cmd == 'asdf'
     assert e.value.returncode == 127
 
 
-def test_cmd_should_not_stop_if_process_expects_input():
+def test_cmd_should_not_stop_if_process_expects_input(mockroot):
     c = Component()
-    c.prepare(MockRoot())
+    c.prepare(mockroot)
     stdout, stderr = c.cmd('cat')
     # The assertion is, that the test doesn't get stuck .
 
@@ -456,15 +457,15 @@ def test_require_one_convenience_raises_if_more_results():
         c.require_one('asdf')
 
 
-def test_assert_cmd_when_succesful():
+def test_assert_cmd_when_succesful(mockroot):
     c = Component()
-    c.prepare(MockRoot())
+    c.prepare(mockroot)
     c.assert_cmd('true')
 
 
-def test_assert_cmd_when_unsuccessful():
+def test_assert_cmd_when_unsuccessful(mockroot):
     c = Component()
-    c.prepare(MockRoot())
+    c.prepare(mockroot)
     with pytest.raises(UpdateNeeded):
         c.assert_cmd('false')
 

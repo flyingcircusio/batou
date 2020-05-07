@@ -234,7 +234,7 @@ class Directory(Component):
         for dirpath, dirnames, filenames in os.walk(self.path):
             for filename in filenames:
                 time = getattr(os.stat(os.path.join(dirpath, filename)), key)
-                if time > newest:
+                if newest is None or time > newest:
                     newest = time
         return newest
 
