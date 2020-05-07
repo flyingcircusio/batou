@@ -230,11 +230,11 @@ class Directory(Component):
             os.mkdir(self.path)
 
     def last_updated(self, key='st_mtime'):
-        newest = None
+        newest = 0  # epoch
         for dirpath, dirnames, filenames in os.walk(self.path):
             for filename in filenames:
                 time = getattr(os.stat(os.path.join(dirpath, filename)), key)
-                if newest is None or time > newest:
+                if time > newest:
                     newest = time
         return newest
 

@@ -577,6 +577,18 @@ def test_directory_copies_all_files(root):
 
 
 @pytest.mark.slow
+def test_directory_last_updated_reflects_file_changes(root):
+    os.mkdir('source')
+    open('source/one', 'w').close()
+    open('source/two', 'w').close()
+    d = Directory('target', source='source')
+    root.component += d
+    root.component.deploy()
+    assert (d.last_updated() == 
+            os.stat(os.path.join(root.workdir, 'target', 'two' )).st_mtime)
+
+
+@pytest.mark.slow
 def test_directory_does_not_copy_excluded_files(root):
     os.mkdir('source')
     open('source/one', 'w').close()

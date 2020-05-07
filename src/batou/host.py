@@ -157,9 +157,10 @@ class RemoteHost(Host):
 
     def connect(self, interpreter='python3'):
         if self.gateway:
-            output.annotate('Reconnecting ...', debug=True)
+            output.annotate('Disconnecting ...', debug=True)
             self.disconnect()
 
+        output.annotate('Connecting ...', debug=True)
         # Call sudo, ensuring:
         # - no password will ever be asked (fail instead)
         # - we ensure a consistent set of environment variables
