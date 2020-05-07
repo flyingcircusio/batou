@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0b7 (unreleased)
+2.0b7 (2020-05-07)
 ------------------
 
 - Update embedded `appenv` to support Python 3.4+.
