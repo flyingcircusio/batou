@@ -9,10 +9,10 @@
 - Add component `AppEnv` to manage virtualenvs similar to the `appenv` package
   superseding previous virtualenv and buildout components.
 
-- Allow using `assert` statements istead if `batou.UpdateNeeded`.
+- Allow using `assert` statements instead of `batou.UpdateNeeded`.
 
-- Ensure the working dir is the `defdir` during `configure` phase to allow
-  using relative path names.
+- Ensure the working directory is the `defdir` during the `configure` phase to
+  allow using relative path names.
 
 
 2.0b6 (2020-04-24)
