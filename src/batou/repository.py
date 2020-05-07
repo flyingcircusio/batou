@@ -270,10 +270,11 @@ class GitPullRepository(GitRepository):
 class GitBundleRepository(GitRepository):
 
     def _ship(self, host):
-        head = host.rpc.git_current_head(self.branch).decode('ascii')
+        head = host.rpc.git_current_head(self.branch)
         if head is None:
             bundle_range = self.branch
         else:
+            head = head.decode('ascii')
             bundle_range = '{head}..{branch}'.format(
                 head=head, branch=self.branch)
         fd, bundle_file = tempfile.mkstemp()
