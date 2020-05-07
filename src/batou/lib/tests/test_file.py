@@ -584,8 +584,8 @@ def test_directory_last_updated_reflects_file_changes(root):
     d = Directory('target', source='source')
     root.component += d
     root.component.deploy()
-    assert (d.last_updated() == 
-            os.stat(os.path.join(root.workdir, 'target', 'two' )).st_mtime)
+    assert (d.last_updated() ==
+            os.stat(os.path.join(root.workdir, 'target', 'two')).st_mtime)
 
 
 @pytest.mark.slow
