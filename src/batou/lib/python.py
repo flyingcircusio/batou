@@ -232,7 +232,21 @@ class Package(Component):
 
 
 class AppEnv(Component):
-    """XXX docme"""
+    """Manage a Python-package based application installation.
+
+    This uses virtualenv and pip with a "lockfile" style requirements.txt
+    file.
+
+    Place a file name "requirements.lock" in the defdir and specify the version
+    of Python 3 to be used.
+
+    Will automatically rebuild based on hashing of the AppEnv code,
+    the requirements file and the chosen version of Python.
+
+    The result is a light-weight 'pseudo' virtualenv with a bin/ directory
+    symlinked to the real virtualenv used under the hood.
+
+    """
 
     namevar = 'python_version'
     env_hash = None
