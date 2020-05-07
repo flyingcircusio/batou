@@ -19,8 +19,7 @@ class SampleComponent(Component):
     needs_update = True
 
     def verify(self):
-        if self.needs_update:
-            raise batou.UpdateNeeded()
+        assert not self.needs_update
 
     def update(self):
         self.updated = True
@@ -99,7 +98,8 @@ def test_op_orassignment_ignores_already_preapred_component(root):
 def test_prepare_calls_configure(mockroot):
     class TestComponent(Component):
 
-        cwd = None 
+        cwd = None
+
         def configure(self):
             self.cwd = os.getcwd()
 
