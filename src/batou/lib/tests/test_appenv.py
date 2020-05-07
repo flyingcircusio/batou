@@ -14,7 +14,6 @@ def test_simple_appenv(root):
     assert os.path.exists(os.path.join(root.component.workdir, 'bin'))
     assert os.path.exists(
         os.path.join(root.component.workdir, 'bin', 'python3'))
-    assert os.path.exists(os.path.join(root.component.workdir, 'bin', 'pip3'))
     assert os.path.exists(
         os.path.join(root.component.workdir, '.appenv', 'current'))
 
@@ -28,7 +27,6 @@ def test_simple_appenv(root):
     assert os.path.exists(os.path.join(root.component.workdir, 'bin'))
     assert os.path.exists(
         os.path.join(root.component.workdir, 'bin', 'python3'))
-    assert os.path.exists(os.path.join(root.component.workdir, 'bin', 'pip3'))
     assert os.path.exists(
         os.path.join(root.component.workdir, '.appenv', 'current'))
 
@@ -46,7 +44,6 @@ def test_simple_appenv(root):
     assert os.path.exists(os.path.join(root.component.workdir, 'bin'))
     assert os.path.exists(
         os.path.join(root.component.workdir, 'bin', 'python3'))
-    assert os.path.exists(os.path.join(root.component.workdir, 'bin', 'pip3'))
     assert os.path.exists(
         os.path.join(root.component.workdir, '.appenv', 'current'))
 
