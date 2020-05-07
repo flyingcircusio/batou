@@ -97,10 +97,18 @@ def test_op_orassignment_ignores_already_preapred_component(root):
 
 
 def test_prepare_calls_configure(mockroot):
-    component = Component()
-    component.configure = Mock()
+    class TestComponent(Component):
+
+        cwd = None 
+        def configure(self):
+            self.cwd = os.getcwd()
+
+    component = TestComponent()
+    assert component.cwd is None
+    os.chdir('/tmp')
     component.prepare(mockroot)
-    assert component.configure.called
+
+    assert component.cwd == mockroot.defdir
 
 
 def test_prepare_configures_applicable_platforms_as_subcomponents(root):
