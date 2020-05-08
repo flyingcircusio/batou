@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0b8 (unreleased)
+2.0b8 (2020-05-08)
 ------------------
 
 - Replace 'Deploying <xxx>' with 'Scheduling' as this is only the moment where
