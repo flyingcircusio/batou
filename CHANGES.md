@@ -9,6 +9,10 @@
   as soon as the worker pool is able to do it. Specifically this means that the
   following output isn't necessarily from this component.
 
+- Mark the hostname for each deployed component in the breadcrumb output
+  so that asynchronously deployed components can be visually identified
+  correctly.
+
 
 2.0b7 (2020-05-07)
 ------------------

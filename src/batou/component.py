@@ -299,17 +299,11 @@ class Component(object):
             try:
                 with batou.utils.Timer(
                         '{} verify()'.format(self._breadcrumbs)):
-                    try:
-                        self.verify()
-                    except Exception:
-                        if predict_only:
-                            # XXX?!?!?
-                            raise batou.UpdateNeeded()
-                        raise
+                    self.verify()
             except AssertionError:
                 self.__trigger_event__(
                     'before-update', predict_only=predict_only)
-                output.annotate(self._breadcrumbs)
+                output.annotate(self.host.name + ' > ' + self._breadcrumbs)
                 if not predict_only:
                     self.update()
                 self.changed = True
@@ -956,6 +950,10 @@ class RootComponent(object):
     def __repr__(self):
         return '<%s "%s" object at %s>' % (
             self.__class__.__name__, self.name, id(self))
+
+    @property
+    def _breadcrumbs(self):
+        return self.host.name
 
 
 # Overridable component attributes
