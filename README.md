@@ -87,7 +87,7 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.0b7 (unreleased)
+2.0b7 (2020-05-07)
 ------------------
 
 - Update embedded `appenv` to support Python 3.4+.

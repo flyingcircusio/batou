@@ -1,6 +1,12 @@
 ## Changelog
 
 
+2.0b8 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.0b7 (2020-05-07)
 ------------------
 
