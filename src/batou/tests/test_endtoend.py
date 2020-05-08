@@ -111,7 +111,7 @@ otherhost: Connection ignored (2/2)
 ==
 ================================== Deploying =================================\
 ==
-localhost: Deploying component component1 ...
+localhost: Scheduling component component1 ...
 localhost: Skipping component fail ... (Component ignored)
 otherhost: Skipping component fail2 ... (Host ignored)
 ============================= DEPLOYMENT FINISHED ============================\

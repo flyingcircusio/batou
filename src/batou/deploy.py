@@ -117,7 +117,7 @@ class Deployment(object):
                 format(component), red=True)
         else:
             output.step(
-                hostname, "Deploying component {} ...".format(component))
+                hostname, "Scheduling component {} ...".format(component))
             await self.loop.run_in_executor(
                 None, host.deploy_component, component, self.predict_only)
 

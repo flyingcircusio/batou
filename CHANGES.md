@@ -4,7 +4,10 @@
 2.0b8 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Replace 'Deploying <xxx>' with 'Scheduling' as this is only the moment where
+  we decide that a component is not blocked by another any longer and can done
+  as soon as the worker pool is able to do it. Specifically this means that the
+  following output isn't necessarily from this component.
 
 
 2.0b7 (2020-05-07)
