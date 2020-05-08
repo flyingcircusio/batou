@@ -13,6 +13,9 @@
   so that asynchronously deployed components can be visually identified
   correctly.
 
+- Show diff of file changes - both during predict and deployment - to better
+  estimate whether template changes are as expected.
+
 
 2.0b7 (2020-05-07)
 ------------------

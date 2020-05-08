@@ -326,18 +326,31 @@ class Content(FileComponent):
     def verify(self):
         if self._delayed:
             self._render()
-        with open(self.path, 'rb') as target:
-            current = target.read()
-            if current == self.content:
-                return
-            if self.encoding:
-                current_text = current.decode(self.encoding, errors='replace')
-                wanted_text = self.content.decode(self.encoding)
-                for line in difflib.unified_diff(
-                        current_text.splitlines(),
-                        wanted_text.splitlines()):
-                    output.annotate(line, debug=True)
+        try:
+            with open(self.path, 'rb') as target:
+                current = target.read()
+                if current == self.content:
+                    return
+        except FileNotFoundError:
+            current = b''
+        except Exception:
+            output.annotate('Unknown content - can\'t predict diff.')
             raise batou.UpdateNeeded()
+
+        encoding = self.encoding or 'ascii'
+        current_text = current.decode(encoding, errors='replace')
+        wanted_text = self.content.decode(encoding)
+        for line in difflib.unified_diff(
+                current_text.splitlines(),
+                wanted_text.splitlines()):
+            line = line.replace('\n', '')
+            if not line.strip():
+                continue
+            output.annotate(
+                '\t{} {}'.format(os.path.basename(self.path), line),
+                red=line.startswith('-'),
+                green=line.startswith('+'))
+        raise batou.UpdateNeeded()
 
     def update(self):
         with open(self.path, 'wb') as target:
