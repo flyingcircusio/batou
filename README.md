@@ -87,6 +87,22 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.0b8 (unreleased)
+------------------
+
+- Replace 'Deploying <xxx>' with 'Scheduling' as this is only the moment where
+  we decide that a component is not blocked by another any longer and can done
+  as soon as the worker pool is able to do it. Specifically this means that the
+  following output isn't necessarily from this component.
+
+- Mark the hostname for each deployed component in the breadcrumb output
+  so that asynchronously deployed components can be visually identified
+  correctly.
+
+- Show diff of file changes - both during predict and deployment - to better
+  estimate whether template changes are as expected.
+
+
 2.0b7 (2020-05-07)
 ------------------
 
