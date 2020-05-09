@@ -87,6 +87,12 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.0b9 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.0b8 (2020-05-08)
 ------------------
 
