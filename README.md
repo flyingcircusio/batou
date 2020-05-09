@@ -90,7 +90,9 @@ The project is licensed under the 2-clause BSD license.
 2.0b9 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Refactor the `appenv` component into smaller components (and move it to `batou.lib.appenv`. 
+
+- Always update pip when installing an appenv - this also fixes the Travis tests.
 
 
 2.0b8 (2020-05-08)
