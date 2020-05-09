@@ -19,6 +19,9 @@ class VirtualEnv(Component):
         self.cmd(
             'python{{component.python_version}} -m venv '
             '{{component.parent.env_dir}}')
+        self.cmd(
+            '{{component.parent.env_dir}}/bin/python -m pip '
+            'install --upgrade pip')
 
 
 class LockedRequirements(Component):
