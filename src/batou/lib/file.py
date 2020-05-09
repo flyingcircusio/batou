@@ -145,8 +145,7 @@ class Presence(Component):
                               leading=self.leading)
 
     def verify(self):
-        if not os.path.isfile(self.path):
-            raise batou.UpdateNeeded()
+        assert os.path.isfile(self.path)
 
     def update(self):
         ensure_path_nonexistent(self.path)
