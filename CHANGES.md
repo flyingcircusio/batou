@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0b9 (unreleased)
+2.0b9 (2020-05-09)
 ------------------
 
 - Refactor the `appenv` component into smaller components (and move it to `batou.lib.appenv`. 
