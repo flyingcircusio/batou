@@ -1,4 +1,4 @@
-from batou.lib.python import AppEnv
+from batou.lib.appenv import AppEnv
 import os.path
 
 
@@ -21,7 +21,7 @@ def test_simple_appenv(root):
     assert len(hashes) == 2
 
     # Running it twice doesn't change anything
-    appenv.configure()
+    appenv.prepare(root.component)
     root.component.deploy()
 
     assert os.path.exists(os.path.join(root.component.workdir, 'bin'))
@@ -38,7 +38,7 @@ def test_simple_appenv(root):
         # I hate using a real package and a real index here ...
         f.write('# comment\nsix==1.14.0\n')
 
-    appenv.configure()
+    appenv.prepare(root.component)
     root.component.deploy()
 
     assert os.path.exists(os.path.join(root.component.workdir, 'bin'))
