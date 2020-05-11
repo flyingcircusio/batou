@@ -24,6 +24,49 @@ class VirtualEnv(Component):
             'install --upgrade pip')
 
 
+class Requirements(Component):
+
+    pinnings = None
+    editable_packages = None
+    additional_requirements = None
+    find_links = None
+    extra_index_urls = None
+
+    def configure(self):
+        locked = []
+        requirements = open('requirements.txt', 'r').read().split()
+        if self.additional_requirements:
+            requirements += self.additional_requirements
+        for req in requirements:
+            version = None
+            extras = []
+            if '[' in req:
+                req, _extras = req.split('[')
+                extras = _extras[:-1].split(',')
+            if '==' in req:
+                req, version == req.split('==')
+            if self.pinnings and req in self.pinnings:
+                version = self.pinnings[req]
+            extras = '[' + ','.join(extras) + ']' if extras else ''
+            if self.editable_packages and req in self.editable_packages:
+                req = f'-e{self.editable_packages[req]}{extras}'
+            elif version:
+                req += f'{extras}=={version}'
+            else:
+                req += extras
+            locked.append(req)
+        with open('requirements.lock', 'w') as f:
+            if self.find_links:
+                f.write('\n'.join(f'-f {link}' for link in self.find_links))
+                f.write('\n')
+            if self.extra_index_urls:
+                f.write('\n'.join(
+                    f'--extra-index-url {link}'
+                    for link in self.extra_index_urls))
+                f.write('\n')
+            f.write('\n'.join(locked))
+
+
 class LockedRequirements(Component):
 
     def verify(self):
