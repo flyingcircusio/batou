@@ -36,7 +36,8 @@ class Requirements(Component):
         locked = []
         requirements = open('requirements.txt', 'r').read().split()
         if self.additional_requirements:
-            requirements += self.additional_requirements
+            requirements = list(set(
+                requirements + self.additional_requirements))
         for req in requirements:
             version = None
             extras = []
