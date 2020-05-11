@@ -6,6 +6,13 @@ import traceback
 __version__ = open(os.path.dirname(__file__) + '/version.txt').read().strip()
 
 
+class FileLockedError(Exception):
+    """A file is already locked and we do not want to block."""
+
+    def __init__(self, filename):
+        self.filename = filename
+
+
 class UpdateNeeded(AssertionError):
     """A component requires an update."""
 

@@ -1,7 +1,7 @@
 from .environment import Environment, MissingEnvironment
 from .utils import locked, self_id
 from .utils import notify
-from batou import DeploymentError, ConfigurationError
+from batou import DeploymentError, ConfigurationError, FileLockedError
 from batou._output import output, TerminalBackend
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
@@ -180,6 +180,11 @@ def main(environment, platform, timeout, dirty, consistency_only,
             if not consistency_only:
                 deployment.deploy()
             deployment.disconnect()
+        except FileLockedError as e:
+            output.error("File already locked: {}".format(e.filename))
+            output.section("{} FAILED".format(ACTION), red=True)
+            notify('{} FAILED'.format(ACTION),
+                   'File already locked: {}'.format(e.filename))
         except MissingEnvironment as e:
             e.report()
             output.section("{} FAILED".format(ACTION), red=True)
