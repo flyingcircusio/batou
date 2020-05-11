@@ -87,6 +87,13 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.0b10 (unreleased)
+-------------------
+
+- Add `Requirements` component that can create a `requirements.lock` for the
+  `AppEnv` component.
+
+
 2.0b9 (2020-05-09)
 ------------------
 
