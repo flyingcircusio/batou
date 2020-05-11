@@ -6,6 +6,8 @@
 
 - Fix Python 3 compatibility for Debian logrotate component.
 
+- Improve output ordering and formatting. The diffs for predicted (or applied)
+  changes now appear in proper order.
 
 - Provide better error messages when batou fails to lock a secret file.
 

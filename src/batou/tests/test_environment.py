@@ -282,8 +282,9 @@ Post sub""" == log
 
     log = '\n'.join(c[0][0].strip() for c in output.call_args_list)
     assert """\
-localhost: <Hello (localhost) "Hello"> verify: asdf=None
-localhost > Hello""" == log
+localhost > Hello
+localhost: <Hello (localhost) "Hello"> verify: asdf=None\
+""" == log
 
 
 def test_resolver_overrides(sample_service):

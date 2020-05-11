@@ -293,6 +293,8 @@ class Component(object):
             if sub_component.changed:
                 self.changed = True
 
+        output.buffer('annotate', self.host.name + ' > ' + self._breadcrumbs)
+
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         with self.chdir(self.workdir), self:
@@ -303,10 +305,12 @@ class Component(object):
             except AssertionError:
                 self.__trigger_event__(
                     'before-update', predict_only=predict_only)
-                output.annotate(self.host.name + ' > ' + self._breadcrumbs)
+                output.flush_buffer()
                 if not predict_only:
                     self.update()
                 self.changed = True
+
+        output.clear_buffer()
 
     def verify(self):
         """Verify whether this component has been deployed correctly or needs
@@ -884,7 +888,7 @@ class Component(object):
         result = self.__class__.__name__
         name = self.namevar_for_breadcrumb
         if name:
-            result += '({})'.format(name)
+            result += '({!r})'.format(name)
         return result
 
     @property

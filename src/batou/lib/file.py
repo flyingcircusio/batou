@@ -119,7 +119,10 @@ class File(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.environment.base_dir)
+        relpath = os.path.relpath(self.path, self.environment.base_dir)
+        if not relpath.startswith('..'):
+            return relpath
+        return os.path.abspath(self.path)
 
     def last_updated(self, key='st_mtime'):
         if not os.path.exists(self.path):
@@ -155,7 +158,12 @@ class Presence(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.environment.base_dir)
+        if isinstance(self.parent, File):
+            return os.path.basename(self.path)
+        relpath = os.path.relpath(self.path, self.environment.base_dir)
+        if not relpath.startswith('..'):
+            return relpath
+        return os.path.abspath(self.path)
 
     def last_updated(self, key='st_mtime'):
         if not os.path.exists(self.path):
@@ -200,7 +208,12 @@ class SyncDirectory(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.environment.base_dir)
+        if isinstance(self.parent, Directory):
+            return os.path.basename(self.path)
+        relpath = os.path.relpath(self.path, self.environment.base_dir)
+        if not relpath.startswith('..'):
+            return relpath
+        return os.path.abspath(self.path)
 
 
 class Directory(Component):
@@ -239,7 +252,12 @@ class Directory(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.environment.base_dir)
+        if isinstance(self.parent, File):
+            return os.path.basename(self.path)
+        relpath = os.path.relpath(self.path, self.environment.base_dir)
+        if not relpath.startswith('..'):
+            return relpath
+        return os.path.abspath(self.path)
 
 
 class FileComponent(Component):
@@ -253,7 +271,12 @@ class FileComponent(Component):
 
     @property
     def namevar_for_breadcrumb(self):
-        return os.path.relpath(self.path, self.environment.base_dir)
+        if isinstance(self.parent, File):
+            return os.path.basename(self.path)
+        relpath = os.path.relpath(self.path, self.environment.base_dir)
+        if not relpath.startswith('..'):
+            return relpath
+        return os.path.abspath(self.path)
 
 
 class Content(FileComponent):
@@ -346,7 +369,7 @@ class Content(FileComponent):
             if not line.strip():
                 continue
             output.annotate(
-                '\t{} {}'.format(os.path.basename(self.path), line),
+                '  {} {}'.format(os.path.basename(self.path), line),
                 red=line.startswith('-'),
                 green=line.startswith('+'))
         raise batou.UpdateNeeded()

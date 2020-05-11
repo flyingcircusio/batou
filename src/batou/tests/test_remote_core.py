@@ -220,12 +220,12 @@ def test_channelexec_handle_exception(remote_core_mod):
         {'bold': True, 'red': True})
 
     assert next(response) == (
-        'batou-output', 'line', ('     Return code: 127',), {'red': True})
+        'batou-output', 'line', ('Return code: 127',), {'red': True})
 
     assert next(response) == (
         'batou-output', 'line', ('STDOUT',), {'red': True})
 
-    assert next(response) == ('batou-output', 'line', ('     ',), {})
+    assert next(response) == ('batou-output', 'line', ('',), {})
 
     assert next(response) == (
         'batou-output', 'line', ('STDERR',), {'red': True})
@@ -233,9 +233,9 @@ def test_channelexec_handle_exception(remote_core_mod):
     # Different /bin/sh versions have different error reporting
     assert next(response) in [
         ('batou-output', 'line',
-            ('     /bin/sh: fdjkahfkjdasbfda: command not found\n     ',), {}),
+            ('/bin/sh: fdjkahfkjdasbfda: command not found\n',), {}),
         ('batou-output', 'line',
-            ('     /bin/sh: 1: fdjkahfkjdasbfda: not found\n     ',), {})]
+            ('/bin/sh: 1: fdjkahfkjdasbfda: not found\n',), {})]
 
     assert next(response) == ('batou-error', None)
 
