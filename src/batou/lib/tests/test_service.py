@@ -10,7 +10,10 @@ def deploy_platform():
 
 @pytest.yield_fixture
 def service(root, tmpdir, request, deploy_platform):
-    assert not hasattr(batou.lib.service.Service, '_platforms')
+    old_platforms = getattr(batou.lib.service.Service, '_platforms', {})
+    if old_platforms:
+        del batou.lib.service.Service._platforms
+
     root.host.platform = deploy_platform
 
     @batou.component.platform('test', batou.lib.service.Service)
@@ -31,7 +34,7 @@ def service(root, tmpdir, request, deploy_platform):
     root.component += service
     root.component.deploy()
     yield service
-    del batou.lib.service.Service._platforms
+    batou.lib.service.Service._platforms = old_platforms
 
 
 def test_start_delegates_to_platform_component(service, tmpdir):
