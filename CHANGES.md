@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0b10 (unreleased)
+2.0b10 (2020-05-11)
 -------------------
 
 - Fix Python 3 compatibility for Debian logrotate component.

@@ -90,8 +90,12 @@ The project is licensed under the 2-clause BSD license.
 2.0b10 (unreleased)
 -------------------
 
-- Fix Python3 compatibility for debian logrotate component
+- Fix Python 3 compatibility for Debian logrotate component.
 
+- Improve output ordering and formatting. The diffs for predicted (or applied)
+  changes now appear in proper order.
+
+- Provide better error messages when batou fails to lock a secret file.
 
 2.0b9 (2020-05-09)
 ------------------
