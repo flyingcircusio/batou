@@ -90,7 +90,7 @@ def test_address_v6_only():
 def test_address_fails_when_name_cannot_be_looked_up_at_all():
     with pytest.raises(socket.gaierror) as f:
         Address("does-not-exist.example.com:1234")
-    assert "No v4 or v6 address for 'does-not-exist.example.com'" \
+    assert "No IPv4 or IPv6 address for 'does-not-exist.example.com'" \
         == str(f.value)
 
 
