@@ -4,7 +4,7 @@
 2.0b11 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Fix "is supervisord running" check in the Supervisor(enable=False) case
 
 
 2.0b10 (2020-05-11)
