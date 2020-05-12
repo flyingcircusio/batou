@@ -24,25 +24,21 @@ class VirtualEnv(Component):
             'install --upgrade pip')
 
 
-class Options:
+class Requirements(Component):
 
+    namevar = 'output_filename'
     extra_index_urls = None  # e.g. ['https://pypi.example.com']
     find_links = None  # e.g. ['https://download.example.com']
     pinnings = None  # e.g. {'batou': '2.0', 'batou_scm': '0.6.3'}
     editable_packages = None  # e.g. {'batou': '/usr/dev/batou'}
     additional_requirements = None  # e.g. ['pytest', 'pytest-flake8']
 
-
-class Requirements(Component):
-
-    namevar = 'options'
-
-    def update(self):
+    def configure(self):
         locked = []
         requirements = open('requirements.txt', 'r').read().split()
-        if self.options.additional_requirements:
+        if self.additional_requirements:
             requirements = list(set(
-                requirements + self.options.additional_requirements))
+                requirements + self.additional_requirements))
         for req in requirements:
             version = None
             extras = []
@@ -51,26 +47,26 @@ class Requirements(Component):
                 extras = _extras[:-1].split(',')
             if '==' in req:
                 req, version == req.split('==')
-            if self.options.pinnings and req in self.options.pinnings:
-                version = self.options.pinnings[req]
+            if self.pinnings and req in self.pinnings:
+                version = self.pinnings[req]
             extras = '[' + ','.join(extras) + ']' if extras else ''
-            if self.options.editable_packages and req in self.options.editable_packages:
-                req = f'-e{self.options.editable_packages[req]}{extras}'
+            if self.editable_packages and req in self.editable_packages:
+                req = f'-e{self.editable_packages[req]}{extras}'
             elif version:
                 req += f'{extras}=={version}'
             else:
                 req += extras
             locked.append(req)
-        with open('requirements.lock', 'w') as f:
-            if self.options.find_links:
-                f.write('\n'.join(f'-f {link}' for link in self.options.find_links))
+        with open(self.output_filename, 'w') as f:
+            if self.find_links:
+                f.write('\n'.join(f'-f {link}' for link in self.find_links))
                 f.write('\n')
-            if self.options.extra_index_urls:
+            if self.extra_index_urls:
                 f.write('\n'.join(
                     f'--extra-index-url {link}'
-                    for link in self.options.extra_index_urls))
+                    for link in self.extra_index_urls))
                 f.write('\n')
-            f.write('\n'.join(locked))
+            f.write('\n'.join(sorted(locked)))
 
 
 class LockedRequirements(Component):
