@@ -58,7 +58,7 @@ class Requirements(Component):
                 req += extras
             locked.append(req)
         with open(self.output_filename, 'w') as f:
-            f.write('# Created by batou. Do not edit manually.')
+            f.write('# Created by batou. Do not edit manually.\n')
             if self.find_links:
                 f.write('\n'.join(f'-f {link}' for link in self.find_links))
                 f.write('\n')
