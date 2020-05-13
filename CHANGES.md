@@ -1,6 +1,12 @@
 ## Changelog
 
 
+2.0b12 (unreleased)
+-------------------
+
+- Nothing changed yet.
+
+
 2.0b11 (2020-05-13)
 -------------------
 
