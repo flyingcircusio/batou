@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0b12 (unreleased)
+2.0b12 (2020-05-13)
 -------------------
 
 - Fix broken sort of configuration errors. (#52)
