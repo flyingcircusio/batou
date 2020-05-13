@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0b11 (unreleased)
+2.0b11 (2020-05-13)
 -------------------
 
 - Fix "is supervisord running" check in the Supervisor(enable=False) case

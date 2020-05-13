@@ -87,6 +87,12 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.0b11 (unreleased)
+-------------------
+
+- Fix "is supervisord running" check in the Supervisor(enable=False) case
+
+
 2.0b10 (2020-05-11)
 -------------------
 
