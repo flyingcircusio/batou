@@ -4,7 +4,7 @@
 2.0b12 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Fix broken sort of configuration errors. (#52)
 
 
 2.0b11 (2020-05-13)

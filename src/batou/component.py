@@ -76,7 +76,7 @@ def load_components_from_file(filename):
             continue
         compdef = ComponentDefinition(candidate, filename, defdir)
         if compdef.name in components:
-            raise DuplicateComponent(compdef)
+            raise DuplicateComponent(compdef, components[compdef.name])
         components[compdef.name] = compdef
 
     return components

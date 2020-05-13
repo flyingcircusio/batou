@@ -86,8 +86,8 @@ class MissingOverrideAttributes(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (1, self.component.root.host.name,
-                self.component._breadcrumbs, 0)
+        return (3, self.component.root.host.name,
+                self.component._breadcrumbs)
 
     def __init__(self, component, attributes):
         self.component = component
@@ -115,16 +115,16 @@ class DuplicateComponent(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (1, self.component.a.host.name, self.a.__name__)
+        return (2, self.a.name)
 
     def __init__(self, a, b):
         self.a = a
         self.b = b
 
     def report(self):
-        output.error('Duplicate component "{}"'.format(self.a.__name_))
-        output.tabular('Occurence', self.a.__file__)
-        output.tabular('Occurence', self.b.__file__)
+        output.error('Duplicate component "{}"'.format(self.a.name))
+        output.tabular('Occurence', self.a.filename)
+        output.tabular('Occurence', self.b.filename)
 
 
 class UnknownComponentConfigurationError(ConfigurationError):
@@ -132,7 +132,7 @@ class UnknownComponentConfigurationError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (1, self.root.host.name, 2)
+        return (4, self.root.host.name, 2)
 
     def __init__(self, root, exception, tb):
         self.root = root
@@ -169,7 +169,7 @@ class UnusedResources(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (3, 'unused')
+        return (5, 'unused')
 
     def __init__(self, resources):
         self.resources = resources
@@ -189,7 +189,7 @@ class UnsatisfiedResources(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (4, 'unsatisfied')
+        return (6, 'unsatisfied')
 
     def __init__(self, resources):
         self.resources = resources
