@@ -4,8 +4,9 @@
 2.0b13 (unreleased)
 -------------------
 
-- Nothing changed yet.
 
+- Reduce AppEnv component directory hashes to 8 byte to avoid the shebang (#!)
+  127 character path limit.
 
 2.0b12 (2020-05-13)
 -------------------

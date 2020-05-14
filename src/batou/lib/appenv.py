@@ -80,7 +80,7 @@ class AppEnv(Component):
             self.python_version +
             open(__file__, 'r').read())
         hash_content = hash_content.encode('utf-8')
-        self.env_hash = hashlib.new('sha256', hash_content).hexdigest()
+        self.env_hash = hashlib.new('sha256', hash_content).hexdigest()[:8]
         self.env_dir = os.path.join('.appenv', self.env_hash)
         self.env_ready = os.path.join(self.env_dir, 'appenv.ready')
 
