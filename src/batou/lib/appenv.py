@@ -1,7 +1,9 @@
 from batou.component import Component
 from batou.lib.file import File, Symlink, ensure_path_nonexistent
+from io import StringIO
 import hashlib
 import os.path
+import requirements
 
 
 class VirtualEnv(Component):
@@ -35,28 +37,27 @@ class Requirements(Component):
 
     def configure(self):
         locked = []
-        requirements = open('requirements.txt', 'r').read().split()
+        reqs = open('requirements.txt', 'r').read().splitlines()
         if self.additional_requirements:
-            requirements = list(set(
-                requirements + self.additional_requirements))
-        for req in requirements:
-            version = None
-            extras = []
-            if '[' in req:
-                req, _extras = req.split('[')
-                extras = _extras[:-1].split(',')
-            if '==' in req:
-                req, version == req.split('==')
-            if self.pinnings and req in self.pinnings:
-                version = self.pinnings[req]
-            extras = '[' + ','.join(extras) + ']' if extras else ''
-            if self.editable_packages and req in self.editable_packages:
-                req = f'-e{self.editable_packages[req]}{extras}'
-            elif version:
-                req += f'{extras}=={version}'
+            reqs = list(set(reqs + self.additional_requirements))
+
+        for req in requirements.parse(StringIO('\n'.join(reqs))):
+            if self.pinnings and req.name in self.pinnings:
+                req.specs = [('==', self.pinnings[req.name])]
+            if self.editable_packages and req.name in self.editable_packages:
+                req.editable = True
+                req.path = self.editable_packages[req.name]
+                req.name = None
+                req.specs = []
+
+            name = req.name
+            specs = ','.join(f'{i[0]}{i[1]}' for i in req.specs)
+            extras = '[' + ','.join(req.extras) + ']' if req.extras else ''
+            if not req.editable:
+                line = f'{name}{extras}{specs}'
             else:
-                req += extras
-            locked.append(req)
+                line = f'-e{req.path or req.uri}{extras}'
+            locked.append(line)
         with open(self.output_filename, 'w') as f:
             f.write('# Created by batou. Do not edit manually.\n')
             if self.find_links:

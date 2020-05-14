@@ -1,4 +1,4 @@
-from batou.lib.appenv import AppEnv
+from batou.lib.appenv import AppEnv, Requirements
 import os.path
 
 
@@ -51,3 +51,46 @@ def test_simple_appenv(root):
     assert hashes3 != hashes
 
     assert len(hashes3) == 2
+
+
+def test_requirements_component(root):
+    with open('requirements.txt', 'w') as f:
+        f.write("""\
+six==1.14.0
+requests
+-e/tmp/mypackage
+-egit+https://github.com/flyingcircus/batou
+mypackage[test]==0.0.1dev0
+""")
+
+    root.component += Requirements('requirements.lock')
+    root.component.deploy()
+
+    assert [
+        '# Created by batou. Do not edit manually.',
+        '-e/tmp/mypackage',
+        '-egit+https://github.com/flyingcircus/batou',
+        'mypackage[test]==0.0.1dev0',
+        'requests',
+        'six==1.14.0'] == open('requirements.lock', 'r').read().splitlines()
+
+    root.component += Requirements(
+        'requirements.lock',
+        extra_index_urls=['https://pypi.example.com'],
+        find_links=['https://download.example.com'],
+        pinnings={'requests': '1.0', 'mypackage': '0.2'},
+        editable_packages={'six': '/usr/dev/six'},
+        additional_requirements=['pytest', 'pytest-flake8'])
+    root.component.deploy()
+
+    assert [
+        '# Created by batou. Do not edit manually.',
+        '-f https://download.example.com',
+        '--extra-index-url https://pypi.example.com',
+        '-e/tmp/mypackage',
+        '-e/usr/dev/six',
+        '-egit+https://github.com/flyingcircus/batou',
+        'mypackage[test]==0.2',
+        'pytest',
+        'pytest-flake8',
+        'requests==1.0'] == open('requirements.lock', 'r').read().splitlines()
