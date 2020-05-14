@@ -30,39 +30,64 @@ class Output(object):
 
     def __init__(self, backend):
         self.backend = backend
+        self._buffer = []
+        self._flushing = False
+
+    # Helpers to allow constructing output with reordering and in a distributed
+    # fashion.
+
+    def buffer(self, cmd, *args, **kw):
+        self._buffer.append((cmd, args, kw))
+
+    def clear_buffer(self):
+        self._buffer.clear()
+
+    def flush_buffer(self):
+        if self._flushing:
+            return
+        self._flushing = True
+        for cmd, args, kw in self._buffer:
+            getattr(self, cmd)(*args, **kw)
+        self.clear_buffer()
+        self._flushing = False
 
     def line(self, message, debug=False, **format):
         if debug and not self.enable_debug:
             return
+        self.flush_buffer()
         self.backend.line(message, **format)
 
     def annotate(self, message, debug=False, **format):
         if debug and not self.enable_debug:
             return
+        self.flush_buffer()
         lines = message.split('\n')
-        lines = [' ' * 5 + line for line in lines]
         message = '\n'.join(lines)
         self.line(message, **format)
 
     def tabular(self, key, value, separator=': ', debug=False, **kw):
         if debug and not self.enable_debug:
             return
+        self.flush_buffer()
         message = key.rjust(10) + separator + value
         self.annotate(message, **kw)
 
     def section(self, title, debug=False, **format):
         if debug and not self.enable_debug:
             return
+        self.flush_buffer()
         _format = {'bold': True}
         _format.update(format)
         self.backend.sep("=", title, **_format)
 
     def sep(self, sep, title, **format):
+        self.flush_buffer()
         return self.backend.sep(sep, title, **format)
 
     def step(self, context, message, debug=False, **format):
         if debug and not self.enable_debug:
             return
+        self.flush_buffer()
         _format = {'bold': True}
         _format.update(format)
         self.line('{}: {}'.format(context, message), **_format)
@@ -70,6 +95,7 @@ class Output(object):
     def error(self, message, exc_info=None, debug=False):
         if debug and not self.enable_debug:
             return
+        self.flush_buffer()
         self.step("ERROR", message, red=True)
         if exc_info:
             tb = traceback.format_exception(*exc_info)

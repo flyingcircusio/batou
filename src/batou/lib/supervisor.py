@@ -234,7 +234,21 @@ class Supervisor(Component):
                 command=self.expand('{{component.workdir}}/check_supervisor'))
 
 
-class RunningSupervisor(Component):
+class RunningHelper(Component):
+
+    def is_running(self):
+        try:
+            pid, err = self.cmd('bin/supervisorctl pid')
+            try:
+                int(pid) > 0
+            except ValueError:
+                return False
+        except CmdExecutionError:
+            return False
+        return True
+
+
+class RunningSupervisor(RunningHelper):
 
     action = None
     reload_timeout = 60
@@ -247,17 +261,6 @@ class RunningSupervisor(Component):
             self.parent.pidfile, ['bin/supervisord', 'etc/supervisord.conf'])
         if not self.is_running():
             raise UpdateNeeded()
-
-    def is_running(self):
-        try:
-            pid, err = self.cmd('bin/supervisorctl pid')
-            try:
-                int(pid) > 0
-            except ValueError:
-                return False
-        except CmdExecutionError:
-            return False
-        return True
 
     def update(self):
         if not self.is_running():
@@ -297,15 +300,11 @@ class RunningSupervisor(Component):
                 .format(self.reload_timeout))
 
 
-class StoppedSupervisor(Component):
+class StoppedSupervisor(RunningHelper):
 
     def verify(self):
-        out, err = self.cmd('bin/supervisorctl pid')
-        try:
-            int(out)
-        except ValueError:
-            return
-        raise UpdateNeeded()
+        if self.is_running():
+            raise UpdateNeeded()
 
     def update(self):
         self.cmd('bin/supervisorctl shutdown')

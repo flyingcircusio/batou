@@ -23,7 +23,7 @@ class Supervisor(batou.lib.supervisor.Supervisor):
 
 class Logrotate(batou.lib.logrotate.Logrotate):
 
-    common_config = """\
+    common_config = b"""\
 daily
 rotate 14
 create

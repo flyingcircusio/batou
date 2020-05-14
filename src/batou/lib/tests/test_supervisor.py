@@ -43,3 +43,22 @@ def test_program_does_not_start_within_startsecs_raises(root, supervisor):
         options=dict(startsecs=1))
     with pytest.raises(RuntimeError):
         root.component.deploy()
+
+
+@pytest.mark.slow
+def test_enable_false_reports_not_running_when_daemon_stopped(root):
+    supervisor = batou.lib.supervisor.Supervisor(
+        enable=False,
+        pidfile='supervisor.pid',
+        socketpath='/tmp/batou-test-supervisor.sock')
+    root.component += supervisor
+    # assert nothing raised
+    root.component.deploy()
+
+
+@pytest.mark.slow
+def test_enable_true_reports_not_running_when_daemon_stopped(root, supervisor):
+    supervisor.cmd(
+        '{}/bin/supervisorctl shutdown'.format(supervisor.workdir))
+    # assert nothing raised
+    root.component.deploy()

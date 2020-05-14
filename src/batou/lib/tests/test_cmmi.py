@@ -15,7 +15,7 @@ import time
 def test_build_breadcrumb_shortens_url():
     b = Build('http://launchpad.net/libmemcached/1.0/0.46/'
               '+download/libmemcached-0.46.tar.gz')
-    assert b._breadcrumb == 'Build(libmemcached-0.46.tar.gz)'
+    assert b._breadcrumb == 'Build(\'libmemcached-0.46.tar.gz\')'
 
 
 def test_configure_defaults_prefix_to_workdir(root):

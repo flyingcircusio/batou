@@ -137,4 +137,8 @@ If no directory is given, the current directory is used.
 
     del func_args['func']
     del func_args['debug']
-    args.func(**func_args)
+    try:
+        args.func(**func_args)
+    except batou.FileLockedError as e:
+        # Nicer error reporting for non-deployment commands.
+        print('File already locked: {}'.format(e.filename))

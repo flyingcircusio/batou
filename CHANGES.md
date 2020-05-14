@@ -1,12 +1,34 @@
 ## Changelog
 
 
-2.0b10 (unreleased)
+2.0b13 (unreleased)
 -------------------
 
 - Add `Requirements` component that can create a `requirements.lock` for the
   `AppEnv` component.
 
+
+2.0b12 (2020-05-13)
+-------------------
+
+- Fix broken sort of configuration errors. (#52)
+
+
+2.0b11 (2020-05-13)
+-------------------
+
+- Fix "is supervisord running" check in the Supervisor(enable=False) case
+
+
+2.0b10 (2020-05-11)
+-------------------
+
+- Fix Python 3 compatibility for Debian logrotate component.
+
+- Improve output ordering and formatting. The diffs for predicted (or applied)
+  changes now appear in proper order.
+
+- Provide better error messages when batou fails to lock a secret file.
 
 2.0b9 (2020-05-09)
 ------------------

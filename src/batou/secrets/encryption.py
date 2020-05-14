@@ -1,10 +1,11 @@
-
+from batou import FileLockedError
 import configparser
-import io
 import fcntl
+import io
 import os
 import subprocess
 import tempfile
+
 
 # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
 NULL = tempfile.TemporaryFile()
@@ -94,10 +95,13 @@ class EncryptedConfigFile(object):
     def _lock(self):
         self.lockfd = open(
             self.encrypted_file, self.write_lock and 'a+' or 'r+')
-        if self.write_lock:
-            fcntl.lockf(self.lockfd, fcntl.LOCK_EX)
-        else:
-            fcntl.lockf(self.lockfd, fcntl.LOCK_SH)
+        try:
+            if self.write_lock:
+                fcntl.lockf(self.lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            else:
+                fcntl.lockf(self.lockfd, fcntl.LOCK_SH | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise FileLockedError(self.encrypted_file)
 
     def _decrypt(self):
         opts = self.gpg_opts

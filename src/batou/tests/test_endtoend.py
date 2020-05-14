@@ -30,44 +30,44 @@ localhost: Connecting via local (1/1)
 ============================ Configuring model ... ===========================\
 ==
 ERROR: Failed loading component file
-           File: .../component5/component.py
-      Exception: invalid syntax (component.py, line 1)
+      File: .../component5/component.py
+ Exception: invalid syntax (component.py, line 1)
 ERROR: Failed loading component file
-           File: .../component6/component.py
-      Exception: No module named 'asdf'
+      File: .../component6/component.py
+ Exception: No module named 'asdf'
 ERROR: Missing component
-      Component: missingcomponent
-           Host: localhost
+ Component: missingcomponent
+      Host: localhost
 ERROR: Superfluous section in environment configuration
-        Section: superfluoussection
+   Section: superfluoussection
 ERROR: Override section for unknown component found
-      Component: nonexisting-component-section
+ Component: nonexisting-component-section
 ERROR: crontab@localhost: No cron jobs found.
 ERROR: Failed override attribute conversion
-           Host: localhost
-      Attribute: Component1.do_what_is_needed
-     Conversion: convert_literal('false')
-          Error: malformed node or string: <_ast.Name object at 0x...>
-ERROR: Overrides for undefined attributes
-           Host: localhost
-      Component: Component2
-     Attributes: this_does_not_exist
+      Host: localhost
+ Attribute: Component1.do_what_is_needed
+Conversion: convert_literal('false')
+     Error: malformed node or string: <_ast.Name object at 0x...>
 ERROR: Failed override attribute conversion
-           Host: localhost
-      Attribute: DNSProblem.attribute_with_problem
-     Conversion: Address('localhost')
-          Error: Need port for service address.
+      Host: localhost
+ Attribute: DNSProblem.attribute_with_problem
+Conversion: Address('localhost')
+     Error: Need port for service address.
+ERROR: Overrides for undefined attributes
+      Host: localhost
+ Component: Component2
+Attributes: this_does_not_exist
 ERROR: Unused provided resources
     Resource "backend" provided by component3 with value ['192.168.0.1']
     Resource "frontend" provided by component3 with value ['test00.gocept.net']
-    Resource "sub" provided by component3 with value [<SubComponent (localhost) "Component3 > SubComponent(sub sub)">]
+    Resource "sub" provided by component3 with value [<SubComponent (localhost) "Component3 > SubComponent('sub sub')">]
 ERROR: Unsatisfied resource requirements
     Resource "application" required by component4
 ERROR: Found dependency cycle
-     cycle1 depends on
-             cycle2
-     cycle2 depends on
-             cycle1
+cycle1 depends on
+        cycle2
+cycle2 depends on
+        cycle1
 ERROR: 6 remaining unconfigured component(s)
 ======================= 13 ERRORS - CONFIGURATION FAILED =====================\
 ==
@@ -85,7 +85,7 @@ batou/2... (cpython 3...)
 ==
 main: Loading environment `production`...
 ERROR: Missing environment
-     Environment: production
+Environment: production
 ============================== DEPLOYMENT FAILED =============================\
 ==
 """)  # NOQA
