@@ -52,7 +52,8 @@ class Requirements(Component):
 
             name = req.name
             specs = ','.join(f'{i[0]}{i[1]}' for i in req.specs)
-            extras = '[' + ','.join(req.extras) + ']' if req.extras else ''
+            extras = ','.join(sorted(req.extras))
+            extras = f'[{extras}]' if extras else ''
             if not req.editable:
                 line = f'{name}{extras}{specs}'
             else:
