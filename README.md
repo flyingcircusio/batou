@@ -87,6 +87,12 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.0b13 (unreleased)
+-------------------
+
+- Allow adding data-* overrides to host sections in environments' secrets files.
+
+
 2.0b12 (2020-05-13)
 -------------------
 

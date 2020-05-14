@@ -35,9 +35,20 @@ def add_secrets_to_environment_override(
         for section_ in f.config.sections():
             if section_ == 'batou':
                 continue
-            section = section_.replace('component:', '')
-            if section not in environment.components:
-                environment.exceptions.append(
-                    SuperfluousSecretsSection(section))
-            o = environment.overrides.setdefault(section, {})
-            o.update(f.config.items(section_))
+            elif section_.startswith('host:'):
+                hostname = section_.replace('host:', '', 1)
+                if hostname not in environment.hosts:
+                    raise ValueError(
+                        'Secret for unknown host: {}'.format(hostname))
+                host = environment.hosts[hostname]
+                for key, value in f.config[section_].items():
+                    if key.startswith('data-'):
+                        key = key.replace('data-', '', 1)
+                        host.data[key] = value
+            else:
+                component = section_.replace('component:', '')
+                if component not in environment.components:
+                    environment.exceptions.append(
+                        SuperfluousSecretsSection(component))
+                o = environment.overrides.setdefault(component, {})
+                o.update(f.config.items(section_))

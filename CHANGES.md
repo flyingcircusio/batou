@@ -4,6 +4,7 @@
 2.0b13 (unreleased)
 -------------------
 
+- Allow adding data-* overrides to host sections in environments' secrets files.
 
 - Reduce AppEnv component directory hashes to 8 byte to avoid the shebang (#!)
   127 character path limit.

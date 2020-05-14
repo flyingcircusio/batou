@@ -142,7 +142,7 @@ x = 1
         assert open(tf.name, 'rb').read() == open(encrypted_file, 'rb').read()
 
 
-def test_no_interpolation(tmpdir):
+def test_secrets_override_without_interpolation(tmpdir):
     os.makedirs(str(tmpdir / 'secrets'))
     os.chdir(str(tmpdir))
     secret_file = str(tmpdir / 'secrets' / 'env.cfg')
@@ -153,14 +153,22 @@ def test_no_interpolation(tmpdir):
 members = batou
 [asdf]
 x = asdf%asdf%
+[host:localhost]
+data-asdf = 2
+data-bsdf = 1
+data-csdf = 3
 """)
 
     env = mock.Mock()
     env.name = 'env'
     env.components = ['asdf']
     env.overrides = {}
+    env.hosts = {}
+    env.hosts['localhost'] = host = mock.Mock()
+    host.data = {'asdf': 1, 'csdf': 3}
 
     add_secrets_to_environment_override(
         env, enc_file_class=EncryptedConfigFile)
 
     assert env.overrides == {'asdf': {'x': 'asdf%asdf%'}}
+    assert host.data == {'asdf': '2', 'bsdf': '1', 'csdf': '3'}
