@@ -92,6 +92,8 @@ The project is licensed under the 2-clause BSD license.
 
 - Allow adding data-* overrides to host sections in environments' secrets files.
 
+- Reduce AppEnv component directory hashes to 8 byte to avoid the shebang (#!)
+  127 character path limit.
 
 2.0b12 (2020-05-13)
 -------------------
