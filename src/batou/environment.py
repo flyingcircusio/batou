@@ -436,6 +436,12 @@ class Environment(object):
                 result[component.name] = component
         return result
 
+    def _host_data(self):
+        host_data = {}
+        for hostname, host in self.hosts.items():
+            host_data[hostname] = host.data
+        return host_data
+
 
 def parse_host_components(components):
     """Parse a component list as given in an environment config for a host

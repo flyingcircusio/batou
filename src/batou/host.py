@@ -144,7 +144,8 @@ class LocalHost(Host):
         # XXX the cwd isn't right.
         self.rpc.setup_deployment(
             env.name, self.fqdn,
-            env.overrides, env.deployment.timeout, env.deployment.platform)
+            env.overrides, env._host_data(),
+            env.deployment.timeout, env.deployment.platform)
 
     def disconnect(self):
         if hasattr(self, 'gateway'):
@@ -212,7 +213,8 @@ class RemoteHost(Host):
         self.rpc.setup_deployment(
             env.name,
             self.fqdn,
-            env.overrides, env.deployment.timeout, env.deployment.platform)
+            env.overrides, env._host_data(),
+            env.deployment.timeout, env.deployment.platform)
 
     def disconnect(self):
         if self.gateway is not None:
