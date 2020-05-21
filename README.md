@@ -95,6 +95,8 @@ The project is licensed under the 2-clause BSD license.
 - Reduce AppEnv component directory hashes to 8 byte to avoid the shebang (#!)
   127 character path limit.
 
+- Improve verify() of archive handler so we predict a change if
+  something goes wrong (like not having the archive downloaded yet)
 
 2.0b12 (2020-05-13)
 -------------------
