@@ -5,20 +5,38 @@ from batou import DeploymentError, ConfigurationError, FileLockedError
 from batou._output import output, TerminalBackend
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
+import random
 import sys
 import threading
+import time
 
 
 class Connector(threading.Thread):
 
-    def __init__(self, host):
+    def __init__(self, host, sem):
         self.host = host
+        self.sem = sem
         self.exc_info = None
         super(Connector, self).__init__(name=host.name)
 
     def run(self):
+        tries = 0
+        while True:
+            tries += 1
+            self.exc_info = None
+            self.sem.acquire()
+            try:
+                self.host.connect()
+                break
+            except Exception:
+                self.exc_info = sys.exc_info()
+                if tries > 3:
+                    return
+            finally:
+                self.sem.release()
+            time.sleep(random.randint(1, 2**(tries+1)))
+
         try:
-            self.host.connect()
             self.host.start()
         except Exception:
             self.exc_info = sys.exc_info()
@@ -87,7 +105,8 @@ class Deployment(object):
             output.step(hostname, "Connecting via {} ({}/{})".format(
                         self.environment.connect_method, i,
                         len(self.environment.hosts)))
-            c = Connector(host)
+            sem = threading.Semaphore(5)
+            c = Connector(host, sem)
             c.start()
             yield c
 

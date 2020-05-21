@@ -90,6 +90,12 @@ The project is licensed under the 2-clause BSD license.
 2.0b13 (unreleased)
 -------------------
 
+- Limit parallel connection setup to 5 connections at once. Also, retry 
+  up to 3 times per connection and stagger retries according to a CSMA/CD
+  schema. This helps make connection setup more reliable if using SSH jump
+  hosts where many connections may cause sshd's MaxStart to start rejecting
+  new connections. (#55)
+
 - Allow adding data-* overrides to host sections in environments' secrets files.
 
 - Reduce AppEnv component directory hashes to 8 byte to avoid the shebang (#!)
