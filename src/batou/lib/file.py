@@ -345,7 +345,6 @@ class Content(FileComponent):
 
         self.diff_dir = os.path.join(
             self.environment.workdir_base, '.batou-diffs')
-        self += Directory(self.diff_dir)
 
         # Step 1: Determine content attribute:
         # - it might be given directly (content='...'),
@@ -416,7 +415,8 @@ class Content(FileComponent):
         diff = difflib.unified_diff(
                 current_text.splitlines(),
                 wanted_text.splitlines())
-
+        if not os.path.exists(self.diff_dir):
+            os.makedirs(self.diff_dir)
         diff, diff_too_long, diff_log = limited_buffer(
             diff, self._max_diff, self._max_diff_lead, logdir=self.diff_dir)
 

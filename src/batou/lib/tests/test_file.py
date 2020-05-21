@@ -469,8 +469,6 @@ def test_content_large_diff_logged(root):
 ''' + '\n'.join(['-bsdf']*21) + '\n' + '\n'.join(['+asdf']*21) + '\n'
 
     assert output.backend.output == Ellipsis('''\
-host > MyComponent > Content('work/mycomponent/path') > \
-Directory('work/.batou-diffs')
 host > MyComponent > Content('work/mycomponent/path')
 More than 20 lines of diff. Showing first and last 5 lines.
 see ... for the full diff.
