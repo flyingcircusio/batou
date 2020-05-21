@@ -13,6 +13,15 @@ def test_unknown_extension_raises():
         extract.configure()
 
 
+def test_missing_archive_predicts_change(root):
+    extract = Extract('example.tar.gz')
+    root.component += extract
+
+    extractor = extract.sub_components[0]
+    with pytest.raises(AssertionError):
+        extractor.verify()
+
+
 def test_untar_extracts_archive_to_target_directory(root):
     extract = Extract(
         resource_filename(__name__, 'example.tar.gz'),
