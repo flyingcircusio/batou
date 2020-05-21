@@ -30,4 +30,19 @@ class NullBackend(object):
         pass
 
 
+class TestBackend(object):
+
+    def __init__(self):
+        self.output = ''
+
+    def line(self, message, **format):
+        self.output += message + '\n'
+
+    def sep(self, sep, title, **format):
+        self.output += ' {} {} {} '.format(sep*3, title, sep*3)
+
+    def write(self, content, **format):
+        self.output += content + '\n'
+
+
 output = Output(NullBackend())
