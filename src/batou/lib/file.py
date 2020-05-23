@@ -371,8 +371,8 @@ class Content(FileComponent):
                     self.content = f.read()
             else:
                 if self._delayed:
-                    raise RuntimeError(
-                        'Could not find file {}'.format(self.source))
+                    raise FileNotFoundError(
+                        'Could not find source file {}'.format(self.source))
                 # We need to try rendering again later.
                 self._delayed = True
                 return
@@ -394,9 +394,20 @@ class Content(FileComponent):
         if self.encoding:
             self.content = self.content.encode(self.encoding)
 
-    def verify(self):
-        if self._delayed:
-            self._render()
+    def verify(self, predicting=False):
+        try:
+            if self._delayed:
+                self._render()
+        except FileNotFoundError:
+            if predicting:
+                # During prediction runs we accept that delayed rending may
+                # not yet work and that we will change. We might want to
+                # turn this into an explicit flag so we don't implicitly
+                # run into a broken deployment.
+                assert False
+            # If we are not predicting then this is definitely a problem.
+            # Stop here.
+            raise
         try:
             with open(self.path, 'rb') as target:
                 current = target.read()

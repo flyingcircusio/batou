@@ -90,6 +90,15 @@ The project is licensed under the 2-clause BSD license.
 2.0b13 (unreleased)
 -------------------
 
+- Add argument 'predicting' to the `verify()` function signature.
+  This argument can be accepted optionally (so we're backwards
+  compatible) and will indicate that we're doing a predictive
+  run so we can avoid failing when trying to rely on output from
+  earlier components.
+
+- Allow the Content component to predict a change based on
+  a not-yet-realized source file on the target system.
+
 - Limit parallel connection setup to 5 connections at once. Also, retry 
   up to 3 times per connection and stagger retries according to a CSMA/CD
   schema. This helps make connection setup more reliable if using SSH jump
