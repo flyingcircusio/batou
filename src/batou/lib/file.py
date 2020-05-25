@@ -11,11 +11,7 @@ import tempfile
 
 
 def ensure_path_nonexistent(path):
-    try:
-        # cannot use os.path.exists(), since we also want to remove broken
-        # symlinks
-        os.lstat(path)
-    except OSError:
+    if not os.path.lexists(path):
         return
     if os.path.islink(path):
         os.unlink(path)
@@ -484,13 +480,13 @@ class Group(FileComponent):
 class Mode(FileComponent):
 
     def verify(self):
-        assert os.path.exists(self.path)
         try:
             self._select_stat_implementation()
         except AttributeError:
             # Happens on systems without lstat/lchmod implementation (like
             # Linux) Not sure whether ignoring it is really the right thing.
             return
+        assert os.path.lexists(self.path)
         current = self._stat(self.path).st_mode
         assert stat.S_IMODE(current) == self.mode
 
@@ -532,7 +528,6 @@ class Purge(Component):
 
     def verify(self):
         assert not glob.glob(self.pattern)
-
 
     def update(self):
         for filename in glob.glob(self.pattern):
