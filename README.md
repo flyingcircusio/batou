@@ -90,6 +90,9 @@ The project is licensed under the 2-clause BSD license.
 2.0b13 (unreleased)
 -------------------
 
+- Allow marking file content as sensitive, which - for now - will suppress 
+  diff generation/logging.
+
 - Allow specifying the service_user attribute per host.
 
 - Bugfixes for file components so that verify() is more robust in predictive

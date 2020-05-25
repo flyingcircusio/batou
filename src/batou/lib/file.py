@@ -46,6 +46,9 @@ class File(Component):
     # Leading directory creation
     leading = False
 
+    # Signal that the content is sensitive data.
+    sensitive_data = False
+
     def configure(self):
         self._unmapped_path = self.path
         self.path = self.map(self.path)
@@ -104,7 +107,8 @@ class File(Component):
                               template_context=self.template_context,
                               template_args=self.template_args,
                               encoding=self.encoding,
-                              content=self.content)
+                              content=self.content,
+                              sensitive_data=self.sensitive_data)
             self += content
             self.content = content.content
 
@@ -325,6 +329,7 @@ class Content(FileComponent):
     source = ''
     template_context = None
     template_args = None  # dict, actually
+    sensitive_data = False
 
     # If content is given as unicode (always the case with templates)
     # then require it to be encodable. We assume UTF-8 as a sensible default
@@ -418,29 +423,35 @@ class Content(FileComponent):
         current_text = current.decode(encoding, errors='replace')
         wanted_text = self.content.decode(encoding)
 
-        diff = difflib.unified_diff(
-                current_text.splitlines(),
-                wanted_text.splitlines())
-        if not os.path.exists(self.diff_dir):
-            os.makedirs(self.diff_dir)
-        diff, diff_too_long, diff_log = limited_buffer(
-            diff, self._max_diff, self._max_diff_lead, logdir=self.diff_dir)
+        if not self.sensitive_data:
+            diff = difflib.unified_diff(
+                    current_text.splitlines(),
+                    wanted_text.splitlines())
+            if not os.path.exists(self.diff_dir):
+                os.makedirs(self.diff_dir)
+            diff, diff_too_long, diff_log = limited_buffer(
+                diff, self._max_diff, self._max_diff_lead,
+                logdir=self.diff_dir)
 
-        if diff_too_long:
-            output.line(
-                ('More than {} lines of diff. Showing first and last {} lines.'
-                    .format(self._max_diff, self._max_diff_lead)), yellow=True)
-            output.line(
-                'see {} for the full diff.'.format(diff_log), yellow=True)
+            if diff_too_long:
+                output.line(
+                    ('More than {} lines of diff. Showing first and '
+                     'last {} lines.'.format(
+                        self._max_diff, self._max_diff_lead)), yellow=True)
+                output.line(
+                    'see {} for the full diff.'.format(diff_log), yellow=True)
 
-        for line in diff:
-            line = line.replace('\n', '')
-            if not line.strip():
-                continue
+            for line in diff:
+                line = line.replace('\n', '')
+                if not line.strip():
+                    continue
+                output.annotate(
+                    '  {} {}'.format(os.path.basename(self.path), line),
+                    red=line.startswith('-'),
+                    green=line.startswith('+'))
+        else:
             output.annotate(
-                '  {} {}'.format(os.path.basename(self.path), line),
-                red=line.startswith('-'),
-                green=line.startswith('+'))
+                'Not showing diff as it contains sensitive data.', red=True)
         raise batou.UpdateNeeded()
 
     def update(self):
