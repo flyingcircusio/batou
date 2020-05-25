@@ -232,8 +232,7 @@ class Directory(Component):
                 self.path, source=self.source, exclude=self.exclude)
 
     def verify(self):
-        if not os.path.isdir(self.path):
-            raise batou.UpdateNeeded()
+        assert os.path.isdir(self.path)
 
     def update(self):
         ensure_path_nonexistent(self.path)
@@ -456,11 +455,10 @@ class Content(FileComponent):
 class Owner(FileComponent):
 
     def verify(self):
+        assert os.path.exists(self.path)
         if isinstance(self.owner, str):
             self.owner = pwd.getpwnam(self.owner).pw_uid
-        current = os.stat(self.path).st_uid
-        if current != self.owner:
-            raise batou.UpdateNeeded()
+        assert os.stat(self.path).st_uid == self.owner
 
     def update(self):
         group = os.stat(self.path).st_gid
@@ -475,9 +473,8 @@ class Group(FileComponent):
             self.group = pwd.getpwnam(self.group)
 
     def verify(self):
-        current = os.stat(self.path).st_gid
-        if current != self.group:
-            raise batou.UpdateNeeded()
+        assert os.path.exists(self.path)
+        assert os.stat(self.path).st_gid == self.group
 
     def update(self):
         owner = os.stat(self.path).st_uid
@@ -487,6 +484,7 @@ class Group(FileComponent):
 class Mode(FileComponent):
 
     def verify(self):
+        assert os.path.exists(self.path)
         try:
             self._select_stat_implementation()
         except AttributeError:
@@ -494,8 +492,7 @@ class Mode(FileComponent):
             # Linux) Not sure whether ignoring it is really the right thing.
             return
         current = self._stat(self.path).st_mode
-        if stat.S_IMODE(current) != self.mode:
-            raise batou.UpdateNeeded()
+        assert stat.S_IMODE(current) == self.mode
 
     def update(self):
         self._chmod(self.path, self.mode)
@@ -517,10 +514,8 @@ class Symlink(Component):
         self.source = self.map(self.source)
 
     def verify(self):
-        if not os.path.islink(self.target):
-            raise batou.UpdateNeeded()
-        if os.readlink(self.target) != self.source:
-            raise batou.UpdateNeeded()
+        assert os.path.islink(self.target)
+        assert os.readlink(self.target) == self.source
 
     def update(self):
         ensure_path_nonexistent(self.target)
@@ -536,8 +531,8 @@ class Purge(Component):
         self.pattern = self.map(self.pattern)
 
     def verify(self):
-        if glob.glob(self.pattern):
-            raise batou.UpdateNeeded()
+        assert not glob.glob(self.pattern)
+
 
     def update(self):
         for filename in glob.glob(self.pattern):

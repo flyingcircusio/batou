@@ -4,6 +4,9 @@
 2.0b13 (unreleased)
 -------------------
 
+- Bugfixes for file components so that verify() is more robust in predictive
+  runs.
+
 - Add argument 'predicting' to the `verify()` function signature.
   This argument can be accepted optionally (so we're backwards
   compatible) and will indicate that we're doing a predictive

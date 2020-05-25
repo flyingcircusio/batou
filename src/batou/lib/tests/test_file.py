@@ -486,6 +486,12 @@ see ... for the full diff.
 ''')
 
 
+def test_mode_verifies_for_nonexistent_file(root):
+    mode = Mode('asdf', mode=0o000)
+    with pytest.raises(AssertionError):
+        mode.verify()
+
+
 def test_mode_ensures_mode_for_files(root):
     path = 'path'
     open('work/mycomponent/' + path, 'w').close()
