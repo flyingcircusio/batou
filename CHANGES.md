@@ -7,6 +7,28 @@
 - Add `Requirements` component that can create a `requirements.lock` for the
   `AppEnv` component.
 
+- Add argument 'predicting' to the `verify()` function signature.
+  This argument can be accepted optionally (so we're backwards
+  compatible) and will indicate that we're doing a predictive
+  run so we can avoid failing when trying to rely on output from
+  earlier components.
+
+- Allow the Content component to predict a change based on
+  a not-yet-realized source file on the target system.
+
+- Limit parallel connection setup to 5 connections at once. Also, retry 
+  up to 3 times per connection and stagger retries according to a CSMA/CD
+  schema. This helps make connection setup more reliable if using SSH jump
+  hosts where many connections may cause sshd's MaxStart to start rejecting
+  new connections. (#55)
+
+- Allow adding data-* overrides to host sections in environments' secrets files.
+
+- Reduce AppEnv component directory hashes to 8 byte to avoid the shebang (#!)
+  127 character path limit.
+
+- Improve verify() of archive handler so we predict a change if
+  something goes wrong (like not having the archive downloaded yet)
 
 2.0b12 (2020-05-13)
 -------------------

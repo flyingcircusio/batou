@@ -126,11 +126,12 @@ class Deployment(object):
 
     environment = None
 
-    def __init__(self, env_name, host_name, overrides,
+    def __init__(self, env_name, host_name, overrides, host_data,
                  timeout, platform):
         self.env_name = env_name
         self.host_name = host_name
         self.overrides = overrides
+        self.host_data = host_data
         self.timeout = timeout
         self.platform = platform
 
@@ -141,6 +142,8 @@ class Deployment(object):
         self.environment.deployment = self
         self.environment.load()
         self.environment.overrides = self.overrides
+        for hostname, data in self.host_data.items():
+            self.environment.hosts[hostname].data.update(data)
         self.environment.configure()
 
     def deploy(self, root, predict_only):

@@ -8,6 +8,7 @@ from stat import S_IMODE
 import getpass
 import os
 import pytest
+from batou.tests.ellipsis import Ellipsis
 
 
 def test_ensure_path_nonexistent_removes_normal_file(tmpdir):
@@ -444,6 +445,45 @@ def test_content_does_not_allow_both_content_and_source(root):
     path = 'path'
     with pytest.raises(ValueError):
         root.component += Content(path, content='asdf', source='bsdf')
+
+
+def test_content_large_diff_logged(root):
+    from batou import output
+    from batou._output import TestBackend
+
+    output.backend = TestBackend()
+    path = 'path'
+    p = Content(path, content='\n'.join(['asdf']*21))
+    p._max_diff = 20
+    p._max_diff_lead = 5
+    root.component += p
+    with open(p.path, 'w') as f:
+        f.write('\n'.join(['bsdf']*21))
+    root.component.deploy()
+    log = os.listdir(p.diff_dir)[0]
+    with open(os.path.join(p.diff_dir, log)) as f:
+        assert f.read() == '''\
+---
++++
+@@ -1,21 +1,21 @@
+''' + '\n'.join(['-bsdf']*21) + '\n' + '\n'.join(['+asdf']*21) + '\n'
+
+    assert output.backend.output == Ellipsis('''\
+host > MyComponent > Content('work/mycomponent/path')
+More than 20 lines of diff. Showing first and last 5 lines.
+see ... for the full diff.
+  path ---
+  path +++
+  path @@ -1,21 +1,21 @@
+  path -bsdf
+  path -bsdf
+  path ...
+  path +asdf
+  path +asdf
+  path +asdf
+  path +asdf
+  path +asdf
+''')
 
 
 def test_mode_ensures_mode_for_files(root):
