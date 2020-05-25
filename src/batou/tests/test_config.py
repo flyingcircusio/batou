@@ -48,6 +48,7 @@ def test_production_environment_is_loaded(env_prod):
     host1 = env_prod.hosts['host1.example.com']
     assert host1.name == 'host1'
     assert host1.fqdn == 'host1.example.com'
+    assert host1.service_user == 'alice'
     host1_components = [x.name for x in env_prod.root_components
                         if x.host is host1]
     assert host1_components == ['zope']

@@ -4,6 +4,8 @@
 2.0b13 (unreleased)
 -------------------
 
+- Allow specifying the service_user attribute per host.
+
 - Bugfixes for file components so that verify() is more robust in predictive
   runs.
 
