@@ -1,98 +1,120 @@
-<!-- DO NOT EDIT THE README.md FILE. IT IS GENERATED FROM README.md.in AND
-     CHANGES.md BECAUSE Github CANNOT DO INCLUDES -->
+    <!-- DO NOT EDIT THE README.md FILE. IT IS GENERATED FROM README.md.in AND
+        CHANGES.md BECAUSE Github CANNOT DO INCLUDES -->
 
-<p align="right">
-    <a href="https://travis-ci.org/flyingcircusio/batou"><img title="Current Build Status" src="https://travis-ci.org/flyingcircusio/batou.svg?branch=master"></a>
-</p>
+    <p align="right">
+        <a href="https://travis-ci.org/flyingcircusio/batou"><img title="Current Build Status" src="https://travis-ci.org/flyingcircusio/batou.svg?branch=master"></a>
+    </p>
 
-<img width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
+    <img width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
 
-batou helps you to automate your application deployments:
+    batou helps you to automate your application deployments:
 
-* You create a model of your deployment using a simple but powerful Python API.
-* You configure how the model applies to hosts in different environments.
-* You verify and run the deployment with the batou utility.
+    * You create a model of your deployment using a simple but powerful Python API.
+    * You configure how the model applies to hosts in different environments.
+    * You verify and run the deployment with the batou utility.
 
-Getting started with a new project is easy:
+    Getting started with a new project is easy:
 
-```console
-$ mkdir myproject
-$ cd myproject
-$ curl https://raw.githubusercontent.com/flyingcircusio/batou/master/src/batou/bootstrap-template -o batou
-$ chmod +x batou
-$ ./batou
-```
+    ```console
+    $ mkdir myproject
+    $ cd myproject
+    $ curl https://raw.githubusercontent.com/flyingcircusio/batou/master/src/batou/bootstrap-template -o batou
+    $ chmod +x batou
+    $ ./batou
+    ```
 
-Here's a minimal application model:
+    Here's a minimal application model:
 
-```console
-$ mkdir -p components/myapp
-$ cat > components/myapp/component.py
-from batou.component import Component
-from batou.lib.python import VirtualEnv, Package
-from batou.lib.supervisor import Program
+    ```console
+    $ mkdir -p components/myapp
+    $ cat > components/myapp/component.py
+    from batou.component import Component
+    from batou.lib.python import VirtualEnv, Package
+    from batou.lib.supervisor import Program
 
-    class MyApp(Component):
+        class MyApp(Component):
 
-        def configure(self):
-            venv = VirtualEnv('2.7')
-            self += venv
-            venv += Package('myapp')
-            self += Program('myapp',
-                command='bin/myapp')
-```
+            def configure(self):
+                venv = VirtualEnv('2.7')
+                self += venv
+                venv += Package('myapp')
+                self += Program('myapp',
+                    command='bin/myapp')
+    ```
 
-And here's a minimal environment:
+    And here's a minimal environment:
 
-```console
-$ mkdir environments
-$ cat > environments/dev.cfg
-[environment]
-connect_method = local
+    ```console
+    $ mkdir environments
+    $ cat > environments/dev.cfg
+    [environment]
+    connect_method = local
 
-[hosts]
-localhost = myapp
-```
+    [hosts]
+    localhost = myapp
+    ```
 
-To deploy this, you run:
+    To deploy this, you run:
 
-```console
-$ ./batou deploy dev
-```
+    ```console
+    $ ./batou deploy dev
+    ```
 
-Check the [detailed documentation](http://batou.readthedocs.org) to get going with a more ambitious project.
-
-
-## Features
-
-* Separate your application model from environments
-* Supports idempotent operation for incremental deployments
-* Deploy to multiple hosts simultaneously
-* Automated dependency resolution for multi-host
-  scenarios
-* No runtime requirements on your application
-* Encrypted secrets with multiple access levels: store your
-  SSL certificates, SSH keys, service secrets and more to get true 1-button deployments.
-* Deploy to local machines, Vagrant, or any SSH host
-* Broad SSH feature support by using OpenSSH through execnet
-* Only few dependencies required on the remote host
-* Ships with a library of components for regularly needed
-  tasks
-* self-bootstrapping and self-updating - no additional
-  scripting needed
-
-## License
-
-The project is licensed under the 2-clause BSD license.
-## Changelog
+    Check the [detailed documentation](http://batou.readthedocs.org) to get going with a more ambitious project.
 
 
-2.0b13 (unreleased)
--------------------
+    ## Features
 
-- Add `Requirements` component that can create a `requirements.lock` for the
-  `AppEnv` component.
+    * Separate your application model from environments
+    * Supports idempotent operation for incremental deployments
+    * Deploy to multiple hosts simultaneously
+    * Automated dependency resolution for multi-host
+    scenarios
+    * No runtime requirements on your application
+    * Encrypted secrets with multiple access levels: store your
+    SSL certificates, SSH keys, service secrets and more to get true 1-button deployments.
+    * Deploy to local machines, Vagrant, or any SSH host
+    * Broad SSH feature support by using OpenSSH through execnet
+    * Only few dependencies required on the remote host
+    * Ships with a library of components for regularly needed
+    tasks
+    * self-bootstrapping and self-updating - no additional
+    scripting needed
 
+    ## License
+
+    The project is licensed under the 2-clause BSD license.
+    ## Changelog
+
+
+    2.0b13 (unreleased)
+    -------------------
+
+    - Add `Requirements` component that can create a `requirements.lock` for the
+    `AppEnv` component.
+
+    - Add argument 'predicting' to the `verify()` function signature.
+    This argument can be accepted optionally (so we're backwards
+    compatible) and will indicate that we're doing a predictive
+    run so we can avoid failing when trying to rely on output from
+    earlier components.
+
+    - Allow the Content component to predict a change based on
+    a not-yet-realized source file on the target system.
+
+    - Limit parallel connection setup to 5 connections at once. Also, retry 
+    up to 3 times per connection and stagger retries according to a CSMA/CD
+    schema. This helps make connection setup more reliable if using SSH jump
+    hosts where many connections may cause sshd's MaxStart to start rejecting
+    new connections. (#55)
+
+    - Allow adding data-* overrides to host sections in environments' secrets files.
+
+    - Reduce AppEnv component directory hashes to 8 byte to avoid the shebang (#!)
+    127 character path limit.
+
+    - Improve verify() of archive handler so we predict a change if
+    something goes wrong (like not having the archive downloaded yet)
 
 2.0b12 (2020-05-13)
 -------------------

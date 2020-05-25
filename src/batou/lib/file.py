@@ -7,6 +7,7 @@ import os.path
 import pwd
 import shutil
 import stat
+import tempfile
 
 
 def ensure_path_nonexistent(path):
@@ -279,6 +280,49 @@ class FileComponent(Component):
         return os.path.abspath(self.path)
 
 
+def limited_buffer(iterator, limit, lead, separator='...',
+                   logdir='/tmp'):
+    limit_triggered = False
+    # Fill up to limit lines into the start buffer
+    start_buffer = []
+    for line in iterator:
+        line = line.rstrip()
+        start_buffer.append(line)
+        if len(start_buffer) > limit:
+            break
+
+    # Fill the remainder into the end buffer but only keep lead size.
+    # This is a memory optimization: don't ever keep the whole iterator in
+    # memory!
+    started_logging = False
+    end_buffer = []
+    diff_log = None
+    diff_log_file = None
+    try:
+        for line in iterator:
+            line = line.rstrip()
+            if not started_logging:
+                _, diff_log = tempfile.mkstemp(suffix='.diff', dir=logdir)
+                diff_log_file = open(diff_log, 'a+')
+                for line in start_buffer:
+                    diff_log_file.write(line + '\n')
+                started_logging = True
+            diff_log_file.write(line + '\n')
+            end_buffer.append(line)
+            if len(end_buffer) > lead:
+                end_buffer.pop(0)
+    finally:
+        if diff_log_file:
+            diff_log_file.close()
+    # If we ended up with output in the end buffer, we need to merge the
+    # output.
+    if end_buffer:
+        start_buffer = start_buffer[:lead] + [separator] + end_buffer
+        limit_triggered = True
+
+    return start_buffer, limit_triggered, diff_log
+
+
 class Content(FileComponent):
 
     content = None
@@ -293,9 +337,14 @@ class Content(FileComponent):
     encoding = 'utf-8'
 
     _delayed = False
+    _max_diff = 200
+    _max_diff_lead = 50
 
     def configure(self):
         super(Content, self).configure()
+
+        self.diff_dir = os.path.join(
+            self.environment.workdir_base, '.batou-diffs')
 
         # Step 1: Determine content attribute:
         # - it might be given directly (content='...'),
@@ -322,8 +371,8 @@ class Content(FileComponent):
                     self.content = f.read()
             else:
                 if self._delayed:
-                    raise RuntimeError(
-                        'Could not find file {}'.format(self.source))
+                    raise FileNotFoundError(
+                        'Could not find source file {}'.format(self.source))
                 # We need to try rendering again later.
                 self._delayed = True
                 return
@@ -345,9 +394,20 @@ class Content(FileComponent):
         if self.encoding:
             self.content = self.content.encode(self.encoding)
 
-    def verify(self):
-        if self._delayed:
-            self._render()
+    def verify(self, predicting=False):
+        try:
+            if self._delayed:
+                self._render()
+        except FileNotFoundError:
+            if predicting:
+                # During prediction runs we accept that delayed rending may
+                # not yet work and that we will change. We might want to
+                # turn this into an explicit flag so we don't implicitly
+                # run into a broken deployment.
+                assert False
+            # If we are not predicting then this is definitely a problem.
+            # Stop here.
+            raise
         try:
             with open(self.path, 'rb') as target:
                 current = target.read()
@@ -362,9 +422,23 @@ class Content(FileComponent):
         encoding = self.encoding or 'ascii'
         current_text = current.decode(encoding, errors='replace')
         wanted_text = self.content.decode(encoding)
-        for line in difflib.unified_diff(
+
+        diff = difflib.unified_diff(
                 current_text.splitlines(),
-                wanted_text.splitlines()):
+                wanted_text.splitlines())
+        if not os.path.exists(self.diff_dir):
+            os.makedirs(self.diff_dir)
+        diff, diff_too_long, diff_log = limited_buffer(
+            diff, self._max_diff, self._max_diff_lead, logdir=self.diff_dir)
+
+        if diff_too_long:
+            output.line(
+                ('More than {} lines of diff. Showing first and last {} lines.'
+                    .format(self._max_diff, self._max_diff_lead)), yellow=True)
+            output.line(
+                'see {} for the full diff.'.format(diff_log), yellow=True)
+
+        for line in diff:
             line = line.replace('\n', '')
             if not line.strip():
                 continue

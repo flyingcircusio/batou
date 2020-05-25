@@ -79,6 +79,9 @@ class Extractor(Component):
             self.target = self.map('.')
 
     def verify(self):
+        # If the archive is not there yet, then it will likely be downloaded
+        # and thus we'll unpack it.
+        assert os.path.exists(self.archive)
         # Check that all files in the directory are newer than the archive.
         # XXX Might also have a problem regarding archive attribute
         # preservation?

@@ -1,3 +1,4 @@
+from batou.utils import call_with_optional_args
 from batou.utils import hash, CmdExecutionError
 from batou.utils import remove_nodes_without_outgoing_edges, cmd
 from batou.utils import resolve, resolve_v6, MultiFile, locked, notify, Address
@@ -285,3 +286,27 @@ def test_cmd_returns_process_if_no_communicate(popen):
     p = cmd(['asdf'], communicate=False)
     assert popen.communicate.call_count == 0
     assert p is process
+
+
+def test_call_with_optional_args():
+    def foo():
+        return 1
+
+    def bar(x):
+        return x
+
+    def baz(**kw):
+        return kw['x']
+
+    def quux(x, y):
+        return x
+
+    # The function doesn't expect x, but we're happy to call it.
+    assert call_with_optional_args(foo, x=1)
+    # The function expect x and it gets passed through
+    assert call_with_optional_args(bar, x=4) == 4
+    # The function accepts kw args and sees x
+    assert call_with_optional_args(baz, x=3) == 3
+    # The function accepts x but also expects y and thus breaks
+    with pytest.raises(TypeError):
+        call_with_optional_args(quux, x=1)

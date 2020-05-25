@@ -10,6 +10,7 @@ import socket
 import subprocess
 import sys
 import time
+import inspect
 
 
 def self_id():
@@ -368,3 +369,18 @@ def hash(path, function='sha_512'):
             h.update(chunk)
             chunk = f.read(64*1024)
     return h.hexdigest()
+
+
+def call_with_optional_args(func, **kw):
+    """Provide a way to perform backwards-compatible call,
+    passing only arguments that the function actually expects.
+    """
+    call_kw = {}
+    verify_args = inspect.signature(func)
+    for name, parameter in verify_args.parameters.items():
+        if name in kw:
+            call_kw[name] = kw[name]
+        if parameter.kind == inspect.Parameter.VAR_KEYWORD:
+            call_kw = kw
+            break
+    return func(**call_kw)

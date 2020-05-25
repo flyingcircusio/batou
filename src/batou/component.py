@@ -1,5 +1,6 @@
 from batou import output, DuplicateComponent
 from batou import SilentConfigurationError
+from batou.utils import call_with_optional_args
 import ast
 import batou
 import batou.c
@@ -301,7 +302,8 @@ class Component(object):
             try:
                 with batou.utils.Timer(
                         '{} verify()'.format(self._breadcrumbs)):
-                    self.verify()
+                    call_with_optional_args(
+                        self.verify, predicting=predict_only)
             except AssertionError:
                 self.__trigger_event__(
                     'before-update', predict_only=predict_only)
