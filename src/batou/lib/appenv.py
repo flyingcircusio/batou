@@ -56,8 +56,12 @@ class Requirements(Component):
             extras = f'[{extras}]' if extras else ''
             if not req.editable:
                 line = f'{name}{extras}{specs}'
+            elif req.path:
+                line = f'-e{req.path}{extras}'
+            elif req.uri:
+                line = f'-e{req.uri}#egg={name}'
             else:
-                line = f'-e{req.path or req.uri}{extras}'
+                line = req.line
             locked.append(line)
         with open(self.output_filename, 'w') as f:
             f.write('# Created by batou. Do not edit manually.\n')
