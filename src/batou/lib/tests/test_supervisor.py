@@ -46,6 +46,19 @@ def test_program_does_not_start_within_startsecs_raises(root, supervisor):
 
 
 @pytest.mark.slow
+def test_starts_stopped_program(root, supervisor):
+    root.component += batou.lib.supervisor.Program(
+        'foo', command_absolute=False,
+        command='bash', args='-c "sleep 3600"', options=dict(startsecs=2))
+    root.component.deploy()
+    supervisor.cmd(
+        '{}/bin/supervisorctl stop foo'.format(supervisor.workdir))
+    root.component.deploy()
+    assert 'RUNNING' in supervisor.cmd(
+        '{}/bin/supervisorctl status foo'.format(supervisor.workdir))[0]
+
+
+@pytest.mark.slow
 def test_enable_false_reports_not_running_when_daemon_stopped(root):
     supervisor = batou.lib.supervisor.Supervisor(
         enable=False,
