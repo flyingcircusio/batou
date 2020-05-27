@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from batou.lib.file import Content, Mode, Symlink, File, Purge
+from batou.lib.file import BinaryFile
 from batou.lib.file import ensure_path_nonexistent
 from batou.lib.file import Presence, Directory, FileComponent
 from mock import Mock, patch
@@ -328,10 +329,9 @@ def test_content_passed_by_file_no_template_is_binary(root):
     # non-template file caused an accidental implicit encoding to ASCII
     source = 'source'
     with open(source, 'wb') as f:
-        f.write('cöntent \x00from source file {{component.foo}}'.
-                encode('utf-8'))
+        f.write(b'\x89PNG\r\n\x1a\n')
     path = 'path'
-    p = Content(path, source=source, is_template=False)
+    p = Content(path, source=source, is_template=False, encoding=None)
     root.component.foo = 'foo'
     root.component += p
     with open(p.path, 'w') as f:
@@ -341,7 +341,27 @@ def test_content_passed_by_file_no_template_is_binary(root):
     root.component.deploy()
     with open(p.path, 'rb') as f:
         assert f.read() == (
-            b'c\xc3\xb6ntent \x00from source file {{component.foo}}')
+            b'\x89PNG\r\n\x1a\n')
+
+
+def test_binary_file_component(root):
+    # This is a regression test for #14944 where UTF 8 in a
+    # non-template file caused an accidental implicit encoding to ASCII
+    source = 'source'
+    with open(source, 'wb') as f:
+        f.write(b'\x89PNG\r\n\x1a\n')
+    path = 'path'
+    p = BinaryFile(path, source=source)
+    root.component.foo = 'foo'
+    root.component += p
+    with open(p.path, 'w') as f:
+        # The content component assumes there's a file already in place. So
+        # we need to create it.
+        pass
+    root.component.deploy()
+    with open(p.path, 'rb') as f:
+        assert f.read() == (
+            b'\x89PNG\r\n\x1a\n')
 
 
 def test_content_from_file_as_template_guessed(root):

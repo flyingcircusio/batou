@@ -367,7 +367,8 @@ class Content(FileComponent):
         # Phase 1: acquire the source data into self.content
         if self.source:
             if os.path.exists(self.source):
-                with open(self.source, 'r', encoding=self.encoding) as f:
+                with open(self.source, 'r' if self.encoding else 'rb',
+                          encoding=self.encoding) as f:
                     self.content = f.read()
             else:
                 if self._delayed:
@@ -419,11 +420,17 @@ class Content(FileComponent):
             output.annotate('Unknown content - can\'t predict diff.')
             raise batou.UpdateNeeded()
 
-        encoding = self.encoding or 'ascii'
-        current_text = current.decode(encoding, errors='replace')
-        wanted_text = self.content.decode(encoding)
+        if self.encoding:
+            current_text = current.decode(self.encoding, errors='replace')
+            wanted_text = self.content.decode(self.encoding, errors='replace')
 
-        if not self.sensitive_data:
+        if not self.encoding:
+            output.annotate(
+                'Not showing diff for binary data.', yellow=True)
+        elif self.sensitive_data:
+            output.annotate(
+                'Not showing diff as it contains sensitive data.', red=True)
+        else:
             diff = difflib.unified_diff(
                     current_text.splitlines(),
                     wanted_text.splitlines())
@@ -449,9 +456,6 @@ class Content(FileComponent):
                     '  {} {}'.format(os.path.basename(self.path), line),
                     red=line.startswith('-'),
                     green=line.startswith('+'))
-        else:
-            output.annotate(
-                'Not showing diff as it contains sensitive data.', red=True)
         raise batou.UpdateNeeded()
 
     def update(self):

@@ -4,6 +4,9 @@
 2.0b13 (unreleased)
 -------------------
 
+- Fix binary file handling that broke during 2to3 migration and the test
+  was doing the wrong thing.
+  
 - Allow marking file content as sensitive, which - for now - will suppress 
   diff generation/logging.
 
