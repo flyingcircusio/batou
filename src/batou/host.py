@@ -96,6 +96,7 @@ _no_value_marker = object()
 
 class Host(object):
 
+    service_user = None
     ignore = False
     platform = None
 
@@ -169,7 +170,7 @@ class RemoteHost(Host):
 
         spec = "ssh={}//python=sudo -ni -u {} {}//type={}".format(
             self.fqdn,
-            self.environment.service_user,
+            self.service_user,
             interpreter,
             self.environment.connect_method)
         if os.path.exists('ssh_config'):

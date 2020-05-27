@@ -26,6 +26,8 @@ def test_load_should_use_config(sample_service):
     assert e.host_domain == 'example.com'
     assert e.branch == 'release'
 
+    assert e.hosts['foo1.example.com'].service_user == 'bob'
+
 
 def test_load_ignores_predefined_environment_settings(sample_service):
     e = Environment('test-with-env-config')

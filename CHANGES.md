@@ -7,6 +7,17 @@
 - Add `Requirements` component that can create a `requirements.lock` for the
   `AppEnv` component.
 
+- Fix binary file handling that broke during 2to3 migration and the test
+  was doing the wrong thing.
+  
+- Allow marking file content as sensitive, which - for now - will suppress 
+  diff generation/logging.
+
+- Allow specifying the service_user attribute per host.
+
+- Bugfixes for file components so that verify() is more robust in predictive
+  runs.
+
 - Add argument 'predicting' to the `verify()` function signature.
   This argument can be accepted optionally (so we're backwards
   compatible) and will indicate that we're doing a predictive
@@ -29,6 +40,9 @@
 
 - Improve verify() of archive handler so we predict a change if
   something goes wrong (like not having the archive downloaded yet)
+
+- Fix "is supervisor program running" check if it is stopped or exited
+
 
 2.0b12 (2020-05-13)
 -------------------

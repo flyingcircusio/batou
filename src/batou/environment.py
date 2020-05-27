@@ -208,6 +208,7 @@ class Environment(object):
             host = self.add_host(hostname)
             host.ignore = literal_hostname.startswith('!')
             host.platform = self.platform
+            host.service_user = self.service_user
             self._load_host_components(
                 hostname,
                 config['hosts'].as_list(literal_hostname))
@@ -223,6 +224,8 @@ class Environment(object):
             host.ignore = ast.literal_eval(
                 config[section].get('ignore', 'False'))
             host.platform = config[section].get('platform', self.platform)
+            host.service_user = config[section].get(
+                'service_user', self.service_user)
             self._load_host_components(
                 hostname,
                 config[section].as_list('components'))

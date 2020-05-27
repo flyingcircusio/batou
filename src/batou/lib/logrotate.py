@@ -39,7 +39,7 @@ class Logrotate(Component):
 class GoceptNetRotatedLogrotate(Component):
 
     def configure(self):
-        user = self.environment.service_user
+        user = self.host.service_user
         user_logrotate_conf = os.path.join('/var/spool/logrotate/', user)
         self += File(
             user_logrotate_conf,

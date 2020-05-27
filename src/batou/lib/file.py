@@ -11,11 +11,7 @@ import tempfile
 
 
 def ensure_path_nonexistent(path):
-    try:
-        # cannot use os.path.exists(), since we also want to remove broken
-        # symlinks
-        os.lstat(path)
-    except OSError:
+    if not os.path.lexists(path):
         return
     if os.path.islink(path):
         os.unlink(path)
@@ -49,6 +45,9 @@ class File(Component):
 
     # Leading directory creation
     leading = False
+
+    # Signal that the content is sensitive data.
+    sensitive_data = False
 
     def configure(self):
         self._unmapped_path = self.path
@@ -108,7 +107,8 @@ class File(Component):
                               template_context=self.template_context,
                               template_args=self.template_args,
                               encoding=self.encoding,
-                              content=self.content)
+                              content=self.content,
+                              sensitive_data=self.sensitive_data)
             self += content
             self.content = content.content
 
@@ -232,8 +232,7 @@ class Directory(Component):
                 self.path, source=self.source, exclude=self.exclude)
 
     def verify(self):
-        if not os.path.isdir(self.path):
-            raise batou.UpdateNeeded()
+        assert os.path.isdir(self.path)
 
     def update(self):
         ensure_path_nonexistent(self.path)
@@ -330,6 +329,7 @@ class Content(FileComponent):
     source = ''
     template_context = None
     template_args = None  # dict, actually
+    sensitive_data = False
 
     # If content is given as unicode (always the case with templates)
     # then require it to be encodable. We assume UTF-8 as a sensible default
@@ -367,7 +367,8 @@ class Content(FileComponent):
         # Phase 1: acquire the source data into self.content
         if self.source:
             if os.path.exists(self.source):
-                with open(self.source, 'r', encoding=self.encoding) as f:
+                with open(self.source, 'r' if self.encoding else 'rb',
+                          encoding=self.encoding) as f:
                     self.content = f.read()
             else:
                 if self._delayed:
@@ -419,33 +420,42 @@ class Content(FileComponent):
             output.annotate('Unknown content - can\'t predict diff.')
             raise batou.UpdateNeeded()
 
-        encoding = self.encoding or 'ascii'
-        current_text = current.decode(encoding, errors='replace')
-        wanted_text = self.content.decode(encoding)
+        if self.encoding:
+            current_text = current.decode(self.encoding, errors='replace')
+            wanted_text = self.content.decode(self.encoding, errors='replace')
 
-        diff = difflib.unified_diff(
-                current_text.splitlines(),
-                wanted_text.splitlines())
-        if not os.path.exists(self.diff_dir):
-            os.makedirs(self.diff_dir)
-        diff, diff_too_long, diff_log = limited_buffer(
-            diff, self._max_diff, self._max_diff_lead, logdir=self.diff_dir)
-
-        if diff_too_long:
-            output.line(
-                ('More than {} lines of diff. Showing first and last {} lines.'
-                    .format(self._max_diff, self._max_diff_lead)), yellow=True)
-            output.line(
-                'see {} for the full diff.'.format(diff_log), yellow=True)
-
-        for line in diff:
-            line = line.replace('\n', '')
-            if not line.strip():
-                continue
+        if not self.encoding:
             output.annotate(
-                '  {} {}'.format(os.path.basename(self.path), line),
-                red=line.startswith('-'),
-                green=line.startswith('+'))
+                'Not showing diff for binary data.', yellow=True)
+        elif self.sensitive_data:
+            output.annotate(
+                'Not showing diff as it contains sensitive data.', red=True)
+        else:
+            diff = difflib.unified_diff(
+                    current_text.splitlines(),
+                    wanted_text.splitlines())
+            if not os.path.exists(self.diff_dir):
+                os.makedirs(self.diff_dir)
+            diff, diff_too_long, diff_log = limited_buffer(
+                diff, self._max_diff, self._max_diff_lead,
+                logdir=self.diff_dir)
+
+            if diff_too_long:
+                output.line(
+                    ('More than {} lines of diff. Showing first and '
+                     'last {} lines.'.format(
+                        self._max_diff, self._max_diff_lead)), yellow=True)
+                output.line(
+                    'see {} for the full diff.'.format(diff_log), yellow=True)
+
+            for line in diff:
+                line = line.replace('\n', '')
+                if not line.strip():
+                    continue
+                output.annotate(
+                    '  {} {}'.format(os.path.basename(self.path), line),
+                    red=line.startswith('-'),
+                    green=line.startswith('+'))
         raise batou.UpdateNeeded()
 
     def update(self):
@@ -456,11 +466,10 @@ class Content(FileComponent):
 class Owner(FileComponent):
 
     def verify(self):
+        assert os.path.exists(self.path)
         if isinstance(self.owner, str):
             self.owner = pwd.getpwnam(self.owner).pw_uid
-        current = os.stat(self.path).st_uid
-        if current != self.owner:
-            raise batou.UpdateNeeded()
+        assert os.stat(self.path).st_uid == self.owner
 
     def update(self):
         group = os.stat(self.path).st_gid
@@ -475,9 +484,8 @@ class Group(FileComponent):
             self.group = pwd.getpwnam(self.group)
 
     def verify(self):
-        current = os.stat(self.path).st_gid
-        if current != self.group:
-            raise batou.UpdateNeeded()
+        assert os.path.exists(self.path)
+        assert os.stat(self.path).st_gid == self.group
 
     def update(self):
         owner = os.stat(self.path).st_uid
@@ -493,9 +501,9 @@ class Mode(FileComponent):
             # Happens on systems without lstat/lchmod implementation (like
             # Linux) Not sure whether ignoring it is really the right thing.
             return
+        assert os.path.lexists(self.path)
         current = self._stat(self.path).st_mode
-        if stat.S_IMODE(current) != self.mode:
-            raise batou.UpdateNeeded()
+        assert stat.S_IMODE(current) == self.mode
 
     def update(self):
         self._chmod(self.path, self.mode)
@@ -517,10 +525,8 @@ class Symlink(Component):
         self.source = self.map(self.source)
 
     def verify(self):
-        if not os.path.islink(self.target):
-            raise batou.UpdateNeeded()
-        if os.readlink(self.target) != self.source:
-            raise batou.UpdateNeeded()
+        assert os.path.islink(self.target)
+        assert os.readlink(self.target) == self.source
 
     def update(self):
         ensure_path_nonexistent(self.target)
@@ -536,8 +542,7 @@ class Purge(Component):
         self.pattern = self.map(self.pattern)
 
     def verify(self):
-        if glob.glob(self.pattern):
-            raise batou.UpdateNeeded()
+        assert not glob.glob(self.pattern)
 
     def update(self):
         for filename in glob.glob(self.pattern):

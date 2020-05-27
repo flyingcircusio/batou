@@ -105,7 +105,8 @@ redirect_stderr = true
                 'Program "{}" did not start up'.format(self.name))
 
     def is_running(self):
-        out, err = self.ctl('status {}'.format(self.name))
+        out, err = self.ctl(
+            'status {}'.format(self.name), ignore_returncode=True)
         return 'RUNNING' in out
 
     # Keep track whether

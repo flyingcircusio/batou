@@ -99,6 +99,14 @@
     run so we can avoid failing when trying to rely on output from
     earlier components.
 
+    - Allow marking file content as sensitive, which - for now - will suppress 
+    diff generation/logging.
+
+    - Allow specifying the service_user attribute per host.
+
+    - Bugfixes for file components so that verify() is more robust in predictive
+    runs.
+
     - Allow the Content component to predict a change based on
     a not-yet-realized source file on the target system.
 

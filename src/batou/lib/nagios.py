@@ -75,7 +75,7 @@ class NagiosServer(Component):
         self.services.sort(key=lambda x: (x.host.name, x.description))
 
         self += File(
-            self.expand('nagios-server-{{environment.service_user}}.cfg'),
+            self.expand('nagios-server-{{host.service_user}}.cfg'),
             source=self.nagios_cfg,
             mode=0o644)
 
@@ -95,6 +95,6 @@ class NRPEHost(Component):
 
         self += File(
             self.expand('/etc/nagios/nrpe/local/'
-                        '{{environment.service_user}}.cfg'),
+                        '{{host.service_user}}.cfg'),
             source=self.nrpe_cfg,
             mode=0o644)
