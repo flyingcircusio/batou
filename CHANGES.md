@@ -35,6 +35,9 @@
 - Improve verify() of archive handler so we predict a change if
   something goes wrong (like not having the archive downloaded yet)
 
+- Fix "is supervisor program running" check if it is stopped or exited
+
+
 2.0b12 (2020-05-13)
 -------------------
 
