@@ -35,7 +35,7 @@ Alternatively to using Supervisor you can register each program as a system-wide
             self += File('tick.sh', mode=0755)
 
             self += Service('tick.sh',
-                systemd=dict(Type='Simple',
+                systemd=dict(Type='simple',
                              Unit_After='cron.service memcached.service',
                              Service_RestartSec=11))
 
@@ -54,7 +54,7 @@ This will result in the following unit file:
     LimitNPROC=64173
     LimitSIGPENDING=64173
     RestartSec=11
-    Type=Simple
+    Type=simple
     User=ctheune
 
     [Unit]
@@ -65,7 +65,7 @@ key in the configuration (like using multiple ExecStart statements) then you can
 
 .. code-block:: python
 
-    systemd=dict(Type='Simple',
+    systemd=dict(Type='simple',
                  ExecStart=['command1', 'command2'])
 
 .. code-block:: ini
