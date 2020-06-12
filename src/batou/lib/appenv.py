@@ -1,6 +1,5 @@
 from batou.component import Component
 from batou.lib.file import File, Symlink, ensure_path_nonexistent
-from pathlib import Path
 import hashlib
 import os.path
 
@@ -45,13 +44,9 @@ class CleanupUnused(Component):
     def verify(self):
         if not os.path.exists('.appenv/'):
             return
-        protected = set([self.parent.env_hash, 'current'])
-        cleanup = set(os.listdir('.appenv/')) - protected
-        cleanup = sorted(
-            [Path(f'.appenv/{hash_}') for hash_ in cleanup],
-            key=os.path.getmtime
-        )
-        self.cleanup = set([p.parts[-1] for p in cleanup[:-1]])
+        protected = set(
+            [self.parent.env_hash, self.parent.last_env_hash, 'current'])
+        self.cleanup = set(os.listdir('.appenv/')) - protected
         assert not self.cleanup
 
     def update(self):
@@ -100,6 +95,12 @@ class AppEnv(Component):
         self += File(
             os.path.join(self.env_dir, 'appenv.ready'),
             content="Ready or not, here I come, you can\'t hide\n")
+
+        # Save current to skip it in cleanup
+        self.last_env_hash = None
+        if os.path.exists(f'{self.workdir}/.appenv/current'):
+            self.last_env_hash = os.path.basename(
+                os.readlink(f'{self.workdir}/.appenv/current'))
 
         # Shim
         self += Symlink(
