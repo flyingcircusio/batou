@@ -58,8 +58,10 @@ class Requirements(Component):
                 line = f'{name}{extras}{specs}'
             elif req.path:
                 line = f'-e{req.path}{extras}'
-            elif req.uri:
+            elif req.uri and name:
                 line = f'-e{req.uri}#egg={name}'
+            elif req.uri:
+                line = f'-e{req.uri}'
             else:
                 line = req.line
             locked.append(line)
