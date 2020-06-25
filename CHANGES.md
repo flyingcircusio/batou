@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0b13 (unreleased)
+2.0b13 (2020-06-25)
 -------------------
 
 - Fix git clone when cloning into the component work directory. #27
