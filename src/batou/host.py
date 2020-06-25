@@ -168,11 +168,16 @@ class RemoteHost(Host):
         # - we ensure a consistent set of environment variables
         #   irregardless of the local configuration of env_reset, etc.
 
-        spec = "ssh={}//python=sudo -ni -u {} {}//type={}".format(
-            self.fqdn,
-            self.service_user,
-            interpreter,
-            self.environment.connect_method)
+        CONDITIONAL_SUDO = """\
+if [ \"$USER\" = \"{user}\" ]; then \
+pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
+""".format(user=self.service_user)
+
+        spec = "ssh={fqdn}//python={sudo} {interpreter}//type={method}".format(
+            fqdn=self.fqdn,
+            sudo=CONDITIONAL_SUDO,
+            interpreter=interpreter,
+            method=self.environment.connect_method)
         if os.path.exists('ssh_config'):
             spec += '//ssh_config=ssh_config'
         self.gateway = execnet.makegateway(spec)

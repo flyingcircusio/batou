@@ -4,7 +4,8 @@
 2.0b14 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Make sudo properly conditional if we log in directly with the service user,
+  but avoid adding a re-connect performance penalty.
 
 
 2.0b13 (2020-06-25)
