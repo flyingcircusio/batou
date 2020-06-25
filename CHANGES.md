@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0b14 (unreleased)
+2.0b14 (2020-06-25)
 -------------------
 
 - Make sudo properly conditional if we log in directly with the service user,
