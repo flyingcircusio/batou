@@ -1,7 +1,6 @@
 import argparse
 import batou
 import batou.deploy
-import batou.init
 import batou.secrets.edit
 import batou.secrets.manage
 import os
@@ -111,18 +110,6 @@ Remove a user's key from one or more secret files.
         default='',
         help='The environments to update. Update all if not specified.')
     p.set_defaults(func=batou.secrets.manage.remove_user)
-
-    # INIT
-    p = subparsers.add_parser(
-        'init',
-        help="""\
-Initialize batou project in the given directory. If the given directory does
-not exist, it will be created.
-
-If no directory is given, the current directory is used.
-""")
-    p.add_argument('destination')
-    p.set_defaults(func=batou.init.main)
 
     args = parser.parse_args()
 
