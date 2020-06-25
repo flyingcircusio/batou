@@ -1,0 +1,69 @@
+=========
+Upgrading
+=========
+
+Generally batou tries to be *very* friendly when upgrading from version to version so you don't have to unnecessarily change your deployments. We try to introduce new features without breaking existing semantics.
+
+batou 1.x to batou 2.x
+======================
+
+This upgrade mainly consists of a switch from Python 2 to Python 3 but it also does include a few details about how things are handled.
+
+Major changes
+-------------
+
+* batou requires at least Python 3.5, anything newer is fine, too.
+
+* File changes now show (expected) diffs.
+
+* You can deploy to multiple hosts at once using the `-j` option or the 
+
+* Secrets can now also override `data-` sections for hosts.
+
+* You can now use `assert` instead of `raise UpdateNeeded` in the `verify`
+  methods.
+
+* The embedded supervisor has been updated.
+
+Updating your deployment
+------------------------
+
+The following steps assume that you have cloned and checked out your deployment and your current working directory is in the checkout.
+
+
+.. code-block:: console
+
+	$ curl https://raw.githubusercontent.com/flyingcircusio/appenv/master/src/appenv.py -o batou
+	$ echo "batou>=2.0b12 >> requirements.txt
+	$ ./batou 
+
+You need to also check your dependencies that those support Python 3 properly. `batou_ext` for example has a branch `batou2-py3` that you might want to pick from.
+
+To ensure a consistent set of versions is in use, you can now pin the selected versions in a `requirements.lock` file:
+
+.. code-block:: console
+
+	$ ./batou appenv-update-lockfile
+
+If you commit this file then all batou calls will use the pinned versions and calls to batou will be much much faster.
+
+The lockfile might not pick up all versions of all packages correctly (for example packages taken source control might not be picked up correctly) so you might want to doublecheck those and massage the lockfile.
+
+At this point you should update your component code to Python 3:
+
+.. code-block:: console
+
+	$ 2to3 -w components
+
+After this you need to run batou in your development environment to see whether any further changes may be needed.
+
+
+Things you may have to change in your deployment
+------------------------------------------------
+
+* Add `sensitive_data=True` to files that may contain sensitive data and whose
+  content you do not want to see in any logs. This suppresses diff generation.
+
+* The default hash function has been changed to `sha512` and thus existing
+  hashes relying on the default being md5 will fail.
+

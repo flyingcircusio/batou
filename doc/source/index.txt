@@ -209,6 +209,7 @@ Resources
     :maxdepth: 1
 
     changes
+    upgrading
 
 Presentations from conferences:
 
