@@ -28,7 +28,7 @@ is:
 
 .. code-block:: console
 
- $ hg clone https://bitbucket.org/example/myproject
+ $ git clone https://github.com/myorg/myproject
  $ cd myproject
  $ ./batou deploy dev
 
@@ -63,7 +63,7 @@ VirtualEnv and asks Supervisor to run it:
   class MyApp(Component):
 
     def configure(self):
-      venv = VirtualEnv('2.7')
+      venv = VirtualEnv('3.5')
       self += venv
       venv += Package('myapp')
       self += Program('myapp', command='bin/myapp')
@@ -105,8 +105,11 @@ Features
 --------
 
 * Run the same command to deploy locally, to Vagrant, or to remote clusters.
-* Use different versions of batou in different projects. Ensure everybody uses the same version.
+* Use different versions of batou in different projects. batou automatically
+  ensures everyone uses the correct version in each project and updates when
+  needed.
 * Check before deploying whether your configuration is internally consistent and consistent with what has been deployed before.
+* Predict changes and predict what further changes will be triggered.
 * Convergent, idempotent components are fast to deploy.
 * Resume partial deployments where they were aborted.
 * Store database passwords, SSH keys, SSL certificates or other secret data with on the-fly decryption. Manage access to secrets per environment and user.
@@ -114,13 +117,13 @@ Features
 * Dynamically connect services during deployments and track their dependencies.
 * Few run-time requirements on your servers: only Python 2.7 and SSH are needed.
 * Use pre-defined components to manage files, python environments, supervisor, cronjobs, and more.
-* Writing your own components is easy and you can use  additional Python package dependencies.
+* Writing your own components is easy and you can use additional Python
+  package dependencies.
 
 User guide
 ----------
 
 This part of the documentation, begins with some background information about Requests, then focuses on step-by-step instructions for getting the most out of batou.
-
 
 .. toctree::
    :maxdepth: 2

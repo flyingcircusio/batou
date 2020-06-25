@@ -1,8 +1,9 @@
 Installation
 ============
 
-batou is installed in each of your projects to ensure
-that every project is run with the correct version of batou and possibly other dependencies.
+batou is installed in each of your projects to ensure that every project is run
+with the correct version of batou and possibly other dependencies. Typically
+this means you create a new deployment repository for every project.
 
 Starting a new batou project
 ----------------------------
@@ -14,19 +15,8 @@ A new project is started by placing the batou master command into the project an
     $ mkdir myproject
     $ cd myproject
     $ git init
-    $ curl -L https://batou.readthedocs.io/en/latest/batou -o batou
-    $ chmod +x batou
-    $ ./batou
-    Preparing virtualenv in .batou ...
-    Pre-installing batou - this can take a while...
-    Installing Jinja2==2.7.3
-    Installing requests==2.6.0
-    Installing setuptools==18.3.1
-    Installing execnet==1.3.0
-    Installing py==1.4.26
-    usage: batou [-h] [-d] [-F] {deploy,remote,secrets,init,update} ...
-    batou: error: too few arguments
-    $ git add batou
+    $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/src/bootstrap | sh
+    $ ./batou --
     $ git commit -m "Start a batou project."
 
 Local

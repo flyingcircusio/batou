@@ -7,25 +7,25 @@ Philosophy
 batou was developed with a number of ideas in mind:
 
 * Deploying should always be just a single command.
-* Python is the language batou uses. This is not to be
-  confused with the Python that your application might use.
+* Python is the language batou uses. In case that you use Python to write
+  your application the version of Python that batou runs on is independent
+  of the version of Python your application runs with.
 * We expect little from the remote environments
-  regarding software dependencies: Python 2.7,  OpenSSH, and rsync, Mercurial
-  or git should be sufficient.
+  regarding software dependencies: Python 3.5+, OpenSSH, and rsync, Mercurial
+  or git are sufficient.
 * batou does not become an active component during your
   application's runtime. batou automates what a sysadmin would do -- in a
-  structured manner.
+  repeatable and documented manner.
 * It should be easy to switch between the declarative
   part of the model and the imperative implementation.
-* Deployment code that become too complicated
+* Deployment code that becomes too complicated
   should be easy to simplify by breaking it up into smaller pieces.
-* batou is not intended to perform provisioning or
-  system configuration tasks. We expect the heavy lifting
-  (preparing the target OS) to already be done.
+* batou was not originally intended to perform provisioning or
+  system configuration tasks. However, over time this is likely to evolve.
 * batou should be working with your existing applications without
   too many hassles.
 * No silver bullets: we want to make things simple for you but we do
-  not insulate you in ways that make you blind
+  not insulate you from hurting yourself completely.
 
 Name
 ----
@@ -57,7 +57,7 @@ of an active open source community:
   until our Fabfile slowly turned into batou. We've used Paramiko before
   switching to execnet which gave us a nice way to slowly grow out of Fabric.
 
-* Holger Krekel (@hpk42) who gave us py.tests and execnet -- without those
+* Holger Krekel (@hpk42) who gave us py.test and execnet -- without those
   tools we would not have such a nice test suite and execnet is brilliant for
   lightweight remote Python processing.
 
@@ -74,5 +74,3 @@ The copyright holder for batou is::
 The code of batou is licensed under the 2-clause BSD license:
 
 .. literalinclude:: ../../../LICENSE.txt
-
-

@@ -37,27 +37,19 @@ and your current working directory is in the checkout.
 
 .. code-block:: console
 
-	$ curl https://raw.githubusercontent.com/flyingcircusio/appenv/master/src/appenv.py -o batou
-	$ echo "batou>=2.0b12 >> requirements.txt
-	$ ./batou 
+	$ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/src/bootstrap | sh
+
+The lockfile might not pick up all versions of all packages correctly (for
+example packages taken directly from source control will fail) so you might want
+to doublecheck those and massage the lockfile in case that this fails with something like:
+
+.. code-block:: console
+
+	ERROR: No matching distribution found for batou-ext==0.1.dev0 (from -r .batou/16f85f2d/requirements.lock (line 3))
 
 You need to also check your dependencies that those support Python 3 properly.
 `batou_ext` for example has a branch `batou2-py3` that you might want to pick
 from.
-
-To ensure a consistent set of versions is in use, you can now pin the selected
-versions in a `requirements.lock` file:
-
-.. code-block:: console
-
-	$ ./batou appenv-update-lockfile
-
-If you commit this file then all batou calls will use the pinned versions and
-batou will start much faster.
-
-The lockfile might not pick up all versions of all packages correctly (for
-example packages taken directly from source control will fail) so you might want
-to doublecheck those and massage the lockfile.
 
 At this point you can now update your projects' component code to Python 3:
 

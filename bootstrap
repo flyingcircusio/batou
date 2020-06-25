@@ -1,0 +1,19 @@
+#!/bin/sh
+{	# prevent executaion of partial downloads.
+set -e
+
+oops() {
+    echo "$0:" "$@" >&2
+    exit 1
+}
+
+curl -sL https://github.com/flyingcircusio/appenv/raw/master/src/appenv.py -o batou || oops "failed to download appenv"
+chmod +x batou
+echo "batou>=2.0b12" >> requirements.txt
+./batou appenv-update-lockfile
+./batou --help
+if [ -d ".git" ]; then
+	echo '.batou' >> .gitignore
+	git add .gitignore requirements.txt requirements.lock batou
+fi
+}
