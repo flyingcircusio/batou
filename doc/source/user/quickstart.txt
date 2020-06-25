@@ -16,21 +16,9 @@ feel free to follow along using Mercurial -- batou can handle both.
 
   $ mkdir myproject
   $ cd myproject
-  $ curl -L https://batou.readthedocs.io/en/latest/batou -o batou
-  $ chmod +x batou
   $ git init
-  $ git add batou
-  $ git commit
-  $ ./batou
-  Preparing virtualenv in .batou ...
-  Pre-installing batou - this can take a while...
-  Installing Jinja2==2.7.3
-  Installing requests==2.6.0
-  Installing setuptools==18.3.1
-  Installing execnet==1.3.0
-  Installing py==1.4.26
-  usage: batou [-h] [-d] [-F] {deploy,remote,secrets,init,update} ...
-  batou: error: too few arguments
+  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/src/bootstrap | sh
+  $ git commit -m "Start a batou project."
 
 The project is now initialized and batou is ready to be used.
 
@@ -119,6 +107,7 @@ You can now deploy this environment:
 .. code-block:: console
 
   $ ./batou deploy local
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   ============================== Preparing ===============================
   main: Loading environment `local`...
   main: Verifying repository ...
@@ -170,7 +159,7 @@ deployed and that no action is necessary:
 .. code-block:: console
 
   $ ./batou deploy local
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   ============================== Preparing ===============================
   main: Loading environment `local`...
   main: Verifying repository ...
@@ -207,12 +196,16 @@ your batou project:
   # -*- mode: ruby -*-
   # vi: set ft=ruby :
 
+  required_plugins = %w( vagrant-nixos-plugin )
+  required_plugins.each do |plugin|
+        abort("Plugin required: vagrant plugin install #{plugin}") unless Vagrant.has_plugin? plugin
+  end
+
   Vagrant.configure("2") do |config|
-    config.vm.box = "flyingcircus/nixos-15.09-x86_64"
-    config.vm.box_version = ">= 1.2"
+    config.vm.box = "flyingcircus/nixos-19.03-dev-x86_64"
+    config.vm.box_version = "= 471.427aac1"
 
     config.vm.network "private_network", ip: "192.168.50.4"
-    config.vm.hostname = "default"
   end
 
 Now, we add a second environment that uses Vagrant to connect and rsync
@@ -237,7 +230,7 @@ vagrant machine up and running may take a while, though:
 .. code-block:: console
 
   $ ./batou deploy vagrant
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `vagrant`...
   main: Verifying repository ...
@@ -354,7 +347,7 @@ Now, to deploy to the remote host:
 .. code-block:: console
 
   $ ./batou deploy production
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `production`...
   main: Verifying repository ...
@@ -432,7 +425,7 @@ Now, let's deploy this:
 .. code-block:: console
 
   $ ./batou deploy local
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `local`...
   main: Verifying repository ...
@@ -678,7 +671,7 @@ the SSH connection:
 .. code-block:: console
 
   $ ./batou deploy production
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `production`...
   main: Verifying repository ...
@@ -757,7 +750,7 @@ To deploy to production we now end up with the following workflow:
   $ git checkout -tb production
   $ git merge master
   $ ./batou deploy production
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `production`...
   main: Verifying repository ...
@@ -775,7 +768,7 @@ inform you and refuse to deploy until you clean up the situation:
 .. code-block:: console
 
   $ ./batou deploy remote
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `production`...
   main: Verifying repository ...
@@ -831,7 +824,7 @@ which you can also use to perform more fine-grained builds:
 .. code-block:: console
 
   $ ./batou deploy local
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `local`...
   main: Verifying repository ...
@@ -876,7 +869,7 @@ Here is how a component installing Python packages looks like:
   class Flask(Component):
 
       def configure(self):
-          venv = VirtualEnv('2.7')
+          venv = VirtualEnv('3.5')
           self += venv
 
           venv += Package('Flask', version='0.10.1')
@@ -900,7 +893,7 @@ Add the "Flask" compoment to your local configuration:
 .. code-block:: console
 
   $ ./batou deploy local
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `local`...
   main: Verifying repository ...
@@ -912,14 +905,14 @@ Add the "Flask" compoment to your local configuration:
   localhost: Deploying component tick ...
   localhost: Deploying component zlib ...
   localhost: Deploying component flask ...
-    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7 >
+    Flask > VirtualEnv(3.5) > VirtualEnvPy3_5 >
       VirtualEnvDownload(13.1.2) > Download(https://pypi.fcio.net/packages/source/v/virtualenv/virtualenv-13.1.2.tar.gz)
-    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7 >
+    Flask > VirtualEnv(3.5) > VirtualEnvPy3_5 >
       VirtualEnvDownload(13.1.2) > Extract(virtualenv-13.1.2.tar.gz) >
       Untar(virtualenv-13.1.2.tar.gz)
-    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7 > VirtualEnvDownload(13.1.2)
-    Flask > VirtualEnv(2.7) > VirtualEnvPy2_7
-    Flask > VirtualEnv(2.7) > Package(Flask==0.10.1)
+    Flask > VirtualEnv(3.5) > VirtualEnvPy3_5 > VirtualEnvDownload(13.1.2)
+    Flask > VirtualEnv(3.5) > VirtualEnvPy3_5
+    Flask > VirtualEnv(3.5) > Package(Flask==0.10.1)
   ====================== DEPLOYMENT FINISHED =======================
 
 .. note::
@@ -946,7 +939,7 @@ use the following component:
   class Flask(Component):
 
       def configure(self):
-          venv = VirtualEnv('2.7')
+          venv = VirtualEnv('3.5')
           self += venv
 
           venv += Package('Flask', version='0.10.1')
@@ -977,7 +970,7 @@ use the following component:
 .. code-block:: console
 
   $ ./batou deploy local
-  batou/1.2b1 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `local`...
   main: Verifying repository ...
@@ -991,9 +984,9 @@ use the following component:
         Presence(work/flask/buildout.cfg)
      Flask > Buildout > File(work/flask/buildout.cfg) >
         Content(work/flask/buildout.cfg)
-     Flask > Buildout > VirtualEnv(2.7) > VirtualEnvPy2_7
-     Flask > Buildout > VirtualEnv(2.7) > Package(setuptools==19.6.1)
-     Flask > Buildout > VirtualEnv(2.7) > Package(zc.buildout==2.5.0)
+     Flask > Buildout > VirtualEnv(3.5) > VirtualEnvPy3_5
+     Flask > Buildout > VirtualEnv(3.5) > Package(setuptools==19.6.1)
+     Flask > Buildout > VirtualEnv(3.5) > Package(zc.buildout==2.5.0)
      Flask > Buildout
   ====================== DEPLOYMENT FINISHED =======================
 
@@ -1043,7 +1036,7 @@ registered program:
 .. code-block:: console
 
   $ ./batou deploy local
-  batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `local`...
   main: Verifying repository ...
@@ -1057,10 +1050,10 @@ registered program:
       Presence(work/supervisor/buildout.cfg)
     Supervisor > Buildout > File(work/supervisor/buildout.cfg) >
       Content(work/supervisor/buildout.cfg)
-    Supervisor > Buildout > VirtualEnv(2.7) > VirtualEnvPy2_7
-    Supervisor > Buildout > VirtualEnv(2.7) >
+    Supervisor > Buildout > VirtualEnv(3.5) > VirtualEnvPy3_5
+    Supervisor > Buildout > VirtualEnv(3.5) >
       Package(setuptools==19.2)
-    Supervisor > Buildout > VirtualEnv(2.7) >
+    Supervisor > Buildout > VirtualEnv(3.5) >
       Package(zc.buildout==2.5.0)
     Supervisor > Buildout
     Supervisor > Directory(work/supervisor/etc/supervisor.d)
@@ -1241,7 +1234,7 @@ the release cycle:
 .. code-block:: console
 
   $ ./batou deploy -c production
-  batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `production`...
   main: Verifying repository ...
@@ -1256,7 +1249,7 @@ gotten when running the deployment for real:
 .. code-block:: console
 
   $ ./batou deploy -c production
-  batou/1.2b2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+  batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
   =========================== Preparing ============================
   main: Loading environment `production`...
   main: Verifying repository ...
@@ -1286,7 +1279,7 @@ that would happen.
 .. code-block:: console
 
     $ ./batou deploy tutorial -P
-    batou/1.3b1.dev0 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+    batou/2.0b13.dev0 (cpython 3.7.5-final0, Darwin 19.5.0 x86_64)
     ============================ Preparing ============================
     main: Loading environment `tutorial`...
     main: Verifying repository ...

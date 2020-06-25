@@ -41,20 +41,7 @@ on the remote hosts.
 
     $ ./batou
     Installing sqlalchemy
-    usage: batou [-h] [-d] [-F] [--reset] {deploy,secrets,init,update} ...
-
-.. note::
-
-   batou currently parses the `requirements.txt` by itself
-   and only supports a sub-set of the official `requirements.txt file format <https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format>`_.
-
-   We support:
-
-   * `#egg` links
-   * `-f`
-   * a simple form of `+` VCS links
-   * all lines that can be passed directly as a requirement to `pip install`
-   * comments
+    usage: batou [-h] [-d] {deploy,secrets,init,update} ...
 
 .. note::
 
@@ -63,9 +50,9 @@ on the remote hosts.
    failing. You will see pip complaining in that case.
 
 
-
 Multiple components in a single component.py (TODO)
 ---------------------------------------------------
+
 
 Skipping individual hosts or components when deploying (TODO)
 -------------------------------------------------------------

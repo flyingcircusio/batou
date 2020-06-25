@@ -6,18 +6,22 @@ installed using ``apt-get`` or ``aptitude``. ``apt-get`` is more specific to
 Ubuntu and its derivates, whereas ``aptitude`` is typically used on Debian. In
 our examples below, we will stick to ``apt-get``.
 
-Python 2.7
-~~~~~~~~~~
+.. note:: RPM-based environments are not native for any of the developers and
+    not tested systematically. Let us know if any of this information is
+    incorrect and we'll gladly update this.
 
-In many distributions, Python 2.7 should ship as the default system Python and
+Python 3
+~~~~~~~~
+
+In many distributions, Python 3 should ship as the default system Python and
 should therefore already be installed. If not, you can install it by executing:
 
 .. code-block:: bash
 
-	sudo apt-get install python2.7-dev
+	sudo apt-get install python3-dev
 
-.. note:: Although installing using ``sudo apt-get install python2.7`` would be
-	sufficient, we choose to ``python2.7-dev`` because having the additional
+.. note:: Although installing using ``sudo apt-get install python3`` would be
+	sufficient, we choose to ``python3-dev`` because having the additional
 	development packages installed does not hurt and may help in situations
 	that require functionality that is not included in the base package.
 
@@ -30,7 +34,7 @@ the system. You can install virtualenv by executing:
 
 .. code-block:: bash
 
-	sudo apt-get install python-virtualenv
+	sudo apt-get install python3-virtualenv
 
 Mercurial
 ~~~~~~~~~

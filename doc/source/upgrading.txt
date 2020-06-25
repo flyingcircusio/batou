@@ -33,23 +33,23 @@ Updating your deployment
 ------------------------
 
 The following steps assume that you have cloned and checked out your deployment
-and your current working directory is in the checkout.
+and it is your current working directory.
 
 .. code-block:: console
 
 	$ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/src/bootstrap | sh
 
-The lockfile might not pick up all versions of all packages correctly (for
-example packages taken directly from source control will fail) so you might want
-to doublecheck those and massage the lockfile in case that this fails with something like:
+The generated lockfile `requirements.lock` might not pick up all versions of all
+packages correctly (for example packages taken directly from source control will
+fail) so you might want to doublecheck those and massage the lockfile in case
+that this fails with something like:
 
 .. code-block:: console
 
 	ERROR: No matching distribution found for batou-ext==0.1.dev0 (from -r .batou/16f85f2d/requirements.lock (line 3))
 
-You need to also check your dependencies that those support Python 3 properly.
-`batou_ext` for example has a branch `batou2-py3` that you might want to pick
-from.
+.. note:: `batou_ext` will be updated automatically to a proper Python 3 version
+  and syntax.
 
 At this point you can now update your projects' component code to Python 3:
 
@@ -59,7 +59,6 @@ At this point you can now update your projects' component code to Python 3:
 
 After this you need to run batou in your development environment to see whether
 any further changes may be needed.
-
 
 Things you may have to change in your deployment
 ------------------------------------------------

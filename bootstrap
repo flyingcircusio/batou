@@ -10,7 +10,9 @@ oops() {
 curl -sL https://github.com/flyingcircusio/appenv/raw/master/src/appenv.py -o batou || oops "failed to download appenv"
 chmod +x batou
 echo "batou>=2.0b12" >> requirements.txt
+sed -i '' -e 's!.*batou_ext.*!batou_ext @  https://github.com/flyingcircusio/batou_ext/archive/f2d1ce75a15eeaf4701686bb64e6616c5c35e31c.zip#sha256=4242d65a4cb0721812a308d2cfa87d647ba78f3e03ae4d189f9d2ac78157df93!' requirements.txt
 ./batou appenv-update-lockfile
+sed -i '' -e 's!.*batou-ext.*!batou_ext @  https://github.com/flyingcircusio/batou_ext/archive/f2d1ce75a15eeaf4701686bb64e6616c5c35e31c.zip#sha256=4242d65a4cb0721812a308d2cfa87d647ba78f3e03ae4d189f9d2ac78157df93!' requirements.lock
 ./batou --help
 if [ -d ".git" ]; then
 	echo '.batou' >> .gitignore

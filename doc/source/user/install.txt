@@ -16,28 +16,25 @@ A new project is started by placing the batou master command into the project an
     $ cd myproject
     $ git init
     $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/src/bootstrap | sh
-    $ ./batou --
     $ git commit -m "Start a batou project."
 
 Local
 -----
 
-To run the master command on your machine you will need to have the following dependencies installed:
+To run the batou command on your machine you will need to have the following
+dependencies installed:
 
-* Python 2.7
-* virtualenv
+* Python 3.5+
 * OpenSSH
 * GPG *(optional, if you want to use encrypted secrets support)*
 * Mercurial, git, or rsync *(you only need to have the one installed you actually use to transfer your repository)*
-
 
 Remote
 ------
 
 To deploy on a remote server, that server needs to have installed:
 
-* Python 2.7
-* virtualenv
+* Python 3.5+
 * OpenSSH
 * Mercurial, git or rsync *(you only need to have the one installed you actually use to transfer your repository)*
 
@@ -48,7 +45,7 @@ batou is being tested to run on Linux and Mac OS X.
 
 We do *not* support deploying from or to non-UNIX targets.
 
-batou is written in Python and requires to be run with **Python 2.7**.
+batou is written in Python and requires to be run with **Python 3.5+**.
 
 
 Optional requirements
