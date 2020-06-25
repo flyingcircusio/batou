@@ -37,7 +37,7 @@ and it is your current working directory.
 
 .. code-block:: console
 
-	$ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/src/bootstrap | sh
+	$ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
 
 The generated lockfile `requirements.lock` might not pick up all versions of all
 packages correctly (for example packages taken directly from source control will
