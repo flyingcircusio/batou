@@ -18,7 +18,7 @@ Getting started with a new project is easy:
 ```console
 $ mkdir myproject
 $ cd myproject
-$ curl https://raw.githubusercontent.com/flyingcircusio/batou/master/src/batou/bootstrap-template -o batou
+$ curl https://raw.githubusercontent.com/flyingcircusio/batou/master/appenv.py -o batou
 $ chmod +x batou
 $ ./batou
 ```
