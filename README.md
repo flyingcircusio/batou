@@ -90,6 +90,11 @@ The project is licensed under the 2-clause BSD license.
 2.0b13 (unreleased)
 -------------------
 
+- Fix git clone when cloning into the component work directory. #27
+
+- Fix binary file handling that broke during 2to3 migration and the test
+  was doing the wrong thing.
+  
 - Allow marking file content as sensitive, which - for now - will suppress 
   diff generation/logging.
 
@@ -120,6 +125,9 @@ The project is licensed under the 2-clause BSD license.
 
 - Improve verify() of archive handler so we predict a change if
   something goes wrong (like not having the archive downloaded yet)
+
+- Fix "is supervisor program running" check if it is stopped or exited
+
 
 2.0b12 (2020-05-13)
 -------------------

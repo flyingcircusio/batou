@@ -189,3 +189,13 @@ def test_changed_remote_is_updated(root, repos_path, repos_path2):
     git.url = repos_path2
     root.component.deploy()
     assert os.path.exists(root.component.map('clone/bar'))
+
+
+@pytest.mark.slow
+def test_clone_into_workdir_works(root, repos_path, repos_path2):
+    git = batou.lib.git.Clone(repos_path, branch='master')
+    with open(root.component.map('asdf'), 'w') as f:
+        f.write('foo')
+    root.component += git
+    root.component.deploy()
+    assert not os.path.exists(root.component.map('asdf'))

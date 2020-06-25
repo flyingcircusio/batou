@@ -4,6 +4,22 @@ from batou.lib.file import Directory, ensure_path_nonexistent
 import os.path
 
 
+def ensure_empty_directory(path):
+    """Ensure path is an empty directory.
+
+    Keep the directory if it exists or create a new one if it
+    didn't or if it wasn't a directory.
+
+    This helps in situations where the current workdir may be
+    the existing path that needs to be cleaned up.
+    """
+    if not os.path.isdir(path):
+        ensure_path_nonexistent(path)
+        os.makedirs(path)
+    for file in os.listdir(path):
+        ensure_path_nonexistent(os.path.join(path, file))
+
+
 class Clone(Component):
 
     namevar = 'url'
@@ -96,7 +112,7 @@ class Clone(Component):
     def update(self):
         just_cloned = False
         if self._force_clone:
-            ensure_path_nonexistent(self.target)
+            ensure_empty_directory(self.target)
             self.cmd(self.expand(
                 'git clone {{component.url}} {{component.target}}'))
             just_cloned = True

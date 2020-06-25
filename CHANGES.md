@@ -4,6 +4,8 @@
 2.0b13 (unreleased)
 -------------------
 
+- Fix git clone when cloning into the component work directory. #27
+
 - Fix binary file handling that broke during 2to3 migration and the test
   was doing the wrong thing.
   
