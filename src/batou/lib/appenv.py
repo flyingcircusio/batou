@@ -98,9 +98,9 @@ class AppEnv(Component):
 
         # Save current to skip it in cleanup
         self.last_env_hash = None
-        if os.path.exists(f'{self.workdir}/.appenv/current'):
+        if os.path.exists(os.path.join(self.workdir, '.appenv/current')):
             self.last_env_hash = os.path.basename(
-                os.readlink(f'{self.workdir}/.appenv/current'))
+                os.readlink(os.path.join(self.workdir, '.appenv/current')))
 
         # Shim
         self += Symlink(
