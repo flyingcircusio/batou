@@ -22,7 +22,7 @@ class ConfigurationError(Exception):
 
     @property
     def sort_key(self):
-        return (0, self.message)
+        return ('0', self.message)
 
     def __init__(self, message, component=None):
         self.message = message
@@ -44,7 +44,7 @@ class ConversionError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (1, self.component.root.host.name,
+        return ('1', self.component.root.host.name,
                 self.component._breadcrumbs, self.key)
 
     def __init__(self, component, key, value, conversion, error):
@@ -86,7 +86,7 @@ class MissingOverrideAttributes(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (3, self.component.root.host.name,
+        return ('3', self.component.root.host.name,
                 self.component._breadcrumbs)
 
     def __init__(self, component, attributes):
@@ -115,7 +115,7 @@ class DuplicateComponent(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (2, self.a.name)
+        return ('2', self.a.name)
 
     def __init__(self, a, b):
         self.a = a
@@ -132,7 +132,7 @@ class UnknownComponentConfigurationError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (4, self.root.host.name, 2)
+        return ('4', self.root.host.name, '2')
 
     def __init__(self, root, exception, tb):
         self.root = root
@@ -169,7 +169,7 @@ class UnusedResources(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (5, 'unused')
+        return ('5', 'unused')
 
     def __init__(self, resources):
         self.resources = resources
@@ -189,7 +189,7 @@ class UnsatisfiedResources(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (6, 'unsatisfied')
+        return ('6', 'unsatisfied')
 
     def __init__(self, resources):
         self.resources = resources
@@ -207,7 +207,7 @@ class MissingEnvironment(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return ('0', )
 
     def __init__(self, environment):
         self.environment = environment
@@ -222,7 +222,7 @@ class ComponentLoadingError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return ('0', )
 
     def __init__(self, filename, exception):
         self.filename = filename
@@ -240,7 +240,7 @@ class MissingComponent(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return ('0', )
 
     def __init__(self, component, hostname):
         self.component = component
@@ -258,7 +258,7 @@ class SuperfluousSection(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return ('0', )
 
     def __init__(self, section):
         self.section = section
@@ -275,7 +275,7 @@ class SuperfluousComponentSection(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return ('0', )
 
     def __init__(self, component):
         self.component = component
@@ -292,7 +292,7 @@ class SuperfluousSecretsSection(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return ('0', )
 
     def __init__(self, component):
         self.component = component
@@ -309,7 +309,7 @@ class CycleErrorDetected(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (99, )
+        return ('99', )
 
     def __init__(self, error):
         self.error = error
@@ -325,7 +325,7 @@ class NonConvergingWorkingSet(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (100, )
+        return ('100', )
 
     def __init__(self, roots):
         self.roots = roots
@@ -344,7 +344,7 @@ class DeploymentError(Exception):
 
     @property
     def sort_key(self):
-        return (200, )
+        return ('200', )
 
     def report(self):
         pass
@@ -355,7 +355,7 @@ class RepositoryDifferentError(DeploymentError):
 
     @property
     def sort_key(self):
-        return (150, )
+        return ('150', )
 
     def __init__(self, local, remote):
         self.local = local
@@ -373,7 +373,7 @@ class DuplicateHostError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return ('0', )
 
     def __init__(self, hostname):
         self.hostname = hostname
@@ -386,7 +386,7 @@ class InvalidIPAddressError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return ('0', )
 
     def __init__(self, address):
         self.address = address
