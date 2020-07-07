@@ -412,8 +412,8 @@ class Component(object):
     def log(self, message, *args):
         """Log a message to console during deployment.
 
-        The message is %-substituted with *args, if it is put out. and prefixed
-        with the hostname automatically.
+        The message is %-substituted with :py:attr:`\*args`, if it is put out. and
+        prefixed with the hostname automatically.
 
         Use this message to add additional status to the deployment output,
         i.e. "Deploying Version X".
