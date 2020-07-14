@@ -979,6 +979,7 @@ class Attribute(object):
     Conversion can be given as a string to indicate a built-in conversion:
 
         literal - interprets the string as a Python literal
+        list - interpretes the string as a comma separated list
 
     If conversion is a function the function will be used for the conversion.
 
