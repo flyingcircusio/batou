@@ -32,6 +32,8 @@ class Extract(Component):
             target=self.target,
             create_target_dir=self.create_target_dir,
             strip=self.strip)
+        # Testability
+        self.extractor = extractor
         self += extractor
         self.target = extractor.target
 
@@ -87,9 +89,14 @@ class Extractor(Component):
         # preservation?
         for filename in self.get_names_from_archive():
             filename = os.path.join(*filename.split(os.path.sep)[self.strip:])
+            filename = os.path.join(self.target, filename)
+            if os.path.isdir(filename):
+                # We can't compare the ctime of things like / or other
+                # directories that might be outside of our control as their
+                # ctimes won't change when extracting over them.
+                continue
             self.assert_file_is_current(
-                os.path.join(self.target, filename),
-                [self.archive], key='st_ctime')
+                filename, [self.archive], key='st_ctime')
 
     @property
     def namevar_for_breadcrumb(self):

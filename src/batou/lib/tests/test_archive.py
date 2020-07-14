@@ -4,6 +4,7 @@ from pkg_resources import resource_filename
 import os
 import pytest
 import sys
+import time
 
 
 def test_unknown_extension_raises():
@@ -29,6 +30,30 @@ def test_untar_extracts_archive_to_target_directory(root):
     root.component += extract
     root.component.deploy()
     assert os.listdir(str(extract.target)) == ['foo']
+
+
+def test_ignores_ctime_for_directories(root):
+    # This is hard to test: ctime can not be changed directly,
+    # we thus have to perform a somewhat elaborate dance to align
+    # the starts as we wish.
+    archive = resource_filename(__name__, 'example.tar.gz')
+    extract = Extract(archive, target='example')
+
+    root.component += extract
+    root.component.deploy()
+    # No assertion raised, nothing to extract
+    extract.extractor.verify()
+
+    # Make the archive's ctime newer than the directories, but ensure
+    # that the file is current (so only the archives _would_ trigger)
+    # if we didn't filter them out properly.
+    time.sleep(1.1)
+    now = (time.time(), time.time())
+    os.utime(archive, now)
+    os.utime(str(extract.target) + '/foo/bar/qux', now)
+
+    # No assertion raised, still nothing to extract
+    extract.extractor.verify()
 
 
 def test_untar_can_strip_paths_off_archived_files(root):
