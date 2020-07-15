@@ -90,7 +90,8 @@ The project is licensed under the 2-clause BSD license.
 2.0b15 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Ignore directories when verifying archive extractions to avoid
+  false non-convergence.
 
 
 2.0b14 (2020-06-25)
