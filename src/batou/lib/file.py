@@ -465,6 +465,8 @@ class Content(FileComponent):
 
 class Owner(FileComponent):
 
+    owner = None
+
     def verify(self):
         assert os.path.exists(self.path)
         if isinstance(self.owner, str):
@@ -477,6 +479,8 @@ class Owner(FileComponent):
 
 
 class Group(FileComponent):
+
+    group = None
 
     def configure(self):
         super(Group, self).configure()
@@ -493,6 +497,8 @@ class Group(FileComponent):
 
 
 class Mode(FileComponent):
+
+    mode = None
 
     def verify(self):
         try:
@@ -519,6 +525,7 @@ class Mode(FileComponent):
 class Symlink(Component):
 
     namevar = 'target'
+    source = None
 
     def configure(self):
         self.target = self.map(self.target)

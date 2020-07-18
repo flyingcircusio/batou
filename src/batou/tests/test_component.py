@@ -38,6 +38,19 @@ def test_plain_component_runs_noop_configure_verify_update():
     component.update()
 
 
+def test_component_with_unknown_arguments_raises_valueerror():
+    # Regression against bug #65
+    with pytest.raises(ValueError) as e:
+        Component('foo')
+    assert str(e.value) == 'Namevar is undefined for this component.'
+    with pytest.raises(ValueError) as e:
+        Component(asdf='foo')
+    assert str(e.value) == (
+        'The following arguments are unacceptable for this component '
+        'because they are either undefined or would override '
+        'methods: asdf')
+
+
 def test_init_component_with_namevar_uses_first_argument():
     class SampleComponent(Component):
         namevar = 'asdf'
@@ -53,7 +66,9 @@ def test_init_component_with_namevar_fails_without_argument():
 
 
 def test_init_keyword_args_update_dict():
-    component = Component(foobar=1)
+    class TestComponent(Component):
+        foobar = None
+    component = TestComponent(foobar=1)
     assert 1 == component.foobar
 
 
@@ -69,11 +84,14 @@ def test_op_orassignment_ignores_none(root):
 
 
 def test_recursive_sub_component_iterator(root):
+    class TestComponent(Component):
+        name = None
+
     for x in range(3):
-        c = Component(name='x{}'.format(x))
+        c = TestComponent(name='x{}'.format(x))
         root.component += c
         for y in range(2):
-            c2 = Component(name='x{}y{}'.format(x, y))
+            c2 = TestComponent(name='x{}y{}'.format(x, y))
             c += c2
 
     recursive = list(x.name for x in root.component.recursive_sub_components)

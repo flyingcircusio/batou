@@ -87,6 +87,14 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.1 (unreleased)
+----------------
+
+- Bug 65: don't allow passing undefined namevars or undefined attributes
+  to the component constructor. Also prohibit (accidentally) overriding
+  methods.
+
+
 2.0 (2020-07-15)
 ----------------
 

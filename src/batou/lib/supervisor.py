@@ -192,8 +192,7 @@ class Supervisor(Component):
 
         buildout_cfg = File('buildout.cfg',
                             source=self.buildout_cfg)
-        self += Buildout('buildout',
-                         version='2.13.3',
+        self += Buildout(version='2.13.3',
                          setuptools='46.1.3',
                          config=buildout_cfg,
                          python='3')
@@ -217,7 +216,7 @@ class Supervisor(Component):
         if self.enable:
             self += RunningSupervisor(service)
         else:
-            self += StoppedSupervisor(service)
+            self += StoppedSupervisor()
 
         # Nagios check
         if self.nagios:

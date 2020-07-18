@@ -180,10 +180,31 @@ class Component(object):
     _prepared = False
 
     def __init__(self, namevar=None, **kw):
+        # Are any keyword arguments undefined attributes?
+        # This is a somewhat rough implementation as it allows overriding
+        # methods
+        unacceptable_args = set()
+        missing_attribute = object()
+        for k in kw:
+            attr = getattr(self.__class__, k, missing_attribute)
+            if attr is missing_attribute:
+                unacceptable_args.add(k)
+            elif callable(attr):
+                unacceptable_args.add(k)
+
+        if unacceptable_args:
+            raise ValueError(
+                'The following arguments are unacceptable for this component '
+                'because they are either undefined or would override '
+                'methods: {}'.format(', '.join(unacceptable_args)))
+
         if self.namevar:
             if namevar is None:
                 raise ValueError('Namevar %s required' % self.namevar)
             kw[self.namevar] = namevar
+        elif namevar:
+            raise ValueError('Namevar is undefined for this component.')
+
         # Can't use the attribute setter here as our special attributes will
         # error out as long as the component is not attached to a root.
         self.__dict__.update(kw)

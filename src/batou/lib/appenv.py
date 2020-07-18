@@ -109,7 +109,7 @@ class AppEnv(Component):
         for p in ['bin', 'lib', 'pyvenv.cfg']:
             self += Symlink(p, source='.appenv/current/' + p)
 
-        self += CleanupUnused(self.env_dir)
+        self += CleanupUnused()
 
     @property
     def namevar_for_breadcrumb(self):
