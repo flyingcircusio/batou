@@ -8,6 +8,9 @@
   to the component constructor. Also prohibit (accidentally) overriding
   methods.
 
+- Bug: zsh compatibility on the remote host was broken with more
+  complex sudo mechanism. Added a ZSH workaround.
+
 
 2.0 (2020-07-15)
 ----------------
