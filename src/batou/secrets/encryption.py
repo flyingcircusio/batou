@@ -1,8 +1,9 @@
 from batou import FileLockedError
-import configparser
+from configupdater import ConfigUpdater
 import fcntl
 import io
 import os
+import shlex
 import subprocess
 import tempfile
 
@@ -74,7 +75,7 @@ class EncryptedConfigFile(object):
 
     @cleartext.setter
     def cleartext(self, value):
-        self.config = configparser.RawConfigParser()
+        self.config = ConfigUpdater()
         self.config.read_string(value)
         self.set_members(self.get_members())
         s = io.StringIO()
@@ -121,7 +122,7 @@ class EncryptedConfigFile(object):
             shell=True).decode('utf-8')
 
     def get_members(self):
-        members = self.config.get('batou', 'members').split(',')
+        members = self.config.get('batou', 'members').value.split(',')
         members = [x.strip() for x in members]
         members = [_f for _f in members if _f]
         members.sort()
@@ -139,7 +140,8 @@ class EncryptedConfigFile(object):
         if not recipients:
             raise ValueError("Need at least one recipient.")
         self.set_members(self.get_members())
-        recipients = ' '.join(['-r {}'.format(r.strip()) for r in recipients])
+        recipients = ' '.join(
+            ['-r {}'.format(shlex.quote(r.strip())) for r in recipients])
         os.rename(self.encrypted_file,
                   self.encrypted_file + '.old')
         try:

@@ -41,14 +41,15 @@ def add_secrets_to_environment_override(
                     raise ValueError(
                         'Secret for unknown host: {}'.format(hostname))
                 host = environment.hosts[hostname]
-                for key, value in f.config[section_].items():
+                for key, option in f.config.items(section_):
                     if key.startswith('data-'):
                         key = key.replace('data-', '', 1)
-                        host.data[key] = value
+                        host.data[key] = option.value
             else:
                 component = section_.replace('component:', '')
                 if component not in environment.components:
                     environment.exceptions.append(
                         SuperfluousSecretsSection(component))
                 o = environment.overrides.setdefault(component, {})
-                o.update(f.config.items(section_))
+                o.update(
+                    ((k, o.value) for k, o in f.config.items(section_)))

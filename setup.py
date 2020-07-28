@@ -26,6 +26,7 @@ setup(
     name='batou',
     version=version,
     install_requires=[
+        'ConfigUpdater',
         'Jinja2',
         'requests',
         'setuptools',
