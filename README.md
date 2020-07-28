@@ -90,6 +90,8 @@ The project is licensed under the 2-clause BSD license.
 2.1 (unreleased)
 ----------------
 
+- Bug 77: use `ConfigUpdater` to allow editing secrets and keeping comments.
+
 - Bug 1: provide better error message if remote user does not exist.
 
   This is also cleaning up the general error output and we're now hiding
