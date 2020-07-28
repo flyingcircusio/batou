@@ -99,7 +99,7 @@ def test_config_exceptions_orderable(env):
     import sys
     try:
         raise ValueError('Test')
-    except Exception as e:
+    except Exception:
         exc_type, ex, tb = sys.exc_info()
 
     exceptions = [
