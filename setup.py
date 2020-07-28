@@ -32,7 +32,6 @@ setup(
         'execnet',
         'pyyaml',
         'py',
-        'six',
     ],
     extras_require={
         'test': [

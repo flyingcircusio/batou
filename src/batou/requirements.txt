@@ -11,4 +11,3 @@ setuptools==47.3.1
 execnet==1.7.1
 PyYAML==5.1.2
 py==1.8.0
-six==1.12.0
