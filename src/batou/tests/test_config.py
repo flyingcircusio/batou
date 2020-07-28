@@ -1,6 +1,7 @@
 from batou.component import Component
 from batou.environment import Environment
 from batou import MissingEnvironment
+import batou
 import os
 import os.path
 import pytest
@@ -89,3 +90,43 @@ def test_load_environment_with_overrides(env):
     env.configure()
     zeo = env.get_root('zeo', 'localhost').component
     assert zeo.port == 9002
+
+
+def test_config_exceptions_orderable(env):
+    env.configure()
+    c = env.get_root('zeo', 'localhost').component
+
+    import sys
+    try:
+        raise ValueError('Test')
+    except Exception as e:
+        exc_type, ex, tb = sys.exc_info()
+
+    exceptions = [
+        batou.ConfigurationError('test', None),
+        batou.ConfigurationError('test', c),
+        batou.ConversionError(
+            c, 'key', 123, int, 'invalid int'),
+        batou.MissingOverrideAttributes(
+            c, ['sadf']),
+        batou.DuplicateComponent(c.root, c.root),
+        batou.UnknownComponentConfigurationError(c.root, ex, tb),
+        batou.UnusedResources({'asdf': [(c.root, 1)]}),
+        batou.UnsatisfiedResources({'asdf': [c.root]}),
+        batou.MissingEnvironment(env),
+        batou.MissingComponent('asdf', 'localhost'),
+        batou.SuperfluousSection('asdf'),
+        batou.SuperfluousComponentSection('asdf'),
+        batou.SuperfluousSecretsSection('asdf'),
+        batou.CycleErrorDetected(ValueError()),
+        batou.NonConvergingWorkingSet([c]),
+        batou.DeploymentError(),
+        batou.RepositoryDifferentError('asdf', 'bsdf'),
+        batou.DuplicateHostError('localhost'),
+        batou.InvalidIPAddressError('asdf'),
+    ]
+
+    # Ensure all exceptions can be compared
+    for x in exceptions:
+        for y in exceptions:
+            x.sort_key < y.sort_key
