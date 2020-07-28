@@ -29,7 +29,8 @@ setup(
         'ConfigUpdater',
         'Jinja2',
         'requests',
-        'setuptools',
+        # ConfigUpdater does not manage its minimum requirements correctly.
+        'setuptools>=38.3',
         'execnet',
         'pyyaml',
         'py',
