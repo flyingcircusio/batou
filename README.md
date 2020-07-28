@@ -90,6 +90,8 @@ The project is licensed under the 2-clause BSD license.
 2.1 (unreleased)
 ----------------
 
+- Bug 63: provide better error message if GPG is missing.
+
 - Bug 65: don't allow passing undefined namevars or undefined attributes
   to the component constructor. Also prohibit (accidentally) overriding
   methods.
