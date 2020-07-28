@@ -98,10 +98,14 @@ class Output(object):
         self.flush_buffer()
         self.step("ERROR", message, red=True)
         if exc_info:
-            tb = traceback.format_exception(*exc_info)
-            tb = ''.join(tb)
-            tb = '      ' + tb.replace('\n', '\n      ') + '\n'
-            self.backend.write(tb, red=True)
+            if self.enable_debug:
+                out = traceback.format_exception(*exc_info)
+            else:
+                etype, value, _ = exc_info
+                out = traceback.format_exception_only(etype, value)
+            out = ''.join(out)
+            out = '      ' + out.replace('\n', '\n      ') + '\n'
+            self.backend.write(out, red=True)
 
 
 class ChannelBackend(object):

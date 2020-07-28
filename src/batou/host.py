@@ -182,7 +182,13 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         if os.path.exists('ssh_config'):
             spec += '//ssh_config=ssh_config'
         self.gateway = execnet.makegateway(spec)
-        self.channel = self.gateway.remote_exec(remote_core)
+        try:
+            self.channel = self.gateway.remote_exec(remote_core)
+        except IOError:
+            raise RuntimeError(
+                'Could not start batou on host `{}`. '
+                'The output above may contain more information. '.format(
+                    self.fqdn))
 
         output.annotate('Connected ...', debug=True)
 

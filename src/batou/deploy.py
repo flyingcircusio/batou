@@ -30,7 +30,7 @@ class Connector(threading.Thread):
                 break
             except Exception:
                 self.exc_info = sys.exc_info()
-                if tries > 3:
+                if tries >= 3:
                     return
             finally:
                 self.sem.release()

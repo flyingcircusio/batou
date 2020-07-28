@@ -4,6 +4,13 @@
 2.1 (unreleased)
 ----------------
 
+- Bug 1: provide better error message if remote user does not exist.
+
+  This is also cleaning up the general error output and we're now hiding
+  full tracebacks unless batou is run with --debug. People keep complaining
+  about traceback output and I agree that it makes things harder to read
+  for someone not used to scanning through them quickly.
+
 - Bug 63: provide better error message if GPG is missing.
 
 - Bug 65: don't allow passing undefined namevars or undefined attributes
