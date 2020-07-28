@@ -36,16 +36,16 @@ class Environment(object):
     def summary(self):
         try:
             self.f.read()
-        except Exception:
-            print("\t<Can not decrypt. You seem to not have access.>")
+        except Exception as e:
+            print("\t{}".format(e))
             return
         print("\t", self.f.config.get('batou', 'members'))
 
     def add_user(self, keyid):
         try:
             self.f.read()
-        except Exception:
-            print("\t<Can not decrypt. You seem to not have access.>")
+        except Exception as e:
+            print("\t{}".format(e))
             return
         members = self.f.get_members()
         if keyid not in members:
@@ -53,16 +53,16 @@ class Environment(object):
             self.f.set_members(members)
             try:
                 self.f.write_config()
-            except Exception:
-                print("\t<Can not encrypt. You seem to be missing a key.>")
+            except Exception as e:
+                print("\t{}".format(e))
                 return
         self.summary()
 
     def remove_user(self, keyid):
         try:
             self.f.read()
-        except Exception:
-            print("\t<Can not decrypt. You seem to not have access.>")
+        except Exception as e:
+            print("\t{}".format(e))
             return
         members = self.f.get_members()
         if keyid in members:
@@ -70,8 +70,8 @@ class Environment(object):
             self.f.set_members(members)
             try:
                 self.f.write_config()
-            except Exception:
-                print("\t<Can not encrypt. You seem to be missing a key.>")
+            except Exception as e:
+                print("\t{}".format(e))
                 return
         self.summary()
 

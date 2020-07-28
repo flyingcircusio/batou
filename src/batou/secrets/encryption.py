@@ -26,6 +26,8 @@ class EncryptedConfigFile(object):
     # Additional GPG parameters. Used for testing.
     gpg_opts = ''
 
+    GPG_BINARY_CANDIDATES = ['gpg', 'gpg2']
+
     def __init__(self, encrypted_file, write_lock=False, quiet=False):
         """Context manager that opens an encrypted file.
 
@@ -49,7 +51,7 @@ class EncryptedConfigFile(object):
 
     def gpg(self, cmdline):
         null = tempfile.TemporaryFile()
-        for gpg in ['gpg2', 'gpg']:
+        for gpg in self.GPG_BINARY_CANDIDATES:
             try:
                 subprocess.check_call(
                     [gpg, '--version'],
@@ -58,6 +60,11 @@ class EncryptedConfigFile(object):
                 pass
             else:
                 return '{} {}'.format(gpg, cmdline)
+        raise RuntimeError(
+            'Could not find gpg binary.'
+            ' Is GPG installed? I tried looking for: {}'.format(
+                ', '.join('`{}`'.format(x)
+                          for x in self.GPG_BINARY_CANDIDATES)))
 
     @property
     def cleartext(self):

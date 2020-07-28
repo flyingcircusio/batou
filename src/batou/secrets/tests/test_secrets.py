@@ -31,6 +31,16 @@ def cleanup_gpg_sockets():
             pass
 
 
+def test_error_message_no_gpg_found():
+    c = EncryptedConfigFile(encrypted_file)
+    c.GPG_BINARY_CANDIDATES = ['foobarasdf-54875982']
+    with pytest.raises(RuntimeError) as e:
+        c.gpg('asdf')
+    assert e.value.args[0] == (
+        'Could not find gpg binary. Is GPG installed? I tried looking for: '
+        '`foobarasdf-54875982`')
+
+
 class EncryptedConfigFile(BaseEncConfigFile):
 
     gpg_homedir = os.path.join(FIXTURE, 'gnupg')
