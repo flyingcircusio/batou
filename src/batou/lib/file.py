@@ -1,13 +1,16 @@
 from batou import output
 from batou.component import Component
+from batou.utils import dict_merge
 import batou
 import difflib
 import glob
+import json
 import os.path
 import pwd
 import shutil
 import stat
 import tempfile
+import yaml
 
 
 def ensure_path_nonexistent(path):
@@ -332,13 +335,16 @@ def limited_buffer(iterator, limit, lead, separator="...", logdir="/tmp"):
     return start_buffer, limit_triggered, diff_log
 
 
-class Content(FileComponent):
+class ManagedContentBase(FileComponent):
+    """A base class that can be customized for different
+    ways of structuring / managing / updating content
+    of files.
+
+    Not intended for direct use.
+    """
 
     content = None
-    is_template = File.is_template
     source = ""
-    template_context = None
-    template_args = None  # dict, actually
     sensitive_data = False
 
     # If content is given as unicode (always the case with templates)
@@ -350,23 +356,25 @@ class Content(FileComponent):
     _max_diff = 200
     _max_diff_lead = 50
 
+    _content_source_attribute = "content"
+
     def configure(self):
-        super(Content, self).configure()
+        super(ManagedContentBase, self).configure()
 
         self.diff_dir = os.path.join(
             self.environment.workdir_base, ".batou-diffs"
         )
-
         # Step 1: Determine content attribute:
         # - it might be given directly (content='...'),
         # - we might have been passed a filename (source='...'), or
         # - we might fall back using the path attribute (namevar)
-        if self.source and self.content:
+        if self.source and getattr(self, self._content_source_attribute):
             raise ValueError(
-                'Only one of either "content" or "source" are allowed.'
+                'Only one of either "{}" or "source" are allowed.',
+                format(self._content_source_attribute),
             )
 
-        if not self.content:
+        if not getattr(self, self._content_source_attribute):
             if not self.source:
                 self.source = self.original_path
 
@@ -395,18 +403,12 @@ class Content(FileComponent):
                 return
 
         # Phase 2: Decode, if we have an encoding.
-        if self.encoding and not isinstance(self.content, str):
+        if self.content and self.encoding and not isinstance(self.content, str):
             self.content = self.content.decode(self.encoding)
 
-        # Phase 3: If we have a template, render it.
-        if self.is_template:
-            if self.template_args is None:
-                self.template_args = dict()
-            if not self.template_context:
-                self.template_context = self.parent
-            self.content = self.expand(
-                self.content, self.template_context, args=self.template_args
-            )
+        # Phase 3: We have the source content, now allow a subclass
+        # to perform other operations to generate the final output.
+        self.render()
 
         # Phase 4: If we have an encoding, encode the content (again)
         if self.encoding:
@@ -485,6 +487,79 @@ class Content(FileComponent):
     def update(self):
         with open(self.path, "wb") as target:
             target.write(self.content)
+
+
+class Content(ManagedContentBase):
+    """Manage the content of a file - possibly using templating."""
+
+    is_template = File.is_template
+    template_context = None
+    template_args = None  # dict, actually
+
+    def render(self):
+        if not self.is_template:
+            return
+        if self.template_args is None:
+            self.template_args = dict()
+        if not self.template_context:
+            self.template_context = self.parent
+        self.content = self.expand(
+            self.content, self.template_context, args=self.template_args
+        )
+
+
+class JSONContent(ManagedContentBase):
+
+    # Data to be used.
+    data = None
+
+    # Data to override the source.
+    override = None
+
+    # Cause the rendered data to be human readable. Not all parsers support
+    # this so it can be turned off.
+    human_readable = True
+
+    # The final content that will be written out to the target.
+    content_compact = None
+    content_readable = None
+
+    _content_source_attribute = "data"
+
+    def render(self):
+        if self.content:
+            self.data = json.loads(self.content)
+        if self.override:
+            self.data = dict_merge(self.data, self.override)
+
+        self.content_compact = json.dumps(
+            self.data, sort_keys=True, separators=(",", ":")
+        )
+        self.content_readable = json.dumps(self.data, sort_keys=True, indent=4)
+
+        if self.human_readable:
+            self.content = self.content_readable
+        else:
+            self.content = self.content_compact
+
+
+class YAMLContent(ManagedContentBase):
+
+    # Data to be used.
+    data = None
+
+    # Data to override the source.
+    override = None
+
+    _content_source_attribute = "data"
+
+    def render(self):
+        if self.content:
+            self.data = yaml.safe_load(self.content)
+        if self.override:
+            self.data = dict_merge(self.data, self.override)
+
+        self.content = yaml.safe_dump(self.data)
 
 
 class Owner(FileComponent):
