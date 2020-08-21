@@ -25,13 +25,12 @@ import sys
 
 
 class ConfigSection(dict):
-
     def as_list(self, option):
         result = self[option]
-        if ',' in result:
-            result = [x.strip() for x in result.split(',')]
-        elif '\n' in result:
-            result = (x.strip() for x in result.split('\n'))
+        if "," in result:
+            result = [x.strip() for x in result.split(",")]
+        elif "\n" in result:
+            result = (x.strip() for x in result.split("\n"))
             result = [x for x in result if x]
         else:
             result = [result]
@@ -39,7 +38,6 @@ class ConfigSection(dict):
 
 
 class Config(object):
-
     def __init__(self, path):
         config = RawConfigParser()
         config.optionxform = lambda s: s
@@ -55,7 +53,8 @@ class Config(object):
             raise KeyError(section)
         return ConfigSection(
             (x, self.config.get(section, x))
-            for x in self.config.options(section))
+            for x in self.config.options(section)
+        )
 
     def __iter__(self):
         return iter(self.config.sections())
@@ -87,7 +86,7 @@ class Environment(object):
     version = None
     develop = None
 
-    def __init__(self, name, timeout=None, platform=None, basedir='.'):
+    def __init__(self, name, timeout=None, platform=None, basedir="."):
         self.name = name
         self.hosts = {}
         self.resources = Resources()
@@ -103,12 +102,13 @@ class Environment(object):
         self.root_components = []
 
         self.base_dir = os.path.abspath(basedir)
-        self.workdir_base = os.path.join(self.base_dir, 'work')
+        self.workdir_base = os.path.join(self.base_dir, "work")
 
     def load(self):
         # Scan all components
-        for filename in sorted(glob.glob(
-                os.path.join(self.base_dir, 'components/*/component.py'))):
+        for filename in sorted(
+            glob.glob(os.path.join(self.base_dir, "components/*/component.py"))
+        ):
             try:
                 self.components.update(load_components_from_file(filename))
             except Exception as e:
@@ -116,7 +116,8 @@ class Environment(object):
 
         # Load environment configuration
         config_file = os.path.join(
-            self.base_dir, 'environments/{}.cfg'.format(self.name))
+            self.base_dir, "environments/{}.cfg".format(self.name)
+        )
         if not os.path.isfile(config_file):
             raise MissingEnvironment(self)
 
@@ -128,13 +129,13 @@ class Environment(object):
 
         # load overrides
         for section in config:
-            if section.startswith('host:'):
+            if section.startswith("host:"):
                 continue
-            if not section.startswith('component:'):
-                if section not in ['hosts', 'environment', 'vfs', 'resolver']:
+            if not section.startswith("component:"):
+                if section not in ["hosts", "environment", "vfs", "resolver"]:
                     self.exceptions.append(SuperfluousSection(section))
                 continue
-            root_name = section.replace('component:', '')
+            root_name = section.replace("component:", "")
             if root_name not in self.components:
                 self.exceptions.append(SuperfluousComponentSection(root_name))
                 continue
@@ -146,21 +147,31 @@ class Environment(object):
         # The deployment base is the path relative to the
         # repository where batou is located (with ./batou,
         # ./environments, and ./components)
-        if self.connect_method == 'local':
+        if self.connect_method == "local":
             self.target_directory = self.repository.root
 
         self.deployment_base = os.path.relpath(
-            self.base_dir, self.repository.root)
+            self.base_dir, self.repository.root
+        )
 
     def load_secrets(self):
         add_secrets_to_environment_override(self)
 
     def load_environment(self, config):
-        environment = config.get('environment', {})
-        for key in ['service_user', 'host_domain', 'target_directory',
-                    'connect_method', 'update_method', 'branch',
-                    'platform', 'timeout', 'develop', 'repository_url',
-                    'jobs']:
+        environment = config.get("environment", {})
+        for key in [
+            "service_user",
+            "host_domain",
+            "target_directory",
+            "connect_method",
+            "update_method",
+            "branch",
+            "platform",
+            "timeout",
+            "develop",
+            "repository_url",
+            "jobs",
+        ]:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
@@ -171,13 +182,13 @@ class Environment(object):
 
         self._set_defaults()
 
-        if 'vfs' in config:
-            sandbox = config['vfs']['sandbox']
-            sandbox = getattr(batou.vfs, sandbox)(self, config['vfs'])
+        if "vfs" in config:
+            sandbox = config["vfs"]["sandbox"]
+            sandbox = getattr(batou.vfs, sandbox)(self, config["vfs"])
             self.vfs_sandbox = sandbox
 
     def load_resolver(self, config):
-        resolver = config.get('resolver', {})
+        resolver = config.get("resolver", {})
         self._resolve_override = v4 = {}
         self._resolve_v6_override = v6 = {}
 
@@ -186,9 +197,9 @@ class Environment(object):
                 ip = ip.strip()
                 if not ip:
                     continue
-                if '.' in ip:
+                if "." in ip:
                     v4[key] = ip
-                elif ':' in ip:
+                elif ":" in ip:
                     v6[key] = ip
                 else:
                     self.exceptions.append(InvalidIPAddressError(ip))
@@ -203,55 +214,60 @@ class Environment(object):
         self._load_hosts_multi_section(config)
 
     def _load_hosts_single_section(self, config):
-        for literal_hostname in config.get('hosts', {}):
-            hostname = literal_hostname.strip('!')
+        for literal_hostname in config.get("hosts", {}):
+            hostname = literal_hostname.strip("!")
             host = self.add_host(hostname)
-            host.ignore = literal_hostname.startswith('!')
+            host.ignore = literal_hostname.startswith("!")
             host.platform = self.platform
             host.service_user = self.service_user
             self._load_host_components(
-                hostname,
-                config['hosts'].as_list(literal_hostname))
+                hostname, config["hosts"].as_list(literal_hostname)
+            )
 
     def _load_hosts_multi_section(self, config):
         for section in config:
-            if not section.startswith('host:'):
+            if not section.startswith("host:"):
                 continue
-            hostname = section.replace('host:', '', 1)
+            hostname = section.replace("host:", "", 1)
             if hostname in self.hosts:
                 self.exceptions.append(DuplicateHostError(hostname))
             host = self.add_host(hostname)
             host.ignore = ast.literal_eval(
-                config[section].get('ignore', 'False'))
-            host.platform = config[section].get('platform', self.platform)
+                config[section].get("ignore", "False")
+            )
+            host.platform = config[section].get("platform", self.platform)
             host.service_user = config[section].get(
-                'service_user', self.service_user)
+                "service_user", self.service_user
+            )
             self._load_host_components(
-                hostname,
-                config[section].as_list('components'))
+                hostname, config[section].as_list("components")
+            )
             for key, value in list(config[section].items()):
-                if key.startswith('data-'):
-                    key = key.replace('data-', '', 1)
+                if key.startswith("data-"):
+                    key = key.replace("data-", "", 1)
                     host.data[key] = value
 
     def _load_host_components(self, hostname, component_list):
         components = parse_host_components(component_list)
         for component, settings in list(components.items()):
             try:
-                self.add_root(component, hostname,
-                              settings['features'], settings['ignore'])
+                self.add_root(
+                    component,
+                    hostname,
+                    settings["features"],
+                    settings["ignore"],
+                )
             except KeyError:
-                self.exceptions.append(
-                    MissingComponent(component, hostname))
+                self.exceptions.append(MissingComponent(component, hostname))
 
     def _set_defaults(self):
         if self.update_method is None:
-            self.update_method = 'rsync'
+            self.update_method = "rsync"
         if self.connect_method is None:
-            self.connect_method = 'ssh'
+            self.connect_method = "ssh"
 
         if self.target_directory is None:
-            self.target_directory = '~/deployment'
+            self.target_directory = "~/deployment"
 
         if self.platform is None and self.host_domain:
             self.platform = self.host_domain
@@ -262,17 +278,17 @@ class Environment(object):
             self.timeout = int(self.timeout)
 
         if self.version is None:
-            self.version = os.environ.get('BATOU_VERSION')
+            self.version = os.environ.get("BATOU_VERSION")
 
         if self.develop is None:
-            self.develop = os.environ.get('BATOU_DEVELOP')
+            self.develop = os.environ.get("BATOU_DEVELOP")
 
     # API to instrument environment config loading
 
     def add_host(self, hostname):
         fqdn = self.normalize_host_name(hostname)
         if fqdn not in self.hosts:
-            if self.connect_method == 'local':
+            if self.connect_method == "local":
                 self.hosts[fqdn] = LocalHost(fqdn, self)
             else:
                 self.hosts[fqdn] = RemoteHost(fqdn, self)
@@ -289,7 +305,8 @@ class Environment(object):
             ignore=ignore,
             factory=compdef.factory,
             defdir=compdef.defdir,
-            workdir=os.path.join(self.workdir_base, compdef.name))
+            workdir=os.path.join(self.workdir_base, compdef.name),
+        )
         self.root_components.append(root)
         return root
 
@@ -298,20 +315,26 @@ class Environment(object):
         for root in self.root_components:
             if root.host == host and root.name == component_name:
                 return root
-        raise KeyError("Component {} not configured for host {}".format(
-            component_name, hostname))
+        raise KeyError(
+            "Component {} not configured for host {}".format(
+                component_name, hostname
+            )
+        )
 
     def prepare_connect(self):
-        if self.connect_method == 'vagrant':
+        if self.connect_method == "vagrant":
             output.step("vagrant", "Ensuring machines are up ...")
-            cmd('vagrant up')
-        elif self.connect_method == 'kitchen':
+            cmd("vagrant up")
+        elif self.connect_method == "kitchen":
             output.step("kitchen", "Ensuring machines are up ...")
             for fqdn in self.hosts:
-                cmd('kitchen create {}'.format(fqdn))
-            if 'BATOU_POST_KITCHEN_CREATE_CMD' in os.environ:
-                cmd("kitchen exec -c '{}'".format(
-                    os.environ['BATOU_POST_KITCHEN_CREATE_CMD']))
+                cmd("kitchen create {}".format(fqdn))
+            if "BATOU_POST_KITCHEN_CREATE_CMD" in os.environ:
+                cmd(
+                    "kitchen exec -c '{}'".format(
+                        os.environ["BATOU_POST_KITCHEN_CREATE_CMD"]
+                    )
+                )
 
     # Deployment API (implements the configure-verify-update cycle)
 
@@ -350,7 +373,8 @@ class Environment(object):
                     # to report gracefully.
                     ex_type, ex, tb = sys.exc_info()
                     exceptions.append(
-                        UnknownComponentConfigurationError(root, e, tb))
+                        UnknownComponentConfigurationError(root, e, tb)
+                    )
                     print(root, e)
                     retry.add(root)
 
@@ -363,16 +387,20 @@ class Environment(object):
             root_dependencies = self.root_dependencies()
             try:
                 order = batou.utils.topological_sort(
-                    batou.utils.revert_graph(root_dependencies))
+                    batou.utils.revert_graph(root_dependencies)
+                )
             except CycleError as e:
                 exceptions.append(CycleErrorDetected(e))
 
-            if (retry in previous_working_sets):
+            if retry in previous_working_sets:
                 # If any resources were required, now is the time to report
                 # them.
                 if self.resources.unsatisfied:
-                    exceptions.append(UnsatisfiedResources(
-                        self.resources.unsatisfied_keys_and_components))
+                    exceptions.append(
+                        UnsatisfiedResources(
+                            self.resources.unsatisfied_keys_and_components
+                        )
+                    )
 
                 # We did not manage to improve on our last working set, so we
                 # give up.
@@ -421,7 +449,7 @@ class Environment(object):
         if not self.host_domain or hostname.endswith(self.host_domain):
             return hostname
         else:
-            return '%s.%s' % (hostname, self.host_domain)
+            return "%s.%s" % (hostname, self.host_domain)
 
     def get_host(self, hostname):
         return self.hosts[self.normalize_host_name(hostname)]
@@ -463,15 +491,15 @@ def parse_host_components(components):
     result = {}
     for name in components:
         name = name.strip()
-        if ':' in name:
-            name, feature = name.split(':', 1)
+        if ":" in name:
+            name, feature = name.split(":", 1)
         else:
             feature = None
 
-        ignore = name.startswith('!')
-        name = name.strip('!')
-        result.setdefault(name, {'features': [], 'ignore': False})
-        result[name]['ignore'] |= ignore
+        ignore = name.startswith("!")
+        name = name.strip("!")
+        result.setdefault(name, {"features": [], "ignore": False})
+        result[name]["ignore"] |= ignore
         if feature:
-            result[name]['features'].append(feature)
+            result[name]["features"].append(feature)
     return result

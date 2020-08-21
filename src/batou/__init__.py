@@ -3,7 +3,7 @@ from ._output import output
 import os.path
 import traceback
 
-__version__ = open(os.path.dirname(__file__) + '/version.txt').read().strip()
+__version__ = open(os.path.dirname(__file__) + "/version.txt").read().strip()
 
 
 class FileLockedError(Exception):
@@ -30,10 +30,11 @@ class ConfigurationError(Exception):
 
     def report(self):
         if self.component:
-            message = '{}@{}: {}'.format(
+            message = "{}@{}: {}".format(
                 self.component.root.name,
                 self.component.root.host.name,
-                self.message)
+                self.message,
+            )
         else:
             message = self.message
         output.error(message)
@@ -44,8 +45,12 @@ class ConversionError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (1, self.component.root.host.name,
-                self.component._breadcrumbs, self.key)
+        return (
+            1,
+            self.component.root.host.name,
+            self.component._breadcrumbs,
+            self.key,
+        )
 
     def __init__(self, component, key, value, conversion, error):
         self.component = component
@@ -55,22 +60,20 @@ class ConversionError(ConfigurationError):
         self.error = error
 
     def report(self):
-        output.error('Failed override attribute conversion')
+        output.error("Failed override attribute conversion")
+        output.tabular("Host", self.component.root.host.name, red=True)
         output.tabular(
-            'Host', self.component.root.host.name,
-            red=True)
+            "Attribute",
+            "{}.{}".format(self.component._breadcrumbs, self.key),
+            red=True,
+        )
         output.tabular(
-            'Attribute',
-            '{}.{}'.format(
-                self.component._breadcrumbs,
-                self.key),
-            red=True)
-        output.tabular('Conversion',
-                       '{}({})'.format(self.conversion.__name__,
-                                       repr(self.value)),
-                       red=True)
+            "Conversion",
+            "{}({})".format(self.conversion.__name__, repr(self.value)),
+            red=True,
+        )
         # TODO provide traceback in debug output
-        output.tabular('Error', str(self.error), red=True)
+        output.tabular("Error", str(self.error), red=True)
 
 
 class SilentConfigurationError(Exception):
@@ -83,36 +86,25 @@ class SilentConfigurationError(Exception):
 
 
 class MissingOverrideAttributes(ConfigurationError):
-
     @property
     def sort_key(self):
-        return (3, self.component.root.host.name,
-                self.component._breadcrumbs)
+        return (3, self.component.root.host.name, self.component._breadcrumbs)
 
     def __init__(self, component, attributes):
         self.component = component
         self.attributes = attributes
 
     def report(self):
-        output.error('Overrides for undefined attributes')
-        output.tabular(
-            'Host', self.component.root.host.name,
-            red=True)
-        output.tabular(
-            'Component',
-            self.component._breadcrumbs,
-            red=True)
-        output.tabular(
-            'Attributes',
-            ', '.join(self.attributes),
-            red=True)
+        output.error("Overrides for undefined attributes")
+        output.tabular("Host", self.component.root.host.name, red=True)
+        output.tabular("Component", self.component._breadcrumbs, red=True)
+        output.tabular("Attributes", ", ".join(self.attributes), red=True)
 
         # TODO point to specific line in secrets or environments
         # cfg file and show context
 
 
 class DuplicateComponent(ConfigurationError):
-
     @property
     def sort_key(self):
         return (2, self.a.name)
@@ -123,8 +115,8 @@ class DuplicateComponent(ConfigurationError):
 
     def report(self):
         output.error('Duplicate component "{}"'.format(self.a.name))
-        output.tabular('Occurence', self.a.filename)
-        output.tabular('Occurence', self.b.filename)
+        output.tabular("Occurence", self.a.filename)
+        output.tabular("Occurence", self.b.filename)
 
 
 class UnknownComponentConfigurationError(ConfigurationError):
@@ -139,28 +131,32 @@ class UnknownComponentConfigurationError(ConfigurationError):
         self.exception = exception
         stack = traceback.extract_tb(tb)
         from batou import environment, component
+
         while True:
             # Delete remoting-internal stack frames.'
             line = stack.pop(0)
-            if line[0] in ['<string>', '<remote exec>',
-                           environment.__file__.rstrip('c'),
-                           component.__file__.rstrip('c')]:
+            if line[0] in [
+                "<string>",
+                "<remote exec>",
+                environment.__file__.rstrip("c"),
+                component.__file__.rstrip("c"),
+            ]:
                 continue
             stack.insert(0, line)
             break
-        self.traceback = ''.join(traceback.format_list(stack))
+        self.traceback = "".join(traceback.format_list(stack))
 
     def report(self):
         output.error(repr(self.exception))
         output.annotate(
             "This /might/ be a batou bug. Please consider reporting it.\n",
-            red=True)
-        output.tabular(
-            "Host", self.root.host.name, red=True)
-        output.tabular(
-            "Component", self.root.name + '\n', red=True)
-        output.annotate('Traceback (simplified, most recent call last):',
-                        red=True)
+            red=True,
+        )
+        output.tabular("Host", self.root.host.name, red=True)
+        output.tabular("Component", self.root.name + "\n", red=True)
+        output.annotate(
+            "Traceback (simplified, most recent call last):", red=True
+        )
         output.annotate(self.traceback, red=True)
 
 
@@ -169,7 +165,7 @@ class UnusedResources(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (5, 'unused')
+        return (5, "unused")
 
     def __init__(self, resources):
         self.resources = resources
@@ -180,8 +176,10 @@ class UnusedResources(ConfigurationError):
             for component, value in list(self.resources[key].items()):
                 output.line(
                     '    Resource "{}" provided by {} with value {}'.format(
-                        key, component.name, value),
-                    red=True)
+                        key, component.name, value
+                    ),
+                    red=True,
+                )
 
 
 class UnsatisfiedResources(ConfigurationError):
@@ -189,7 +187,7 @@ class UnsatisfiedResources(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (6, 'unsatisfied')
+        return (6, "unsatisfied")
 
     def __init__(self, resources):
         self.resources = resources
@@ -197,9 +195,12 @@ class UnsatisfiedResources(ConfigurationError):
     def report(self):
         output.error("Unsatisfied resource requirements")
         for key in sorted(self.resources):
-            output.line('    Resource "{}" required by {}'.format(
-                key, ','.join(r.name for r in self.resources[key])),
-                red=True)
+            output.line(
+                '    Resource "{}" required by {}'.format(
+                    key, ",".join(r.name for r in self.resources[key])
+                ),
+                red=True,
+            )
 
 
 class MissingEnvironment(ConfigurationError):
@@ -207,14 +208,14 @@ class MissingEnvironment(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return (0,)
 
     def __init__(self, environment):
         self.environment = environment
 
     def report(self):
         output.error("Missing environment")
-        output.tabular('Environment', self.environment.name, red=True)
+        output.tabular("Environment", self.environment.name, red=True)
 
 
 class ComponentLoadingError(ConfigurationError):
@@ -222,7 +223,7 @@ class ComponentLoadingError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return (0,)
 
     def __init__(self, filename, exception):
         self.filename = filename
@@ -240,7 +241,7 @@ class MissingComponent(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return (0,)
 
     def __init__(self, component, hostname):
         self.component = component
@@ -248,8 +249,8 @@ class MissingComponent(ConfigurationError):
 
     def report(self):
         output.error("Missing component")
-        output.tabular('Component', self.component, red=True)
-        output.tabular('Host', self.hostname, red=True)
+        output.tabular("Component", self.component, red=True)
+        output.tabular("Host", self.hostname, red=True)
 
 
 class SuperfluousSection(ConfigurationError):
@@ -258,7 +259,7 @@ class SuperfluousSection(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return (0,)
 
     def __init__(self, section):
         self.section = section
@@ -275,7 +276,7 @@ class SuperfluousComponentSection(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return (0,)
 
     def __init__(self, component):
         self.component = component
@@ -292,7 +293,7 @@ class SuperfluousSecretsSection(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return (0,)
 
     def __init__(self, component):
         self.component = component
@@ -309,7 +310,7 @@ class CycleErrorDetected(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (99, )
+        return (99,)
 
     def __init__(self, error):
         self.error = error
@@ -325,7 +326,7 @@ class NonConvergingWorkingSet(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (100, )
+        return (100,)
 
     def __init__(self, roots):
         self.roots = roots
@@ -333,8 +334,9 @@ class NonConvergingWorkingSet(ConfigurationError):
     def report(self):
         # TODO show this last or first, but not in the middle
         # of everything
-        output.error("{} remaining unconfigured component(s)".format(
-                     len(self.roots)))
+        output.error(
+            "{} remaining unconfigured component(s)".format(len(self.roots))
+        )
         # TODO show all incl. their host name in -vv or so
         # output.annotate(', '.join(c.name for c in self.roots))
 
@@ -344,7 +346,7 @@ class DeploymentError(Exception):
 
     @property
     def sort_key(self):
-        return (200, )
+        return (200,)
 
     def report(self):
         pass
@@ -355,7 +357,7 @@ class RepositoryDifferentError(DeploymentError):
 
     @property
     def sort_key(self):
-        return (150, )
+        return (150,)
 
     def __init__(self, local, remote):
         self.local = local
@@ -364,16 +366,16 @@ class RepositoryDifferentError(DeploymentError):
     def report(self):
         output.error(
             "The remote working copy is based on a different revision. "
-            "Maybe you tried to deploy from the wrong branch.")
+            "Maybe you tried to deploy from the wrong branch."
+        )
         output.tabular("Local", self.local, red=True)
         output.tabular("Remote", self.remote, red=True)
 
 
 class DuplicateHostError(ConfigurationError):
-
     @property
     def sort_key(self):
-        return (0, )
+        return (0,)
 
     def __init__(self, hostname):
         self.hostname = hostname
@@ -383,10 +385,9 @@ class DuplicateHostError(ConfigurationError):
 
 
 class InvalidIPAddressError(ConfigurationError):
-
     @property
     def sort_key(self):
-        return (0, )
+        return (0,)
 
     def __init__(self, address):
         self.address = address

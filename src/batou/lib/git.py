@@ -22,8 +22,8 @@ def ensure_empty_directory(path):
 
 class Clone(Component):
 
-    namevar = 'url'
-    target = '.'
+    namevar = "url"
+    target = "."
     revision = None
     branch = None
     vcs_update = True
@@ -31,7 +31,8 @@ class Clone(Component):
     def configure(self):
         if (not self.revision_or_branch) or (self.revision and self.branch):
             raise ValueError(
-                'Clone(%s) needs exactly one of revision or branch' % self.url)
+                "Clone(%s) needs exactly one of revision or branch" % self.url
+            )
         self.target = self.map(self.target)
         self += Directory(self.target)
 
@@ -43,7 +44,7 @@ class Clone(Component):
         # if the path does exist but isn't a directory, just let the error
         # bubble for now, the message will at least tell something useful
         with self.chdir(self.target):
-            if not os.path.exists('.git'):
+            if not os.path.exists(".git"):
                 self._force_clone = True
                 raise UpdateNeeded()
 
@@ -56,20 +57,26 @@ class Clone(Component):
 
             if self.has_outgoing_changesets():
                 output.annotate(
-                    'Git clone at {} has outgoing changesets.'.format(
-                        self.target))
+                    "Git clone at {} has outgoing changesets.".format(
+                        self.target
+                    )
+                )
 
             if self.has_changes():
                 output.annotate(
-                    'Git clone at {} is dirty, going to lose changes.'.format(
-                        self.target), red=True)
+                    "Git clone at {} is dirty, going to lose changes.".format(
+                        self.target
+                    ),
+                    red=True,
+                )
                 raise UpdateNeeded()
 
             if self.revision and self.current_revision() != self.revision:
                 raise UpdateNeeded()
-            if (self.branch and (
-                    self.current_branch() != self.branch or
-                    self.has_incoming_changesets())):
+            if self.branch and (
+                self.current_branch() != self.branch
+                or self.has_incoming_changesets()
+            ):
                 raise UpdateNeeded()
 
     @property
@@ -79,69 +86,71 @@ class Clone(Component):
     def current_revision(self):
         try:
             with self.chdir(self.target):
-                stdout, stderr = self.cmd('LANG=C git show -s --format=%H')
+                stdout, stderr = self.cmd("LANG=C git show -s --format=%H")
         except RuntimeError:
             return None
         return stdout.strip()
 
     def current_branch(self):
         with self.chdir(self.target):
-            stdout, stderr = self.cmd('git rev-parse --abbrev-ref HEAD')
+            stdout, stderr = self.cmd("git rev-parse --abbrev-ref HEAD")
         return stdout.strip()
 
     def has_incoming_changesets(self):
         with self.chdir(self.target):
-            stdout, stderr = self.cmd('git fetch --dry-run')
+            stdout, stderr = self.cmd("git fetch --dry-run")
             return stderr.strip()
 
     def has_outgoing_changesets(self):
         with self.chdir(self.target):
-            stdout, stderr = self.cmd('LANG=C git status')
-        return 'Your branch is ahead of' in stdout
+            stdout, stderr = self.cmd("LANG=C git status")
+        return "Your branch is ahead of" in stdout
 
     def has_changes(self):
         with self.chdir(self.target):
-            stdout, stderr = self.cmd('git status --porcelain')
+            stdout, stderr = self.cmd("git status --porcelain")
         return bool(stdout.strip())
 
     def remote_url(self):
         with self.chdir(self.target):
-            stdout, stderr = self.cmd('git remote get-url origin')
+            stdout, stderr = self.cmd("git remote get-url origin")
         return stdout.strip()
 
     def update(self):
         just_cloned = False
         if self._force_clone:
             ensure_empty_directory(self.target)
-            self.cmd(self.expand(
-                'git clone {{component.url}} {{component.target}}'))
+            self.cmd(
+                self.expand("git clone {{component.url}} {{component.target}}")
+            )
             just_cloned = True
         with self.chdir(self.target):
             for filepath in self.untracked_files():
                 os.unlink(os.path.join(self.target, filepath))
             if not just_cloned:
-                self.cmd('git fetch')
+                self.cmd("git fetch")
             if self.branch:
-                self.cmd(self.expand(
-                    'git reset --hard origin/{{component.branch}}'))
+                self.cmd(
+                    self.expand("git reset --hard origin/{{component.branch}}")
+                )
             else:
-                self.cmd(self.expand(
-                    'git reset --hard {{component.revision}}'))
+                self.cmd(self.expand("git reset --hard {{component.revision}}"))
 
             # XXX We should re-think submodule support; e.g. which revision
             # shall the submodules be updated to?
-            self.cmd('git submodule update --init --recursive')
+            self.cmd("git submodule update --init --recursive")
 
     def untracked_files(self):
         stdout, stderr = self.cmd(
-            'git status --porcelain --untracked-files=all')
+            "git status --porcelain --untracked-files=all"
+        )
         items = (line.split(None, 1) for line in stdout.splitlines())
-        return [filepath for status, filepath in items if status == '??']
+        return [filepath for status, filepath in items if status == "??"]
 
     def last_updated(self):
         with self.chdir(self.target):
-            if not os.path.exists('.git'):
+            if not os.path.exists(".git"):
                 return None
-            stdout, stderr = self.cmd('git show -s --format=%ct')
+            stdout, stderr = self.cmd("git show -s --format=%ct")
             timestamp = stdout.strip()
             return float(timestamp)

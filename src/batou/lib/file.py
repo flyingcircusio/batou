@@ -23,17 +23,17 @@ def ensure_path_nonexistent(path):
 
 class File(Component):
 
-    namevar = 'path'
+    namevar = "path"
 
-    ensure = 'file'  # or: directory, symlink
+    ensure = "file"  # or: directory, symlink
 
     # Content oriented parameters
     content = None
-    source = ''
+    source = ""
     is_template = True
     template_context = None
     template_args = None  # dict, actually
-    encoding = 'utf-8'
+    encoding = "utf-8"
 
     # Unix attributes
     owner = None
@@ -41,7 +41,7 @@ class File(Component):
     mode = None
 
     # Symlink parameters
-    link_to = ''
+    link_to = ""
 
     # Leading directory creation
     leading = False
@@ -52,18 +52,19 @@ class File(Component):
     def configure(self):
         self._unmapped_path = self.path
         self.path = self.map(self.path)
-        if self.ensure == 'file':
+        if self.ensure == "file":
             self += Presence(self.path, leading=self.leading)
-        elif self.ensure == 'directory':
-            self += Directory(self.path,
-                              leading=self.leading,
-                              source=self.source)
-        elif self.ensure == 'symlink':
+        elif self.ensure == "directory":
+            self += Directory(
+                self.path, leading=self.leading, source=self.source
+            )
+        elif self.ensure == "symlink":
             self += Symlink(self.path, source=self.link_to)
         else:
             raise ValueError(
-                'Ensure must be one of: file, directory, '
-                'symlink not %s' % self.ensure)
+                "Ensure must be one of: file, directory, "
+                "symlink not %s" % self.ensure
+            )
         # variation: content or source explicitly given
 
         # The mode needs to be set early to allow batou to get out of
@@ -73,9 +74,8 @@ class File(Component):
 
         # no content or source given but file with same name
         # exists
-        if self.ensure == 'file' and self.content is None and not self.source:
-            guess_source = (
-                self.root.defdir + '/' + os.path.basename(self.path))
+        if self.ensure == "file" and self.content is None and not self.source:
+            guess_source = self.root.defdir + "/" + os.path.basename(self.path)
             if os.path.isfile(guess_source):
                 self.source = guess_source
             else:
@@ -93,22 +93,26 @@ class File(Component):
                 # (have an empty file)
                 raise ValueError(
                     "Missing implicit template file {}. Or did you want "
-                    "to create an empty file? Then use File('{}', content='')."
-                    .format(guess_source, self._unmapped_path))
+                    "to create an empty file? Then use File('{}', content='').".format(
+                        guess_source, self._unmapped_path
+                    )
+                )
 
         if self.content or self.source:
             if self.template_args is None:
                 self.template_args = dict()
             if not self.template_context:
                 self.template_context = self.parent
-            content = Content(self.path,
-                              source=self.source,
-                              is_template=self.is_template,
-                              template_context=self.template_context,
-                              template_args=self.template_args,
-                              encoding=self.encoding,
-                              content=self.content,
-                              sensitive_data=self.sensitive_data)
+            content = Content(
+                self.path,
+                source=self.source,
+                is_template=self.is_template,
+                template_context=self.template_context,
+                template_args=self.template_args,
+                encoding=self.encoding,
+                content=self.content,
+                sensitive_data=self.sensitive_data,
+            )
             self += content
             self.content = content.content
 
@@ -121,11 +125,11 @@ class File(Component):
     @property
     def namevar_for_breadcrumb(self):
         relpath = os.path.relpath(self.path, self.environment.base_dir)
-        if not relpath.startswith('..'):
+        if not relpath.startswith(".."):
             return relpath
         return os.path.abspath(self.path)
 
-    def last_updated(self, key='st_mtime'):
+    def last_updated(self, key="st_mtime"):
         if not os.path.exists(self.path):
             return None
         return getattr(os.stat(self.path), key)
@@ -139,21 +143,20 @@ class BinaryFile(File):
 
 class Presence(Component):
 
-    namevar = 'path'
+    namevar = "path"
     leading = False
 
     def configure(self):
         self.path = self.map(self.path)
         if self.leading:
-            self += Directory(os.path.dirname(self.path),
-                              leading=self.leading)
+            self += Directory(os.path.dirname(self.path), leading=self.leading)
 
     def verify(self):
         assert os.path.isfile(self.path)
 
     def update(self):
         ensure_path_nonexistent(self.path)
-        with open(self.path, 'w'):
+        with open(self.path, "w"):
             # We're just touching it.
             pass
 
@@ -162,11 +165,11 @@ class Presence(Component):
         if isinstance(self.parent, File):
             return os.path.basename(self.path)
         relpath = os.path.relpath(self.path, self.environment.base_dir)
-        if not relpath.startswith('..'):
+        if not relpath.startswith(".."):
             return relpath
         return os.path.abspath(self.path)
 
-    def last_updated(self, key='st_mtime'):
+    def last_updated(self, key="st_mtime"):
         if not os.path.exists(self.path):
             return None
         return getattr(os.stat(self.path), key)
@@ -174,52 +177,59 @@ class Presence(Component):
 
 class SyncDirectory(Component):
 
-    namevar = 'path'
+    namevar = "path"
     source = None
     exclude = ()
 
-    verify_opts = '-rclnv'
-    sync_opts = '--inplace -lr'
+    verify_opts = "-rclnv"
+    sync_opts = "--inplace -lr"
 
     def configure(self):
         self.path = self.map(self.path)
         self.source = os.path.normpath(
-            os.path.join(self.root.defdir, self.source))
+            os.path.join(self.root.defdir, self.source)
+        )
 
     @property
     def exclude_arg(self):
         if not self.exclude:
-            return ''
-        return ' '.join("--exclude '{}'".format(x) for x in self.exclude) + ' '
+            return ""
+        return " ".join("--exclude '{}'".format(x) for x in self.exclude) + " "
 
     def verify(self):
-        stdout, stderr = self.cmd('rsync {} {}{}/ {}'.format(
-            self.verify_opts, self.exclude_arg, self.source, self.path))
+        stdout, stderr = self.cmd(
+            "rsync {} {}{}/ {}".format(
+                self.verify_opts, self.exclude_arg, self.source, self.path
+            )
+        )
 
         # In case of we see non-convergent rsync runs
-        output.annotate('rsync result:', debug=True)
+        output.annotate("rsync result:", debug=True)
         output.annotate(stdout, debug=True)
 
         if len(stdout.strip().splitlines()) - 4 > 0:
             raise batou.UpdateNeeded()
 
     def update(self):
-        self.cmd('rsync {} {}{}/ {}'.format(
-            self.sync_opts, self.exclude_arg, self.source, self.path))
+        self.cmd(
+            "rsync {} {}{}/ {}".format(
+                self.sync_opts, self.exclude_arg, self.source, self.path
+            )
+        )
 
     @property
     def namevar_for_breadcrumb(self):
         if isinstance(self.parent, Directory):
             return os.path.basename(self.path)
         relpath = os.path.relpath(self.path, self.environment.base_dir)
-        if not relpath.startswith('..'):
+        if not relpath.startswith(".."):
             return relpath
         return os.path.abspath(self.path)
 
 
 class Directory(Component):
 
-    namevar = 'path'
+    namevar = "path"
     leading = False
     source = None
     exclude = ()
@@ -229,7 +239,8 @@ class Directory(Component):
         if self.source:
             # XXX The ordering is wrong. SyncDirectory should run *after*.
             self += SyncDirectory(
-                self.path, source=self.source, exclude=self.exclude)
+                self.path, source=self.source, exclude=self.exclude
+            )
 
     def verify(self):
         assert os.path.isdir(self.path)
@@ -241,7 +252,7 @@ class Directory(Component):
         else:
             os.mkdir(self.path)
 
-    def last_updated(self, key='st_mtime'):
+    def last_updated(self, key="st_mtime"):
         newest = 0  # epoch
         for dirpath, dirnames, filenames in os.walk(self.path):
             for filename in filenames:
@@ -255,14 +266,14 @@ class Directory(Component):
         if isinstance(self.parent, File):
             return os.path.basename(self.path)
         relpath = os.path.relpath(self.path, self.environment.base_dir)
-        if not relpath.startswith('..'):
+        if not relpath.startswith(".."):
             return relpath
         return os.path.abspath(self.path)
 
 
 class FileComponent(Component):
 
-    namevar = 'path'
+    namevar = "path"
     leading = False
 
     def configure(self):
@@ -274,13 +285,12 @@ class FileComponent(Component):
         if isinstance(self.parent, File):
             return os.path.basename(self.path)
         relpath = os.path.relpath(self.path, self.environment.base_dir)
-        if not relpath.startswith('..'):
+        if not relpath.startswith(".."):
             return relpath
         return os.path.abspath(self.path)
 
 
-def limited_buffer(iterator, limit, lead, separator='...',
-                   logdir='/tmp'):
+def limited_buffer(iterator, limit, lead, separator="...", logdir="/tmp"):
     limit_triggered = False
     # Fill up to limit lines into the start buffer
     start_buffer = []
@@ -301,12 +311,12 @@ def limited_buffer(iterator, limit, lead, separator='...',
         for line in iterator:
             line = line.rstrip()
             if not started_logging:
-                _, diff_log = tempfile.mkstemp(suffix='.diff', dir=logdir)
-                diff_log_file = open(diff_log, 'a+')
+                _, diff_log = tempfile.mkstemp(suffix=".diff", dir=logdir)
+                diff_log_file = open(diff_log, "a+")
                 for line in start_buffer:
-                    diff_log_file.write(line + '\n')
+                    diff_log_file.write(line + "\n")
                 started_logging = True
-            diff_log_file.write(line + '\n')
+            diff_log_file.write(line + "\n")
             end_buffer.append(line)
             if len(end_buffer) > lead:
                 end_buffer.pop(0)
@@ -326,7 +336,7 @@ class Content(FileComponent):
 
     content = None
     is_template = File.is_template
-    source = ''
+    source = ""
     template_context = None
     template_args = None  # dict, actually
     sensitive_data = False
@@ -334,7 +344,7 @@ class Content(FileComponent):
     # If content is given as unicode (always the case with templates)
     # then require it to be encodable. We assume UTF-8 as a sensible default
     # for most use cases and allow overrides.
-    encoding = 'utf-8'
+    encoding = "utf-8"
 
     _delayed = False
     _max_diff = 200
@@ -344,7 +354,8 @@ class Content(FileComponent):
         super(Content, self).configure()
 
         self.diff_dir = os.path.join(
-            self.environment.workdir_base, '.batou-diffs')
+            self.environment.workdir_base, ".batou-diffs"
+        )
 
         # Step 1: Determine content attribute:
         # - it might be given directly (content='...'),
@@ -352,13 +363,14 @@ class Content(FileComponent):
         # - we might fall back using the path attribute (namevar)
         if self.source and self.content:
             raise ValueError(
-                'Only one of either "content" or "source" are allowed.')
+                'Only one of either "content" or "source" are allowed.'
+            )
 
         if not self.content:
             if not self.source:
                 self.source = self.original_path
 
-            if not self.source.startswith('/'):
+            if not self.source.startswith("/"):
                 self.source = os.path.join(self.root.defdir, self.source)
 
         self._render()
@@ -367,13 +379,17 @@ class Content(FileComponent):
         # Phase 1: acquire the source data into self.content
         if self.source:
             if os.path.exists(self.source):
-                with open(self.source, 'r' if self.encoding else 'rb',
-                          encoding=self.encoding) as f:
+                with open(
+                    self.source,
+                    "r" if self.encoding else "rb",
+                    encoding=self.encoding,
+                ) as f:
                     self.content = f.read()
             else:
                 if self._delayed:
                     raise FileNotFoundError(
-                        'Could not find source file {}'.format(self.source))
+                        "Could not find source file {}".format(self.source)
+                    )
                 # We need to try rendering again later.
                 self._delayed = True
                 return
@@ -389,7 +405,8 @@ class Content(FileComponent):
             if not self.template_context:
                 self.template_context = self.parent
             self.content = self.expand(
-                self.content, self.template_context, args=self.template_args)
+                self.content, self.template_context, args=self.template_args
+            )
 
         # Phase 4: If we have an encoding, encode the content (again)
         if self.encoding:
@@ -410,56 +427,63 @@ class Content(FileComponent):
             # Stop here.
             raise
         try:
-            with open(self.path, 'rb') as target:
+            with open(self.path, "rb") as target:
                 current = target.read()
                 if current == self.content:
                     return
         except FileNotFoundError:
-            current = b''
+            current = b""
         except Exception:
-            output.annotate('Unknown content - can\'t predict diff.')
+            output.annotate("Unknown content - can't predict diff.")
             raise batou.UpdateNeeded()
 
         if self.encoding:
-            current_text = current.decode(self.encoding, errors='replace')
-            wanted_text = self.content.decode(self.encoding, errors='replace')
+            current_text = current.decode(self.encoding, errors="replace")
+            wanted_text = self.content.decode(self.encoding, errors="replace")
 
         if not self.encoding:
-            output.annotate(
-                'Not showing diff for binary data.', yellow=True)
+            output.annotate("Not showing diff for binary data.", yellow=True)
         elif self.sensitive_data:
             output.annotate(
-                'Not showing diff as it contains sensitive data.', red=True)
+                "Not showing diff as it contains sensitive data.", red=True
+            )
         else:
             diff = difflib.unified_diff(
-                    current_text.splitlines(),
-                    wanted_text.splitlines())
+                current_text.splitlines(), wanted_text.splitlines()
+            )
             if not os.path.exists(self.diff_dir):
                 os.makedirs(self.diff_dir)
             diff, diff_too_long, diff_log = limited_buffer(
-                diff, self._max_diff, self._max_diff_lead,
-                logdir=self.diff_dir)
+                diff, self._max_diff, self._max_diff_lead, logdir=self.diff_dir
+            )
 
             if diff_too_long:
                 output.line(
-                    ('More than {} lines of diff. Showing first and '
-                     'last {} lines.'.format(
-                        self._max_diff, self._max_diff_lead)), yellow=True)
+                    (
+                        "More than {} lines of diff. Showing first and "
+                        "last {} lines.".format(
+                            self._max_diff, self._max_diff_lead
+                        )
+                    ),
+                    yellow=True,
+                )
                 output.line(
-                    'see {} for the full diff.'.format(diff_log), yellow=True)
+                    "see {} for the full diff.".format(diff_log), yellow=True
+                )
 
             for line in diff:
-                line = line.replace('\n', '')
+                line = line.replace("\n", "")
                 if not line.strip():
                     continue
                 output.annotate(
-                    '  {} {}'.format(os.path.basename(self.path), line),
-                    red=line.startswith('-'),
-                    green=line.startswith('+'))
+                    "  {} {}".format(os.path.basename(self.path), line),
+                    red=line.startswith("-"),
+                    green=line.startswith("+"),
+                )
         raise batou.UpdateNeeded()
 
     def update(self):
-        with open(self.path, 'wb') as target:
+        with open(self.path, "wb") as target:
             target.write(self.content)
 
 
@@ -524,7 +548,7 @@ class Mode(FileComponent):
 
 class Symlink(Component):
 
-    namevar = 'target'
+    namevar = "target"
     source = None
 
     def configure(self):
@@ -543,7 +567,7 @@ class Symlink(Component):
 class Purge(Component):
     """Ensure that a set of files (given as a glob) does not exist."""
 
-    namevar = 'pattern'
+    namevar = "pattern"
 
     def configure(self):
         self.pattern = self.map(self.pattern)

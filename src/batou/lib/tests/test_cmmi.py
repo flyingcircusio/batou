@@ -13,34 +13,37 @@ import time
 
 
 def test_build_breadcrumb_shortens_url():
-    b = Build('http://launchpad.net/libmemcached/1.0/0.46/'
-              '+download/libmemcached-0.46.tar.gz')
-    assert b._breadcrumb == 'Build(\'libmemcached-0.46.tar.gz\')'
+    b = Build(
+        "http://launchpad.net/libmemcached/1.0/0.46/"
+        "+download/libmemcached-0.46.tar.gz"
+    )
+    assert b._breadcrumb == "Build('libmemcached-0.46.tar.gz')"
 
 
 def test_configure_defaults_prefix_to_workdir(root):
-    configure = Configure('.')
+    configure = Configure(".")
     configure.cmd = mock.Mock()
     root.component += configure
     assert configure.prefix == root.component.workdir
     root.component.deploy()
     assert (
-        ' --prefix={}'.format(root.component.workdir) in
-        configure.cmd.call_args[0][0])
+        " --prefix={}".format(root.component.workdir)
+        in configure.cmd.call_args[0][0]
+    )
 
 
 def test_configure_accepts_custom_prefix(root):
-    configure = Configure('.', prefix='/asdf')
+    configure = Configure(".", prefix="/asdf")
     configure.cmd = mock.Mock()
     root.component += configure
-    assert configure.prefix == '/asdf'
+    assert configure.prefix == "/asdf"
     root.component.deploy()
-    assert ' --prefix=/asdf' in configure.cmd.call_args[0][0]
+    assert " --prefix=/asdf" in configure.cmd.call_args[0][0]
 
 
 def test_configure_verifies_against_success_file(root):
-    root.component += File('foo/config.status', content='', leading=True)
-    configure = Configure('foo')
+    root.component += File("foo/config.status", content="", leading=True)
+    configure = Configure("foo")
     configure.cmd = mock.Mock()
     root.component += configure
     root.component.deploy()
@@ -49,8 +52,8 @@ def test_configure_verifies_against_success_file(root):
 
 
 def test_make_verifies_against_success_file(root):
-    root.component += File('foo/Makefile', content='', leading=True)
-    make = Make('foo')
+    root.component += File("foo/Makefile", content="", leading=True)
+    make = Make("foo")
     make.cmd = mock.Mock()
     root.component += make
     root.component.deploy()
@@ -71,23 +74,27 @@ install:
 '''
 
 open('Makefile', 'w').write(Makefile_template)
-""".format(sys.executable).encode('ascii')
+""".format(
+    sys.executable
+).encode(
+    "ascii"
+)
 
 
 @pytest.fixture
 def cmmi_tar(tmpdir):
     # inspired by <http://svn.zope.org/repos/main/zc.recipe.cmmi/trunk
     #              /src/zc/recipe/cmmi/tests.py>
-    tarpath = str(tmpdir / 'example-build.tgz')
-    tar = tarfile.open(tarpath, 'w:gz')
+    tarpath = str(tmpdir / "example-build.tgz")
+    tar = tarfile.open(tarpath, "w:gz")
     now = time.mktime(datetime.now().timetuple())
 
-    info = tarfile.TarInfo('folder')
+    info = tarfile.TarInfo("folder")
     info.type = tarfile.DIRTYPE
     info.mtime = now
     tar.addfile(info)
 
-    info = tarfile.TarInfo('folder/configure')
+    info = tarfile.TarInfo("folder/configure")
     info.size = len(CONFIGURE)
     info.mode = 0o755
     info.mtime = now
@@ -95,23 +102,27 @@ def cmmi_tar(tmpdir):
 
     tar.close()
 
-    fixture = type('Dummy', (object,), {})()
+    fixture = type("Dummy", (object,), {})()
     fixture.path = tarpath
-    fixture.checksum = hashlib.md5(open(tarpath, 'rb').read()).hexdigest()
+    fixture.checksum = hashlib.md5(open(tarpath, "rb").read()).hexdigest()
     return fixture
 
 
 @pytest.mark.slow
 def test_runs_cmmi(root, cmmi_tar):
-    c = Build(cmmi_tar.path, checksum='md5:' + cmmi_tar.checksum)
+    c = Build(cmmi_tar.path, checksum="md5:" + cmmi_tar.checksum)
     root.component += c
 
     def copy(uri, target):
         shutil.copyfile(uri, target)
         return target, []
-    with mock.patch('batou.lib.download.urlretrieve', new=copy):
+
+    with mock.patch("batou.lib.download.urlretrieve", new=copy):
         root.component.deploy()
 
-    assert os.path.isfile(os.path.join(
-        root.environment.workdir_base,
-        'mycomponent/example-build/make-install'))
+    assert os.path.isfile(
+        os.path.join(
+            root.environment.workdir_base,
+            "mycomponent/example-build/make-install",
+        )
+    )

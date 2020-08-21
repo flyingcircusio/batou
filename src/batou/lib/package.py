@@ -9,17 +9,17 @@ class DPKG(Component):
 
     """
 
-    namevar = 'package'
+    namevar = "package"
 
     def verify(self):
-        stdout, stderr = self.cmd('LANG=C dpkg --get-selections')
+        stdout, stderr = self.cmd("LANG=C dpkg --get-selections")
         for line in stdout.splitlines():
             candidate, status = line.split()
-            if candidate == self.package and status == 'install':
+            if candidate == self.package and status == "install":
                 break
         else:
             raise UpdateNeeded()
 
     def update(self):
         # /dev/null: a talky apt-get get blocks remote execution
-        self.cmd('LANG=C apt-get -qy install {0}'.format(self.package))
+        self.cmd("LANG=C apt-get -qy install {0}".format(self.package))

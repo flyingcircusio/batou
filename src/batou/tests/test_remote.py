@@ -8,26 +8,28 @@ import mock
 
 @pytest.mark.slow
 def test_remote_deployment_initializable(sample_service):
-    cmd('hg init')
-    with open('.hg/hgrc', 'w') as f:
-        f.write('[paths]\ndefault=https://example.com')
-    env = Environment('test-with-env-config')
+    cmd("hg init")
+    with open(".hg/hgrc", "w") as f:
+        f.write("[paths]\ndefault=https://example.com")
+    env = Environment("test-with-env-config")
     env.load()
     env.configure()
-    Deployment(env, platform='', jobs=1, timeout=30, dirty=False)
+    Deployment(env, platform="", jobs=1, timeout=30, dirty=False)
 
 
 def test_remote_bundle_breaks_on_missing_head(sample_service):
-    cmd('hg init')
+    cmd("hg init")
     env = mock.Mock()
     env.base_dir = sample_service
-    h = RemoteHost('asdf', env)
+    h = RemoteHost("asdf", env)
     from batou.repository import MercurialBundleRepository
+
     repository = MercurialBundleRepository(env)
     h.rpc = mock.Mock()
     h.rpc.hg_current_heads.return_value = []
     with pytest.raises(ValueError) as e:
         repository.update(h)
     assert e.value.args == (
-        'Remote repository did not find any heads. '
-        'Can not continue creating a bundle.',)
+        "Remote repository did not find any heads. "
+        "Can not continue creating a bundle.",
+    )

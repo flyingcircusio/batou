@@ -25,9 +25,9 @@ class EncryptedConfigFile(object):
     _cleartext = None
 
     # Additional GPG parameters. Used for testing.
-    gpg_opts = ''
+    gpg_opts = ""
 
-    GPG_BINARY_CANDIDATES = ['gpg', 'gpg2']
+    GPG_BINARY_CANDIDATES = ["gpg", "gpg2"]
 
     def __init__(self, encrypted_file, write_lock=False, quiet=False):
         """Context manager that opens an encrypted file.
@@ -55,17 +55,18 @@ class EncryptedConfigFile(object):
         for gpg in self.GPG_BINARY_CANDIDATES:
             try:
                 subprocess.check_call(
-                    [gpg, '--version'],
-                    stdout=null, stderr=null)
+                    [gpg, "--version"], stdout=null, stderr=null
+                )
             except (subprocess.CalledProcessError, OSError):
                 pass
             else:
-                return '{} {}'.format(gpg, cmdline)
+                return "{} {}".format(gpg, cmdline)
         raise RuntimeError(
-            'Could not find gpg binary.'
-            ' Is GPG installed? I tried looking for: {}'.format(
-                ', '.join('`{}`'.format(x)
-                          for x in self.GPG_BINARY_CANDIDATES)))
+            "Could not find gpg binary."
+            " Is GPG installed? I tried looking for: {}".format(
+                ", ".join("`{}`".format(x) for x in self.GPG_BINARY_CANDIDATES)
+            )
+        )
 
     @property
     def cleartext(self):
@@ -91,7 +92,7 @@ class EncryptedConfigFile(object):
     def write(self, cleartext):
         """Replace encrypted file with new content."""
         if not self.write_lock:
-            raise RuntimeError('write() needs a write lock')
+            raise RuntimeError("write() needs a write lock")
         self.cleartext = cleartext
         self._encrypt()
 
@@ -102,7 +103,8 @@ class EncryptedConfigFile(object):
 
     def _lock(self):
         self.lockfd = open(
-            self.encrypted_file, self.write_lock and 'a+' or 'r+')
+            self.encrypted_file, self.write_lock and "a+" or "r+"
+        )
         try:
             if self.write_lock:
                 fcntl.lockf(self.lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -114,15 +116,15 @@ class EncryptedConfigFile(object):
     def _decrypt(self):
         opts = self.gpg_opts
         if self.quiet:
-            opts += ' -q --no-tty --batch'
+            opts += " -q --no-tty --batch"
         self.cleartext = subprocess.check_output(
-            [self.gpg('{} --decrypt {}'.format(
-                opts, self.encrypted_file))],
+            [self.gpg("{} --decrypt {}".format(opts, self.encrypted_file))],
             stderr=NULL,
-            shell=True).decode('utf-8')
+            shell=True,
+        ).decode("utf-8")
 
     def get_members(self):
-        members = self.config.get('batou', 'members').value.split(',')
+        members = self.config.get("batou", "members").value.split(",")
         members = [x.strip() for x in members]
         members = [_f for _f in members if _f]
         members.sort()
@@ -132,30 +134,35 @@ class EncryptedConfigFile(object):
         # The whitespace here is exactly what
         # "members = " looks like in the config file so we get
         # proper indentation.
-        members = ',\n      '.join(members)
-        self.config.set('batou', 'members', members)
+        members = ",\n      ".join(members)
+        self.config.set("batou", "members", members)
 
     def _encrypt(self):
         recipients = self.get_members()
         if not recipients:
             raise ValueError("Need at least one recipient.")
         self.set_members(self.get_members())
-        recipients = ' '.join(
-            ['-r {}'.format(shlex.quote(r.strip())) for r in recipients])
-        os.rename(self.encrypted_file,
-                  self.encrypted_file + '.old')
+        recipients = " ".join(
+            ["-r {}".format(shlex.quote(r.strip())) for r in recipients]
+        )
+        os.rename(self.encrypted_file, self.encrypted_file + ".old")
         try:
             gpg = subprocess.Popen(
-                [self.gpg('{} --encrypt {} -o {}'.format(
-                    self.gpg_opts, recipients, self.encrypted_file))],
+                [
+                    self.gpg(
+                        "{} --encrypt {} -o {}".format(
+                            self.gpg_opts, recipients, self.encrypted_file
+                        )
+                    )
+                ],
                 stdin=subprocess.PIPE,
-                shell=True)
-            gpg.communicate(self.cleartext.encode('utf-8'))
+                shell=True,
+            )
+            gpg.communicate(self.cleartext.encode("utf-8"))
             if gpg.returncode != 0:
-                raise RuntimeError('GPG returned non-zero exit code.')
+                raise RuntimeError("GPG returned non-zero exit code.")
         except Exception:
-            os.rename(self.encrypted_file + '.old',
-                      self.encrypted_file)
+            os.rename(self.encrypted_file + ".old", self.encrypted_file)
             raise
         else:
-            os.unlink(self.encrypted_file + '.old')
+            os.unlink(self.encrypted_file + ".old")

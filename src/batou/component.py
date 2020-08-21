@@ -19,9 +19,11 @@ def platform(name, component):
     """Class decorator to register a component class as a platform-component
     for the given platform and component.
     """
+
     def register_platform(cls):
         component._add_platform(name, cls)
         return cls
+
     return register_platform
 
 
@@ -29,13 +31,14 @@ def handle_event(event, scope):
     def wrapper(f):
         f._event = dict(event=event, scope=scope)
         return f
+
     return wrapper
 
 
 def check_event_scope(scope, source, target):
-    if scope == '*':
+    if scope == "*":
         return True
-    if scope == 'precursor':
+    if scope == "precursor":
         for candidate in source.root.component.recursive_sub_components:
             if candidate is target:
                 break
@@ -44,11 +47,10 @@ def check_event_scope(scope, source, target):
                 # and is in the same root.
                 return True
         return False
-    raise ValueError('Unknown event scope: {}'.format(scope))
+    raise ValueError("Unknown event scope: {}".format(scope))
 
 
 class ComponentDefinition(object):
-
     def __init__(self, factory, filename=None, defdir=None):
         self.factory = factory
         self.name = factory.__name__.lower()
@@ -62,18 +64,20 @@ def load_components_from_file(filename):
     # Synthesize a module for this component file in batou.c
     defdir = os.path.dirname(filename)
     module_name = os.path.basename(defdir)
-    module_path = 'batou.c.{}'.format(module_name)
+    module_path = "batou.c.{}".format(module_name)
     module = types.ModuleType(
-        module_name, 'Component definition module for {}'.format(filename))
+        module_name, "Component definition module for {}".format(filename)
+    )
     sys.modules[module_path] = module
     setattr(batou.c, module_name, module)
-    exec(compile(open(filename).read(), filename, 'exec'), module.__dict__)
+    exec(compile(open(filename).read(), filename, "exec"), module.__dict__)
 
     for candidate in list(module.__dict__.values()):
         if candidate in [Component]:
             continue
-        if not (isinstance(candidate, type) and
-                issubclass(candidate, Component)):
+        if not (
+            isinstance(candidate, type) and issubclass(candidate, Component)
+        ):
             continue
         compdef = ComponentDefinition(candidate, filename, defdir)
         if compdef.name in components:
@@ -194,16 +198,17 @@ class Component(object):
 
         if unacceptable_args:
             raise ValueError(
-                'The following arguments are unacceptable for this component '
-                'because they are either undefined or would override '
-                'methods: {}'.format(', '.join(unacceptable_args)))
+                "The following arguments are unacceptable for this component "
+                "because they are either undefined or would override "
+                "methods: {}".format(", ".join(unacceptable_args))
+            )
 
         if self.namevar:
             if namevar is None:
-                raise ValueError('Namevar %s required' % self.namevar)
+                raise ValueError("Namevar %s required" % self.namevar)
             kw[self.namevar] = namevar
         elif namevar:
-            raise ValueError('Namevar is undefined for this component.')
+            raise ValueError("Namevar is undefined for this component.")
 
         # Can't use the attribute setter here as our special attributes will
         # error out as long as the component is not attached to a root.
@@ -213,7 +218,8 @@ class Component(object):
         return '<%s (%s) "%s">' % (
             self.__class__.__name__,
             self.host.name,
-            self._breadcrumbs)
+            self._breadcrumbs,
+        )
 
     # Configuration phase
 
@@ -315,19 +321,20 @@ class Component(object):
             if sub_component.changed:
                 self.changed = True
 
-        output.buffer('annotate', self.host.name + ' > ' + self._breadcrumbs)
+        output.buffer("annotate", self.host.name + " > " + self._breadcrumbs)
 
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         with self.chdir(self.workdir), self:
             try:
-                with batou.utils.Timer(
-                        '{} verify()'.format(self._breadcrumbs)):
+                with batou.utils.Timer("{} verify()".format(self._breadcrumbs)):
                     call_with_optional_args(
-                        self.verify, predicting=predict_only)
+                        self.verify, predicting=predict_only
+                    )
             except AssertionError:
                 self.__trigger_event__(
-                    'before-update', predict_only=predict_only)
+                    "before-update", predict_only=predict_only
+                )
                 output.flush_buffer()
                 if not predict_only:
                     self.update()
@@ -438,24 +445,25 @@ class Component(object):
                 candidate = getattr(self, candidate)
             except Exception:
                 continue
-            if not hasattr(candidate, '_event'):
+            if not hasattr(candidate, "_event"):
                 continue
             handler = candidate
             if not isinstance(handler._event, dict):
                 continue
-            handlers.setdefault(handler._event['event'], []).append(handler)
+            handlers.setdefault(handler._event["event"], []).append(handler)
 
     def __trigger_event__(self, event, predict_only):
         # We notify all components that belong to the same root.
         for target in self.root.component.recursive_sub_components:
             for handler in target._event_handlers.get(event, []):
-                if not check_event_scope(
-                        handler._event['scope'], self, target):
+                if not check_event_scope(handler._event["scope"], self, target):
                     continue
                 if predict_only:
                     output.annotate(
-                        'Trigger {}: {}.{}'.
-                        format(event, handler.__self__, handler.__name__))
+                        "Trigger {}: {}.{}".format(
+                            event, handler.__self__, handler.__name__
+                        )
+                    )
                     continue
                 handler(self)
 
@@ -500,13 +508,13 @@ class Component(object):
 
     @classmethod
     def _add_platform(cls, name, platform):
-        if '_platforms' not in cls.__dict__:
+        if "_platforms" not in cls.__dict__:
             cls._platforms = {}
         cls._platforms[name] = platform
 
     def _get_platform(self):
         """Return the platform component for this component if one exists."""
-        platforms = self.__class__.__dict__.get('_platforms', {})
+        platforms = self.__class__.__dict__.get("_platforms", {})
         return platforms.get(self.host.platform, lambda: None)()
 
     # Resource provider/user API
@@ -559,10 +567,12 @@ class Component(object):
 
         """
         return self.environment.resources.require(
-            self.root, key, host, strict, reverse, dirty)
+            self.root, key, host, strict, reverse, dirty
+        )
 
-    def require_one(self, key, host=None, strict=True, reverse=False,
-                    dirty=False):
+    def require_one(
+        self, key, host=None, strict=True, reverse=False, dirty=False
+    ):
         """Require a resource, returning a scalar.
 
         For the parameters, see :py:meth:`require`.
@@ -579,8 +589,10 @@ class Component(object):
         resources = self.require(key, host, strict, reverse, dirty)
         if len(resources) > 1:
             raise KeyError(
-                'Expected only one result, got multiple for (key={}, host={})'.
-                format(key, host))
+                "Expected only one result, got multiple for (key={}, host={})".format(
+                    key, host
+                )
+            )
         elif len(resources) == 0:
             raise SilentConfigurationError()
         return resources[0]
@@ -622,10 +634,12 @@ class Component(object):
 
         """
         from batou.lib.file import Presence
+
         reference = Presence(reference)
         self |= reference
         reference.assert_component_is_current(
-            [Presence(r) for r in requirements], **kw)
+            [Presence(r) for r in requirements], **kw
+        )
 
     def assert_component_is_current(self, requirements=[], **kw):
         """Assert that this component has been updated more recently
@@ -655,9 +669,11 @@ class Component(object):
         reference = self.last_updated(**kw)
         if reference is None:
             output.annotate(
-                'assert_component_is_current({}, ...): No reference'.format(
-                    self._breadcrumb),
-                debug=True)
+                "assert_component_is_current({}, ...): No reference".format(
+                    self._breadcrumb
+                ),
+                debug=True,
+            )
             raise batou.UpdateNeeded()
         for requirement in requirements:
             self |= requirement
@@ -666,10 +682,14 @@ class Component(object):
                 continue
             if reference < required:
                 output.annotate(
-                    'assert_component_is_current({}, {}): {} < {}'.format(
-                        self._breadcrumb, requirement._breadcrumb, reference,
-                        required),
-                    debug=True)
+                    "assert_component_is_current({}, {}): {} < {}".format(
+                        self._breadcrumb,
+                        requirement._breadcrumb,
+                        reference,
+                        required,
+                    ),
+                    debug=True,
+                )
                 raise batou.UpdateNeeded()
 
     def assert_no_subcomponent_changes(self):
@@ -716,8 +736,15 @@ class Component(object):
             raise batou.UpdateNeeded()
         self.assert_no_subcomponent_changes()
 
-    def cmd(self, cmd, silent=False, ignore_returncode=False,
-            communicate=True, env=None, expand=True):
+    def cmd(
+        self,
+        cmd,
+        silent=False,
+        ignore_returncode=False,
+        communicate=True,
+        env=None,
+        expand=True,
+    ):
         """Perform a (shell) command.
 
         Use this to interact with the target system during ``verify``,
@@ -758,8 +785,7 @@ class Component(object):
         """
         if expand:
             cmd = self.expand(cmd)
-        return batou.utils.cmd(
-            cmd, silent, ignore_returncode, communicate, env)
+        return batou.utils.cmd(cmd, silent, ignore_returncode, communicate, env)
 
     def map(self, path):
         """Perform a VFS mapping on the given path.
@@ -779,7 +805,7 @@ class Component(object):
         ``map`` yourself.
         """
         path = os.path.expanduser(path)
-        if not path.startswith('/'):
+        if not path.startswith("/"):
             return os.path.normpath(os.path.join(self.workdir, path))
         return self.environment.map(path)
 
@@ -797,7 +823,7 @@ class Component(object):
         if os.path.exists(filename):
             os.utime(filename, None)
         else:
-            open(filename, 'w').close()
+            open(filename, "w").close()
 
     def expand(self, string, component=None, **kw):
         """Expand the given string in the context of this component.
@@ -854,15 +880,15 @@ class Component(object):
         """
         engine = batou.template.Jinja2Engine()
         return engine.template(
-            filename, self._template_args(component=component))
+            filename, self._template_args(component=component)
+        )
 
     def _template_args(self, component=None, **kw):
         if component is None:
             component = self
         args = dict(
-            host=self.host,
-            environment=self.environment,
-            component=component)
+            host=self.host, environment=self.environment, component=component
+        )
         args.update(kw)
         return args
 
@@ -900,9 +926,9 @@ class Component(object):
 
     @property
     def _breadcrumbs(self):
-        result = ''
+        result = ""
         if self.parent is not self.root:
-            result += self.parent._breadcrumbs + ' > '
+            result += self.parent._breadcrumbs + " > "
         result += self._breadcrumb
         return result
 
@@ -911,7 +937,7 @@ class Component(object):
         result = self.__class__.__name__
         name = self.namevar_for_breadcrumb
         if name:
-            result += '({!r})'.format(name)
+            result += "({!r})".format(name)
         return result
 
     @property
@@ -940,8 +966,18 @@ class RootComponent(object):
     ignore = False
     _logs = None
 
-    def __init__(self, name, environment, host, features, ignore,
-                 factory, defdir, workdir, overrides=None):
+    def __init__(
+        self,
+        name,
+        environment,
+        host,
+        features,
+        ignore,
+        factory,
+        defdir,
+        workdir,
+        overrides=None,
+    ):
         self.name = name
         self.environment = environment
         self.host = host
@@ -964,7 +1000,7 @@ class RootComponent(object):
 
     def log(self, msg, *args):
         if self._logs is None:
-            msg = '%s: %s' % (self.host.fqdn, msg)
+            msg = "%s: %s" % (self.host.fqdn, msg)
             output.annotate(msg % args)
         else:
             self._logs.append((msg, args))
@@ -976,7 +1012,10 @@ class RootComponent(object):
 
     def __repr__(self):
         return '<%s "%s" object at %s>' % (
-            self.__class__.__name__, self.name, id(self))
+            self.__class__.__name__,
+            self.name,
+            id(self),
+        )
 
     @property
     def _breadcrumbs(self):
@@ -1008,13 +1047,15 @@ class Attribute(object):
 
     """
 
-    def __init__(self,
-                 conversion=None,
-                 default=ATTRIBUTE_NODEFAULT,
-                 expand=True,
-                 map=False):
+    def __init__(
+        self,
+        conversion=None,
+        default=ATTRIBUTE_NODEFAULT,
+        expand=True,
+        map=False,
+    ):
         if isinstance(conversion, str):
-            conversion = getattr(self, 'convert_{}'.format(conversion))
+            conversion = getattr(self, "convert_{}".format(conversion))
         self.conversion = conversion
         self.default = default
         self.expand = expand
@@ -1041,20 +1082,21 @@ class Attribute(object):
                 value = self.conversion(value)
             except Exception as e:
                 # Try to detect our own name.
-                name = '<unknown>'
+                name = "<unknown>"
                 for k in dir(obj):
                     if getattr(obj.__class__, k, None) is self:
                         name = k
                         break
                 raise batou.ConversionError(
-                    obj, name, value, self.conversion, e)
+                    obj, name, value, self.conversion, e
+                )
         self.instances[obj] = value
 
     def convert_literal(self, value):
         return ast.literal_eval(value)
 
     def convert_list(self, value):
-        list_ = value.split(',')
+        list_ = value.split(",")
         list_ = [x.strip() for x in list_]
         list_ = [_f for _f in list_ if _f]
         return list_

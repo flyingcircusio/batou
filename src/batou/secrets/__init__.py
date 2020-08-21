@@ -26,30 +26,32 @@ import os.path
 
 
 def add_secrets_to_environment_override(
-        environment, enc_file_class=EncryptedConfigFile):
-    secrets_file = 'secrets/{}.cfg'.format(environment.name)
+    environment, enc_file_class=EncryptedConfigFile
+):
+    secrets_file = "secrets/{}.cfg".format(environment.name)
     if not os.path.exists(secrets_file):
         return
     with enc_file_class(secrets_file) as f:
         f.read()
         for section_ in f.config.sections():
-            if section_ == 'batou':
+            if section_ == "batou":
                 continue
-            elif section_.startswith('host:'):
-                hostname = section_.replace('host:', '', 1)
+            elif section_.startswith("host:"):
+                hostname = section_.replace("host:", "", 1)
                 if hostname not in environment.hosts:
                     raise ValueError(
-                        'Secret for unknown host: {}'.format(hostname))
+                        "Secret for unknown host: {}".format(hostname)
+                    )
                 host = environment.hosts[hostname]
                 for key, option in f.config.items(section_):
-                    if key.startswith('data-'):
-                        key = key.replace('data-', '', 1)
+                    if key.startswith("data-"):
+                        key = key.replace("data-", "", 1)
                         host.data[key] = option.value
             else:
-                component = section_.replace('component:', '')
+                component = section_.replace("component:", "")
                 if component not in environment.components:
                     environment.exceptions.append(
-                        SuperfluousSecretsSection(component))
+                        SuperfluousSecretsSection(component)
+                    )
                 o = environment.overrides.setdefault(component, {})
-                o.update(
-                    ((k, o.value) for k, o in f.config.items(section_)))
+                o.update(((k, o.value) for k, o in f.config.items(section_)))

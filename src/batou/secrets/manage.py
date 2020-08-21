@@ -6,7 +6,6 @@ import os.path
 
 
 class Environment(object):
-
     def __init__(self, path=None, name=None):
         if path:
             self.path = path
@@ -14,20 +13,20 @@ class Environment(object):
             self.name = os.path.splitext(name)[0]
         else:
             self.name = name
-            self.path = 'secrets/{}.cfg'.format(name)
+            self.path = "secrets/{}.cfg".format(name)
 
         self.f = EncryptedConfigFile(self.path, write_lock=True, quiet=True)
         self.f.__enter__()
 
     @classmethod
     def all(cls):
-        for e in glob.glob('secrets/*.cfg'):
+        for e in glob.glob("secrets/*.cfg"):
             yield Environment(path=e)
 
     @classmethod
     def by_filter(cls, filter):
         if filter:
-            filter = filter.split(',')
+            filter = filter.split(",")
         for e in cls.all():
             if filter and e.name not in filter:
                 continue
@@ -39,7 +38,7 @@ class Environment(object):
         except Exception as e:
             print("\t{}".format(e))
             return
-        print("\t", self.f.config.get('batou', 'members'))
+        print("\t", self.f.config.get("batou", "members"))
 
     def add_user(self, keyid):
         try:
@@ -83,7 +82,7 @@ def summary(**kw):
     ending up in the deployment repository.
 
     """
-    if not os.path.exists('secrets'):
+    if not os.path.exists("secrets"):
         print("No secrets.")
 
     for e in Environment.all():
@@ -99,7 +98,7 @@ def add_user(keyid, environments, **kw):
     to all environments.
 
     """
-    if not os.path.exists('secrets'):
+    if not os.path.exists("secrets"):
         print("No secrets.")
 
     for e in Environment.by_filter(environments):
@@ -115,7 +114,7 @@ def remove_user(keyid, environments, **kw):
     from all environments.
 
     """
-    if not os.path.exists('secrets'):
+    if not os.path.exists("secrets"):
         print("No secrets.")
 
     for e in Environment.by_filter(environments):

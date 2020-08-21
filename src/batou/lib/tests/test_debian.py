@@ -7,7 +7,7 @@ from batou.lib.service import Service
 
 
 def test_rebootcronjob(root):
-    service = Service('bobbob')
+    service = Service("bobbob")
     cronjob = RebootCronjob()
     root.component += service
     service += cronjob

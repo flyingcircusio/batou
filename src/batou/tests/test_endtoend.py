@@ -7,17 +7,19 @@ from batou.tests.ellipsis import Ellipsis
 
 def test_service_early_resource():
     env = Environment(
-        'dev',
-        basedir=os.path.dirname(__file__) + '/fixture/service_early_resource')
+        "dev",
+        basedir=os.path.dirname(__file__) + "/fixture/service_early_resource",
+    )
     env.load()
     env.configure()
-    assert env.resources.get('zeo') == ['127.0.0.1:9000']
+    assert env.resources.get("zeo") == ["127.0.0.1:9000"]
 
 
 def test_example_errors():
-    os.chdir('examples/errors')
-    out, _ = cmd('./batou deploy errors', acceptable_returncodes=[1])
-    assert out == Ellipsis("""\
+    os.chdir("examples/errors")
+    out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing =================================\
 ==
@@ -73,13 +75,15 @@ ERROR: 6 remaining unconfigured component(s)
 ==
 ============================== DEPLOYMENT FAILED =============================\
 ==
-""")  # NOQA
+"""
+    )  # NOQA
 
 
 def test_example_errors_missing_environment():
-    os.chdir('examples/errors')
-    out, _ = cmd('./batou deploy production', acceptable_returncodes=[1])
-    assert out == Ellipsis("""\
+    os.chdir("examples/errors")
+    out, _ = cmd("./batou deploy production", acceptable_returncodes=[1])
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing =================================\
 ==
@@ -88,13 +92,15 @@ ERROR: Missing environment
 Environment: production
 ============================== DEPLOYMENT FAILED =============================\
 ==
-""")  # NOQA
+"""
+    )  # NOQA
 
 
 def test_example_ignores():
-    os.chdir('examples/ignores')
-    out, _ = cmd('./batou deploy ignores')
-    assert out == Ellipsis("""\
+    os.chdir("examples/ignores")
+    out, _ = cmd("./batou deploy ignores")
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing =================================\
 ==
@@ -116,26 +122,27 @@ localhost: Skipping component fail ... (Component ignored)
 otherhost: Skipping component fail2 ... (Host ignored)
 ============================= DEPLOYMENT FINISHED ============================\
 ==
-""")
+"""
+    )
 
 
 def test_example_async_sync_deployment():
-    os.chdir('examples/sync_async')
-    out, _ = cmd('./batou -d deploy default')
+    os.chdir("examples/sync_async")
+    out, _ = cmd("./batou -d deploy default")
     print(out)
     assert "Number of jobs: 1" in out
 
-    out, _ = cmd('./batou -d deploy -j 2 default')
+    out, _ = cmd("./batou -d deploy -j 2 default")
     print(out)
     assert "Number of jobs: 2" in out
 
-    out, _ = cmd('./batou -d deploy async')
+    out, _ = cmd("./batou -d deploy async")
     print(out)
     assert "Number of jobs: 2" in out
 
 
 def test_example_job_option_overrides_environment():
-    os.chdir('examples/sync_async')
-    out, _ = cmd('./batou -d deploy -j 5 async')
+    os.chdir("examples/sync_async")
+    out, _ = cmd("./batou -d deploy -j 5 async")
     print(out)
     assert "Number of jobs: 5" in out

@@ -12,7 +12,6 @@ import time
 
 
 class Connector(threading.Thread):
-
     def __init__(self, host, sem):
         self.host = host
         self.sem = sem
@@ -34,7 +33,7 @@ class Connector(threading.Thread):
                     return
             finally:
                 self.sem.release()
-            time.sleep(random.randint(1, 2**(tries+1)))
+            time.sleep(random.randint(1, 2 ** (tries + 1)))
 
         try:
             self.host.start()
@@ -52,8 +51,9 @@ class Deployment(object):
 
     _upstream = None
 
-    def __init__(self, environment, platform, timeout, dirty,
-                 jobs, predict_only=False):
+    def __init__(
+        self, environment, platform, timeout, dirty, jobs, predict_only=False
+    ):
         self.environment = environment
         self.platform = platform
         self.timeout = timeout
@@ -64,11 +64,13 @@ class Deployment(object):
     def load(self):
         output.section("Preparing")
 
-        output.step("main",
-                    "Loading environment `{}`...".format(self.environment))
+        output.step(
+            "main", "Loading environment `{}`...".format(self.environment)
+        )
 
         self.environment = Environment(
-            self.environment, self.timeout, self.platform)
+            self.environment, self.timeout, self.platform
+        )
         self.environment.deployment = self
         self.environment.load()
 
@@ -98,13 +100,23 @@ class Deployment(object):
         for i, hostname in enumerate(hosts, 1):
             host = self.environment.hosts[hostname]
             if host.ignore:
-                output.step(hostname, "Connection ignored ({}/{})".format(
-                    i, len(self.environment.hosts)),
-                    bold=False, red=True)
+                output.step(
+                    hostname,
+                    "Connection ignored ({}/{})".format(
+                        i, len(self.environment.hosts)
+                    ),
+                    bold=False,
+                    red=True,
+                )
                 continue
-            output.step(hostname, "Connecting via {} ({}/{})".format(
-                        self.environment.connect_method, i,
-                        len(self.environment.hosts)))
+            output.step(
+                hostname,
+                "Connecting via {} ({}/{})".format(
+                    self.environment.connect_method,
+                    i,
+                    len(self.environment.hosts),
+                ),
+            )
             sem = threading.Semaphore(5)
             c = Connector(host, sem)
             c.start()
@@ -117,7 +129,7 @@ class Deployment(object):
 
     def _launch_components(self, todolist):
         for key, info in list(todolist.items()):
-            if info['dependencies']:
+            if info["dependencies"]:
                 continue
             del todolist[key]
             asyncio.ensure_future(self._deploy_component(key, info, todolist))
@@ -128,22 +140,29 @@ class Deployment(object):
         if host.ignore:
             output.step(
                 hostname,
-                "Skipping component {} ... (Host ignored)".format(
-                    component), red=True)
-        elif info['ignore']:
+                "Skipping component {} ... (Host ignored)".format(component),
+                red=True,
+            )
+        elif info["ignore"]:
             output.step(
-                hostname, "Skipping component {} ... (Component ignored)".
-                format(component), red=True)
+                hostname,
+                "Skipping component {} ... (Component ignored)".format(
+                    component
+                ),
+                red=True,
+            )
         else:
             output.step(
-                hostname, "Scheduling component {} ...".format(component))
+                hostname, "Scheduling component {} ...".format(component)
+            )
             await self.loop.run_in_executor(
-                None, host.deploy_component, component, self.predict_only)
+                None, host.deploy_component, component, self.predict_only
+            )
 
         # Clear dependency from todolist
         for other_component in todolist.values():
-            if key in other_component['dependencies']:
-                other_component['dependencies'].remove(key)
+            if key in other_component["dependencies"]:
+                other_component["dependencies"].remove(key)
 
         # Trigger start of unblocked dependencies
         self._launch_components(todolist)
@@ -160,8 +179,9 @@ class Deployment(object):
 
         # Pick a reference remote (the last we initialised) that will pass us
         # the order we should be deploying components in.
-        reference_node = [h for h in list(self.environment.hosts.values())
-                          if not h.ignore][0]
+        reference_node = [
+            h for h in list(self.environment.hosts.values()) if not h.ignore
+        ][0]
 
         self.loop = asyncio.get_event_loop()
         self.taskpool = ThreadPoolExecutor(self.jobs)
@@ -179,20 +199,22 @@ class Deployment(object):
             node.disconnect()
 
 
-def main(environment, platform, timeout, dirty, consistency_only,
-         predict_only, jobs):
+def main(
+    environment, platform, timeout, dirty, consistency_only, predict_only, jobs
+):
     output.backend = TerminalBackend()
     output.line(self_id())
     if consistency_only:
-        ACTION = 'CONSISTENCY CHECK'
+        ACTION = "CONSISTENCY CHECK"
     elif predict_only:
-        ACTION = 'DEPLOYMENT PREDICTION'
+        ACTION = "DEPLOYMENT PREDICTION"
     else:
-        ACTION = 'DEPLOYMENT'
-    with locked('.batou-lock'):
+        ACTION = "DEPLOYMENT"
+    with locked(".batou-lock"):
         try:
             deployment = Deployment(
-                environment, platform, timeout, dirty, jobs, predict_only)
+                environment, platform, timeout, dirty, jobs, predict_only
+            )
             deployment.load()
             deployment.connect()
             deployment.configure()
@@ -202,34 +224,46 @@ def main(environment, platform, timeout, dirty, consistency_only,
         except FileLockedError as e:
             output.error("File already locked: {}".format(e.filename))
             output.section("{} FAILED".format(ACTION), red=True)
-            notify('{} FAILED'.format(ACTION),
-                   'File already locked: {}'.format(e.filename))
+            notify(
+                "{} FAILED".format(ACTION),
+                "File already locked: {}".format(e.filename),
+            )
         except MissingEnvironment as e:
             e.report()
             output.section("{} FAILED".format(ACTION), red=True)
-            notify('{} FAILED'.format(ACTION),
-                   'Configuration for {} encountered an error.'.format(
-                       environment))
+            notify(
+                "{} FAILED".format(ACTION),
+                "Configuration for {} encountered an error.".format(
+                    environment
+                ),
+            )
             sys.exit(1)
         except ConfigurationError:
             output.section("{} FAILED".format(ACTION), red=True)
-            notify('{} FAILED'.format(ACTION),
-                   'Configuration for {} encountered an error.'.format(
-                       environment))
+            notify(
+                "{} FAILED".format(ACTION),
+                "Configuration for {} encountered an error.".format(
+                    environment
+                ),
+            )
             sys.exit(1)
         except DeploymentError as e:
             e.report()
             output.section("{} FAILED".format(ACTION), red=True)
-            notify('{} FAILED'.format(ACTION),
-                   '{} encountered an error.'.format(environment))
+            notify(
+                "{} FAILED".format(ACTION),
+                "{} encountered an error.".format(environment),
+            )
             sys.exit(1)
         except Exception:
             # An unexpected exception happened. Bad.
             output.error("Unexpected exception", exc_info=sys.exc_info())
             output.section("{} FAILED".format(ACTION), red=True)
-            notify('{} FAILED'.format(ACTION),
-                   'Encountered an unexpected exception.')
+            notify(
+                "{} FAILED".format(ACTION),
+                "Encountered an unexpected exception.",
+            )
             sys.exit(1)
         else:
-            output.section('{} FINISHED'.format(ACTION), green=True)
-            notify('{} SUCCEEDED'.format(ACTION), environment)
+            output.section("{} FINISHED".format(ACTION), green=True)
+            notify("{} SUCCEEDED".format(ACTION), environment)
