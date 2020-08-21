@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from batou.lib.file import Content, Mode, Symlink, File, Purge
-from batou.lib.file import BinaryFile
+from batou.lib.file import BinaryFile, JSONContent
 from batou.lib.file import ensure_path_nonexistent
 from batou.lib.file import Presence, Directory, FileComponent
 from mock import Mock, patch
@@ -506,6 +506,34 @@ see ... for the full diff.
   path +asdf
 """
     )
+
+
+def test_json_content_data_given(root):
+    p = JSONContent('target.json', data={'asdf': 1})
+    root.component += p
+    root.component.deploy()
+    assert p.content == b"""\
+{
+    "asdf": 1
+}"""
+
+    with open(p.path, 'rb') as f:
+        assert f.read() == b"""\
+{
+    "asdf": 1
+}"""
+
+
+def test_json_content_either_source_or_data(root):
+    p = JSONContent('target.json', data={'asdf': 1}, source='asdf')
+    with pytest.raises(ValueError):
+        root.component += p
+
+
+def test_json_content_implicit_source(root):
+    p = JSONContent('target.json')
+    root.component += p
+    assert p.source == 'asdf'
 
 
 def test_mode_verifies_for_nonexistent_file(root):

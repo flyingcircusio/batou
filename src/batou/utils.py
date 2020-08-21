@@ -1,8 +1,10 @@
 from batou import output, DeploymentError
 from collections import defaultdict
 import contextlib
+import copy
 import fcntl
 import hashlib
+import inspect
 import itertools
 import os
 import pkg_resources
@@ -10,7 +12,6 @@ import socket
 import subprocess
 import sys
 import time
-import inspect
 
 
 def self_id():
@@ -395,3 +396,23 @@ def call_with_optional_args(func, **kw):
             call_kw = kw
             break
     return func(**call_kw)
+
+
+def dict_merge(a, b):
+    """recursively merges dict's. not just simple a['key'] = b['key'], if
+    both a and b have a key who's value is a dict then dict_merge is called
+    on both values and the result stored in the returned dictionary.
+    https://www.xormedia.com/recursively-merge-dictionaries-in-python/
+    """
+    if not isinstance(b, dict):
+        return b
+    result = copy.deepcopy(a)
+    for k, v in b.iteritems():
+        if k in result and isinstance(result[k], dict):
+            result[k] = dict_merge(result[k], v)
+        elif k in result and isinstance(result[k], list):
+            result[k] = result[k][:]
+            result[k].extend(v)
+        else:
+            result[k] = copy.deepcopy(v)
+    return result

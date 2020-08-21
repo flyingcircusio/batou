@@ -1,8 +1,10 @@
 from batou import output
 from batou.component import Component
+from batou.utils import dict_merge
 import batou
 import difflib
 import glob
+import json
 import os.path
 import pwd
 import shutil
@@ -484,6 +486,146 @@ class Content(FileComponent):
 
     def update(self):
         with open(self.path, "wb") as target:
+            target.write(self.content)
+
+
+class JSONContent(FileComponent):
+
+    # A JSON file to be read (from defdir or on the destination)
+    source = ''
+
+    # Data to be used.
+    data = None
+
+    # Data to override the source.
+    override = None
+
+    # Cause the rendered data to be human readable. Not all parsers support
+    # this so it can be turned off.
+    human_readable = True
+
+    # The final content that will be written out to the target.
+    content_compact = None
+    content_readable = None
+
+    sensitive_data = False
+
+    _delayed = False
+    _max_diff = 200
+    _max_diff_lead = 50
+
+    def configure(self):
+        super(JSONContent, self).configure()
+
+        self.diff_dir = os.path.join(
+            self.environment.workdir_base, '.batou-diffs')
+
+        # Step 1: Determine data attribute:
+        # - it might be given directly (data='...'),
+        # - we might have been passed a filename (source='...'), or
+        # - we might fall back using the path attribute (namevar)
+        if self.source and self.data:
+            raise ValueError(
+                'Only one of either "data" or "source" are allowed.')
+
+        if not self.data:
+            if not self.source:
+                self.source = self.original_path
+
+            if not self.source.startswith('/'):
+                self.source = os.path.join(self.root.defdir, self.source)
+
+        self._render()
+
+    def _render(self):
+        # Phase 1: acquire the source data into self.content
+        if self.source:
+            if os.path.exists(self.source):
+                with open(self.source, 'rb') as f:
+                    self.data = json.load(f)
+            else:
+                if self._delayed:
+                    raise FileNotFoundError(
+                        'Could not find source file {}'.format(self.source))
+                # We need to try rendering again later.
+                self._delayed = True
+                return
+
+        # Phase 2: apply data updates
+        if self.override:
+            self.data = dict_merge(self.data, self.override)
+
+        self.content_compact = json.dumps(
+            self.data, sort_keys=True, separators=(',', ':')).encode('utf-8')
+        self.content_readable = json.dumps(
+            self.data, sort_keys=True, indent=4).encode('utf-8')
+
+        if self.human_readable:
+            self.content = self.content_readable
+        else:
+            self.content = self.content_compact
+
+    def verify(self, predicting=False):
+        try:
+            if self._delayed:
+                self._render()
+        except FileNotFoundError:
+            if predicting:
+                # During prediction runs we accept that delayed rendering may
+                # not yet work and that we will change. We might want to
+                # turn this into an explicit flag so we don't implicitly
+                # run into a broken deployment.
+                assert False
+            # If we are not predicting then this is definitely a problem.
+            # Stop here.
+            raise
+        try:
+            with open(self.path, 'rb') as target:
+                current = target.read()
+                if current == self.content:
+                    return
+        except FileNotFoundError:
+            current = b''
+        except Exception:
+            output.annotate('Unknown content - can\'t predict diff.')
+            raise batou.UpdateNeeded()
+
+        if self.sensitive_data:
+            output.annotate(
+                'Not showing diff as it contains sensitive data.', red=True)
+        else:
+            # XXX continue here
+            current_text = current.decode('utf-8', errors='replace')
+            wanted_text = self.content.decode('utf-8', errors='replace')
+            diff = difflib.unified_diff(
+                    current_text.splitlines(),
+                    wanted_text.splitlines())
+            if not os.path.exists(self.diff_dir):
+                os.makedirs(self.diff_dir)
+            diff, diff_too_long, diff_log = limited_buffer(
+                diff, self._max_diff, self._max_diff_lead,
+                logdir=self.diff_dir)
+
+            if diff_too_long:
+                output.line(
+                    ('More than {} lines of diff. Showing first and '
+                     'last {} lines.'.format(
+                        self._max_diff, self._max_diff_lead)), yellow=True)
+                output.line(
+                    'see {} for the full diff.'.format(diff_log), yellow=True)
+
+            for line in diff:
+                line = line.replace('\n', '')
+                if not line.strip():
+                    continue
+                output.annotate(
+                    '  {} {}'.format(os.path.basename(self.path), line),
+                    red=line.startswith('-'),
+                    green=line.startswith('+'))
+        raise batou.UpdateNeeded()
+
+    def update(self):
+        with open(self.path, 'wb') as target:
             target.write(self.content)
 
 
