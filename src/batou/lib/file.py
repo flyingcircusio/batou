@@ -10,6 +10,7 @@ import pwd
 import shutil
 import stat
 import tempfile
+import yaml
 
 
 def ensure_path_nonexistent(path):
@@ -334,13 +335,16 @@ def limited_buffer(iterator, limit, lead, separator="...", logdir="/tmp"):
     return start_buffer, limit_triggered, diff_log
 
 
-class Content(FileComponent):
+class ManagedContentBase(FileComponent):
+    """A base class that can be customized for different
+    ways of structuring / managing / updating content
+    of files.
+
+    Not intended for direct use.
+    """
 
     content = None
-    is_template = File.is_template
     source = ""
-    template_context = None
-    template_args = None  # dict, actually
     sensitive_data = False
 
     # If content is given as unicode (always the case with templates)
@@ -352,23 +356,25 @@ class Content(FileComponent):
     _max_diff = 200
     _max_diff_lead = 50
 
+    _content_source_attribute = "content"
+
     def configure(self):
-        super(Content, self).configure()
+        super(ManagedContentBase, self).configure()
 
         self.diff_dir = os.path.join(
             self.environment.workdir_base, ".batou-diffs"
         )
-
         # Step 1: Determine content attribute:
         # - it might be given directly (content='...'),
         # - we might have been passed a filename (source='...'), or
         # - we might fall back using the path attribute (namevar)
-        if self.source and self.content:
+        if self.source and getattr(self, self._content_source_attribute):
             raise ValueError(
-                'Only one of either "content" or "source" are allowed.'
+                'Only one of either "{}" or "source" are allowed.',
+                format(self._content_source_attribute),
             )
 
-        if not self.content:
+        if not getattr(self, self._content_source_attribute):
             if not self.source:
                 self.source = self.original_path
 
@@ -397,18 +403,12 @@ class Content(FileComponent):
                 return
 
         # Phase 2: Decode, if we have an encoding.
-        if self.encoding and not isinstance(self.content, str):
+        if self.content and self.encoding and not isinstance(self.content, str):
             self.content = self.content.decode(self.encoding)
 
-        # Phase 3: If we have a template, render it.
-        if self.is_template:
-            if self.template_args is None:
-                self.template_args = dict()
-            if not self.template_context:
-                self.template_context = self.parent
-            self.content = self.expand(
-                self.content, self.template_context, args=self.template_args
-            )
+        # Phase 3: We have the source content, now allow a subclass
+        # to perform other operations to generate the final output.
+        self.render()
 
         # Phase 4: If we have an encoding, encode the content (again)
         if self.encoding:
@@ -489,10 +489,26 @@ class Content(FileComponent):
             target.write(self.content)
 
 
-class JSONContent(FileComponent):
+class Content(ManagedContentBase):
+    """Manage the content of a file - possibly using templating."""
 
-    # A JSON file to be read (from defdir or on the destination)
-    source = ''
+    is_template = File.is_template
+    template_context = None
+    template_args = None  # dict, actually
+
+    def render(self):
+        if not self.is_template:
+            return
+        if self.template_args is None:
+            self.template_args = dict()
+        if not self.template_context:
+            self.template_context = self.parent
+        self.content = self.expand(
+            self.content, self.template_context, args=self.template_args
+        )
+
+
+class JSONContent(ManagedContentBase):
 
     # Data to be used.
     data = None
@@ -508,125 +524,42 @@ class JSONContent(FileComponent):
     content_compact = None
     content_readable = None
 
-    sensitive_data = False
+    _content_source_attribute = "data"
 
-    _delayed = False
-    _max_diff = 200
-    _max_diff_lead = 50
-
-    def configure(self):
-        super(JSONContent, self).configure()
-
-        self.diff_dir = os.path.join(
-            self.environment.workdir_base, '.batou-diffs')
-
-        # Step 1: Determine data attribute:
-        # - it might be given directly (data='...'),
-        # - we might have been passed a filename (source='...'), or
-        # - we might fall back using the path attribute (namevar)
-        if self.source and self.data:
-            raise ValueError(
-                'Only one of either "data" or "source" are allowed.')
-
-        if not self.data:
-            if not self.source:
-                self.source = self.original_path
-
-            if not self.source.startswith('/'):
-                self.source = os.path.join(self.root.defdir, self.source)
-
-        self._render()
-
-    def _render(self):
-        # Phase 1: acquire the source data into self.content
-        if self.source:
-            if os.path.exists(self.source):
-                with open(self.source, 'rb') as f:
-                    self.data = json.load(f)
-            else:
-                if self._delayed:
-                    raise FileNotFoundError(
-                        'Could not find source file {}'.format(self.source))
-                # We need to try rendering again later.
-                self._delayed = True
-                return
-
-        # Phase 2: apply data updates
+    def render(self):
+        if self.content:
+            self.data = json.loads(self.content)
         if self.override:
             self.data = dict_merge(self.data, self.override)
 
         self.content_compact = json.dumps(
-            self.data, sort_keys=True, separators=(',', ':')).encode('utf-8')
-        self.content_readable = json.dumps(
-            self.data, sort_keys=True, indent=4).encode('utf-8')
+            self.data, sort_keys=True, separators=(",", ":")
+        )
+        self.content_readable = json.dumps(self.data, sort_keys=True, indent=4)
 
         if self.human_readable:
             self.content = self.content_readable
         else:
             self.content = self.content_compact
 
-    def verify(self, predicting=False):
-        try:
-            if self._delayed:
-                self._render()
-        except FileNotFoundError:
-            if predicting:
-                # During prediction runs we accept that delayed rendering may
-                # not yet work and that we will change. We might want to
-                # turn this into an explicit flag so we don't implicitly
-                # run into a broken deployment.
-                assert False
-            # If we are not predicting then this is definitely a problem.
-            # Stop here.
-            raise
-        try:
-            with open(self.path, 'rb') as target:
-                current = target.read()
-                if current == self.content:
-                    return
-        except FileNotFoundError:
-            current = b''
-        except Exception:
-            output.annotate('Unknown content - can\'t predict diff.')
-            raise batou.UpdateNeeded()
 
-        if self.sensitive_data:
-            output.annotate(
-                'Not showing diff as it contains sensitive data.', red=True)
-        else:
-            # XXX continue here
-            current_text = current.decode('utf-8', errors='replace')
-            wanted_text = self.content.decode('utf-8', errors='replace')
-            diff = difflib.unified_diff(
-                    current_text.splitlines(),
-                    wanted_text.splitlines())
-            if not os.path.exists(self.diff_dir):
-                os.makedirs(self.diff_dir)
-            diff, diff_too_long, diff_log = limited_buffer(
-                diff, self._max_diff, self._max_diff_lead,
-                logdir=self.diff_dir)
+class YAMLContent(ManagedContentBase):
 
-            if diff_too_long:
-                output.line(
-                    ('More than {} lines of diff. Showing first and '
-                     'last {} lines.'.format(
-                        self._max_diff, self._max_diff_lead)), yellow=True)
-                output.line(
-                    'see {} for the full diff.'.format(diff_log), yellow=True)
+    # Data to be used.
+    data = None
 
-            for line in diff:
-                line = line.replace('\n', '')
-                if not line.strip():
-                    continue
-                output.annotate(
-                    '  {} {}'.format(os.path.basename(self.path), line),
-                    red=line.startswith('-'),
-                    green=line.startswith('+'))
-        raise batou.UpdateNeeded()
+    # Data to override the source.
+    override = None
 
-    def update(self):
-        with open(self.path, 'wb') as target:
-            target.write(self.content)
+    _content_source_attribute = "data"
+
+    def render(self):
+        if self.content:
+            self.data = yaml.safe_load(self.content)
+        if self.override:
+            self.data = dict_merge(self.data, self.override)
+
+        self.content = yaml.safe_dump(self.data)
 
 
 class Owner(FileComponent):

@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from batou.lib.file import BinaryFile, JSONContent, YAMLContent
 from batou.lib.file import Content, Mode, Symlink, File, Purge
-from batou.lib.file import BinaryFile, JSONContent
 from batou.lib.file import ensure_path_nonexistent
 from batou.lib.file import Presence, Directory, FileComponent
+from batou.tests.ellipsis import Ellipsis
 from mock import Mock, patch
 from stat import S_IMODE
 import getpass
+import json
 import os
 import pytest
-from batou.tests.ellipsis import Ellipsis
+import yaml
 
 
 def test_ensure_path_nonexistent_removes_normal_file(tmpdir):
@@ -509,31 +511,372 @@ see ... for the full diff.
 
 
 def test_json_content_data_given(root):
-    p = JSONContent('target.json', data={'asdf': 1})
+    p = JSONContent("target.json", data={"asdf": 1})
     root.component += p
     root.component.deploy()
-    assert p.content == b"""\
+    assert (
+        p.content
+        == b"""\
 {
     "asdf": 1
 }"""
+    )
 
-    with open(p.path, 'rb') as f:
-        assert f.read() == b"""\
+    with open(p.path, "rb") as f:
+        assert f.read() == p.content
+
+
+def test_json_diff(root):
+    from batou import output
+    from batou._output import TestBackend
+
+    output.backend = TestBackend()
+
+    p = JSONContent("target.json", data={"asdf": 1, "bsdf": 2})
+    root.component += p
+
+    with open(p.path, "w") as f:
+        assert f.write(json.dumps({"bsdf": 2}, sort_keys=True, indent=4))
+
+    p.deploy()
+
+    assert output.backend.output == Ellipsis(
+        """\
+host > MyComponent > JSONContent('work/mycomponent/target.json')
+  target.json ---
+  target.json +++
+  target.json @@ -1,3 +1,4 @@
+  target.json  {
+  target.json +    "asdf": 1,
+  target.json      "bsdf": 2
+  target.json  }
+"""
+    )
+
+
+def test_json_diff_not_for_sensitive(root):
+    from batou import output
+    from batou._output import TestBackend
+
+    output.backend = TestBackend()
+
+    p = JSONContent(
+        "target.json", data={"asdf": 1, "bsdf": 2}, sensitive_data=True
+    )
+    root.component += p
+
+    with open(p.path, "w") as f:
+        assert f.write(json.dumps({"bsdf": 2}, sort_keys=True, indent=4))
+
+    p.deploy()
+
+    assert output.backend.output == Ellipsis(
+        """\
+host > MyComponent > JSONContent('work/mycomponent/target.json')
+Not showing diff as it contains sensitive data.
+"""
+    )
+
+
+def test_json_content_data_given_compact(root):
+    p = JSONContent("target.json", data={"asdf": 1}, human_readable=False)
+    root.component += p
+    root.component.deploy()
+    assert p.content == b"""{"asdf":1}"""
+
+    with open(p.path, "rb") as f:
+        assert f.read() == p.content
+
+
+def test_json_content_source_given(root):
+    with open(root.defdir + "/source.json", "w", encoding="utf-8") as f:
+        f.write(json.dumps([1, 2, 3, 4]))
+
+    p = JSONContent("target.json", source="source.json")
+    root.component += p
+    root.component.deploy()
+    assert (
+        p.content
+        == b"""\
+[
+    1,
+    2,
+    3,
+    4
+]"""
+    )
+
+    with open(p.path, "rb") as f:
+        assert f.read() == p.content
+
+
+def test_json_content_delayed_source_given(root):
+    p = JSONContent("target.json", source="source.json")
+    root.component += p
+
+    with open(root.defdir + "/source.json", "w", encoding="utf-8") as f:
+        f.write(json.dumps([1, 2, 3, 4]))
+
+    root.component.deploy()
+    assert (
+        p.content
+        == b"""\
+[
+    1,
+    2,
+    3,
+    4
+]"""
+    )
+
+    with open(p.path, "rb") as f:
+        assert f.read() == p.content
+
+
+def test_json_content_delayed_source_causes_predicting_verify_to_raise(root):
+    p = JSONContent("target.json", source="source.json")
+    root.component += p
+    with pytest.raises(AssertionError):
+        p.verify(predicting=True)
+
+
+def test_json_content_source_with_override(root):
+    with open(root.defdir + "/source.json", "w", encoding="utf-8") as f:
+        f.write(
+            json.dumps(
+                {"database": {"address": "localhost", "password": "topsecret"}}
+            )
+        )
+
+    p = JSONContent(
+        "target.json",
+        source="source.json",
+        override={"database": {"password": "realpassword"}},
+    )
+
+    root.component += p
+    root.component.deploy()
+
+    # fmt: off
+    assert (p.content == b"""\
 {
-    "asdf": 1
-}"""
+    "database": {
+        "address": "localhost",
+        "password": "realpassword"
+    }
+}\
+""")
+    # fmt: on
+
+    with open(p.path, "rb") as f:
+        assert f.read() == p.content
+
+
+def test_json_content_source_missing(root):
+    p = JSONContent("target.json", source="source.json")
+    root.component += p
+    with pytest.raises(FileNotFoundError):
+        root.component.deploy()
 
 
 def test_json_content_either_source_or_data(root):
-    p = JSONContent('target.json', data={'asdf': 1}, source='asdf')
+    p = JSONContent("target.json", data={"asdf": 1}, source="asdf")
     with pytest.raises(ValueError):
         root.component += p
 
 
 def test_json_content_implicit_source(root):
-    p = JSONContent('target.json')
+    p = JSONContent("target.json")
     root.component += p
-    assert p.source == 'asdf'
+    assert p.source.endswith("/target.json")
+
+
+def test_json_content_explicit_source(root):
+    p = JSONContent("target.json", source="thesource.json")
+    root.component += p
+    assert p.source.endswith("/thesource.json")
+
+
+def test_json_content_explicit_absolute_source(root):
+    p = JSONContent("target.json", source="/tmp/thesource.json")
+    root.component += p
+    assert p.source == "/tmp/thesource.json"
+
+
+def test_yaml_content_data_given(root):
+    p = YAMLContent("target.yaml", data={"asdf": 1})
+    root.component += p
+    root.component.deploy()
+    assert (
+        p.content
+        == b"""\
+asdf: 1
+"""
+    )
+
+    with open(p.path, "rb") as f:
+        assert f.read() == p.content
+
+
+def test_yaml_diff(root):
+    from batou import output
+    from batou._output import TestBackend
+
+    output.backend = TestBackend()
+
+    p = YAMLContent("target.yaml", data={"asdf": 1, "bsdf": 2})
+    root.component += p
+
+    with open(p.path, "w") as f:
+        assert f.write(json.dumps({"bsdf": 2}, sort_keys=True, indent=4))
+
+    p.deploy()
+
+    # fmt: off
+    assert output.backend.output == Ellipsis("""\
+host > MyComponent > YAMLContent(\'work/mycomponent/target.yaml\')
+  target.yaml ---
+  target.yaml +++
+  target.yaml @@ -1,3 +1,2 @@
+  target.yaml -{
+  target.yaml -    "bsdf": 2
+  target.yaml -}
+  target.yaml +asdf: 1
+  target.yaml +bsdf: 2
+""")
+    # fmt: on
+
+
+def test_yaml_diff_not_for_sensitive(root):
+    from batou import output
+    from batou._output import TestBackend
+
+    output.backend = TestBackend()
+
+    p = YAMLContent(
+        "target.yaml", data={"asdf": 1, "bsdf": 2}, sensitive_data=True
+    )
+    root.component += p
+
+    with open(p.path, "w") as f:
+        assert f.write(json.dumps({"bsdf": 2}, sort_keys=True, indent=4))
+
+    p.deploy()
+
+    assert output.backend.output == Ellipsis(
+        """\
+host > MyComponent > YAMLContent('work/mycomponent/target.yaml')
+Not showing diff as it contains sensitive data.
+"""
+    )
+
+
+def test_yaml_content_source_given(root):
+    with open(root.defdir + "/source.json", "w", encoding="utf-8") as f:
+        f.write(json.dumps([1, 2, 3, 4]))
+
+    p = YAMLContent("target.json", source="source.json")
+    root.component += p
+    root.component.deploy()
+    # fmt: off
+    assert p.content == b"""\
+- 1
+- 2
+- 3
+- 4
+"""
+    # fmt: on
+
+    with open(p.path, "rb") as f:
+        assert f.read() == p.content
+
+
+def test_yaml_content_delayed_source_given(root):
+    p = YAMLContent("target.yaml", source="source.yaml")
+    root.component += p
+
+    with open(root.defdir + "/source.yaml", "w", encoding="utf-8") as f:
+        f.write(yaml.safe_dump([1, 2, 3, 4]))
+
+    root.component.deploy()
+    # fmt: off
+    assert p.content == b"""\
+- 1
+- 2
+- 3
+- 4
+"""
+    # fmt: on
+
+    with open(p.path, "rb") as f:
+        assert f.read() == p.content
+
+
+def test_yaml_content_delayed_source_causes_predicting_verify_to_raise(root):
+    p = YAMLContent("target.json", source="source.json")
+    root.component += p
+    with pytest.raises(AssertionError):
+        p.verify(predicting=True)
+
+
+def test_yaml_content_source_with_override(root):
+    with open(root.defdir + "/source.yaml", "w", encoding="utf-8") as f:
+        f.write(
+            yaml.safe_dump(
+                {"database": {"address": "localhost", "password": "topsecret"}}
+            )
+        )
+
+    p = YAMLContent(
+        "target.yaml",
+        source="source.yaml",
+        override={"database": {"password": "realpassword"}},
+    )
+
+    root.component += p
+    root.component.deploy()
+
+    # fmt: off
+    assert (p.content == b"""\
+database:
+  address: localhost
+  password: realpassword
+""")
+    # fmt: on
+
+    with open(p.path, "rb") as f:
+        assert f.read() == p.content
+
+
+def test_yaml_content_source_missing(root):
+    p = YAMLContent("target.json", source="source.json")
+    root.component += p
+    with pytest.raises(FileNotFoundError):
+        root.component.deploy()
+
+
+def test_yaml_content_either_source_or_data(root):
+    p = YAMLContent("target.json", data={"asdf": 1}, source="asdf")
+    with pytest.raises(ValueError):
+        root.component += p
+
+
+def test_yaml_content_implicit_source(root):
+    p = YAMLContent("target.json")
+    root.component += p
+    assert p.source.endswith("/target.json")
+
+
+def test_yaml_content_explicit_source(root):
+    p = YAMLContent("target.json", source="thesource.json")
+    root.component += p
+    assert p.source.endswith("/thesource.json")
+
+
+def test_yaml_content_explicit_absolute_source(root):
+    p = YAMLContent("target.json", source="/tmp/thesource.json")
+    root.component += p
+    assert p.source == "/tmp/thesource.json"
 
 
 def test_mode_verifies_for_nonexistent_file(root):

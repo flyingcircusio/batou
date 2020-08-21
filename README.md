@@ -90,6 +90,10 @@ The project is licensed under the 2-clause BSD license.
 2.1 (unreleased)
 ----------------
 
+- Bug 81: provide explicit support for JSON- and YAML-files with
+  proper integration to the new diff support and the ability to 
+  update data through a "dict merge" approach.
+
 - Bug 77: use `ConfigUpdater` so comments are kept when editing secrets.
 
 - Bug 1: provide better error message if remote user does not exist.
