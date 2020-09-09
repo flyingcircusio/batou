@@ -1,6 +1,12 @@
 ## Changelog
 
 
+2.2 (unreleased)
+----------------
+
+- Nothing changed yet.
+
+
 2.1 (2020-09-09)
 ----------------
 

@@ -87,7 +87,7 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.1 (unreleased)
+2.1 (2020-09-09)
 ----------------
 
 - Bug 81: provide explicit support for JSON- and YAML-files with
