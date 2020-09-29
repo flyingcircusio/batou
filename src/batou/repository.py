@@ -283,11 +283,15 @@ Please commit and push first.
         if outgoing.strip():
             output.error(
                 """\
-Your repository has outgoing changes.
+Your repository has outgoing changes on branch {branch}:
+
+{outgoing}
 
 I am refusing to deploy in this situation as the results will be unpredictable.
 Please push first.
-"""
+""".format(
+                    branch=branch, outgoing=outgoing
+                )
             )
             raise DeploymentError()
 
