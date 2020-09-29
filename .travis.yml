@@ -17,6 +17,15 @@ matrix:
       env:
         - PYTHON=3.8
         - PYTHONCMD=python3.8
+    - name: "Python 3.9-dev"
+      env:
+        - PYTHON=3.9-dev
+        - PYTHONCMD=python3.9
+
+    - name: "Python nightly"
+      env:
+        - PYTHON=nightly
+        - PYTHONCMD=python3.10
     # requires zc.buildout to become compatible
     #   https://github.com/buildout/buildout/issues/497
     # (yes we could ask buildout to run against a different python version
