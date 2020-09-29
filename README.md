@@ -94,6 +94,10 @@ The project is licensed under the 2-clause BSD license.
   introduced in batou 2.1.
   ([#98](https://github.com/flyingcircusio/batou/issues/98))
 
+- Make batou compatible with Python 3.9, ie asyncio's `all_tasks`
+  has been moved to a new location.
+  ([#93](https://github.com/flyingcircusio/batou/issues/93))
+
 
 2.1 (2020-09-09)
 ----------------

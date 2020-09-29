@@ -188,10 +188,21 @@ class Deployment(object):
         self.loop.set_default_executor(self.taskpool)
         self._launch_components(reference_node.root_dependencies())
 
-        pending = asyncio.Task.all_tasks()
-        while pending:
-            self.loop.run_until_complete(asyncio.gather(*pending))
-            pending = {t for t in asyncio.Task.all_tasks() if not t.done()}
+        # asyncio.Task.all_tasks was removed in Python 3.9
+        # but the replacement asyncio.all_tasks is only available
+        # for Python 3.7 and upwards
+        # confer https://docs.python.org/3/whatsnew/3.7.html
+        # and https://docs.python.org/3.9/whatsnew/3.9.html
+        if sys.version_info < (3, 7):
+            pending = asyncio.Task.all_tasks()
+            while pending:
+                self.loop.run_until_complete(asyncio.gather(*pending))
+                pending = {t for t in asyncio.Task.all_tasks() if not t.done()}
+        else:
+            pending = asyncio.all_tasks()
+            while pending:
+                self.loop.run_until_complete(asyncio.gather(*pending))
+                pending = {t for t in asyncio.all_tasks() if not t.done()}
 
     def disconnect(self):
         output.step("main", "Disconnecting from nodes ...", debug=True)
