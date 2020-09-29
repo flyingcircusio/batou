@@ -37,6 +37,11 @@ setup(
     ],
     extras_require={
         'test': [
+            'pytest',
+            'pytest-black',
+            'pytest-timeout',
+            'pytest-coverage',
+            'mock',
         ],
     },
     entry_points="""
