@@ -90,7 +90,9 @@ The project is licensed under the 2-clause BSD license.
 2.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix bug preventing to use `nagios=True` in for Supervisor components,
+  introduced in batou 2.1.
+  ([#98](https://github.com/flyingcircusio/batou/issues/98))
 
 
 2.1 (2020-09-09)

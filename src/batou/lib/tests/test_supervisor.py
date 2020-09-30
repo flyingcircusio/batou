@@ -88,3 +88,13 @@ def test_enable_true_reports_not_running_when_daemon_stopped(root, supervisor):
     supervisor.cmd("{}/bin/supervisorctl shutdown".format(supervisor.workdir))
     # assert nothing raised
     root.component.deploy()
+
+
+def test_setting_nagios_to_True_creates_a_nagios_nrpe_service(root):
+    supervisor = batou.lib.supervisor.Supervisor(nagios=True)
+    root.component += supervisor
+    # assert nothing raised
+    root.component.configure()
+    assert "NRPEService" in [
+        x.__class__.__name__ for x in supervisor.sub_components
+    ]

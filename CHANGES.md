@@ -4,6 +4,10 @@
 2.2 (unreleased)
 ----------------
 
+- Fix bug preventing to use `nagios=True` in for Supervisor components,
+  introduced in batou 2.1.
+  ([#98](https://github.com/flyingcircusio/batou/issues/98))
+
 - Instruction how to create new project
 
 
