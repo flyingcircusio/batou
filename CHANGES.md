@@ -4,7 +4,7 @@
 2.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Instruction how to create new project
 
 
 2.1 (2020-09-09)
