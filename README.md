@@ -87,11 +87,17 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.2 (unreleased)
+----------------
+
+- Nothing changed yet.
+
+
 2.1 (2020-09-09)
 ----------------
 
 - Bug 81: provide explicit support for JSON- and YAML-files with
-  proper integration to the new diff support and the ability to 
+  proper integration to the new diff support and the ability to
   update data through a "dict merge" approach.
 
 - Bug 77: use `ConfigUpdater` so comments are kept when editing secrets.
@@ -134,8 +140,8 @@ The project is licensed under the 2-clause BSD license.
 
 - Fix binary file handling that broke during 2to3 migration and the test
   was doing the wrong thing.
-  
-- Allow marking file content as sensitive, which - for now - will suppress 
+
+- Allow marking file content as sensitive, which - for now - will suppress
   diff generation/logging.
 
 - Allow specifying the service_user attribute per host.
@@ -152,7 +158,7 @@ The project is licensed under the 2-clause BSD license.
 - Allow the Content component to predict a change based on
   a not-yet-realized source file on the target system.
 
-- Limit parallel connection setup to 5 connections at once. Also, retry 
+- Limit parallel connection setup to 5 connections at once. Also, retry
   up to 3 times per connection and stagger retries according to a CSMA/CD
   schema. This helps make connection setup more reliable if using SSH jump
   hosts where many connections may cause sshd's MaxStart to start rejecting
@@ -194,7 +200,7 @@ The project is licensed under the 2-clause BSD license.
 2.0b9 (2020-05-09)
 ------------------
 
-- Refactor the `appenv` component into smaller components (and move it to `batou.lib.appenv`. 
+- Refactor the `appenv` component into smaller components (and move it to `batou.lib.appenv`.
 
 - Always update pip when installing an appenv - this also fixes the Travis tests.
 
@@ -248,7 +254,7 @@ The project is licensed under the 2-clause BSD license.
 - Simplify SSH/sudo and try sudo first. Probably needs further attention once
   we're along the release cycle.
 
-- Fix Python 2.7 virtualenvs - upgrade to latest old-style release of 
+- Fix Python 2.7 virtualenvs - upgrade to latest old-style release of
   `virtualenv`.
 
 ### 2.0b5 (2020-04-15)
