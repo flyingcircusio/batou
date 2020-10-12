@@ -197,7 +197,7 @@ class Deployment(object):
             all_tasks = asyncio.Task.all_tasks
         else:
             all_tasks = asyncio.all_tasks
-        get_pending = lambda: { t for t in  all_tasks() if not t.done() }
+        get_pending = lambda: {t for t in all_tasks() if not t.done()}
         pending = get_pending()
         while pending:
             self.loop.run_until_complete(asyncio.gather(*pending))
