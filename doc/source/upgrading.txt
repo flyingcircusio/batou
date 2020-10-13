@@ -68,3 +68,20 @@ Things you may have to change in your deployment
 
 * The default hash function has been changed to `sha512` and thus existing
   hashes relying on the default being md5 will fail.
+
+
+Updating to a newer batou 2.x version
+=====================================
+
+After having switched from batou 1.x to 2.x you might update to the latest
+``batou`` release once in a while. This requires the following steps:
+
+* Edit ``requirements.txt`` and enter the desired version: ``batou==2.x``.
+
+    - If you want to use a not released version use a git URL like this:
+      ``-e git+https://github.com/flyingcircusio/batou.git#egg=batou`` instead
+      of the ``batou==2.x`` requirement.
+* Run ``./batou appenv-update-lockfile`` to update ``requirements.lock``.
+* Commit the changes and run ``batou`` so it can update itself to the new
+  version.
+
