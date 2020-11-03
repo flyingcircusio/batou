@@ -47,7 +47,7 @@ ERROR: Failed override attribute conversion
       Host: localhost
  Attribute: Component1.do_what_is_needed
 Conversion: convert_literal('false')
-     Error: malformed node or string: <_ast.Name object at 0x...>
+     Error: malformed node or string: ...ast.Name object at 0x...>
 ERROR: Failed override attribute conversion
       Host: localhost
  Attribute: DNSProblem.attribute_with_problem

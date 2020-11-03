@@ -173,11 +173,14 @@ class Deployment(object):
         # for Python 3.7 and upwards
         # confer https://docs.python.org/3/whatsnew/3.7.html
         # and https://docs.python.org/3.9/whatsnew/3.9.html
-        if sys.version_info < 3.7:
+        if sys.version_info < (3, 7):
             all_tasks = asyncio.Task.all_tasks
         else:
             all_tasks = asyncio.all_tasks
-        get_pending = lambda: {t for t in all_tasks() if not t.done()}
+
+        def get_pending():
+            return {t for t in all_tasks(self.loop) if not t.done()}
+
         pending = get_pending()
         while pending:
             self.loop.run_until_complete(asyncio.gather(*pending))
