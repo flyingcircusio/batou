@@ -14,6 +14,10 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
+    strategy:
+      matrix:
+        python-version: [ '3.5', '3.6', '3.7', '3.8', '3.9' ]
+
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -22,12 +26,15 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
       # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          ./develop.sh
-          bin/tox
+      - name: Setup
+        run: ./develop.sh
+
+      - name: Test
+        run: bin/tox
 
       - name: Rocket.Chat Notification
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master

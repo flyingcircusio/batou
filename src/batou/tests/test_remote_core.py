@@ -246,20 +246,9 @@ def test_channelexec_handle_exception(remote_core_mod):
     )
 
     # Different /bin/sh versions have different error reporting
-    assert next(response) in [
-        (
-            "batou-output",
-            "line",
-            ("/bin/sh: fdjkahfkjdasbfda: command not found\n",),
-            {},
-        ),
-        (
-            "batou-output",
-            "line",
-            ("/bin/sh: 1: fdjkahfkjdasbfda: not found\n",),
-            {},
-        ),
-    ]
+    r_command_not_found = next(response)
+    assert "fdjkahfkjdasbfda" in r_command_not_found[2][0]
+    assert "not found" in r_command_not_found[2][0]
 
     assert next(response) == ("batou-error", None)
 

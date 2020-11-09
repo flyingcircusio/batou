@@ -52,7 +52,8 @@ class Jinja2Engine(TemplateEngine):
         )
 
     def _render_template_file(self, sourcefile, args):
-        tmpl = open(sourcefile).read()
+        with open(sourcefile) as f:
+            tmpl = f.read()
         tmpl = self.env.from_string(tmpl)
         output = io.StringIO()
         print(tmpl.render(args), file=output)
