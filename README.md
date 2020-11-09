@@ -16,11 +16,11 @@ batou helps you to automate your application deployments:
 Getting started with a new project is easy:
 
 ```console
-$ mkdir myproject
-$ cd myproject
-$ curl https://raw.githubusercontent.com/flyingcircusio/batou/master/appenv.py -o batou
-$ chmod +x batou
-$ ./batou
+mkdir myproject
+cd myproject
+git init
+curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
+git commit -m "Start a batou project."
 ```
 
 Here's a minimal application model:
