@@ -873,8 +873,8 @@ Here is how a component installing Python packages looks like:
           self += venv
 
           venv += Package('Flask', version='0.10.1')
-          
-          
+
+
 Add the "Flask" compoment to your local configuration:
 
 .. code-block:: ini
@@ -1330,4 +1330,3 @@ command:
 Now, check in the changed ``batou`` file and all your colleagues will
 get the new batou version automatically the next time the pull and run
 ``batou``.
-

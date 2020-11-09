@@ -4,7 +4,7 @@ from batou.utils import Address
 
 class DNSProblem(Component):
 
-    attribute_with_problem = Attribute(Address, 'isnotahostname')
+    attribute_with_problem = Attribute(Address, "isnotahostname")
 
     def configure(self):
-        self.require('application')
+        self.require("application")

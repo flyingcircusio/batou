@@ -79,4 +79,3 @@ key in the configuration (like using multiple ExecStart statements) then you can
 .. note::
 
     The SystemD support is currently geared towards the NixOS-based environment provided by us on our Flying Circus platform. We're happy to extend and generalise this module upon request.
-

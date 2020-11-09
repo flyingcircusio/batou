@@ -1,1 +1,1 @@
-pytest_plugins = 'batou.fixtures'
+pytest_plugins = "batou.fixtures"

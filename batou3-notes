@@ -22,13 +22,13 @@ entdecken neuer hosts
 		- implizite workdirs verorten das batou mit seinem ~batou/deployment ziel
 		- explizite workdirs (für die es defaults gibt) wären interessant
 
-		
+
 
 
 	- konfigurations-konvergenz mit reaktion auf die faktenlage:
 
 		- tree muss gebaut werden, daran die fakten angefüttert
-		- wenn die fakten sich ändern und jmd zugegriffen   hat (hierarchiches/globbing?) dann fakten wieder updaten und 
+		- wenn die fakten sich ändern und jmd zugegriffen   hat (hierarchiches/globbing?) dann fakten wieder updaten und
 		- fakten als generischere variante von provide/require?
 
 
@@ -36,10 +36,10 @@ entdecken neuer hosts
 	- was ist die einheitliche API im tree und wie variieren wir? procurves können bestimmte sachen ja nicht so einfach
 
 
-	- task typen: ssh (single), pssh, query, grep, find, download ... 
+	- task typen: ssh (single), pssh, query, grep, find, download ...
 
 
-	- controller als daemon (der connections haelt und neu aufbaut, cli als wrapper 
+	- controller als daemon (der connections haelt und neu aufbaut, cli als wrapper
 
 		- automatischer shutdown des controllers nach x zeit inaktivität in bestimmten situationen
 
@@ -84,7 +84,7 @@ entdecken neuer hosts
 
 
 		@define
-		def 
+		def
 
 
 
@@ -94,7 +94,7 @@ entdecken neuer hosts
 		class Foo(object):
 
 			def ensure(self):
-				... 
+				...
 
 
 
@@ -114,7 +114,7 @@ entdecken neuer hosts
 		 - ohne brüche in den konzepten beim verkomplizieren?
 
 
--- model -- 
+-- model --
 
 
 	class Frontend(Host):
@@ -125,20 +125,20 @@ entdecken neuer hosts
 			self += Blubble()
 
 
--- environment -- 
+-- environment --
 
 
-map Frontend Component/role to 
-
-
-
-
--- deploy.py task --- 
+map Frontend Component/role to
 
 
 
 
--- backup.py task -- 
+-- deploy.py task ---
+
+
+
+
+-- backup.py task --
 
 
 

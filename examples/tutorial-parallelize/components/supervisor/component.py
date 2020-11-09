@@ -4,26 +4,24 @@ from batou.lib.service import Service
 
 
 class Supervisor(Component):
-
     def configure(self):
-        self.programs = self.require('programs', self.host)
-        self += Buildout('supervisor',
-                version='2.13.2',
-                setuptools='41.4.0',
-                python='3.7')
-        self += Service('bin/supervisord',
-                        pidfile='var/supervisord.pid')
+        self.programs = self.require("programs", self.host)
+        self += Buildout(
+            "supervisor", version="2.13.2", setuptools="41.4.0", python="3.7"
+        )
+        self += Service("bin/supervisord", pidfile="var/supervisord.pid")
 
     def verify(self):
         self.assert_file_is_current(
-            'var/supervisord.pid',
-            ['.batou.buildout.success'] + [d['path'] for d in self.programs])
+            "var/supervisord.pid",
+            [".batou.buildout.success"] + [d["path"] for d in self.programs],
+        )
 
     def update(self):
         try:
-            out, err = self.cmd('bin/supervisorctl pid')
+            out, err = self.cmd("bin/supervisorctl pid")
             int(out)
         except Exception:
-            self.cmd('bin/supervisord')
+            self.cmd("bin/supervisord")
         else:
-            self.cmd('bin/supervisorctl reload')
+            self.cmd("bin/supervisorctl reload")

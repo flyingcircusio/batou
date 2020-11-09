@@ -76,4 +76,3 @@ Distribution-specific installation instructions
 
    installation-deb
    installation-rpm
-

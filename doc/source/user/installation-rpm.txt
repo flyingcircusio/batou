@@ -8,7 +8,7 @@ On rpm-based Linux distributions software packages are usually installed using
 .. note:: RPM-based environments are not native for any of the developers and
     not tested systematically. Let us know if any of this information is
     incorrect and we'll gladly update this.
-    
+
 Python 3
 ~~~~~~~~
 

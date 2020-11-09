@@ -35,6 +35,9 @@ setup(
         "pyyaml",
         "py",
     ],
+    extras_require={
+        "test": ["pytest", "pytest-timeout", "pytest-coverage", "mock"]
+    },
     entry_points="""
         [console_scripts]
             batou = batou.main:main
