@@ -4,7 +4,7 @@ import os.path
 
 
 def ServiceCheck(description, **kw):
-    if kw.get("nrpe", False):
+    if kw.pop("nrpe", False):
         return NRPEService(description, **kw)
     return Service(description, **kw)
 

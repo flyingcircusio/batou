@@ -62,7 +62,7 @@ def pytest_cmdline_main(config):
                 cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True
             )
         except subprocess.CalledProcessError as e:
-            raise BlackError(e)
+            raise pytest_black.BlackError(e)
 
         mtimes = getattr(self.config, "_blackmtimes", {})
         mtimes[str(self.fspath)] = self._blackmtime
