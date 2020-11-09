@@ -30,3 +30,12 @@ jobs:
           bin/pip install zc.buildout
           bin/buildout
           bin/tox
+
+      - name: Rocket.Chat Notification
+        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
+        if: always()
+        with:
+          type: ${{ job.status }}
+          job_name: 'Unit tests'
+          channel: '#infrastructure'
+          url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
