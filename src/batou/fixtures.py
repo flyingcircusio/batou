@@ -42,29 +42,3 @@ def pytest_assertrepr_compare(op, left, right):
 def reset_resolve_overrides():
     batou.utils.resolve_override.clear()
     batou.utils.resolve_v6_override.clear()
-
-
-def pytest_cmdline_main(config):
-    import sys
-    import pytest_black
-
-    def new_runtest(self):
-        executable = os.path.join(os.path.dirname(sys.executable), "black")
-        cmd = [
-            executable,
-            "--check",
-            "--diff",
-            "--quiet",
-            str(self.fspath),
-        ]
-        try:
-            subprocess.run(
-                cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True
-            )
-        except subprocess.CalledProcessError as e:
-            raise pytest_black.BlackError(e)
-
-        mtimes = getattr(self.config, "_blackmtimes", {})
-        mtimes[str(self.fspath)] = self._blackmtime
-
-    pytest_black.BlackItem.runtest = new_runtest
