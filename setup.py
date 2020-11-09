@@ -36,7 +36,13 @@ setup(
         "py",
     ],
     extras_require={
-        "test": [],
+        "test": [
+            "pytest",
+            "pytest-black",
+            "pytest-timeout",
+            "pytest-coverage",
+            "mock",
+        ],
     },
     entry_points="""
         [console_scripts]
