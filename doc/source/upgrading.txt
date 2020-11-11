@@ -78,7 +78,7 @@ After having switched from batou 1.x to 2.x you might update to the latest
 
 * Edit ``requirements.txt`` and enter the desired version: ``batou==2.x``.
 
-    - If you want to use a not released version use a git URL like this:
+    - If you want to use an unreleased version use a git URL like this:
       ``-e git+https://github.com/flyingcircusio/batou.git#egg=batou`` instead
       of the ``batou==2.x`` requirement.
 * Run ``./batou appenv-update-lockfile`` to update ``requirements.lock``.
