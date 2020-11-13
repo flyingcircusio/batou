@@ -87,6 +87,12 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.0.1 (unreleased)
+------------------
+
+- Backport compatibility for Python 3.9.
+
+
 2.0 (2020-07-15)
 ----------------
 

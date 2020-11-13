@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0.1 (unreleased)
+2.0.1 (2020-11-13)
 ------------------
 
 - Backport compatibility for Python 3.9.
