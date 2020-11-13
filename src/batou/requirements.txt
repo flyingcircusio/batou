@@ -5,10 +5,10 @@ chardet==3.0.4
 idna==2.8
 urllib3==1.25.3
 apipkg==1.5
-Jinja2==2.11.2
+Jinja2==2.10.1
 requests==2.22.0
 setuptools==50.3.2
 execnet==1.7.1
 PyYAML==5.1.2
-py==1.8.2
+py==1.8.0
 six==1.12.0
