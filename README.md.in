@@ -1,10 +1,6 @@
 <!-- DO NOT EDIT THE README.md FILE. IT IS GENERATED FROM README.md.in AND
      CHANGES.md BECAUSE Github CANNOT DO INCLUDES -->
 
-<p align="right">
-    <a href="https://travis-ci.org/flyingcircusio/batou"><img title="Current Build Status" src="https://travis-ci.org/flyingcircusio/batou.svg?branch=master"></a>
-</p>
-
 <img width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
 
 batou helps you to automate your application deployments:
