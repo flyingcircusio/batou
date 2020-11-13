@@ -87,8 +87,8 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.0b15 (unreleased)
--------------------
+2.0 (2020-07-15)
+----------------
 
 - Ignore directories when verifying archive extractions to avoid
   false non-convergence.
