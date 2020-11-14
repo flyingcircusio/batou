@@ -17,4 +17,4 @@ def sample_service(tmpdir):
 @pytest.fixture(autouse=True)
 def ensure_git_config(monkeypatch):
     monkeypatch.setitem(os.environ, "GIT_AUTHOR_EMAIL", "test@example.com")
-    monkeypatch.setitem(os.environ, "GIT_AUTHOR_EMAIL", "Mr. U. Test")
+    monkeypatch.setitem(os.environ, "GIT_AUTHOR_NAME", "Mr. U. Test")
