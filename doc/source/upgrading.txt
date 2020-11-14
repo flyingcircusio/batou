@@ -84,4 +84,3 @@ After having switched from batou 1.x to 2.x you might update to the latest
 * Run ``./batou appenv-update-lockfile`` to update ``requirements.lock``.
 * Commit the changes and run ``batou`` so it can update itself to the new
   version.
-
