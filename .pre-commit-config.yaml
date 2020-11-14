@@ -1,4 +1,4 @@
-exclude: '(components/component5/component.py|haproxy.cfg)'
+exclude: '(components/component5/component.py|haproxy.cfg|encrypted.cfg)'
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0

@@ -256,13 +256,6 @@ def test_channelexec_handle_exception(remote_core_mod):
         next(response)
 
 
-@mock.patch.dict(
-    os.environ,
-    {
-        "GIT_AUTHOR_EMAIL": "test@example.com",
-        "GIT_COMMITTER_EMAIL": "test@example.com",
-    },
-)
 def test_git_remote_init_bundle(tmpdir):
     source = tmpdir.mkdir("source")
     dest = tmpdir.mkdir("dest")
@@ -282,13 +275,6 @@ def test_git_remote_init_bundle(tmpdir):
     assert "bar" == dest.join("foo.txt").read()
 
 
-@mock.patch.dict(
-    os.environ,
-    {
-        "GIT_AUTHOR_EMAIL": "test@example.com",
-        "GIT_COMMITTER_EMAIL": "test@example.com",
-    },
-)
 def test_git_remote_init_pull(tmpdir):
     source = tmpdir.mkdir("source")
     dest = tmpdir.mkdir("dest")
