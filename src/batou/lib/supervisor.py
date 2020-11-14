@@ -203,7 +203,7 @@ class Supervisor(Component):
         buildout_cfg = File("buildout.cfg", source=self.buildout_cfg)
         self += Buildout(
             version="2.13.3",
-            setuptools="46.1.3",
+            setuptools="50.3.2",
             config=buildout_cfg,
             python="3",
         )

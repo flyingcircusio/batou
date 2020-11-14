@@ -8,7 +8,7 @@ from batou.utils import Address
 class Django(Component):
     def configure(self):
         self.address = Address(self.host.fqdn, "8081")
-        self += AppEnv("3.7")
+        self += AppEnv("3.8")
 
         self += SyncDirectory("mysite", source="mysite")
 
