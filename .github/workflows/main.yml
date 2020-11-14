@@ -33,6 +33,9 @@ jobs:
       - name: Setup
         run: ./develop.sh
 
+      - name: Show environment
+        run: set
+
       - name: Test
         run: bin/tox
 
