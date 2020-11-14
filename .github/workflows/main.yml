@@ -37,6 +37,8 @@ jobs:
         run: |
           git config --global user.email "test@example.com"
           git config --global user.name "Ms. U. Test"
+          git config --global author.email "test@example.com"
+          git config --global author.name "Ms. U. Test"
 
       - name: Test
         run: bin/tox
