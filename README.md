@@ -90,14 +90,14 @@ The project is licensed under the 2-clause BSD license.
 2.0.2 (unreleased)
 ------------------
 
-- Backport compatibility for Python 3.9.
+- Bug: zsh compatibility on the remote host was broken with more
+  complex sudo mechanism. Added a ZSH workaround.
 
 
 2.0.1 (2020-11-13)
 ------------------
 
-- Bug: zsh compatibility on the remote host was broken with more
-  complex sudo mechanism. Added a ZSH workaround.
+- Backport compatibility for Python 3.9.
 
 
 2.0 (2020-07-15)
