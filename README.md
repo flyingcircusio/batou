@@ -87,7 +87,7 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.0.2 (unreleased)
+2.0.2 (2020-11-18)
 ------------------
 
 - Bug: zsh compatibility on the remote host was broken with more
