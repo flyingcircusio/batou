@@ -87,6 +87,13 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.0.2 (unreleased)
+------------------
+
+- Bug: zsh compatibility on the remote host was broken with more
+  complex sudo mechanism. Added a ZSH workaround.
+
+
 2.0.1 (2020-11-13)
 ------------------
 

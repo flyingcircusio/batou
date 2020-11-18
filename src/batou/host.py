@@ -169,6 +169,7 @@ class RemoteHost(Host):
         #   irregardless of the local configuration of env_reset, etc.
 
         CONDITIONAL_SUDO = """\
+if [ -n "$ZSH_VERSION" ]; then setopt SH_WORD_SPLIT; fi;
 if [ \"$USER\" = \"{user}\" ]; then \
 pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
 """.format(user=self.service_user)
