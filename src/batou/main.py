@@ -17,8 +17,7 @@ def main():
         description=(
             "batou v{}: multi-(host|component|environment|version|platform)"
             " deployment").format(version),
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "-d", "--debug", action="store_true", help="Enable debug mode.")
 
@@ -30,35 +29,30 @@ def main():
         "-p",
         "--platform",
         default=None,
-        help="Alternative platform to choose. Empty for no platform.",
-    )
+        help="Alternative platform to choose. Empty for no platform.")
     p.add_argument(
         "-t",
         "--timeout",
         default=None,
-        help="Override the environment's timeout setting",
-    )
+        help="Override the environment's timeout setting")
     p.add_argument(
         "-D",
         "--dirty",
         action="store_true",
-        help="Allow deploying with dirty working copy or outgoing changes.",
-    )
+        help="Allow deploying with dirty working copy or outgoing changes.")
     p.add_argument(
         "-c",
         "--consistency-only",
         action="store_true",
         help="Only perform a deployment model and environment "
         "consistency check. Only connects to a single host. "
-        "Does not touch anything.",
-    )
+        "Does not touch anything.")
     p.add_argument(
         "-P",
         "--predict-only",
         action="store_true",
         help="Only predict what updates would happen. "
-        "Do not change anything.",
-    )
+        "Do not change anything.")
     p.add_argument(
         "-j",
         "--jobs",
@@ -67,13 +61,11 @@ def main():
         help="Defines number of jobs running parallel to deploy. "
         "The default results in a serial deployment "
         "of components. Will override the environment settings "
-        "for operational flexibility.",
-    )
+        "for operational flexibility.")
     p.add_argument(
         "environment",
         help="Environment to deploy.",
-        type=lambda x: x.replace(".cfg", ""),
-    )
+        type=lambda x: x.replace(".cfg", ""))
     p.set_defaults(func=batou.deploy.main)
 
     # SECRETS
@@ -83,8 +75,7 @@ def main():
 Manage encrypted secret files.
 
         Relies on gpg being installed and configured correctly.
-""",
-    )
+""")
 
     sp = secrets.add_subparsers()
 
@@ -94,56 +85,47 @@ Manage encrypted secret files.
 Encrypted secrets file editor utility. Decrypts file,
 invokes the editor, and encrypts the file again. If called with a
 non-existent file name, a new encrypted file is created.
-""",
-    )
+""")
     p.add_argument(
         "--editor",
         "-e",
         metavar="EDITOR",
         default=os.environ.get("EDITOR", "vi"),
-        help="Invoke EDITOR to edit (default: $EDITOR or vi)",
-    )
+        help="Invoke EDITOR to edit (default: $EDITOR or vi)")
     p.add_argument(
         "environment",
         help="Environment to edit secrets for.",
-        type=lambda x: x.replace(".cfg", ""),
-    )
+        type=lambda x: x.replace(".cfg", ""))
     p.set_defaults(func=batou.secrets.edit.main)
 
     p = sp.add_parser(
         "summary",
         help="""\
 Give a summary of secret files and who has access.
-""",
-    )
+""")
     p.set_defaults(func=batou.secrets.manage.summary)
 
     p = sp.add_parser(
-        "add",
-        help="""\
+        "add", help="""\
 Add a user's key to one or more secret files.
-""",
-    )
+""")
     p.add_argument("keyid", help="The user's key ID or email address")
     p.add_argument(
         "--environments",
         default="",
-        help="The environments to update. Update all if not specified.",
-    )
+        help="The environments to update. Update all if not specified.")
     p.set_defaults(func=batou.secrets.manage.add_user)
 
     p = sp.add_parser(
         "remove",
         help="""\
 Remove a user's key from one or more secret files.
-""",
-    )
+""")
     p.add_argument("keyid", help="The user's key ID or email address")
     p.add_argument(
         "--environments",
         default="",
-        help="The environments to update. Update all if not specified.",
-    )
+        help="The environments to update. Update all if not specified.")
     p.set_defaults(func=batou.secrets.manage.remove_user)
 
     args = parser.parse_args()
