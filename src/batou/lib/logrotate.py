@@ -24,8 +24,7 @@ class Logrotate(Component):
 
     common_config = b""
     logrotate_template = pkg_resources.resource_string(
-        __name__, "resources/logrotate.in"
-    )
+        __name__, "resources/logrotate.in")
 
     def configure(self):
         self.logfiles = self.require(RotatedLogfile.key, host=self.host)
@@ -38,6 +37,7 @@ class Logrotate(Component):
 
 @platform("gocept.net", Logrotate)
 class GoceptNetRotatedLogrotate(Component):
+
     def configure(self):
         user = self.host.service_user
         user_logrotate_conf = os.path.join("/var/spool/logrotate/", user)

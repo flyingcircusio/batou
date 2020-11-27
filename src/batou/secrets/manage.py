@@ -6,6 +6,7 @@ import os.path
 
 
 class Environment(object):
+
     def __init__(self, path=None, name=None):
         if path:
             self.path = path

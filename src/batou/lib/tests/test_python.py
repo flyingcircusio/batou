@@ -23,13 +23,12 @@ def test_venv_updates_if_python_changes(root):
 
     out, err = playground.cmd(
         '{}/bin/python -c "import sys; print(sys.version_info[:2])"'.format(
-            playground.workdir
-        )
-    )
+            playground.workdir))
     assert 3 == ast.literal_eval(out)[0]
 
 
 def test_venv_does_not_update_if_python_does_not_change(root):
+
     class Playground(Component):
         namevar = "version"
 

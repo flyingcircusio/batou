@@ -7,10 +7,8 @@ import shlex
 import subprocess
 import tempfile
 
-
 # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
 NULL = tempfile.TemporaryFile()
-
 
 NEW_FILE_TEMPLATE = """\
 [batou]
@@ -54,19 +52,17 @@ class EncryptedConfigFile(object):
         null = tempfile.TemporaryFile()
         for gpg in self.GPG_BINARY_CANDIDATES:
             try:
-                subprocess.check_call(
-                    [gpg, "--version"], stdout=null, stderr=null
-                )
+                subprocess.check_call([gpg, "--version"],
+                                      stdout=null,
+                                      stderr=null)
             except (subprocess.CalledProcessError, OSError):
                 pass
             else:
                 return "{} {}".format(gpg, cmdline)
-        raise RuntimeError(
-            "Could not find gpg binary."
-            " Is GPG installed? I tried looking for: {}".format(
-                ", ".join("`{}`".format(x) for x in self.GPG_BINARY_CANDIDATES)
-            )
-        )
+        raise RuntimeError("Could not find gpg binary."
+                           " Is GPG installed? I tried looking for: {}".format(
+                               ", ".join("`{}`".format(x)
+                                         for x in self.GPG_BINARY_CANDIDATES)))
 
     @property
     def cleartext(self):
@@ -102,9 +98,8 @@ class EncryptedConfigFile(object):
         self.write(s.getvalue())
 
     def _lock(self):
-        self.lockfd = open(
-            self.encrypted_file, self.write_lock and "a+" or "r+"
-        )
+        self.lockfd = open(self.encrypted_file, self.write_lock and "a+"
+                           or "r+")
         try:
             if self.write_lock:
                 fcntl.lockf(self.lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -142,19 +137,14 @@ class EncryptedConfigFile(object):
         if not recipients:
             raise ValueError("Need at least one recipient.")
         self.set_members(self.get_members())
-        recipients = " ".join(
-            ["-r {}".format(shlex.quote(r.strip())) for r in recipients]
-        )
+        recipients = " ".join([
+            "-r {}".format(shlex.quote(r.strip())) for r in recipients])
         os.rename(self.encrypted_file, self.encrypted_file + ".old")
         try:
             gpg = subprocess.Popen(
                 [
-                    self.gpg(
-                        "{} --encrypt {} -o {}".format(
-                            self.gpg_opts, recipients, self.encrypted_file
-                        )
-                    )
-                ],
+                    self.gpg("{} --encrypt {} -o {}".format(
+                        self.gpg_opts, recipients, self.encrypted_file))],
                 stdin=subprocess.PIPE,
                 shell=True,
             )

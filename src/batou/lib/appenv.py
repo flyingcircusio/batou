@@ -16,26 +16,21 @@ class VirtualEnv(Component):
         ensure_path_nonexistent(self.parent.env_dir)
         if "__PYVENV_LAUNCHER__" in os.environ:
             del os.environ["__PYVENV_LAUNCHER__"]
-        self.cmd(
-            "python{{component.python_version}} -m venv "
-            "{{component.parent.env_dir}}"
-        )
-        self.cmd(
-            "{{component.parent.env_dir}}/bin/python -m pip "
-            "install --upgrade pip"
-        )
+        self.cmd("python{{component.python_version}} -m venv "
+                 "{{component.parent.env_dir}}")
+        self.cmd("{{component.parent.env_dir}}/bin/python -m pip "
+                 "install --upgrade pip")
 
 
 class LockedRequirements(Component):
+
     def verify(self):
         assert os.path.exists(self.parent.env_ready)
 
     def update(self):
         self.python = os.path.join(self.parent.env_dir, "bin", "python")
-        self.cmd(
-            "{{component.python}} -m pip install --no-deps "
-            "-r {{component.parent.env_dir}}/requirements.lock"
-        )
+        self.cmd("{{component.python}} -m pip install --no-deps "
+                 "-r {{component.parent.env_dir}}/requirements.lock")
         self.cmd("{{component.python}} -m pip check")
 
 
@@ -46,9 +41,8 @@ class CleanupUnused(Component):
     def verify(self):
         if not os.path.exists(".appenv/"):
             return
-        protected = set(
-            [self.parent.env_hash, self.parent.last_env_hash, "current"]
-        )
+        protected = set([
+            self.parent.env_hash, self.parent.last_env_hash, "current"])
         self.cleanup = set(os.listdir(".appenv/")) - protected
         assert not self.cleanup
 
@@ -80,8 +74,7 @@ class AppEnv(Component):
         lockfile = open("requirements.lock", "r").read()
 
         hash_content = (
-            lockfile + self.python_version + open(__file__, "r").read()
-        )
+            lockfile + self.python_version + open(__file__, "r").read())
         hash_content = hash_content.encode("utf-8")
         self.env_hash = hashlib.new("sha256", hash_content).hexdigest()[:8]
         self.env_dir = os.path.join(".appenv", self.env_hash)
@@ -89,8 +82,7 @@ class AppEnv(Component):
 
         self += VirtualEnv(self.python_version)
         self += File(
-            os.path.join(self.env_dir, "requirements.lock"), content=lockfile
-        )
+            os.path.join(self.env_dir, "requirements.lock"), content=lockfile)
         self += LockedRequirements()
 
         # If we got here, then we can place the ready marker
@@ -103,8 +95,7 @@ class AppEnv(Component):
         self.last_env_hash = None
         if os.path.exists(os.path.join(self.workdir, ".appenv/current")):
             self.last_env_hash = os.path.basename(
-                os.readlink(os.path.join(self.workdir, ".appenv/current"))
-            )
+                os.readlink(os.path.join(self.workdir, ".appenv/current")))
 
         # Shim
         self += Symlink(".appenv/current", source=self.env_dir)

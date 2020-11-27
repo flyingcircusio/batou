@@ -375,11 +375,10 @@ def test_content_source_unclear(root):
     p = File(path)
     with pytest.raises(ValueError) as e:
         root.component += p
-    assert str(e.value) == (
-        "Missing implicit template file {}/path. "
-        "Or did you want to create an empty file? "
-        "Then use File('path', content='').".format(root.defdir)
-    )
+    assert str(e.value) == ("Missing implicit template file {}/path. "
+                            "Or did you want to create an empty file? "
+                            "Then use File('path', content='').".format(
+                                root.defdir))
 
 
 def test_content_passed_by_file_using_path_as_default(root):
@@ -477,21 +476,13 @@ def test_content_large_diff_logged(root):
     root.component.deploy()
     log = os.listdir(p.diff_dir)[0]
     with open(os.path.join(p.diff_dir, log)) as f:
-        assert (
-            f.read()
-            == """\
+        assert (f.read() == """\
 ---
 +++
 @@ -1,21 +1,21 @@
-"""
-            + "\n".join(["-bsdf"] * 21)
-            + "\n"
-            + "\n".join(["+asdf"] * 21)
-            + "\n"
-        )
+""" + "\n".join(["-bsdf"] * 21) + "\n" + "\n".join(["+asdf"] * 21) + "\n")
 
-    assert output.backend.output == Ellipsis(
-        """\
+    assert output.backend.output == Ellipsis("""\
 host > MyComponent > Content('work/mycomponent/path')
 More than 20 lines of diff. Showing first and last 5 lines.
 see ... for the full diff.
@@ -506,21 +497,17 @@ see ... for the full diff.
   path +asdf
   path +asdf
   path +asdf
-"""
-    )
+""")
 
 
 def test_json_content_data_given(root):
     p = JSONContent("target.json", data={"asdf": 1})
     root.component += p
     root.component.deploy()
-    assert (
-        p.content
-        == b"""\
+    assert (p.content == b"""\
 {
     "asdf": 1
-}"""
-    )
+}""")
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -540,8 +527,7 @@ def test_json_diff(root):
 
     p.deploy()
 
-    assert output.backend.output == Ellipsis(
-        """\
+    assert output.backend.output == Ellipsis("""\
 host > MyComponent > JSONContent('work/mycomponent/target.json')
   target.json ---
   target.json +++
@@ -550,8 +536,7 @@ host > MyComponent > JSONContent('work/mycomponent/target.json')
   target.json +    "asdf": 1,
   target.json      "bsdf": 2
   target.json  }
-"""
-    )
+""")
 
 
 def test_json_diff_not_for_sensitive(root):
@@ -561,8 +546,9 @@ def test_json_diff_not_for_sensitive(root):
     output.backend = TestBackend()
 
     p = JSONContent(
-        "target.json", data={"asdf": 1, "bsdf": 2}, sensitive_data=True
-    )
+        "target.json", data={
+            "asdf": 1,
+            "bsdf": 2}, sensitive_data=True)
     root.component += p
 
     with open(p.path, "w") as f:
@@ -570,12 +556,10 @@ def test_json_diff_not_for_sensitive(root):
 
     p.deploy()
 
-    assert output.backend.output == Ellipsis(
-        """\
+    assert output.backend.output == Ellipsis("""\
 host > MyComponent > JSONContent('work/mycomponent/target.json')
 Not showing diff as it contains sensitive data.
-"""
-    )
+""")
 
 
 def test_json_content_data_given_compact(root):
@@ -595,16 +579,13 @@ def test_json_content_source_given(root):
     p = JSONContent("target.json", source="source.json")
     root.component += p
     root.component.deploy()
-    assert (
-        p.content
-        == b"""\
+    assert (p.content == b"""\
 [
     1,
     2,
     3,
     4
-]"""
-    )
+]""")
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -618,16 +599,13 @@ def test_json_content_delayed_source_given(root):
         f.write(json.dumps([1, 2, 3, 4]))
 
     root.component.deploy()
-    assert (
-        p.content
-        == b"""\
+    assert (p.content == b"""\
 [
     1,
     2,
     3,
     4
-]"""
-    )
+]""")
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -643,15 +621,16 @@ def test_json_content_delayed_source_causes_predicting_verify_to_raise(root):
 def test_json_content_source_with_override(root):
     with open(root.defdir + "/source.json", "w", encoding="utf-8") as f:
         f.write(
-            json.dumps(
-                {"database": {"address": "localhost", "password": "topsecret"}}
-            )
-        )
+            json.dumps({
+                "database": {
+                    "address": "localhost",
+                    "password": "topsecret"}}))
 
     p = JSONContent(
         "target.json",
         source="source.json",
-        override={"database": {"password": "realpassword"}},
+        override={"database": {
+            "password": "realpassword"}},
     )
 
     root.component += p
@@ -707,12 +686,9 @@ def test_yaml_content_data_given(root):
     p = YAMLContent("target.yaml", data={"asdf": 1})
     root.component += p
     root.component.deploy()
-    assert (
-        p.content
-        == b"""\
+    assert (p.content == b"""\
 asdf: 1
-"""
-    )
+""")
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -754,8 +730,9 @@ def test_yaml_diff_not_for_sensitive(root):
     output.backend = TestBackend()
 
     p = YAMLContent(
-        "target.yaml", data={"asdf": 1, "bsdf": 2}, sensitive_data=True
-    )
+        "target.yaml", data={
+            "asdf": 1,
+            "bsdf": 2}, sensitive_data=True)
     root.component += p
 
     with open(p.path, "w") as f:
@@ -763,12 +740,10 @@ def test_yaml_diff_not_for_sensitive(root):
 
     p.deploy()
 
-    assert output.backend.output == Ellipsis(
-        """\
+    assert output.backend.output == Ellipsis("""\
 host > MyComponent > YAMLContent('work/mycomponent/target.yaml')
 Not showing diff as it contains sensitive data.
-"""
-    )
+""")
 
 
 def test_yaml_content_source_given(root):
@@ -822,15 +797,16 @@ def test_yaml_content_delayed_source_causes_predicting_verify_to_raise(root):
 def test_yaml_content_source_with_override(root):
     with open(root.defdir + "/source.yaml", "w", encoding="utf-8") as f:
         f.write(
-            yaml.safe_dump(
-                {"database": {"address": "localhost", "password": "topsecret"}}
-            )
-        )
+            yaml.safe_dump({
+                "database": {
+                    "address": "localhost",
+                    "password": "topsecret"}}))
 
     p = YAMLContent(
         "target.yaml",
         source="source.yaml",
-        override={"database": {"password": "realpassword"}},
+        override={"database": {
+            "password": "realpassword"}},
     )
 
     root.component += p
@@ -1022,10 +998,8 @@ def test_directory_last_updated_reflects_file_changes(root):
     d = Directory("target", source="source")
     root.component += d
     root.component.deploy()
-    assert (
-        d.last_updated()
-        == os.stat(os.path.join(root.workdir, "target", "two")).st_mtime
-    )
+    assert (d.last_updated() == os.stat(
+        os.path.join(root.workdir, "target", "two")).st_mtime)
 
 
 @pytest.mark.slow

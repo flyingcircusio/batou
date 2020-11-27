@@ -18,6 +18,7 @@ def service(root, tmpdir, request, deploy_platform):
 
     @batou.component.platform("test", batou.lib.service.Service)
     class TestPlatformService(batou.component.Component):
+
         def start(self):
             service._platform_started = True
 

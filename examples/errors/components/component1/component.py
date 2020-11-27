@@ -12,6 +12,7 @@ class Component2(Component):
 
 
 class Component3(Component):
+
     def configure(self):
         self.provide("frontend", "test00.gocept.net")
         self.provide("backend", "192.168.0.1")
@@ -19,6 +20,7 @@ class Component3(Component):
 
 
 class Component4(Component):
+
     def configure(self):
         self.require("application")
 

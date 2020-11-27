@@ -52,14 +52,12 @@ class VirtualEnvPyBase(Component):
     install_options = ("--ignore-installed",)
 
     def verify(self):
-        expected_version = tuple(int(x) for x in self.parent.version.split("."))
+        expected_version = tuple(
+            int(x) for x in self.parent.version.split("."))
         version_specificity = len(expected_version)
-        self.assert_cmd(
-            'bin/python -c "import sys; '
-            'assert sys.version_info[:{}] == {}"'.format(
-                version_specificity, repr(expected_version)
-            )
-        )
+        self.assert_cmd('bin/python -c "import sys; '
+                        'assert sys.version_info[:{}] == {}"'.format(
+                            version_specificity, repr(expected_version)))
         # Is this Python (still) functional 'enough'
         # from a setuptools/distribute perspective?
         self.assert_cmd('bin/python -c "import pkg_resources"')
@@ -70,14 +68,11 @@ class VirtualEnvPyBase(Component):
 
     def verify_pkg(self, pkg):
         try:
-            self.cmd(
-                'bin/python -c "'
-                "import pkg_resources; "
-                "assert pkg_resources.require('{}')[0].parsed_version == "
-                "pkg_resources.parse_version('{}')\"".format(
-                    pkg.package, pkg.version
-                )
-            )
+            self.cmd('bin/python -c "'
+                     "import pkg_resources; "
+                     "assert pkg_resources.require('{}')[0].parsed_version == "
+                     "pkg_resources.parse_version('{}')\"".format(
+                         pkg.package, pkg.version))
         except CmdExecutionError:
             raise batou.UpdateNeeded()
         # Is the package usable? Is the package a module?  This might be
@@ -88,10 +83,8 @@ class VirtualEnvPyBase(Component):
         # not for distribute, which installs a setuptools package.
         if pkg.check_package_is_module:
             try:
-                self.cmd(
-                    'bin/python -c "import pkg_resources; '
-                    'import {0};{0}.__file__"'.format(pkg.package)
-                )
+                self.cmd('bin/python -c "import pkg_resources; '
+                         'import {0};{0}.__file__"'.format(pkg.package))
             except CmdExecutionError:
                 raise batou.UpdateNeeded()
 
@@ -134,19 +127,15 @@ class VirtualEnvPyBase(Component):
 class VirtualEnvPy2_7(VirtualEnvPyBase):
 
     venv_version = "16.7.10"
-    venv_checksum = (
-        "sha256:e88fdcb08b0ecb11da97868f463dd"
-        "06275923f50d87f4b9c8b2fc0994eec40f4"
-    )
+    venv_checksum = ("sha256:e88fdcb08b0ecb11da97868f463dd"
+                     "06275923f50d87f4b9c8b2fc0994eec40f4")
     venv_options = ()
 
     install_options = ()
 
-    pypi_url = (
-        "https://files.pythonhosted.org/packages/a4/e3/"
-        "1f067de470e3a86875ed915438dc3bd781fb0346254"
-        "f541190a09472b677/virtualenv-16.7.10.tar.gz"
-    )
+    pypi_url = ("https://files.pythonhosted.org/packages/a4/e3/"
+                "1f067de470e3a86875ed915438dc3bd781fb0346254"
+                "f541190a09472b677/virtualenv-16.7.10.tar.gz")
 
     def configure(self):
         self.base = VirtualEnvDownload(
@@ -163,15 +152,13 @@ class VirtualEnvPy2_7(VirtualEnvPyBase):
 
     def update(self):
         super(VirtualEnvPy2_7, self).update()
-        self.cmd(
-            "{} {} {} --python={} {}".format(
-                self.parent.executable,
-                self.base.venv_cmd,
-                " ".join(self.venv_options),
-                self.parent.executable,
-                self.workdir,
-            )
-        )
+        self.cmd("{} {} {} --python={} {}".format(
+            self.parent.executable,
+            self.base.venv_cmd,
+            " ".join(self.venv_options),
+            self.parent.executable,
+            self.workdir,
+        ))
 
 
 class VirtualEnvPy(VirtualEnvPyBase):
@@ -190,10 +177,8 @@ class VirtualEnvDownload(Component):
 
     namevar = "version"
     checksum = None
-    download_url = (
-        "https://github.com/pypa/virtualenv/archive/"
-        "{{component.version}}.tar.gz"
-    )
+    download_url = ("https://github.com/pypa/virtualenv/archive/"
+                    "{{component.version}}.tar.gz")
 
     def configure(self):
         # This will manage central, version-specific virtualenv base

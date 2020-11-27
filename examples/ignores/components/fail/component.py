@@ -2,6 +2,7 @@ from batou.component import Component
 
 
 class Fail(Component):
+
     def configure(self):
         self.require("asdf")
         self.provide("fail", None)
@@ -11,6 +12,7 @@ class Fail(Component):
 
 
 class Fail2(Component):
+
     def configure(self):
         self.require("fail")
 

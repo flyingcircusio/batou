@@ -27,8 +27,7 @@ class Checkout(Component):
             if not os.path.exists(".svn"):
                 self.cmd(
                     self.expand(
-                        "svn co {{component.url}} . -r {{component.revision}}"
-                    )
+                        "svn co {{component.url}} . -r {{component.revision}}")
                 )
             else:
                 self.cmd(self.expand("svn revert -R ."))

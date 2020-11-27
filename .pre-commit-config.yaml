@@ -1,4 +1,4 @@
-exclude: '(components/component5/component.py|haproxy.cfg|encrypted.cfg)'
+exclude: '(components/component5/component.py|haproxy.cfg|encrypted.cfg|.appenv|.batou|lib/python)'
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
@@ -6,7 +6,8 @@ repos:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
--   repo: https://github.com/psf/black
-    rev: 19.3b0
+-   repo: https://github.com/pre-commit/mirrors-yapf
+    rev: 'v0.30.0'  # Use the sha / tag you want to point at
     hooks:
-    -   id: black
+    -   id: yapf
+        args: [-i, -p]

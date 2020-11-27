@@ -9,6 +9,7 @@ import tempfile
 
 
 class Editor(object):
+
     def __init__(self, editor, encrypted_file):
         self.editor = editor
         self.encrypted_file = encrypted_file
@@ -48,14 +49,13 @@ class Editor(object):
 
     def edit(self):
         with tempfile.NamedTemporaryFile(
-            prefix="edit", suffix=".cfg", mode="w+", encoding="utf-8"
-        ) as clearfile:
+                prefix="edit", suffix=".cfg", mode="w+",
+                encoding="utf-8") as clearfile:
             clearfile.write(self.cleartext)
             clearfile.flush()
 
-            subprocess.check_call(
-                [self.editor + " " + clearfile.name], shell=True
-            )
+            subprocess.check_call([self.editor + " " + clearfile.name],
+                                  shell=True)
 
             with open(clearfile.name, "r") as new_clearfile:
                 self.cleartext = new_clearfile.read()

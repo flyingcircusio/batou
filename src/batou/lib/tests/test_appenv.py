@@ -13,11 +13,9 @@ def test_simple_appenv(root):
 
     assert os.path.exists(os.path.join(root.component.workdir, "bin"))
     assert os.path.exists(
-        os.path.join(root.component.workdir, "bin", "python3")
-    )
+        os.path.join(root.component.workdir, "bin", "python3"))
     assert os.path.exists(
-        os.path.join(root.component.workdir, ".appenv", "current")
-    )
+        os.path.join(root.component.workdir, ".appenv", "current"))
 
     hashes = os.listdir(os.path.join(root.component.workdir, ".appenv"))
     assert len(hashes) == 2
@@ -29,11 +27,9 @@ def test_simple_appenv(root):
 
     assert os.path.exists(os.path.join(root.component.workdir, "bin"))
     assert os.path.exists(
-        os.path.join(root.component.workdir, "bin", "python3")
-    )
+        os.path.join(root.component.workdir, "bin", "python3"))
     assert os.path.exists(
-        os.path.join(root.component.workdir, ".appenv", "current")
-    )
+        os.path.join(root.component.workdir, ".appenv", "current"))
 
     hashes2 = os.listdir(os.path.join(root.component.workdir, ".appenv"))
     assert hashes2 == hashes
@@ -48,11 +44,9 @@ def test_simple_appenv(root):
 
     assert os.path.exists(os.path.join(root.component.workdir, "bin"))
     assert os.path.exists(
-        os.path.join(root.component.workdir, "bin", "python3")
-    )
+        os.path.join(root.component.workdir, "bin", "python3"))
     assert os.path.exists(
-        os.path.join(root.component.workdir, ".appenv", "current")
-    )
+        os.path.join(root.component.workdir, ".appenv", "current"))
 
     hashes3 = os.listdir(os.path.join(root.component.workdir, ".appenv"))
     assert hashes3 != hashes

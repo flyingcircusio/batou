@@ -25,6 +25,7 @@ import sys
 
 
 class ConfigSection(dict):
+
     def as_list(self, option):
         result = self[option]
         if "," in result:
@@ -38,6 +39,7 @@ class ConfigSection(dict):
 
 
 class Config(object):
+
     def __init__(self, path):
         config = RawConfigParser()
         config.optionxform = lambda s: s
@@ -51,10 +53,8 @@ class Config(object):
     def __getitem__(self, section):
         if section not in self:
             raise KeyError(section)
-        return ConfigSection(
-            (x, self.config.get(section, x))
-            for x in self.config.options(section)
-        )
+        return ConfigSection((x, self.config.get(section, x))
+                             for x in self.config.options(section))
 
     def __iter__(self):
         return iter(self.config.sections())
@@ -107,17 +107,16 @@ class Environment(object):
     def load(self):
         # Scan all components
         for filename in sorted(
-            glob.glob(os.path.join(self.base_dir, "components/*/component.py"))
-        ):
+                glob.glob(
+                    os.path.join(self.base_dir, "components/*/component.py"))):
             try:
                 self.components.update(load_components_from_file(filename))
             except Exception as e:
                 self.exceptions.append(ComponentLoadingError(filename, e))
 
         # Load environment configuration
-        config_file = os.path.join(
-            self.base_dir, "environments/{}.cfg".format(self.name)
-        )
+        config_file = os.path.join(self.base_dir,
+                                   "environments/{}.cfg".format(self.name))
         if not os.path.isfile(config_file):
             raise MissingEnvironment(self)
 
@@ -150,9 +149,8 @@ class Environment(object):
         if self.connect_method == "local":
             self.target_directory = self.repository.root
 
-        self.deployment_base = os.path.relpath(
-            self.base_dir, self.repository.root
-        )
+        self.deployment_base = os.path.relpath(self.base_dir,
+                                               self.repository.root)
 
     def load_secrets(self):
         add_secrets_to_environment_override(self)
@@ -160,18 +158,17 @@ class Environment(object):
     def load_environment(self, config):
         environment = config.get("environment", {})
         for key in [
-            "service_user",
-            "host_domain",
-            "target_directory",
-            "connect_method",
-            "update_method",
-            "branch",
-            "platform",
-            "timeout",
-            "develop",
-            "repository_url",
-            "jobs",
-        ]:
+                "service_user",
+                "host_domain",
+                "target_directory",
+                "connect_method",
+                "update_method",
+                "branch",
+                "platform",
+                "timeout",
+                "develop",
+                "repository_url",
+                "jobs",]:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
@@ -221,8 +218,7 @@ class Environment(object):
             host.platform = self.platform
             host.service_user = self.service_user
             self._load_host_components(
-                hostname, config["hosts"].as_list(literal_hostname)
-            )
+                hostname, config["hosts"].as_list(literal_hostname))
 
     def _load_hosts_multi_section(self, config):
         for section in config:
@@ -232,16 +228,13 @@ class Environment(object):
             if hostname in self.hosts:
                 self.exceptions.append(DuplicateHostError(hostname))
             host = self.add_host(hostname)
-            host.ignore = ast.literal_eval(
-                config[section].get("ignore", "False")
-            )
+            host.ignore = ast.literal_eval(config[section].get(
+                "ignore", "False"))
             host.platform = config[section].get("platform", self.platform)
-            host.service_user = config[section].get(
-                "service_user", self.service_user
-            )
-            self._load_host_components(
-                hostname, config[section].as_list("components")
-            )
+            host.service_user = config[section].get("service_user",
+                                                    self.service_user)
+            self._load_host_components(hostname,
+                                       config[section].as_list("components"))
             for key, value in list(config[section].items()):
                 if key.startswith("data-"):
                     key = key.replace("data-", "", 1)
@@ -315,11 +308,8 @@ class Environment(object):
         for root in self.root_components:
             if root.host == host and root.name == component_name:
                 return root
-        raise KeyError(
-            "Component {} not configured for host {}".format(
-                component_name, hostname
-            )
-        )
+        raise KeyError("Component {} not configured for host {}".format(
+            component_name, hostname))
 
     def prepare_connect(self):
         if self.connect_method == "vagrant":
@@ -330,11 +320,8 @@ class Environment(object):
             for fqdn in self.hosts:
                 cmd("kitchen create {}".format(fqdn))
             if "BATOU_POST_KITCHEN_CREATE_CMD" in os.environ:
-                cmd(
-                    "kitchen exec -c '{}'".format(
-                        os.environ["BATOU_POST_KITCHEN_CREATE_CMD"]
-                    )
-                )
+                cmd("kitchen exec -c '{}'".format(
+                    os.environ["BATOU_POST_KITCHEN_CREATE_CMD"]))
 
     # Deployment API (implements the configure-verify-update cycle)
 
@@ -373,8 +360,7 @@ class Environment(object):
                     # to report gracefully.
                     ex_type, ex, tb = sys.exc_info()
                     exceptions.append(
-                        UnknownComponentConfigurationError(root, e, tb)
-                    )
+                        UnknownComponentConfigurationError(root, e, tb))
                     print(root, e)
                     retry.add(root)
 
@@ -387,8 +373,7 @@ class Environment(object):
             root_dependencies = self.root_dependencies()
             try:
                 order = batou.utils.topological_sort(
-                    batou.utils.revert_graph(root_dependencies)
-                )
+                    batou.utils.revert_graph(root_dependencies))
             except CycleError as e:
                 exceptions.append(CycleErrorDetected(e))
 
@@ -398,9 +383,7 @@ class Environment(object):
                 if self.resources.unsatisfied:
                     exceptions.append(
                         UnsatisfiedResources(
-                            self.resources.unsatisfied_keys_and_components
-                        )
-                    )
+                            self.resources.unsatisfied_keys_and_components))
 
                 # We did not manage to improve on our last working set, so we
                 # give up.

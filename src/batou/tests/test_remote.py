@@ -29,7 +29,5 @@ def test_remote_bundle_breaks_on_missing_head(sample_service):
     h.rpc.hg_current_heads.return_value = []
     with pytest.raises(ValueError) as e:
         repository.update(h)
-    assert e.value.args == (
-        "Remote repository did not find any heads. "
-        "Can not continue creating a bundle.",
-    )
+    assert e.value.args == ("Remote repository did not find any heads. "
+                            "Can not continue creating a bundle.",)

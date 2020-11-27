@@ -48,11 +48,11 @@ def test_component_with_unknown_arguments_raises_valueerror():
     assert str(e.value) == (
         "The following arguments are unacceptable for this component "
         "because they are either undefined or would override "
-        "methods: asdf"
-    )
+        "methods: asdf")
 
 
 def test_init_component_with_namevar_uses_first_argument():
+
     class SampleComponent(Component):
         namevar = "asdf"
 
@@ -61,6 +61,7 @@ def test_init_component_with_namevar_uses_first_argument():
 
 
 def test_init_component_with_namevar_fails_without_argument():
+
     class SampleComponent(Component):
         namevar = "asdf"
 
@@ -69,6 +70,7 @@ def test_init_component_with_namevar_fails_without_argument():
 
 
 def test_init_keyword_args_update_dict():
+
     class TestComponent(Component):
         foobar = None
 
@@ -88,6 +90,7 @@ def test_op_orassignment_ignores_none(root):
 
 
 def test_recursive_sub_component_iterator(root):
+
     class TestComponent(Component):
         name = None
 
@@ -108,11 +111,11 @@ def test_recursive_sub_component_iterator(root):
         "x1y1",
         "x2",
         "x2y0",
-        "x2y1",
-    ] == recursive
+        "x2y1",] == recursive
 
 
 def test_op_orassignment_ignores_already_preapred_component(root):
+
     class Counting(Component):
         x = 1
 
@@ -127,6 +130,7 @@ def test_op_orassignment_ignores_already_preapred_component(root):
 
 
 def test_prepare_calls_configure(mockroot):
+
     class TestComponent(Component):
 
         cwd = None
@@ -143,6 +147,7 @@ def test_prepare_calls_configure(mockroot):
 
 
 def test_prepare_configures_applicable_platforms_as_subcomponents(root):
+
     class MyComponent(Component):
         pass
 
@@ -209,6 +214,7 @@ def test_sub_components_are_deployed_first(root):
 
 
 def test_log_in_configure_is_stored_on_root_for_later(root):
+
     class MyComponent(Component):
 
         namevar = "id"
@@ -222,6 +228,7 @@ def test_log_in_configure_is_stored_on_root_for_later(root):
 
 
 def test_log_in_verify(root):
+
     class MyComponent(Component):
 
         namevar = "id"
@@ -237,6 +244,7 @@ def test_log_in_verify(root):
 
 
 def test_adding_subcomponents_configures_them_immediately(root):
+
     class MyComponent(Component):
         configured = False
 
@@ -430,9 +438,8 @@ def test_root_and_component_know_working_dir(root):
 def test_root_component_repr():
     host = Mock()
     environment = Mock()
-    root = RootComponent(
-        "haproxy", environment, host, [], False, object, "/defdir", "/workdir"
-    )
+    root = RootComponent("haproxy", environment, host, [], False, object,
+                         "/defdir", "/workdir")
     assert repr(root).startswith('<RootComponent "haproxy" object at ')
 
 
@@ -441,6 +448,7 @@ def test_component_manages_working_dir(root):
     os.rmdir(root.workdir)
 
     class RememberWorkDir(Component):
+
         def verify(self):
             self.parent.i_was_in = os.getcwd()
 
@@ -448,8 +456,7 @@ def test_component_manages_working_dir(root):
     root.component.deploy()
     assert os.path.isdir(root.workdir)
     assert os.path.realpath(root.component.i_was_in) == os.path.realpath(
-        root.workdir
-    )
+        root.workdir)
     cwd = os.getcwd()
     # Need to ensure we resolve symlinks: on OS x /var/tmp may lead to
     # /private/...
@@ -549,6 +556,7 @@ def test_root_overrides_existing_attribute(root):
 
 
 def test_attribute_split_list(root):
+
     class Foo(Component):
         a = Attribute("list", "")
         b = Attribute("list", "1,2")

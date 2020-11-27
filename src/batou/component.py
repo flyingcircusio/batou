@@ -28,6 +28,7 @@ def platform(name, component):
 
 
 def handle_event(event, scope):
+
     def wrapper(f):
         f._event = dict(event=event, scope=scope)
         return f
@@ -51,6 +52,7 @@ def check_event_scope(scope, source, target):
 
 
 class ComponentDefinition(object):
+
     def __init__(self, factory, filename=None, defdir=None):
         self.factory = factory
         self.name = factory.__name__.lower()
@@ -66,8 +68,7 @@ def load_components_from_file(filename):
     module_name = os.path.basename(defdir)
     module_path = "batou.c.{}".format(module_name)
     module = types.ModuleType(
-        module_name, "Component definition module for {}".format(filename)
-    )
+        module_name, "Component definition module for {}".format(filename))
     sys.modules[module_path] = module
     setattr(batou.c, module_name, module)
     exec(compile(open(filename).read(), filename, "exec"), module.__dict__)
@@ -75,9 +76,8 @@ def load_components_from_file(filename):
     for candidate in list(module.__dict__.values()):
         if candidate in [Component]:
             continue
-        if not (
-            isinstance(candidate, type) and issubclass(candidate, Component)
-        ):
+        if not (isinstance(candidate, type)
+                and issubclass(candidate, Component)):
             continue
         compdef = ComponentDefinition(candidate, filename, defdir)
         if compdef.name in components:
@@ -200,8 +200,7 @@ class Component(object):
             raise ValueError(
                 "The following arguments are unacceptable for this component "
                 "because they are either undefined or would override "
-                "methods: {}".format(", ".join(unacceptable_args))
-            )
+                "methods: {}".format(", ".join(unacceptable_args)))
 
         if self.namevar:
             if namevar is None:
@@ -327,14 +326,13 @@ class Component(object):
             os.makedirs(self.workdir)
         with self.chdir(self.workdir), self:
             try:
-                with batou.utils.Timer("{} verify()".format(self._breadcrumbs)):
+                with batou.utils.Timer("{} verify()".format(
+                        self._breadcrumbs)):
                     call_with_optional_args(
-                        self.verify, predicting=predict_only
-                    )
+                        self.verify, predicting=predict_only)
             except AssertionError:
                 self.__trigger_event__(
-                    "before-update", predict_only=predict_only
-                )
+                    "before-update", predict_only=predict_only)
                 output.flush_buffer()
                 if not predict_only:
                     self.update()
@@ -456,14 +454,12 @@ class Component(object):
         # We notify all components that belong to the same root.
         for target in self.root.component.recursive_sub_components:
             for handler in target._event_handlers.get(event, []):
-                if not check_event_scope(handler._event["scope"], self, target):
+                if not check_event_scope(handler._event["scope"], self,
+                                         target):
                     continue
                 if predict_only:
-                    output.annotate(
-                        "Trigger {}: {}.{}".format(
-                            event, handler.__self__, handler.__name__
-                        )
-                    )
+                    output.annotate("Trigger {}: {}.{}".format(
+                        event, handler.__self__, handler.__name__))
                     continue
                 handler(self)
 
@@ -566,13 +562,15 @@ class Component(object):
             causing ``require`` to complete successfully.
 
         """
-        return self.environment.resources.require(
-            self.root, key, host, strict, reverse, dirty
-        )
+        return self.environment.resources.require(self.root, key, host, strict,
+                                                  reverse, dirty)
 
-    def require_one(
-        self, key, host=None, strict=True, reverse=False, dirty=False
-    ):
+    def require_one(self,
+                    key,
+                    host=None,
+                    strict=True,
+                    reverse=False,
+                    dirty=False):
         """Require a resource, returning a scalar.
 
         For the parameters, see :py:meth:`require`.
@@ -589,10 +587,8 @@ class Component(object):
         resources = self.require(key, host, strict, reverse, dirty)
         if len(resources) > 1:
             raise KeyError(
-                "Expected only one result, got multiple for (key={}, host={})".format(
-                    key, host
-                )
-            )
+                "Expected only one result, got multiple for (key={}, host={})".
+                format(key, host))
         elif len(resources) == 0:
             raise SilentConfigurationError()
         return resources[0]
@@ -638,8 +634,7 @@ class Component(object):
         reference = Presence(reference)
         self |= reference
         reference.assert_component_is_current(
-            [Presence(r) for r in requirements], **kw
-        )
+            [Presence(r) for r in requirements], **kw)
 
     def assert_component_is_current(self, requirements=[], **kw):
         """Assert that this component has been updated more recently
@@ -670,8 +665,7 @@ class Component(object):
         if reference is None:
             output.annotate(
                 "assert_component_is_current({}, ...): No reference".format(
-                    self._breadcrumb
-                ),
+                    self._breadcrumb),
                 debug=True,
             )
             raise batou.UpdateNeeded()
@@ -785,7 +779,8 @@ class Component(object):
         """
         if expand:
             cmd = self.expand(cmd)
-        return batou.utils.cmd(cmd, silent, ignore_returncode, communicate, env)
+        return batou.utils.cmd(cmd, silent, ignore_returncode, communicate,
+                               env)
 
     def map(self, path):
         """Perform a VFS mapping on the given path.
@@ -879,16 +874,14 @@ class Component(object):
 
         """
         engine = batou.template.Jinja2Engine()
-        return engine.template(
-            filename, self._template_args(component=component)
-        )
+        return engine.template(filename,
+                               self._template_args(component=component))
 
     def _template_args(self, component=None, **kw):
         if component is None:
             component = self
         args = dict(
-            host=self.host, environment=self.environment, component=component
-        )
+            host=self.host, environment=self.environment, component=component)
         args.update(kw)
         return args
 
@@ -1087,9 +1080,8 @@ class Attribute(object):
                     if getattr(obj.__class__, k, None) is self:
                         name = k
                         break
-                raise batou.ConversionError(
-                    obj, name, value, self.conversion, e
-                )
+                raise batou.ConversionError(obj, name, value, self.conversion,
+                                            e)
         self.instances[obj] = value
 
     def convert_literal(self, value):

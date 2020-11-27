@@ -16,13 +16,11 @@ def main():
     parser = argparse.ArgumentParser(
         description=(
             "batou v{}: multi-(host|component|environment|version|platform)"
-            " deployment"
-        ).format(version),
+            " deployment").format(version),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "-d", "--debug", action="store_true", help="Enable debug mode."
-    )
+        "-d", "--debug", action="store_true", help="Enable debug mode.")
 
     subparsers = parser.add_subparsers()
 

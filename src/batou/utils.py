@@ -25,6 +25,7 @@ def self_id():
 
 
 class MultiFile(object):
+
     def __init__(self, files):
         self.files = files
 
@@ -44,7 +45,8 @@ def locked(filename):
         try:
             fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
-            print("Could not acquire lock {}".format(filename), file=sys.stderr)
+            print(
+                "Could not acquire lock {}".format(filename), file=sys.stderr)
             raise RuntimeError(
                 'cannot create lock "%s": more than one instance running '
                 "concurrently?" % lockfile,
@@ -69,15 +71,11 @@ def notify_send(title, description):
 
 
 def notify_macosx(title, description):
-    subprocess.call(
-        [
-            "osascript",
-            "-e",
-            'display notification "{}" with title "{}"'.format(
-                description, title
-            ),
-        ]
-    )
+    subprocess.call([
+        "osascript",
+        "-e",
+        'display notification "{}" with title "{}"'.format(description, title),
+    ])
 
 
 def notify_none(title, description):
@@ -89,13 +87,11 @@ try:
     notify = notify_macosx
 except (subprocess.CalledProcessError, OSError):
     try:
-        subprocess.check_output(
-            ["which", "notify-send"], stderr=subprocess.STDOUT
-        )
+        subprocess.check_output(["which", "notify-send"],
+                                stderr=subprocess.STDOUT)
         notify = notify_send
     except (subprocess.CalledProcessError, OSError):
         notify = notify_none
-
 
 resolve_override = {}
 resolve_v6_override = {}
@@ -115,9 +111,8 @@ def resolve_v6(host, port, resolve_override=resolve_v6_override):
     address = resolve_override.get(host)
     if not address:
         try:
-            address = socket.getaddrinfo(host, int(port), socket.AF_INET6)[0][
-                4
-            ][0]
+            address = socket.getaddrinfo(host, int(port),
+                                         socket.AF_INET6)[0][4][0]
         except socket.gaierror:
             address = None
     if address and address.startswith("fe80:"):
@@ -175,8 +170,7 @@ class Address(object):
 
         if not self.listen and not self.listen_v6:
             raise socket.gaierror(
-                "No IPv4 or IPv6 address for {!r}".format(connect)
-            )
+                "No IPv4 or IPv6 address for {!r}".format(connect))
 
     def __lt__(self, other):
         if isinstance(other, Address):
@@ -251,6 +245,7 @@ def ensure_graph_data(graph):
 
 
 class CycleError(ValueError):
+
     def __str__(self):
         message = []
         components = list(self.args[0].items())
@@ -281,8 +276,7 @@ def topological_sort(graph):
     sorted = []
     reverse_graph = revert_graph(graph)
     roots = [
-        node for node, incoming in list(reverse_graph.items()) if not incoming
-    ]
+        node for node, incoming in list(reverse_graph.items()) if not incoming]
     while roots:
         root = roots.pop()
         sorted.append(root)
@@ -299,6 +293,7 @@ def topological_sort(graph):
 
 
 class CmdExecutionError(DeploymentError, RuntimeError):
+
     def __init__(self, cmd, returncode, stdout, stderr):
         self.cmd = cmd
         self.returncode = returncode
@@ -361,6 +356,7 @@ def cmd(
 
 
 class Timer(object):
+
     def __init__(self, note):
         self.duration = 0
         self.note = note

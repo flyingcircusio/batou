@@ -3,6 +3,7 @@ from batou.remote_core import Output
 
 
 class TerminalBackend(object):
+
     def __init__(self):
         import py.io
 
@@ -19,6 +20,7 @@ class TerminalBackend(object):
 
 
 class NullBackend(object):
+
     def line(self, message, **format):
         pass
 
@@ -30,6 +32,7 @@ class NullBackend(object):
 
 
 class TestBackend(object):
+
     def __init__(self):
         self.output = ""
 

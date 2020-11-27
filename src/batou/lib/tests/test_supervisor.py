@@ -7,8 +7,7 @@ import pytest
 def supervisor(root, request):
     # Urks. Otherwise OS X ends up with socket paths that are too long.
     supervisor = batou.lib.supervisor.Supervisor(
-        pidfile="supervisor.pid", socketpath="/tmp/batou-test-supervisor.sock"
-    )
+        pidfile="supervisor.pid", socketpath="/tmp/batou-test-supervisor.sock")
     root.component += supervisor
     root.component.deploy()
     yield supervisor
@@ -45,8 +44,10 @@ def test_does_not_start_disabled_program(root, supervisor):
 @pytest.mark.slow
 def test_program_does_not_start_within_startsecs_raises(root, supervisor):
     root.component += batou.lib.supervisor.Program(
-        "foo", command_absolute=False, command="true", options=dict(startsecs=1)
-    )
+        "foo",
+        command_absolute=False,
+        command="true",
+        options=dict(startsecs=1))
     with pytest.raises(RuntimeError):
         root.component.deploy()
 
@@ -63,12 +64,8 @@ def test_starts_stopped_program(root, supervisor):
     root.component.deploy()
     supervisor.cmd("{}/bin/supervisorctl stop foo".format(supervisor.workdir))
     root.component.deploy()
-    assert (
-        "RUNNING"
-        in supervisor.cmd(
-            "{}/bin/supervisorctl status foo".format(supervisor.workdir)
-        )[0]
-    )
+    assert ("RUNNING" in supervisor.cmd(
+        "{}/bin/supervisorctl status foo".format(supervisor.workdir))[0])
 
 
 @pytest.mark.slow
@@ -96,5 +93,4 @@ def test_setting_nagios_to_True_creates_a_nagios_nrpe_service(root):
     # assert nothing raised
     root.component.configure()
     assert "NRPEService" in [
-        x.__class__.__name__ for x in supervisor.sub_components
-    ]
+        x.__class__.__name__ for x in supervisor.sub_components]

@@ -7,11 +7,11 @@ import batou.lib.supervisor
 
 @platform("debian", batou.lib.service.Service)
 class RebootCronjob(Component):
+
     def configure(self):
         self += CronJob(
             self.expand(
-                "{{component.root.workdir}}/{{component.parent.executable}}"
-            ),
+                "{{component.root.workdir}}/{{component.parent.executable}}"),
             timing="@reboot",
             logger=self.root.name,
         )
@@ -41,12 +41,11 @@ sharedscripts
 
 @platform("debian", Logrotate)
 class LogrotateCronjob(Component):
+
     def configure(self):
         self.directory = self.parent.workdir
         self += CronJob(
-            self.expand(
-                "/usr/sbin/logrotate -s {{component.directory}}/state"
-                " {{component.directory}}/logrotate.conf"
-            ),
+            self.expand("/usr/sbin/logrotate -s {{component.directory}}/state"
+                        " {{component.directory}}/logrotate.conf"),
             timing="45 2 * * *",
         )

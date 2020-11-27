@@ -9,7 +9,6 @@ Jinja2::
 
 """
 
-
 import jinja2
 import io
 from batou import output
@@ -43,6 +42,7 @@ class TemplateEngine(object):
 
 
 class Jinja2Engine(TemplateEngine):
+
     def __init__(self, *args, **kwargs):
         super(Jinja2Engine, self).__init__(*args, **kwargs)
         self.env = jinja2.Environment(
@@ -65,8 +65,7 @@ class Jinja2Engine(TemplateEngine):
                 "You are trying to render a template that is bigger than "
                 "100KiB we've seen that Jinja can crash at large templates "
                 "and suggest you find alternatives for this. The affected "
-                "template starts with:"
-            )
+                "template starts with:")
             output.annotate(templatestr[:100])
         tmpl = self.env.from_string(templatestr)
         tmpl.filename = identifier

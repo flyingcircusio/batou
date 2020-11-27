@@ -11,8 +11,7 @@ def test_server_template(root):
     root.component |= service
     server = NagiosServer()
     root.component += server
-    assert (
-        b"""\
+    assert (b"""\
 # Generated from template; don't edit manually!
 
 #
@@ -34,6 +33,4 @@ define servicedependency {
     dependent_service_description http
 }
 
-"""
-        == server.sub_components[-1].content
-    )
+""" == server.sub_components[-1].content)

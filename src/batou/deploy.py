@@ -12,6 +12,7 @@ import time
 
 
 class Connector(threading.Thread):
+
     def __init__(self, host, sem):
         self.host = host
         self.sem = sem
@@ -33,7 +34,7 @@ class Connector(threading.Thread):
                     return
             finally:
                 self.sem.release()
-            time.sleep(random.randint(1, 2 ** (tries + 1)))
+            time.sleep(random.randint(1, 2**(tries + 1)))
 
         try:
             self.host.start()
@@ -51,9 +52,13 @@ class Deployment(object):
 
     _upstream = None
 
-    def __init__(
-        self, environment, platform, timeout, dirty, jobs, predict_only=False
-    ):
+    def __init__(self,
+                 environment,
+                 platform,
+                 timeout,
+                 dirty,
+                 jobs,
+                 predict_only=False):
         self.environment = environment
         self.platform = platform
         self.timeout = timeout
@@ -64,13 +69,11 @@ class Deployment(object):
     def load(self):
         output.section("Preparing")
 
-        output.step(
-            "main", "Loading environment `{}`...".format(self.environment)
-        )
+        output.step("main",
+                    "Loading environment `{}`...".format(self.environment))
 
-        self.environment = Environment(
-            self.environment, self.timeout, self.platform
-        )
+        self.environment = Environment(self.environment, self.timeout,
+                                       self.platform)
         self.environment.deployment = self
         self.environment.load()
 
@@ -103,8 +106,7 @@ class Deployment(object):
                 output.step(
                     hostname,
                     "Connection ignored ({}/{})".format(
-                        i, len(self.environment.hosts)
-                    ),
+                        i, len(self.environment.hosts)),
                     bold=False,
                     red=True,
                 )
@@ -147,17 +149,14 @@ class Deployment(object):
             output.step(
                 hostname,
                 "Skipping component {} ... (Component ignored)".format(
-                    component
-                ),
+                    component),
                 red=True,
             )
         else:
-            output.step(
-                hostname, "Scheduling component {} ...".format(component)
-            )
-            await self.loop.run_in_executor(
-                None, host.deploy_component, component, self.predict_only
-            )
+            output.step(hostname,
+                        "Scheduling component {} ...".format(component))
+            await self.loop.run_in_executor(None, host.deploy_component,
+                                            component, self.predict_only)
 
         # Clear dependency from todolist
         for other_component in todolist.values():
@@ -180,8 +179,8 @@ class Deployment(object):
         # Pick a reference remote (the last we initialised) that will pass us
         # the order we should be deploying components in.
         reference_node = [
-            h for h in list(self.environment.hosts.values()) if not h.ignore
-        ][0]
+            h for h in list(self.environment.hosts.values())
+            if not h.ignore][0]
 
         self.loop = asyncio.get_event_loop()
         self.taskpool = ThreadPoolExecutor(self.jobs)
@@ -212,9 +211,8 @@ class Deployment(object):
             node.disconnect()
 
 
-def main(
-    environment, platform, timeout, dirty, consistency_only, predict_only, jobs
-):
+def main(environment, platform, timeout, dirty, consistency_only, predict_only,
+         jobs):
     output.backend = TerminalBackend()
     output.line(self_id())
     if consistency_only:
@@ -225,9 +223,8 @@ def main(
         ACTION = "DEPLOYMENT"
     with locked(".batou-lock"):
         try:
-            deployment = Deployment(
-                environment, platform, timeout, dirty, jobs, predict_only
-            )
+            deployment = Deployment(environment, platform, timeout, dirty,
+                                    jobs, predict_only)
             deployment.load()
             deployment.connect()
             deployment.configure()
@@ -247,8 +244,7 @@ def main(
             notify(
                 "{} FAILED".format(ACTION),
                 "Configuration for {} encountered an error.".format(
-                    environment
-                ),
+                    environment),
             )
             sys.exit(1)
         except ConfigurationError:
@@ -256,8 +252,7 @@ def main(
             notify(
                 "{} FAILED".format(ACTION),
                 "Configuration for {} encountered an error.".format(
-                    environment
-                ),
+                    environment),
             )
             sys.exit(1)
         except DeploymentError as e:

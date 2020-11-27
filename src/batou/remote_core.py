@@ -4,13 +4,11 @@ import pwd
 import subprocess
 import traceback
 
-
 # Satisfy flake8 and support testing.
 try:
     channel
 except NameError:
     channel = None
-
 
 deployment = None
 environment = None
@@ -109,6 +107,7 @@ class Output(object):
 
 
 class ChannelBackend(object):
+
     def __init__(self, channel):
         self.channel = channel
 
@@ -129,9 +128,8 @@ class Deployment(object):
 
     environment = None
 
-    def __init__(
-        self, env_name, host_name, overrides, host_data, timeout, platform
-    ):
+    def __init__(self, env_name, host_name, overrides, host_data, timeout,
+                 platform):
         self.env_name = env_name
         self.host_name = host_name
         self.overrides = overrides
@@ -142,9 +140,8 @@ class Deployment(object):
     def load(self):
         from batou.environment import Environment
 
-        self.environment = Environment(
-            self.env_name, self.timeout, self.platform
-        )
+        self.environment = Environment(self.env_name, self.timeout,
+                                       self.platform)
         self.environment.deployment = self
         self.environment.load()
         self.environment.overrides = self.overrides
@@ -163,6 +160,7 @@ def lock():
 
 
 class CmdError(Exception):
+
     def __init__(self, cmd, returncode, stdout, stderr):
         self.cmd = cmd
         self.returncode = returncode
@@ -304,11 +302,8 @@ def git_pull_code(upstream, branch):
         # The batou-pull remote is correctly configured.
         break
     else:
-        cmd(
-            "git remote add {origin} {upstream}".format(
-                origin=git_origin, upstream=upstream
-            )
-        )
+        cmd("git remote add {origin} {upstream}".format(
+            origin=git_origin, upstream=upstream))
     cmd("git fetch batou-pull")
 
 
@@ -317,18 +312,14 @@ def git_unbundle_code():
     os.chdir(target)
     out, err = cmd("git remote -v")
     if b"batou-bundle" not in out:
-        cmd(
-            "git remote add {origin} batou-bundle.git".format(origin=git_origin)
-        )
+        cmd("git remote add {origin} batou-bundle.git".format(
+            origin=git_origin))
     cmd("git fetch {origin}".format(origin=git_origin))
 
 
 def git_update_working_copy(branch):
-    cmd(
-        "git reset --hard {origin}/{branch}".format(
-            origin=git_origin, branch=branch
-        )
-    )
+    cmd("git reset --hard {origin}/{branch}".format(
+        origin=git_origin, branch=branch))
     id, _ = cmd("git rev-parse HEAD")
     return id.strip().decode("ascii")
 
@@ -352,14 +343,13 @@ def deploy(root, predict_only=False):
 def root_dependencies():
     deps = {}
     for (
-        root,
-        dependencies,
+            root,
+            dependencies,
     ) in deployment.environment.root_dependencies().items():
         key = (root.host.fqdn, root.name)
         deps[key] = {
             "dependencies": [(r.host.fqdn, r.name) for r in dependencies],
-            "ignore": root.ignore,
-        }
+            "ignore": root.ignore,}
     return deps
 
 
@@ -403,8 +393,7 @@ if __name__ == "__channelexec__":
 
             batou.output.section(
                 "{} ERRORS - CONFIGURATION FAILED".format(
-                    len(deployment.environment.exceptions)
-                ),
+                    len(deployment.environment.exceptions)),
                 red=True,
             )
             channel.send(("batou-configuration-error", None))

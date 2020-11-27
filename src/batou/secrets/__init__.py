@@ -25,9 +25,8 @@ from .encryption import EncryptedConfigFile
 import os.path
 
 
-def add_secrets_to_environment_override(
-    environment, enc_file_class=EncryptedConfigFile
-):
+def add_secrets_to_environment_override(environment,
+                                        enc_file_class=EncryptedConfigFile):
     secrets_file = "secrets/{}.cfg".format(environment.name)
     if not os.path.exists(secrets_file):
         return
@@ -40,8 +39,7 @@ def add_secrets_to_environment_override(
                 hostname = section_.replace("host:", "", 1)
                 if hostname not in environment.hosts:
                     raise ValueError(
-                        "Secret for unknown host: {}".format(hostname)
-                    )
+                        "Secret for unknown host: {}".format(hostname))
                 host = environment.hosts[hostname]
                 for key, option in f.config.items(section_):
                     if key.startswith("data-"):
@@ -51,7 +49,6 @@ def add_secrets_to_environment_override(
                 component = section_.replace("component:", "")
                 if component not in environment.components:
                     environment.exceptions.append(
-                        SuperfluousSecretsSection(component)
-                    )
+                        SuperfluousSecretsSection(component))
                 o = environment.overrides.setdefault(component, {})
                 o.update(((k, o.value) for k, o in f.config.items(section_)))

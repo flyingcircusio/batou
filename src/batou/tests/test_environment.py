@@ -101,8 +101,7 @@ def test_multiple_components(sample_service):
     e.load()
     components = dict(
         (host, list(sorted(c.name for c in e.root_dependencies(host=host))))
-        for host in sorted(e.hosts.keys())
-    )
+        for host in sorted(e.hosts.keys()))
     assert components == dict(
         localhost=["hello1", "hello2"],
         otherhost=["hello3", "hello4"],
@@ -114,51 +113,50 @@ def test_parse_host_components():
     from batou.environment import parse_host_components
 
     assert parse_host_components(["asdf"]) == {
-        "asdf": {"features": [], "ignore": False}
-    }
+        "asdf": {
+            "features": [],
+            "ignore": False}}
 
     assert parse_host_components(["!asdf"]) == {
-        "asdf": {"features": [], "ignore": True}
-    }
+        "asdf": {
+            "features": [],
+            "ignore": True}}
 
     assert parse_host_components(["!asdf:test", "asdf:bar"]) == {
-        "asdf": {"features": ["test", "bar"], "ignore": True}
-    }
+        "asdf": {
+            "features": ["test", "bar"],
+            "ignore": True}}
 
     assert parse_host_components(["asdf:test", "asdf:bar"]) == {
-        "asdf": {"features": ["test", "bar"], "ignore": False}
-    }
+        "asdf": {
+            "features": ["test", "bar"],
+            "ignore": False}}
 
 
 @mock.patch("batou.environment.Environment.add_root")
 def test_load_hosts_should_merge_single_and_multi_definition(add_root):
     e = Environment("name")
     config = Config(None)
-    config.config.read_string(
-        """
+    config.config.read_string("""
 [hosts]
 foo = bar
 [host:baz]
 components = bar
-    """
-    )
+    """)
     e.load_hosts(config)
     assert [
         mock.call("bar", "foo", [], False),
-        mock.call("bar", "baz", [], False),
-    ] == add_root.call_args_list
+        mock.call("bar", "baz", [], False),] == add_root.call_args_list
 
 
 @mock.patch("batou.environment.Environment.add_root")
 def test_load_hosts_should_load_single_hosts_section(add_root):
     e = Environment("name")
     config = Config(None)
-    config.config.read_string(
-        """
+    config.config.read_string("""
 [hosts]
 foo = bar
-    """
-    )
+    """)
     e.load_hosts(config)
     add_root.assert_called_once_with("bar", "foo", [], False)
 
@@ -168,12 +166,10 @@ def test_load_hosts_should_load_multi_hosts_section(add_root):
     pass
     e = Environment("name")
     config = Config(None)
-    config.config.read_string(
-        """
+    config.config.read_string("""
 [host:foo]
 components = bar
-    """
-    )
+    """)
     e.load_hosts(config)
     add_root.assert_called_once_with("bar", "foo", [], False)
 
@@ -183,13 +179,11 @@ def test_load_hosts_multi_should_use_ignore_flag(add_root):
     pass
     e = Environment("name")
     config = Config(None)
-    config.config.read_string(
-        """
+    config.config.read_string("""
 [host:foo]
 components = bar
 ignore = True
-    """
-    )
+    """)
     e.load_hosts(config)
     assert e.hosts["foo"].ignore
 
@@ -198,14 +192,12 @@ ignore = True
 def test_load_hosts_should_break_on_duplicate_definition(add_root):
     e = Environment("name")
     config = Config(None)
-    config.config.read_string(
-        """
+    config.config.read_string("""
 [hosts]
 foo = bar
 [host:foo]
 components = bar
-    """
-    )
+    """)
     e.load_hosts(config)
     assert e.exceptions
     assert "foo" == e.exceptions[0].hostname
@@ -216,13 +208,11 @@ def test_load_hosts_multi_should_use_env_platform(add_root):
     e = Environment("name")
     e.platform = mock.sentinel.platform
     config = Config(None)
-    config.config.read_string(
-        """
+    config.config.read_string("""
 [host:foo]
 components = bar
 ignore = True
-    """
-    )
+    """)
     e.load_hosts(config)
     assert e.hosts["foo"].platform == mock.sentinel.platform
 
@@ -233,13 +223,11 @@ def test_load_hosts_multi_should_use_host_platform_if_given(add_root):
     e = Environment("name")
     e.platform = mock.sentinel.platform
     config = Config(None)
-    config.config.read_string(
-        """
+    config.config.read_string("""
 [host:foo]
 components = bar
 platform = specific
-    """
-    )
+    """)
     e.load_hosts(config)
     assert e.hosts["foo"].platform == "specific"
 
@@ -249,12 +237,10 @@ def test_load_hosts_single_should_use_env_platform(add_root):
     e = Environment("name")
     e.platform = mock.sentinel.platform
     config = Config(None)
-    config.config.read_string(
-        """
+    config.config.read_string("""
 [hosts]
 foo = bar
-    """
-    )
+    """)
     e.load_hosts(config)
     assert e.hosts["foo"].platform == mock.sentinel.platform
 
@@ -262,13 +248,11 @@ foo = bar
 def test_host_data_is_passed_to_host_object():
     e = Environment("name")
     config = Config(None)
-    config.config.read_string(
-        """
+    config.config.read_string("""
 [host:foo]
 components = bar
 data-alias = baz
-    """
-    )
+    """)
     e.load_hosts(config)
     assert "baz" == e.hosts["foo"].data["alias"]
 
@@ -297,27 +281,21 @@ def test_log_in_component_configure_is_put_out(output, sample_service):
     e.configure()
     log = "\n".join(c[0][0].strip() for c in output.call_args_list)
     # Provide is *always* logged first, due to provide/require ordering.
-    assert (
-        """\
+    assert ("""\
 Provide
 Pre sub
 Sub!
-Post sub"""
-        == log
-    )
+Post sub""" == log)
 
     output.reset_mock()
     for root in e.root_dependencies():
         root.component.deploy(True)
 
     log = "\n".join(c[0][0].strip() for c in output.call_args_list)
-    assert (
-        """\
+    assert ("""\
 localhost > Hello
 localhost: <Hello (localhost) "Hello"> verify: asdf=None\
-"""
-        == log
-    )
+""" == log)
 
 
 def test_resolver_overrides(sample_service):

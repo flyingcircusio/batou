@@ -78,8 +78,7 @@ changeset: 372:revision-b
         ),
         ("", ""),
         ("", ""),
-        ("", ""),
-    ]
+        ("", ""),]
     heads = remote_core.hg_current_heads()
     assert heads == ["revision-a", "revision-b"]
     remote_core.hg_unbundle_code()
@@ -203,8 +202,7 @@ def test_channelexec_multiple_echo_cmds(remote_core_mod):
     assert channel.receivequeue == []
     assert channel.sendqueue == [
         ("batou-result", (b"asdf1\n", b"")),
-        ("batou-result", (b"asdf2\n", b"")),
-    ]
+        ("batou-result", (b"asdf2\n", b"")),]
 
 
 def test_channelexec_handle_exception(remote_core_mod):
@@ -219,21 +217,25 @@ def test_channelexec_handle_exception(remote_core_mod):
         "batou-output",
         "line",
         ("ERROR: fdjkahfkjdasbfda",),
-        {"bold": True, "red": True},
+        {
+            "bold": True,
+            "red": True},
     )
 
     assert next(response) == (
         "batou-output",
         "line",
         ("Return code: 127",),
-        {"red": True},
+        {
+            "red": True},
     )
 
     assert next(response) == (
         "batou-output",
         "line",
         ("STDOUT",),
-        {"red": True},
+        {
+            "red": True},
     )
 
     assert next(response) == ("batou-output", "line", ("",), {})
@@ -242,7 +244,8 @@ def test_channelexec_handle_exception(remote_core_mod):
         "batou-output",
         "line",
         ("STDERR",),
-        {"red": True},
+        {
+            "red": True},
     )
 
     # Different /bin/sh versions have different error reporting
@@ -264,9 +267,8 @@ def test_git_remote_init_bundle(tmpdir):
         source.join("foo.txt").write("bar")
         remote_core.cmd("git add foo.txt")
         remote_core.cmd("git commit -m bar")
-        remote_core.cmd(
-            "git bundle create {} master ".format(dest.join("batou-bundle.git"))
-        )
+        remote_core.cmd("git bundle create {} master ".format(
+            dest.join("batou-bundle.git")))
 
     remote_core.ensure_repository(str(dest), "git-bundle")
     remote_core.git_unbundle_code()

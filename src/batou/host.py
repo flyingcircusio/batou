@@ -24,8 +24,7 @@ def get_kitchen_ssh_connection_info(name):
         state["port"],
         "-l",
         state["username"],
-        state["hostname"],
-    ]
+        state["hostname"],]
 
 
 def new_ssh_args(spec):
@@ -55,10 +54,12 @@ execnet.gateway_io.ssh_args = new_ssh_args
 
 
 class RPCWrapper(object):
+
     def __init__(self, host):
         self.host = host
 
     def __getattr__(self, name):
+
         def call(*args, **kw):
             output.annotate(
                 "rpc {}: {}(*{}, **{})".format(self.host.fqdn, name, args, kw),
@@ -85,22 +86,15 @@ class RPCWrapper(object):
                     output.error(message[1])
                     raise RuntimeError(
                         "{}: Remote exception encountered.".format(
-                            self.host.fqdn
-                        )
-                    )
+                            self.host.fqdn))
                 elif type == "batou-error":
                     # Remote put out the details already.
                     raise RuntimeError(
                         "{}: Remote exception encountered.".format(
-                            self.host.fqdn
-                        )
-                    )
+                            self.host.fqdn))
                 else:
-                    raise RuntimeError(
-                        "{}: Unknown message type {}".format(
-                            self.host.fqdn, type
-                        )
-                    )
+                    raise RuntimeError("{}: Unknown message type {}".format(
+                        self.host.fqdn, type))
 
         return call
 
@@ -134,10 +128,10 @@ class Host(object):
 
 
 class LocalHost(Host):
+
     def connect(self):
-        self.gateway = execnet.makegateway(
-            "popen//python={}".format(sys.executable)
-        )
+        self.gateway = execnet.makegateway("popen//python={}".format(
+            sys.executable))
         self.channel = self.gateway.remote_exec(remote_core)
 
     def start(self):
@@ -151,8 +145,7 @@ class LocalHost(Host):
         env = self.environment
 
         self.remote_repository = self.rpc.ensure_repository(
-            env.target_directory, "local"
-        )
+            env.target_directory, "local")
 
         self.remote_base = self.rpc.ensure_base(env.deployment_base)
 
@@ -190,9 +183,7 @@ class RemoteHost(Host):
 if [ -n "$ZSH_VERSION" ]; then setopt SH_WORD_SPLIT; fi;
 if [ \"$USER\" = \"{user}\" ]; then \
 pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
-""".format(
-            user=self.service_user
-        )
+""".format(user=self.service_user)
 
         spec = "ssh={fqdn}//python={sudo} {interpreter}//type={method}".format(
             fqdn=self.fqdn,
@@ -209,9 +200,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
             raise RuntimeError(
                 "Could not start batou on host `{}`. "
                 "The output above may contain more information. ".format(
-                    self.fqdn
-                )
-            )
+                    self.fqdn))
 
         output.annotate("Connected ...", debug=True)
 
@@ -221,8 +210,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         env = self.environment
 
         self.remote_repository = self.rpc.ensure_repository(
-            env.target_directory, env.update_method
-        )
+            env.target_directory, env.update_method)
         self.remote_base = self.rpc.ensure_base(env.deployment_base)
 
         output.step(self.name, "Updating repository ...", debug=True)
@@ -237,8 +225,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         # Reinit after reconnect ...
         self.rpc.lock()
         self.remote_repository = self.rpc.ensure_repository(
-            env.target_directory, env.update_method
-        )
+            env.target_directory, env.update_method)
         self.remote_base = self.rpc.ensure_base(env.deployment_base)
 
         # Since we reconnected, any state on the remote side has been lost,

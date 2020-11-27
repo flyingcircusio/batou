@@ -45,6 +45,7 @@ class Hello6(Hello):
 
 
 class HelloReq(Component):
+
     def configure(self):
         self.require("i-need")
         self.log("Pre sub")
@@ -53,11 +54,13 @@ class HelloReq(Component):
 
 
 class HelloProv(Component):
+
     def configure(self):
         self.provide("i-need", self)
         self.log("Provide")
 
 
 class Sub(Component):
+
     def configure(self):
         self.log("Sub!")

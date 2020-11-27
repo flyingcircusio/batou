@@ -10,7 +10,6 @@ import shutil
 import subprocess
 import tempfile
 
-
 FIXTURE = os.path.join(os.path.dirname(__file__), "fixture")
 cleartext_file = os.path.join(FIXTURE, "cleartext.cfg")
 encrypted_file = os.path.join(FIXTURE, "encrypted.cfg")
@@ -20,12 +19,11 @@ encrypted_file = os.path.join(FIXTURE, "encrypted.cfg")
 def cleanup_gpg_sockets():
     yield
     for path in [
-        "S.dirmngr",
-        "S.gpg-agent",
-        "S.gpg-agent.browser",
-        "S.gpg-agent.extra",
-        "S.gpg-agent.ssh",
-    ]:
+            "S.dirmngr",
+            "S.gpg-agent",
+            "S.gpg-agent.browser",
+            "S.gpg-agent.extra",
+            "S.gpg-agent.ssh",]:
         try:
             os.remove(os.path.join(FIXTURE, "gnupg", path))
         except OSError:
@@ -39,8 +37,7 @@ def test_error_message_no_gpg_found():
         c.gpg("asdf")
     assert e.value.args[0] == (
         "Could not find gpg binary. Is GPG installed? I tried looking for: "
-        "`foobarasdf-54875982`"
-    )
+        "`foobarasdf-54875982`")
 
 
 class EncryptedConfigFile(BaseEncConfigFile):
@@ -105,14 +102,12 @@ def test_write():
         shutil.copy(encrypted_file, tf.name)
         encrypted = EncryptedConfigFile(tf.name, write_lock=True)
         with encrypted as secrets:
-            secrets.write(
-                """\
+            secrets.write("""\
 [batou]
 members = batou
 [asdf]
 x = 1
-"""
-            )
+""")
 
         with open(encrypted_file, "rb") as old:
             with open(tf.name, "rb") as new:
@@ -126,14 +121,12 @@ def test_write_fails_without_recipients():
         encrypted = EncryptedConfigFile(tf.name, write_lock=True)
         with encrypted as secrets:
             with pytest.raises(ValueError):
-                secrets.write(
-                    """\
+                secrets.write("""\
 [batou]
 members =
 [asdf]
 x = 1
-"""
-                )
+""")
 
 
 def test_write_fails_if_recipient_key_is_missing_keeps_old_file():
@@ -142,14 +135,12 @@ def test_write_fails_if_recipient_key_is_missing_keeps_old_file():
         encrypted = EncryptedConfigFile(tf.name, write_lock=True)
         with encrypted as secrets:
             with pytest.raises(RuntimeError):
-                secrets.write(
-                    """\
+                secrets.write("""\
 [batou]
 members = foobar@example.com
 [asdf]
 x = 1
-"""
-                )
+""")
         assert open(tf.name, "rb").read() == open(encrypted_file, "rb").read()
 
 
@@ -159,8 +150,7 @@ def test_secrets_override_without_interpolation(tmpdir):
     secret_file = str(tmpdir / "secrets" / "env.cfg")
     encrypted = EncryptedConfigFile(secret_file, write_lock=True)
     with encrypted as secrets:
-        secrets.write(
-            """\
+        secrets.write("""\
 [batou]
 members = batou
 [asdf]
@@ -169,8 +159,7 @@ x = asdf%asdf%
 data-asdf = 2
 data-bsdf = 1
 data-csdf = 3
-"""
-        )
+""")
 
     env = mock.Mock()
     env.name = "env"
@@ -180,7 +169,8 @@ data-csdf = 3
     env.hosts["localhost"] = host = mock.Mock()
     host.data = {"asdf": 1, "csdf": 3}
 
-    add_secrets_to_environment_override(env, enc_file_class=EncryptedConfigFile)
+    add_secrets_to_environment_override(
+        env, enc_file_class=EncryptedConfigFile)
 
     assert env.overrides == {"asdf": {"x": "asdf%asdf%"}}
     assert host.data == {"asdf": "2", "bsdf": "1", "csdf": "3"}

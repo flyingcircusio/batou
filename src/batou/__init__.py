@@ -86,6 +86,7 @@ class SilentConfigurationError(Exception):
 
 
 class MissingOverrideAttributes(ConfigurationError):
+
     @property
     def sort_key(self):
         return (3, self.component.root.host.name, self.component._breadcrumbs)
@@ -105,6 +106,7 @@ class MissingOverrideAttributes(ConfigurationError):
 
 
 class DuplicateComponent(ConfigurationError):
+
     @property
     def sort_key(self):
         return (2, self.a.name)
@@ -136,11 +138,10 @@ class UnknownComponentConfigurationError(ConfigurationError):
             # Delete remoting-internal stack frames.'
             line = stack.pop(0)
             if line[0] in [
-                "<string>",
-                "<remote exec>",
-                environment.__file__.rstrip("c"),
-                component.__file__.rstrip("c"),
-            ]:
+                    "<string>",
+                    "<remote exec>",
+                    environment.__file__.rstrip("c"),
+                    component.__file__.rstrip("c"),]:
                 continue
             stack.insert(0, line)
             break
@@ -155,8 +156,7 @@ class UnknownComponentConfigurationError(ConfigurationError):
         output.tabular("Host", self.root.host.name, red=True)
         output.tabular("Component", self.root.name + "\n", red=True)
         output.annotate(
-            "Traceback (simplified, most recent call last):", red=True
-        )
+            "Traceback (simplified, most recent call last):", red=True)
         output.annotate(self.traceback, red=True)
 
 
@@ -176,8 +176,7 @@ class UnusedResources(ConfigurationError):
             for component, value in list(self.resources[key].items()):
                 output.line(
                     '    Resource "{}" provided by {} with value {}'.format(
-                        key, component.name, value
-                    ),
+                        key, component.name, value),
                     red=True,
                 )
 
@@ -197,8 +196,7 @@ class UnsatisfiedResources(ConfigurationError):
         for key in sorted(self.resources):
             output.line(
                 '    Resource "{}" required by {}'.format(
-                    key, ",".join(r.name for r in self.resources[key])
-                ),
+                    key, ",".join(r.name for r in self.resources[key])),
                 red=True,
             )
 
@@ -334,9 +332,8 @@ class NonConvergingWorkingSet(ConfigurationError):
     def report(self):
         # TODO show this last or first, but not in the middle
         # of everything
-        output.error(
-            "{} remaining unconfigured component(s)".format(len(self.roots))
-        )
+        output.error("{} remaining unconfigured component(s)".format(
+            len(self.roots)))
         # TODO show all incl. their host name in -vv or so
         # output.annotate(', '.join(c.name for c in self.roots))
 
@@ -366,13 +363,13 @@ class RepositoryDifferentError(DeploymentError):
     def report(self):
         output.error(
             "The remote working copy is based on a different revision. "
-            "Maybe you tried to deploy from the wrong branch."
-        )
+            "Maybe you tried to deploy from the wrong branch.")
         output.tabular("Local", self.local, red=True)
         output.tabular("Remote", self.remote, red=True)
 
 
 class DuplicateHostError(ConfigurationError):
+
     @property
     def sort_key(self):
         return (0,)
@@ -385,6 +382,7 @@ class DuplicateHostError(ConfigurationError):
 
 
 class InvalidIPAddressError(ConfigurationError):
+
     @property
     def sort_key(self):
         return (0,)

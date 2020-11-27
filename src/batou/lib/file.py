@@ -59,15 +59,12 @@ class File(Component):
             self += Presence(self.path, leading=self.leading)
         elif self.ensure == "directory":
             self += Directory(
-                self.path, leading=self.leading, source=self.source
-            )
+                self.path, leading=self.leading, source=self.source)
         elif self.ensure == "symlink":
             self += Symlink(self.path, source=self.link_to)
         else:
-            raise ValueError(
-                "Ensure must be one of: file, directory, "
-                "symlink not %s" % self.ensure
-            )
+            raise ValueError("Ensure must be one of: file, directory, "
+                             "symlink not %s" % self.ensure)
         # variation: content or source explicitly given
 
         # The mode needs to be set early to allow batou to get out of
@@ -96,10 +93,8 @@ class File(Component):
                 # (have an empty file)
                 raise ValueError(
                     "Missing implicit template file {}. Or did you want "
-                    "to create an empty file? Then use File('{}', content='').".format(
-                        guess_source, self._unmapped_path
-                    )
-                )
+                    "to create an empty file? Then use File('{}', content='')."
+                    .format(guess_source, self._unmapped_path))
 
         if self.content or self.source:
             if self.template_args is None:
@@ -190,8 +185,7 @@ class SyncDirectory(Component):
     def configure(self):
         self.path = self.map(self.path)
         self.source = os.path.normpath(
-            os.path.join(self.root.defdir, self.source)
-        )
+            os.path.join(self.root.defdir, self.source))
 
     @property
     def exclude_arg(self):
@@ -200,11 +194,8 @@ class SyncDirectory(Component):
         return " ".join("--exclude '{}'".format(x) for x in self.exclude) + " "
 
     def verify(self):
-        stdout, stderr = self.cmd(
-            "rsync {} {}{}/ {}".format(
-                self.verify_opts, self.exclude_arg, self.source, self.path
-            )
-        )
+        stdout, stderr = self.cmd("rsync {} {}{}/ {}".format(
+            self.verify_opts, self.exclude_arg, self.source, self.path))
 
         # In case of we see non-convergent rsync runs
         output.annotate("rsync result:", debug=True)
@@ -214,11 +205,8 @@ class SyncDirectory(Component):
             raise batou.UpdateNeeded()
 
     def update(self):
-        self.cmd(
-            "rsync {} {}{}/ {}".format(
-                self.sync_opts, self.exclude_arg, self.source, self.path
-            )
-        )
+        self.cmd("rsync {} {}{}/ {}".format(self.sync_opts, self.exclude_arg,
+                                            self.source, self.path))
 
     @property
     def namevar_for_breadcrumb(self):
@@ -242,8 +230,7 @@ class Directory(Component):
         if self.source:
             # XXX The ordering is wrong. SyncDirectory should run *after*.
             self += SyncDirectory(
-                self.path, source=self.source, exclude=self.exclude
-            )
+                self.path, source=self.source, exclude=self.exclude)
 
     def verify(self):
         assert os.path.isdir(self.path)
@@ -361,9 +348,8 @@ class ManagedContentBase(FileComponent):
     def configure(self):
         super(ManagedContentBase, self).configure()
 
-        self.diff_dir = os.path.join(
-            self.environment.workdir_base, ".batou-diffs"
-        )
+        self.diff_dir = os.path.join(self.environment.workdir_base,
+                                     ".batou-diffs")
         # Step 1: Determine content attribute:
         # - it might be given directly (content='...'),
         # - we might have been passed a filename (source='...'), or
@@ -388,22 +374,22 @@ class ManagedContentBase(FileComponent):
         if self.source:
             if os.path.exists(self.source):
                 with open(
-                    self.source,
-                    "r" if self.encoding else "rb",
-                    encoding=self.encoding,
+                        self.source,
+                        "r" if self.encoding else "rb",
+                        encoding=self.encoding,
                 ) as f:
                     self.content = f.read()
             else:
                 if self._delayed:
                     raise FileNotFoundError(
-                        "Could not find source file {}".format(self.source)
-                    )
+                        "Could not find source file {}".format(self.source))
                 # We need to try rendering again later.
                 self._delayed = True
                 return
 
         # Phase 2: Decode, if we have an encoding.
-        if self.content and self.encoding and not isinstance(self.content, str):
+        if self.content and self.encoding and not isinstance(
+                self.content, str):
             self.content = self.content.decode(self.encoding)
 
         # Phase 3: We have the source content, now allow a subclass
@@ -447,31 +433,27 @@ class ManagedContentBase(FileComponent):
             output.annotate("Not showing diff for binary data.", yellow=True)
         elif self.sensitive_data:
             output.annotate(
-                "Not showing diff as it contains sensitive data.", red=True
-            )
+                "Not showing diff as it contains sensitive data.", red=True)
         else:
-            diff = difflib.unified_diff(
-                current_text.splitlines(), wanted_text.splitlines()
-            )
+            diff = difflib.unified_diff(current_text.splitlines(),
+                                        wanted_text.splitlines())
             if not os.path.exists(self.diff_dir):
                 os.makedirs(self.diff_dir)
             diff, diff_too_long, diff_log = limited_buffer(
-                diff, self._max_diff, self._max_diff_lead, logdir=self.diff_dir
-            )
+                diff,
+                self._max_diff,
+                self._max_diff_lead,
+                logdir=self.diff_dir)
 
             if diff_too_long:
                 output.line(
-                    (
-                        "More than {} lines of diff. Showing first and "
-                        "last {} lines.".format(
-                            self._max_diff, self._max_diff_lead
-                        )
-                    ),
+                    ("More than {} lines of diff. Showing first and "
+                     "last {} lines.".format(self._max_diff,
+                                             self._max_diff_lead)),
                     yellow=True,
                 )
                 output.line(
-                    "see {} for the full diff.".format(diff_log), yellow=True
-                )
+                    "see {} for the full diff.".format(diff_log), yellow=True)
 
             for line in diff:
                 line = line.replace("\n", "")
@@ -504,8 +486,7 @@ class Content(ManagedContentBase):
         if not self.template_context:
             self.template_context = self.parent
         self.content = self.expand(
-            self.content, self.template_context, args=self.template_args
-        )
+            self.content, self.template_context, args=self.template_args)
 
 
 class JSONContent(ManagedContentBase):
@@ -533,8 +514,7 @@ class JSONContent(ManagedContentBase):
             self.data = dict_merge(self.data, self.override)
 
         self.content_compact = json.dumps(
-            self.data, sort_keys=True, separators=(",", ":")
-        )
+            self.data, sort_keys=True, separators=(",", ":"))
         self.content_readable = json.dumps(self.data, sort_keys=True, indent=4)
 
         if self.human_readable:

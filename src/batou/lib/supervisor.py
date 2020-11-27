@@ -53,28 +53,24 @@ redirect_stderr = true
         if self.dependencies is None:
             self.dependencies = (self.parent,)
         if not self.command:
-            raise ValueError(
-                "`command` option missing for program {}".format(self.name)
-            )
+            raise ValueError("`command` option missing for program {}".format(
+                self.name))
         if not self.directory:
             self.directory = self.workdir
         if self.command_absolute:
             self.command = os.path.normpath(
-                os.path.join(self.workdir, self.command)
-            )
+                os.path.join(self.workdir, self.command))
 
         if "startsecs" not in self.options:
             self.options["startsecs"] = 5
         if "startretries" not in self.options:
             self.options["startretries"] = 3
         self.supervisor.max_startup_delay = max(
-            int(self.options["startsecs"]), self.supervisor.max_startup_delay
-        )
+            int(self.options["startsecs"]), self.supervisor.max_startup_delay)
 
         self.config = self.expand(
             "{{component.supervisor.program_config_dir.path}}/"
-            "{{component.name}}.conf"
-        )
+            "{{component.name}}.conf")
         self += File(self.config, content=self.expand(self.program_section))
 
     def ctl(self, args, **kw):
@@ -104,14 +100,12 @@ redirect_stderr = true
                 time.sleep(1)
                 if self.is_running():
                     return
-            raise RuntimeError(
-                'Program "{}" did not start up'.format(self.name)
-            )
+            raise RuntimeError('Program "{}" did not start up'.format(
+                self.name))
 
     def is_running(self):
         out, err = self.ctl(
-            "status {}".format(self.name), ignore_returncode=True
-        )
+            "status {}".format(self.name), ignore_returncode=True)
         return "RUNNING" in out
 
     # Keep track whether
@@ -125,9 +119,8 @@ redirect_stderr = true
             return
         # Only try once. Keep going anyway.
         self._evaded = True
-        output.annotate(
-            "\u2623 Stopping {} for cold deployment".format(self.name)
-        )
+        output.annotate("\u2623 Stopping {} for cold deployment".format(
+            self.name))
         try:
             self.ctl("stop {}".format(self.name))
         except Exception:
@@ -159,8 +152,7 @@ process_name={{component.name}}
             # to the superlance plugins. :/
             self.supervisor = self.require_one("supervisor", self.host)
             self.command = os.path.normpath(
-                os.path.join(self.supervisor.workdir, self.command)
-            )
+                os.path.join(self.supervisor.workdir, self.command))
 
         super(Eventlistener, self).configure()
 
@@ -169,11 +161,9 @@ class Supervisor(Component):
 
     address = Attribute(Address, "localhost:9001")
     buildout_cfg = os.path.join(
-        os.path.dirname(__file__), "resources", "supervisor.buildout.cfg"
-    )
+        os.path.dirname(__file__), "resources", "supervisor.buildout.cfg")
     supervisor_conf = os.path.join(
-        os.path.dirname(__file__), "resources", "supervisor.conf"
-    )
+        os.path.dirname(__file__), "resources", "supervisor.conf")
 
     program_config_dir = None
     logdir = None
@@ -193,8 +183,7 @@ class Supervisor(Component):
     wait_for_running = Attribute("literal", "True")
     pidfile = Attribute(str, "supervisord.pid", map=True)
     socketpath = Attribute(
-        str, "{{component.workdir}}/supervisor.sock", map=True
-    )
+        str, "{{component.workdir}}/supervisor.sock", map=True)
     check_contact_groups = None
 
     def configure(self):
@@ -215,8 +204,7 @@ class Supervisor(Component):
         self += self.logdir
 
         postrotate = self.expand(
-            "kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)"
-        )
+            "kill -USR2 $({{component.workdir}}/bin/supervisorctl pid)")
 
         if self.logrotate:
             self += RotatedLogfile("var/log/*.log", postrotate=postrotate)
@@ -250,6 +238,7 @@ class Supervisor(Component):
 
 
 class RunningHelper(Component):
+
     def is_running(self):
         try:
             pid, err = self.cmd("bin/supervisorctl pid")
@@ -272,8 +261,7 @@ class RunningSupervisor(RunningHelper):
     def verify(self):
         self.parent.assert_no_changes()
         self.assert_file_is_current(
-            self.parent.pidfile, ["bin/supervisord", "etc/supervisord.conf"]
-        )
+            self.parent.pidfile, ["bin/supervisord", "etc/supervisord.conf"])
         if not self.is_running():
             raise UpdateNeeded()
 
@@ -297,7 +285,8 @@ class RunningSupervisor(RunningHelper):
             out, err = "", ""
             # Supervisor tends to "randomly" set zero and non-zero exit codes.
             # See https://github.com/Supervisor/supervisor/issues/24 :-/
-            out, err = self.cmd("bin/supervisorctl pid", ignore_returncode=True)
+            out, err = self.cmd(
+                "bin/supervisorctl pid", ignore_returncode=True)
             if "SHUTDOWN_STATE" in out:
                 time.sleep(1)
                 continue
@@ -310,13 +299,12 @@ class RunningSupervisor(RunningHelper):
                 break
         else:
             raise RuntimeError(
-                "supervisor master process did not start within {} seconds".format(
-                    self.reload_timeout
-                )
-            )
+                "supervisor master process did not start within {} seconds".
+                format(self.reload_timeout))
 
 
 class StoppedSupervisor(RunningHelper):
+
     def verify(self):
         if self.is_running():
             raise UpdateNeeded()

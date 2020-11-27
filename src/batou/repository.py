@@ -79,8 +79,7 @@ class RSyncRepository(Repository):
             ".hg",
             ".vagrant",
             ".kitchen",
-            ".batou-lock",
-        ]
+            ".batou-lock",]
         for candidate in os.listdir(env.base_dir):
             if candidate in blacklist:
                 continue
@@ -88,8 +87,7 @@ class RSyncRepository(Repository):
             source = os.path.join(env.base_dir, candidate)
             target = os.path.join(host.remote_base, candidate)
             output.annotate(
-                "rsync: {} -> {}".format(source, target), debug=True
-            )
+                "rsync: {} -> {}".format(source, target), debug=True)
             rsync = execnet.RSync(source, verbose=False)
             rsync.add_target(host.gateway, target, delete=True)
             rsync.send()
@@ -141,10 +139,8 @@ class MercurialRepository(Repository):
         try:
             status, _ = cmd("hg -q stat")
         except CmdExecutionError:
-            output.error(
-                "Unable to check repository status. "
-                "Is there an HG repository here?"
-            )
+            output.error("Unable to check repository status. "
+                         "Is there an HG repository here?")
             raise
         else:
             status = status.strip()
@@ -162,30 +158,28 @@ Please commit and push first.
         try:
             cmd("hg -q outgoing -l 1", acceptable_returncodes=[1])
         except CmdExecutionError:
-            output.error(
-                """\
+            output.error("""\
 Your repository has outgoing changes.
 
 I am refusing to deploy in this situation as the results will be unpredictable.
 Please push first.
-"""
-            )
+""")
             raise DeploymentError()
 
 
 class MercurialPullRepository(MercurialRepository):
+
     def _ship(self, host):
         host.rpc.hg_pull_code(upstream=self.upstream)
 
 
 class MercurialBundleRepository(MercurialRepository):
+
     def _ship(self, host):
         heads = host.rpc.hg_current_heads()
         if not heads:
-            raise ValueError(
-                "Remote repository did not find any heads. "
-                "Can not continue creating a bundle."
-            )
+            raise ValueError("Remote repository did not find any heads. "
+                             "Can not continue creating a bundle.")
         fd, bundle_file = tempfile.mkstemp()
         os.close(fd)
         bases = " ".join("--base {}".format(x) for x in heads)
@@ -197,12 +191,10 @@ class MercurialBundleRepository(MercurialRepository):
         if not change_size:
             return
         output.annotate(
-            "Sending {} bytes of changes".format(change_size), debug=True
-        )
+            "Sending {} bytes of changes".format(change_size), debug=True)
         rsync = execnet.RSync(bundle_file, verbose=False)
-        rsync.add_target(
-            host.gateway, host.remote_repository + "/batou-bundle.hg"
-        )
+        rsync.add_target(host.gateway,
+                         host.remote_repository + "/batou-bundle.hg")
         rsync.send()
         os.unlink(bundle_file)
         output.annotate("Unbundling changes", debug=True)
@@ -218,9 +210,8 @@ class GitRepository(Repository):
     def __init__(self, environment):
         super(GitRepository, self).__init__(environment)
         self.branch = environment.branch or "master"
-        root = subprocess.check_output(
-            ["git", "rev-parse", "--show-toplevel"]
-        ).strip()
+        root = subprocess.check_output(["git", "rev-parse",
+                                        "--show-toplevel"]).strip()
         self.root = root.decode(sys.getfilesystemencoding())
         self.subdir = os.path.relpath(self.environment.base_dir, self.root)
 
@@ -256,10 +247,8 @@ class GitRepository(Repository):
         try:
             status, _ = cmd("git status --porcelain")
         except CmdExecutionError:
-            output.error(
-                "Unable to check repository status. "
-                "Is there a Git repository here?"
-            )
+            output.error("Unable to check repository status. "
+                         "Is there a Git repository here?")
             raise
         else:
             status = status.strip()
@@ -276,32 +265,29 @@ Please commit and push first.
                 raise DeploymentError()
         outgoing, _ = cmd(
             "git log {remote}/{branch}..{branch} --pretty=oneline".format(
-                remote=self.remote, branch=self.branch
-            ),
+                remote=self.remote, branch=self.branch),
             acceptable_returncodes=[0, 128],
         )
         if outgoing.strip():
-            output.error(
-                """\
+            output.error("""\
 Your repository has outgoing changes on branch {branch}:
 
 {outgoing}
 
 I am refusing to deploy in this situation as the results will be unpredictable.
 Please push first.
-""".format(
-                    branch=branch, outgoing=outgoing
-                )
-            )
+""".format(branch=branch, outgoing=outgoing))
             raise DeploymentError()
 
 
 class GitPullRepository(GitRepository):
+
     def _ship(self, host):
         host.rpc.git_pull_code(upstream=self.upstream, branch=self.branch)
 
 
 class GitBundleRepository(GitRepository):
+
     def _ship(self, host):
         head = host.rpc.git_current_head(self.branch)
         if head is None:
@@ -309,26 +295,22 @@ class GitBundleRepository(GitRepository):
         else:
             head = head.decode("ascii")
             bundle_range = "{head}..{branch}".format(
-                head=head, branch=self.branch
-            )
+                head=head, branch=self.branch)
         fd, bundle_file = tempfile.mkstemp()
         os.close(fd)
         out, err = cmd(
             "git bundle create {file} {range}".format(
-                file=bundle_file, range=bundle_range
-            ),
+                file=bundle_file, range=bundle_range),
             acceptable_returncodes=[0, 128],
         )
         if "create empty bundle" in err:
             return
         change_size = os.stat(bundle_file).st_size
         output.annotate(
-            "Sending {} bytes of changes".format(change_size), debug=True
-        )
+            "Sending {} bytes of changes".format(change_size), debug=True)
         rsync = execnet.RSync(bundle_file, verbose=False)
-        rsync.add_target(
-            host.gateway, host.remote_repository + "/batou-bundle.git"
-        )
+        rsync.add_target(host.gateway,
+                         host.remote_repository + "/batou-bundle.git")
         rsync.send()
         os.unlink(bundle_file)
         output.annotate("Unbundling changes", debug=True)

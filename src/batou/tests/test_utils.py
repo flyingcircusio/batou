@@ -20,8 +20,7 @@ def test_host_without_port_resolves(ghbn):
 
 
 @mock.patch(
-    "socket.gethostbyname", side_effect=socket.gaierror("lookup failed")
-)
+    "socket.gethostbyname", side_effect=socket.gaierror("lookup failed"))
 def test_resolve_v4_socket_error_returns_none(ghbn):
     assert resolve("localhost") is None
 
@@ -93,8 +92,7 @@ def test_address_fails_when_name_cannot_be_looked_up_at_all():
     with pytest.raises(socket.gaierror) as f:
         Address("does-not-exist.example.com:1234")
     assert "No IPv4 or IPv6 address for 'does-not-exist.example.com'" == str(
-        f.value
-    )
+        f.value)
 
 
 def test_address_format_with_port():
@@ -126,6 +124,7 @@ def test_flatten():
 
 
 class MultiFileTests(unittest.TestCase):
+
     def test_write_and_flush_propation(self):
         file1 = StringIO()
         file2 = StringIO()
@@ -147,6 +146,7 @@ def fake_lock(lockfile, options):
 
 
 class LockfileContextManagerTests(unittest.TestCase):
+
     def setUp(self):
         self.files = []
 
@@ -239,13 +239,11 @@ def test_graph_remove_leafs():
 class Checksum(unittest.TestCase):
 
     fixture = os.path.join(
-        os.path.dirname(__file__), "fixture", "component", "haproxy.cfg"
-    )
+        os.path.dirname(__file__), "fixture", "component", "haproxy.cfg")
 
     def test_hash_md5(self):
-        self.assertEqual(
-            "ce0324fa445475e76182c0d114615c7b", hash(self.fixture, "md5")
-        )
+        self.assertEqual("ce0324fa445475e76182c0d114615c7b",
+                         hash(self.fixture, "md5"))
 
     def test_hash_sha1(self):
         self.assertEqual(
@@ -291,6 +289,7 @@ def test_cmd_returns_process_if_no_communicate(popen):
 
 
 def test_call_with_optional_args():
+
     def foo():
         return 1
 
