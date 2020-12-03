@@ -1,6 +1,7 @@
 from batou import FileLockedError
 from configupdater import ConfigUpdater
 import fcntl
+import glob
 import io
 import os
 import shlex
@@ -16,18 +17,15 @@ members =
 """
 
 
-class EncryptedConfigFile(object):
-    """Wrap encrypted config files."""
+class EncryptedFile(object):
+    """Basic encryption methods - key management handled externally."""
 
     lockfd = None
-    _cleartext = None
-
-    # Additional GPG parameters. Used for testing.
-    gpg_opts = ""
+    cleartext = None
 
     GPG_BINARY_CANDIDATES = ["gpg", "gpg2"]
 
-    def __init__(self, encrypted_file, write_lock=False, quiet=False):
+    def __init__(self, encrypted_filename, write_lock=False, quiet=False):
         """Context manager that opens an encrypted file.
 
         Use the read() and write() methods in the subordinate "with"
@@ -37,89 +35,149 @@ class EncryptedConfigFile(object):
         `write_lock` must be set True if a modification of the file is
         intended.
         """
-        self.encrypted_file = encrypted_file
+        self.encrypted_filename = encrypted_filename
         self.write_lock = write_lock
         self.quiet = quiet
+        self.recipients = []
 
     def __enter__(self):
         self._lock()
         return self
 
-    def __exit__(self, _exc_type, _exc_value, _traceback):
+    def __exit__(self, _exc_type=None, _exc_value=None, _traceback=None):
         self.lockfd.close()
 
-    def gpg(self, cmdline):
-        null = tempfile.TemporaryFile()
-        for gpg in self.GPG_BINARY_CANDIDATES:
-            try:
-                subprocess.check_call([gpg, "--version"],
-                                      stdout=null,
-                                      stderr=null)
-            except (subprocess.CalledProcessError, OSError):
-                pass
-            else:
-                return "{} {}".format(gpg, cmdline)
+    def gpg(self):
+        with tempfile.TemporaryFile() as null:
+            for gpg in self.GPG_BINARY_CANDIDATES:
+                try:
+                    subprocess.check_call([gpg, "--version"],
+                                          stdout=null,
+                                          stderr=null)
+                except (subprocess.CalledProcessError, OSError):
+                    pass
+                else:
+                    return gpg
         raise RuntimeError("Could not find gpg binary."
                            " Is GPG installed? I tried looking for: {}".format(
                                ", ".join("`{}`".format(x)
                                          for x in self.GPG_BINARY_CANDIDATES)))
 
-    @property
-    def cleartext(self):
-        if self._cleartext is None:
-            return NEW_FILE_TEMPLATE
-        return self._cleartext
-
-    @cleartext.setter
-    def cleartext(self, value):
-        self.config = ConfigUpdater()
-        self.config.read_string(value)
-        self.set_members(self.get_members())
-        s = io.StringIO()
-        self.config.write(s)
-        self._cleartext = s.getvalue()
-
     def read(self):
-        if self._cleartext is None:
-            if os.stat(self.encrypted_file).st_size:
-                self._decrypt()
+        """Read encrypted data into cleartext - if not not read already."""
+        if self.cleartext is None:
+            if os.path.exists(self.encrypted_filename):
+                self.cleartext = self._decrypt()
+            else:
+                self.cleartext = ''
         return self.cleartext
 
-    def write(self, cleartext):
-        """Replace encrypted file with new content."""
+    def write(self):
+        """Encrypt cleartext and write into destination file file. ."""
         if not self.write_lock:
             raise RuntimeError("write() needs a write lock")
-        self.cleartext = cleartext
-        self._encrypt()
-
-    def write_config(self):
-        s = io.StringIO()
-        self.config.write(s)
-        self.write(s.getvalue())
+        self._encrypt(self.cleartext)
 
     def _lock(self):
-        self.lockfd = open(self.encrypted_file, self.write_lock and "a+"
+        self.lockfd = open(self.encrypted_filename, self.write_lock and "a+"
                            or "r+")
         try:
-            if self.write_lock:
-                fcntl.lockf(self.lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            else:
-                fcntl.lockf(self.lockfd, fcntl.LOCK_SH | fcntl.LOCK_NB)
+            fcntl.lockf(
+                self.lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB |
+                (fcntl.LOCK_EX if self.write_lock else fcntl.LOCK_SH))
         except BlockingIOError:
-            raise FileLockedError(self.encrypted_file)
+            raise FileLockedError(self.encrypted_filename)
 
     def _decrypt(self):
-        opts = self.gpg_opts
+        args = [self.gpg()]
         if self.quiet:
-            opts += " -q --no-tty --batch"
-        self.cleartext = subprocess.check_output(
-            [self.gpg("{} --decrypt {}".format(opts, self.encrypted_file))],
-            stderr=NULL,
-            shell=True,
-        ).decode("utf-8")
+            args += ['-q', '--no-tty', '--batch']
+        args += ['--decrypt', self.encrypted_filename]
+        return subprocess.check_output(args).decode("utf-8")
+
+    def _encrypt(self, data):
+        if not self.recipients:
+            raise ValueError('Need at least one recipient.')
+        os.rename(self.encrypted_filename, self.encrypted_filename + ".old")
+        args = [self.gpg(), '--encrypt']
+        for r in self.recipients:
+            args.extend(['-r', r.strip()])
+        args.extend(['-o', self.encrypted_filename])
+        try:
+            gpg = subprocess.Popen(args, stdin=subprocess.PIPE)
+            gpg.communicate(data.encode("utf-8"))
+            if gpg.returncode != 0:
+                raise RuntimeError("GPG returned non-zero exit code.")
+        except Exception:
+            os.rename(self.encrypted_filename + ".old",
+                      self.encrypted_filename)
+            raise
+        else:
+            os.unlink(self.encrypted_filename + ".old")
+
+
+class EncryptedConfigFile(object):
+    """Wrap encrypted config files.
+
+    Manages keys based on the data in the configuration. Also allows
+    management of additional files with the same keys.
+
+    """
+
+    def __init__(self,
+                 encrypted_file,
+                 subfile_pattern=None,
+                 write_lock=False,
+                 quiet=False):
+        self.subfile_pattern = subfile_pattern
+        self.write_lock = write_lock
+        self.quiet = quiet
+        self.files = {}
+
+        self.main_file = self.add_file(encrypted_file)
+
+        # Add all existing files to the session
+        if self.subfile_pattern:
+            for other_filename in glob.iglob(self.subfile_pattern):
+                self.add_file(other_filename)
+
+    def add_file(self, filename):
+        if filename not in self.files:
+            self.files[filename] = f = EncryptedFile(filename, self.write_lock,
+                                                     self.quiet)
+            f.read()
+        return self.files[filename]
+
+    def __enter__(self):
+        self.main_file.__enter__()
+        return self
+
+    def __exit__(self, _exc_type=None, _exc_value=None, _traceback=None):
+        self.main_file.__exit__()
+
+    def read(self):
+        self.main_file.read()
+        if not self.main_file.cleartext:
+            self.main_file.cleartext = NEW_FILE_TEMPLATE
+        self.config = ConfigUpdater()
+        self.config.read_string(self.main_file.cleartext)
+        self.set_members(self.get_members())
+
+    def write(self):
+        s = io.StringIO()
+        self.config.write(s)
+        self.main_file.cleartext = s.getvalue()
+        for file in self.files.values():
+            file.recipients = self.get_members()
+            file.write()
 
     def get_members(self):
-        members = self.config.get("batou", "members").value.split(",")
+        if 'batou' not in self.config:
+            self.config.add_section('batou')
+        try:
+            members = self.config.get("batou", "members").value.split(",")
+        except Exception:
+            return []
         members = [x.strip() for x in members]
         members = [_f for _f in members if _f]
         members.sort()
@@ -131,28 +189,3 @@ class EncryptedConfigFile(object):
         # proper indentation.
         members = ",\n      ".join(members)
         self.config.set("batou", "members", members)
-
-    def _encrypt(self):
-        recipients = self.get_members()
-        if not recipients:
-            raise ValueError("Need at least one recipient.")
-        self.set_members(self.get_members())
-        recipients = " ".join([
-            "-r {}".format(shlex.quote(r.strip())) for r in recipients])
-        os.rename(self.encrypted_file, self.encrypted_file + ".old")
-        try:
-            gpg = subprocess.Popen(
-                [
-                    self.gpg("{} --encrypt {} -o {}".format(
-                        self.gpg_opts, recipients, self.encrypted_file))],
-                stdin=subprocess.PIPE,
-                shell=True,
-            )
-            gpg.communicate(self.cleartext.encode("utf-8"))
-            if gpg.returncode != 0:
-                raise RuntimeError("GPG returned non-zero exit code.")
-        except Exception:
-            os.rename(self.encrypted_file + ".old", self.encrypted_file)
-            raise
-        else:
-            os.unlink(self.encrypted_file + ".old")

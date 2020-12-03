@@ -4,7 +4,18 @@
 2.2 (unreleased)
 ----------------
 
-- Fix bug preventing to use `nagios=True` in for Supervisor components,
+- Add `secret files` in addition to secret overrides. Using
+  `./batou secrets edit {environment} {example.yaml}` you can
+  now create multiple files that are all encrypted using the 
+  environment's keys.
+
+  To access those secrets you can read them from `environment.secret_files['{example.yaml}']` in your deployment.
+
+  This feature is useful to embed longer data or formats that are
+  hard to embed syntactically into the cfg/ini style of the
+  main secrets file.
+
+- Fix bug preventing to use `nagios=True` in Supervisor components,
   introduced in batou 2.1.
   ([#98](https://github.com/flyingcircusio/batou/issues/98))
 

@@ -1,0 +1,1 @@
+export GNUPGHOME=../../src/batou/secrets/tests/fixture/gnupg

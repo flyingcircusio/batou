@@ -16,12 +16,17 @@ class Environment(object):
             self.name = name
             self.path = "secrets/{}.cfg".format(name)
 
-        self.f = EncryptedConfigFile(self.path, write_lock=True, quiet=True)
+        self.f = EncryptedConfigFile(
+            self.path,
+            subfile_pattern="secrets/{}-*".format(self.name),
+            write_lock=True,
+            quiet=True)
         self.f.__enter__()
 
     @classmethod
     def all(cls):
-        for e in glob.glob("secrets/*.cfg"):
+        for e in glob.glob("environments/*.cfg"):
+            e = e.replace("environments/", "secrets/", 1)
             yield Environment(path=e)
 
     @classmethod
@@ -39,7 +44,22 @@ class Environment(object):
         except Exception as e:
             print("\t{}".format(e))
             return
-        print("\t", self.f.config.get("batou", "members"))
+        print("\t members")
+        members = self.f.config.get("batou", "members")
+        for m in members.value.split(','):
+            m = m.strip()
+            print("\t\t-", m)
+        if not members:
+            print("\t\t(none)")
+        print("\t secret files")
+        files = [f for f in self.f.files if f != self.path]
+        files = [
+            f.replace('secrets/{}-'.format(self.name), '', 1) for f in files]
+        for f in files:
+            print("\t\t-", f)
+        if not files:
+            print("\t\t(none)")
+        print()
 
     def add_user(self, keyid):
         try:
@@ -52,7 +72,7 @@ class Environment(object):
             members.append(keyid)
             self.f.set_members(members)
             try:
-                self.f.write_config()
+                self.f.write()
             except Exception as e:
                 print("\t{}".format(e))
                 return
@@ -69,7 +89,7 @@ class Environment(object):
             members.remove(keyid)
             self.f.set_members(members)
             try:
-                self.f.write_config()
+                self.f.write()
             except Exception as e:
                 print("\t{}".format(e))
                 return
@@ -89,7 +109,6 @@ def summary(**kw):
     for e in Environment.all():
         print(e.name)
         e.summary()
-        print()
 
 
 def add_user(keyid, environments, **kw):

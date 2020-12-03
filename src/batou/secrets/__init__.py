@@ -23,16 +23,16 @@ new one is created.
 from batou import SuperfluousSecretsSection
 from .encryption import EncryptedConfigFile
 import os.path
+import glob
 
 
-def add_secrets_to_environment_override(environment,
-                                        enc_file_class=EncryptedConfigFile):
+def add_secrets_to_environment(environment):
     secrets_file = "secrets/{}.cfg".format(environment.name)
     if not os.path.exists(secrets_file):
         return
-    with enc_file_class(secrets_file) as f:
-        f.read()
-        for section_ in f.config.sections():
+    with EncryptedConfigFile(secrets_file) as config_file:
+        config_file.read()
+        for section_ in config_file.config.sections():
             if section_ == "batou":
                 continue
             elif section_.startswith("host:"):
@@ -41,7 +41,7 @@ def add_secrets_to_environment_override(environment,
                     raise ValueError(
                         "Secret for unknown host: {}".format(hostname))
                 host = environment.hosts[hostname]
-                for key, option in f.config.items(section_):
+                for key, option in config_file.config.items(section_):
                     if key.startswith("data-"):
                         key = key.replace("data-", "", 1)
                         host.data[key] = option.value
@@ -51,4 +51,13 @@ def add_secrets_to_environment_override(environment,
                     environment.exceptions.append(
                         SuperfluousSecretsSection(component))
                 o = environment.overrides.setdefault(component, {})
-                o.update(((k, o.value) for k, o in f.config.items(section_)))
+                o.update(((k, o.value)
+                          for k, o in config_file.config.items(section_)))
+
+        # additional_secrets
+        prefix = "secrets/{}-".format(environment.name)
+        for other_filename in glob.iglob(prefix + "*"):
+            secret_name = other_filename.replace(prefix, "", 1)
+            with config_file.add_file(other_filename) as other_file:
+                other_file.read()
+                environment.secret_files[secret_name] = other_file.cleartext

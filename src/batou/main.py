@@ -96,6 +96,10 @@ non-existent file name, a new encrypted file is created.
         "environment",
         help="Environment to edit secrets for.",
         type=lambda x: x.replace(".cfg", ""))
+    p.add_argument(
+        "edit_file",
+        nargs='?',
+        help="Sub-file to edit. (i.e. secrets/{environment}-{subfile}")
     p.set_defaults(func=batou.secrets.edit.main)
 
     p = sp.add_parser(

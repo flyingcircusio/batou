@@ -703,6 +703,54 @@ If you deal with a growing number of environments and users, you can use the
 commands ``batou secrets add`` and ``batou secrets remove`` to manage access
 for users to multiple or all environments quickly.
 
+Storing additional secrets as separate files
+--------------------------------------------
+
+Sometimes the way to store secrets as overrides in an INI-style file is inconvenient: larger amounts of data (think SSL or SSH private keys) or
+structured data that is hard to embed syntactically correct in the INI
+format (think YAML).
+
+For that you can split off this data into separate files (you still need to edit the main secrets file to tell batou which keys to encrypt for):
+
+.. code-block:: console
+
+  $ ./batou secrets edit production secretdata.yaml
+
+This opens up your preferred editor and provides you with an empty file that you can edit.
+
+.. code-block:: yaml
+  :caption: secrets/production-secretdata.yaml (decrypted)
+
+  -
+    a: 1
+    list: 2
+  -
+    with: 4
+    multiple: 5
+    dicts: 6
+
+batou keeps the file suffix in the temporary file, so that your editor should be showing you appropriate syntax highlighting.
+
+Whenever you edit one of the secret files of an environment all files will be reencrypted to be sure that they are encrypted with a consistent set of keys.
+
+To use those secret files, you can simply retrieve them from the environment object in your deployment code:
+
+.. code-block:: python
+  :caption: components/myapp/component.py (v5)
+
+  from batou.component import Component
+  from batou.lib.file import File
+
+
+  class Tick(Component):
+
+      def configure(self):
+          self += File(
+            'secrets.yaml',
+            mode=0600,
+            content=self.environment.secret_files('secretdata.yaml'))
+
+
 Using version control to ensure consistent deployments
 ------------------------------------------------------
 

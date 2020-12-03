@@ -1,7 +1,7 @@
 from .component import load_components_from_file
 from .host import LocalHost, RemoteHost
 from .resources import Resources
-from .secrets import add_secrets_to_environment_override
+from .secrets import add_secrets_to_environment
 from configparser import RawConfigParser
 from batou import DuplicateHostError, InvalidIPAddressError
 from batou import MissingComponent
@@ -104,6 +104,9 @@ class Environment(object):
         self.base_dir = os.path.abspath(basedir)
         self.workdir_base = os.path.join(self.base_dir, "work")
 
+        # Additional secrets files as placed in secrets/<env>-<name>
+        self.secret_files = {}
+
     def load(self):
         # Scan all components
         for filename in sorted(
@@ -153,7 +156,7 @@ class Environment(object):
                                                self.repository.root)
 
     def load_secrets(self):
-        add_secrets_to_environment_override(self)
+        add_secrets_to_environment(self)
 
     def load_environment(self, config):
         environment = config.get("environment", {})

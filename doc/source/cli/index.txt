@@ -78,6 +78,25 @@ Show an overview of which users have access to what encrypted secrets.
     optional arguments:
       -h, --help  show this help message and exit
 
+Example:
+
+.. code-block:: console
+
+  $ ./batou secrets summary
+
+  production
+     members
+      - alice@example.com
+     secret files
+      - secrets.yaml
+
+  tutorial
+     members
+      - alice@example.com
+      - bob@example.com
+     secret files
+      (none)
+
 
 batou secrets add
 -----------------
