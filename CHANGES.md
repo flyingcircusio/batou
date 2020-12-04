@@ -6,7 +6,7 @@
 
 - Add `secret files` in addition to secret overrides. Using
   `./batou secrets edit {environment} {example.yaml}` you can
-  now create multiple files that are all encrypted using the 
+  now create multiple files that are all encrypted using the
   environment's keys.
 
   To access those secrets you can read them from `environment.secret_files['{example.yaml}']` in your deployment.
