@@ -93,7 +93,7 @@ class EncryptedFile(object):
         if self.quiet:
             args += ['-q', '--no-tty', '--batch']
         args += ['--decrypt', self.encrypted_filename]
-        return subprocess.check_output(args).decode("utf-8")
+        return subprocess.check_output(args, stderr=NULL).decode("utf-8")
 
     def _encrypt(self, data):
         if not self.recipients:
