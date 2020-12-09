@@ -194,8 +194,7 @@ class Supervisor(Component):
             version="2.13.3",
             setuptools="50.3.2",
             config=buildout_cfg,
-            python="3",
-        )
+            python="3")
 
         self.program_config_dir = Directory("etc/supervisor.d", leading=True)
         self += self.program_config_dir
@@ -233,8 +232,7 @@ class Supervisor(Component):
                 "Supervisor programs",
                 nrpe=True,
                 contact_groups=self.check_contact_groups,
-                command=self.expand("{{component.workdir}}/check_supervisor"),
-            )
+                command=self.expand("{{component.workdir}}/check_supervisor"))
 
 
 class RunningHelper(Component):

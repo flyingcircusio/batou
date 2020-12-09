@@ -21,8 +21,7 @@ def test_waits_for_start(root, supervisor):
         command_absolute=False,
         command="bash",
         args='-c "sleep 1; touch %s/foo; sleep 3600"' % (root.workdir),
-        options=dict(startsecs=2),
-    )
+        options=dict(startsecs=2))
     root.component.deploy()
     assert os.path.exists("%s/foo" % root.workdir)
 
