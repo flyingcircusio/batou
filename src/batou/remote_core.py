@@ -389,15 +389,14 @@ if __name__ == "__channelexec__":
             deployment.environment.exceptions.sort(key=lambda x: x.sort_key)
 
             for exception in deployment.environment.exceptions:
-                if isinstance(e, batou.SilentConfigurationError):
+                if isinstance(exception, batou.SilentConfigurationError):
                     continue
                 exception.report()
 
             batou.output.section(
                 "{} ERRORS - CONFIGURATION FAILED".format(
                     len(deployment.environment.exceptions)),
-                red=True,
-            )
+                red=True)
             channel.send(("batou-configuration-error", None))
         except getattr(batou, "DeploymentError", DummyException) as e:
             e.report()

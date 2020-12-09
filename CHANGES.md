@@ -23,6 +23,7 @@
   has been moved to a new location.
   ([#93](https://github.com/flyingcircusio/batou/issues/93))
 
+- Actually silence SilentConfiguration errors.
 
 2.1 (2020-09-09)
 ----------------
