@@ -25,6 +25,8 @@ def test_waits_for_start(root, supervisor):
     root.component.deploy()
     assert os.path.exists("%s/foo" % root.workdir)
 
+    supervisor.cmd("{}/check_supervisor".format(supervisor.workdir))
+
 
 @pytest.mark.slow
 def test_does_not_start_disabled_program(root, supervisor):

@@ -216,18 +216,14 @@ class Supervisor(Component):
         else:
             self += StoppedSupervisor()
 
-        # Nagios check
-        if self.nagios:
-            self += File(
-                "check_supervisor",
-                mode=0o755,
-                source=os.path.join(
-                    os.path.dirname(__file__),
-                    "resources",
-                    "check_supervisor.py.in",
-                ),
-            )
+        self += File(
+            "check_supervisor",
+            mode=0o755,
+            source=os.path.join(
+                os.path.dirname(__file__), "resources",
+                "check_supervisor.py.in"))
 
+        if self.nagios:
             self += ServiceCheck(
                 "Supervisor programs",
                 nrpe=True,

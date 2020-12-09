@@ -1,10 +1,11 @@
-#!{{component.workdir}}/bin/py
-
+#!/usr/bin/env python3
 """Check supervisord programs."""
 
 import collections
-import subprocess
+import os
 import re
+import subprocess
+import sys
 
 SUPERVISORCTL = '{{component.workdir}}/bin/supervisorctl'
 
@@ -19,14 +20,32 @@ STATEMAP = dict(
     BACKOFF='undecided',
     STOPPING='inactive',
     EXITED='inactive',
-    FATAL='inactive',
-)
-
+    FATAL='inactive')
 
 buckets = collections.defaultdict(list)
 
+
+def cmd(c, acceptable_returncodes=[0]):
+    environ = os.environ.copy()
+    environ["LANG"] = "C"
+    environ["LC_ALL"] = "C"
+    environ["LANGUAGE"] = "C"
+
+    process = subprocess.Popen(
+        c,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        stdin=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    # We do not have enough knowledge here to decode so we keep
+    # stdout and stderr as byte strings for now.
+    if process.returncode not in acceptable_returncodes:
+        raise RuntimeError(c, process.returncode, stdout, stderr)
+    return stdout, stderr
+
+
 try:
-    status = subprocess.check_output([SUPERVISORCTL, 'status'])
+    status, _ = cmd([SUPERVISORCTL, 'status'], acceptable_returncodes=[0, 3])
     status = status.decode('ascii', errors='replace')
 except Exception:
     print('CRITICAL: Invalid status from supervisor – is supervisord running?')
