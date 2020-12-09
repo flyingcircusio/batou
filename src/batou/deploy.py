@@ -143,15 +143,13 @@ class Deployment(object):
             output.step(
                 hostname,
                 "Skipping component {} ... (Host ignored)".format(component),
-                red=True,
-            )
+                red=True)
         elif info["ignore"]:
             output.step(
                 hostname,
                 "Skipping component {} ... (Component ignored)".format(
                     component),
-                red=True,
-            )
+                red=True)
         else:
             output.step(hostname,
                         "Scheduling component {} ...".format(component))
@@ -234,43 +232,35 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
         except FileLockedError as e:
             output.error("File already locked: {}".format(e.filename))
             output.section("{} FAILED".format(ACTION), red=True)
-            notify(
-                "{} FAILED".format(ACTION),
-                "File already locked: {}".format(e.filename),
-            )
+            notify("{} FAILED".format(ACTION),
+                   "File already locked: {}".format(e.filename))
         except MissingEnvironment as e:
             e.report()
             output.section("{} FAILED".format(ACTION), red=True)
             notify(
                 "{} FAILED".format(ACTION),
                 "Configuration for {} encountered an error.".format(
-                    environment),
-            )
+                    environment))
             sys.exit(1)
         except ConfigurationError:
             output.section("{} FAILED".format(ACTION), red=True)
             notify(
                 "{} FAILED".format(ACTION),
                 "Configuration for {} encountered an error.".format(
-                    environment),
-            )
+                    environment))
             sys.exit(1)
         except DeploymentError as e:
             e.report()
             output.section("{} FAILED".format(ACTION), red=True)
-            notify(
-                "{} FAILED".format(ACTION),
-                "{} encountered an error.".format(environment),
-            )
+            notify("{} FAILED".format(ACTION),
+                   "{} encountered an error.".format(environment))
             sys.exit(1)
         except Exception:
             # An unexpected exception happened. Bad.
             output.error("Unexpected exception", exc_info=sys.exc_info())
             output.section("{} FAILED".format(ACTION), red=True)
-            notify(
-                "{} FAILED".format(ACTION),
-                "Encountered an unexpected exception.",
-            )
+            notify("{} FAILED".format(ACTION),
+                   "Encountered an unexpected exception.")
             sys.exit(1)
         else:
             output.section("{} FINISHED".format(ACTION), green=True)
