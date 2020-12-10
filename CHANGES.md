@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.2 (unreleased)
+2.2 (2020-12-10)
 ----------------
 
 - Add `secret files` in addition to secret overrides. Using
