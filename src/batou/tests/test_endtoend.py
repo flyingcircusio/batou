@@ -57,7 +57,7 @@ Conversion: Address('localhost')
 ERROR: Overrides for undefined attributes
       Host: localhost
  Component: Component2
-Attributes: this_does_not_exist
+Attributes: this_does_not_exist, this_also_does_not_exist
 ERROR: Unused provided resources
     Resource "backend" provided by component3 with value ['192.168.0.1']
     Resource "frontend" provided by component3 with value ['test00.gocept.net']

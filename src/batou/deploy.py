@@ -226,9 +226,12 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
             deployment.load()
             deployment.connect()
             deployment.configure()
+
+            if deployment.environment.exceptions:
+                raise ConfigurationError()
+
             if not consistency_only:
                 deployment.deploy()
-            deployment.disconnect()
         except FileLockedError as e:
             output.error("File already locked: {}".format(e.filename))
             output.section("{} FAILED".format(ACTION), red=True)
@@ -265,3 +268,5 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
         else:
             output.section("{} FINISHED".format(ACTION), green=True)
             notify("{} SUCCEEDED".format(ACTION), environment)
+        finally:
+            deployment.disconnect()
