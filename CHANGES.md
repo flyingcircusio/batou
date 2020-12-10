@@ -25,6 +25,9 @@
 
 - Actually silence SilentConfiguration errors.
 
+- Consider unknown secret overrides (components and attributes)
+  to be a configuration error.
+
 2.1 (2020-09-09)
 ----------------
 

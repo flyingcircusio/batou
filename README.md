@@ -107,6 +107,9 @@ The project is licensed under the 2-clause BSD license.
 
 - Actually silence SilentConfiguration errors.
 
+- Consider unknown secret overrides (components and attributes)
+  to be a configuration error.
+
 2.1 (2020-09-09)
 ----------------
 
