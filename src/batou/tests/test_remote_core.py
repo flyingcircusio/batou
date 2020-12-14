@@ -5,7 +5,7 @@ import os.path
 import pytest
 
 
-@pytest.yield_fixture(autouse=True)
+@pytest.fixture(autouse=True)
 def reset_global_vars():
     yield
     remote_core.target_directory = None

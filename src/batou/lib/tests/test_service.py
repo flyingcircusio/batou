@@ -8,7 +8,7 @@ def deploy_platform():
     return "test"
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def service(root, tmpdir, request, deploy_platform):
     old_platforms = getattr(batou.lib.service.Service, "_platforms", {})
     if old_platforms:

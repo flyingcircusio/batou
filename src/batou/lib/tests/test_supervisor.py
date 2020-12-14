@@ -3,7 +3,7 @@ import os.path
 import pytest
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def supervisor(root, request):
     # Urks. Otherwise OS X ends up with socket paths that are too long.
     supervisor = batou.lib.supervisor.Supervisor(

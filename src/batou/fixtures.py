@@ -24,7 +24,7 @@ def root(tmpdir):
     return root
 
 
-@pytest.yield_fixture(autouse=True)
+@pytest.fixture(autouse=True)
 def ensure_workingdir(request):
     working_dir = os.getcwd()
     yield
