@@ -1,8 +1,8 @@
 ## Changelog
 
 
-2.2.1 (unreleased)
-----------------
+2.2.1 (2020-12-14)
+------------------
 
 - Fix error reporting that was partially broken in 2.2.
 
