@@ -83,8 +83,8 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.3 (unreleased)
-----------------
+2.2.2 (2020-12-14)
+------------------
 
 - Another brownbag release - connecting to remote hosts was broken
   after refactoring due to missing test coverage. Fixed and 
