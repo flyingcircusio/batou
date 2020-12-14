@@ -3,7 +3,8 @@ from ._output import output
 import os.path
 import traceback
 
-__version__ = open(os.path.dirname(__file__) + "/version.txt").read().strip()
+with open(os.path.dirname(__file__) + "/version.txt") as f:
+    __version__ = f.read().strip()
 
 
 class ReportingException(Exception):
