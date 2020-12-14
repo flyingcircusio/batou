@@ -228,8 +228,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
 
         self.rpc.setup_deployment(env.name, self.fqdn,
                                   env.overrides, env.secret_files,
-                                  env._host_data(), env.deployment.timeout,
-                                  env.deployment.platform)
+                                  env._host_data(), env.timeout, env.platform)
 
     def disconnect(self):
         if self.gateway is not None:

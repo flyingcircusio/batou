@@ -4,7 +4,9 @@
 2.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Another brownbag release - connecting to remote hosts was broken
+  after refactoring due to missing test coverage. Fixed and 
+  added coverage.
 
 
 2.2.1 (2020-12-14)

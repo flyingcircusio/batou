@@ -51,7 +51,7 @@ class Repository(object):
     def verify(self):
         pass
 
-    def update(self):
+    def update(self, host):
         pass
 
 
