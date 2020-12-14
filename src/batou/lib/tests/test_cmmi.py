@@ -96,7 +96,8 @@ def cmmi_tar(tmpdir):
 
     fixture = type("Dummy", (object,), {})()
     fixture.path = tarpath
-    fixture.checksum = hashlib.md5(open(tarpath, "rb").read()).hexdigest()
+    with open(tarpath, "rb") as f:
+        fixture.checksum = hashlib.md5(f.read()).hexdigest()
     return fixture
 
 

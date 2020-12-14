@@ -161,9 +161,11 @@ class LockfileContextManagerTests(unittest.TestCase):
     def test_lock_creates_file_and_writes_and_removes_pid(self):
         lockfile = self.tempfile()
         with locked(lockfile):
-            pid = open(lockfile, "r").read().strip()
+            with open(lockfile, "r") as f:
+                pid = f.read().strip()
             self.assertEqual(os.getpid(), int(pid))
-        self.assertEqual("", open(lockfile, "r").read())
+        with open(lockfile, "r") as f:
+            self.assertEqual("", f.read())
 
     def test_lock_works_with_existing_file(self):
         lockfile = self.tempfile()
@@ -171,9 +173,11 @@ class LockfileContextManagerTests(unittest.TestCase):
         f.write("sadf")
         f.close()
         with locked(lockfile):
-            pid = open(lockfile, "r").read().strip()
+            with open(lockfile, "r") as f:
+                pid = f.read().strip()
             self.assertEqual(os.getpid(), int(pid))
-        self.assertEqual("", open(lockfile, "r").read())
+        with open(lockfile, "r") as f:
+            self.assertEqual("", f.read())
 
     @mock.patch("fcntl.lockf", side_effect=fake_lock)
     def test_lock_cant_lock_twice(self, lockf):

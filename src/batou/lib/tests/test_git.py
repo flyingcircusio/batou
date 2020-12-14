@@ -135,7 +135,8 @@ def test_changes_lost_on_update_with_incoming(root, repos_path):
     cmd("cd {dir}/clone; echo foobar >foo".format(dir=root.workdir))
     root.component.deploy()
     assert os.path.exists(root.component.map("clone/bar"))
-    assert not open(root.component.map("clone/foo")).read()
+    with open(root.component.map("clone/foo")) as f:
+        assert not f.read()
 
 
 @pytest.mark.slow
@@ -145,7 +146,8 @@ def test_changes_lost_on_update_without_incoming(root, repos_path):
     root.component.deploy()
     cmd("cd {dir}/clone; echo foobar >foo".format(dir=root.workdir))
     root.component.deploy()
-    assert not open(root.component.map("clone/foo")).read()
+    with open(root.component.map("clone/foo")) as f:
+        assert not f.read()
 
 
 @pytest.mark.slow
@@ -168,7 +170,8 @@ def test_clean_clone_vcs_update_false_leaves_changes_intact(root, repos_path):
         'git commit -m "commit"'.format(dir=repos_path))
     cmd("cd {dir}/clone; echo asdf >foo".format(dir=root.workdir))
     root.component.deploy()
-    assert "asdf\n" == open(root.component.map("clone/foo")).read()
+    with open(root.component.map("clone/foo")) as f:
+        assert "asdf\n" == f.read()
     assert not os.path.exists(root.component.map("clone/bar"))
 
 

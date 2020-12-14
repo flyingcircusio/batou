@@ -71,10 +71,10 @@ class AppEnv(Component):
     namevar = "python_version"
 
     def configure(self):
-        lockfile = open("requirements.lock", "r").read()
-
-        hash_content = (
-            lockfile + self.python_version + open(__file__, "r").read())
+        with open("requirements.lock", "r") as f:
+            lockfile = f.read()
+        with open(__file__, "r") as f:
+            hash_content = lockfile + self.python_version + f.read()
         hash_content = hash_content.encode("utf-8")
         self.env_hash = hashlib.new("sha256", hash_content).hexdigest()[:8]
         self.env_dir = os.path.join(".appenv", self.env_hash)

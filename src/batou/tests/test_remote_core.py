@@ -108,7 +108,9 @@ def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir), "hg-pull")
     remote_core.ensure_base("asdf")
     os.mkdir(remote_core.target_directory + "/bin")
-    open(remote_core.target_directory + "/bin/python3", "w")
+    with open(remote_core.target_directory + "/bin/python3", "w") as f:
+        # Break python
+        pass
     remote_core.build_batou()
     calls = iter([x[1][0] for x in remote_core.cmd.mock_calls])
     assert remote_core.cmd.call_count == 2

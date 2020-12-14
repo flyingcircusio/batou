@@ -157,7 +157,9 @@ x = 1
             secrets.read()
             with pytest.raises(RuntimeError):
                 secrets.write()
-        assert open(tf.name, "rb").read() == open(encrypted_file, "rb").read()
+        with open(tf.name, "rb") as tf_h:
+            with open(encrypted_file, "rb") as encrypted_h:
+                assert tf_h.read() == encrypted_h.read()
 
 
 def test_secrets_override_without_interpolation(tmpdir):
