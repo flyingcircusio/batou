@@ -88,8 +88,7 @@ class AppEnv(Component):
         # If we got here, then we can place the ready marker
         self += File(
             os.path.join(self.env_dir, "appenv.ready"),
-            content="Ready or not, here I come, you can't hide\n",
-        )
+            content="Ready or not, here I come, you can't hide\n")
 
         # Save current to skip it in cleanup
         self.last_env_hash = None

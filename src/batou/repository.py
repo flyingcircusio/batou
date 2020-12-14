@@ -67,8 +67,7 @@ class RSyncRepository(Repository):
         output.annotate(
             "You are using rsync. This is a non-verifying repository "
             "-- continuing on your own risk!",
-            red=True,
-        )
+            red=True)
 
     def update(self, host):
         env = self.environment
@@ -132,8 +131,7 @@ class MercurialRepository(Repository):
             output.annotate(
                 "You are running a dirty deployment. This can cause "
                 "inconsistencies -- continuing on your own risk!",
-                red=True,
-            )
+                red=True)
             return
 
         try:
@@ -151,8 +149,7 @@ class MercurialRepository(Repository):
 I am refusing to deploy in this situation as the results will be unpredictable.
 Please commit and push first.
 """,
-                    red=True,
-                )
+                    red=True)
                 output.annotate(status, red=True)
                 raise DeploymentError()
         try:
@@ -183,10 +180,8 @@ class MercurialBundleRepository(MercurialRepository):
         fd, bundle_file = tempfile.mkstemp()
         os.close(fd)
         bases = " ".join("--base {}".format(x) for x in heads)
-        cmd(
-            "hg -qy bundle {} {}".format(bases, bundle_file),
-            acceptable_returncodes=[0, 1],
-        )
+        cmd("hg -qy bundle {} {}".format(bases, bundle_file),
+            acceptable_returncodes=[0, 1])
         change_size = os.stat(bundle_file).st_size
         if not change_size:
             return
@@ -240,8 +235,7 @@ class GitRepository(Repository):
             output.annotate(
                 "You are running a dirty deployment. This can cause "
                 "inconsistencies -- continuing on your own risk!",
-                red=True,
-            )
+                red=True)
             return
 
         try:
@@ -259,15 +253,13 @@ class GitRepository(Repository):
 I am refusing to deploy in this situation as the results will be unpredictable.
 Please commit and push first.
 """,
-                    red=True,
-                )
+                    red=True)
                 output.annotate(status, red=True)
                 raise DeploymentError()
         outgoing, _ = cmd(
             "git log {remote}/{branch}..{branch} --pretty=oneline".format(
                 remote=self.remote, branch=self.branch),
-            acceptable_returncodes=[0, 128],
-        )
+            acceptable_returncodes=[0, 128])
         if outgoing.strip():
             output.error("""\
 Your repository has outgoing changes on branch {branch}:
@@ -301,8 +293,7 @@ class GitBundleRepository(GitRepository):
         out, err = cmd(
             "git bundle create {file} {range}".format(
                 file=bundle_file, range=bundle_range),
-            acceptable_returncodes=[0, 128],
-        )
+            acceptable_returncodes=[0, 128])
         if "create empty bundle" in err:
             return
         change_size = os.stat(bundle_file).st_size

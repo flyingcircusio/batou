@@ -183,8 +183,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
             fqdn=self.fqdn,
             sudo=CONDITIONAL_SUDO,
             interpreter=interpreter,
-            method=self.environment.connect_method,
-        )
+            method=self.environment.connect_method)
         if os.path.exists("ssh_config"):
             spec += "//ssh_config=ssh_config"
         self.gateway = execnet.makegateway(spec)
