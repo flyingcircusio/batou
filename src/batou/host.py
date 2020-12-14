@@ -1,4 +1,4 @@
-from batou import output, DeploymentError, ConfigurationError
+from batou import output, DeploymentError, SilentConfigurationError
 from batou import remote_core
 import execnet.gateway_io
 import os
@@ -78,7 +78,7 @@ class RPCWrapper(object):
                     _, output_cmd, args, kw = message
                     getattr(output, output_cmd)(*args, **kw)
                 elif type == "batou-configuration-error":
-                    raise ConfigurationError(None)
+                    raise SilentConfigurationError()
                 elif type == "batou-deployment-error":
                     raise DeploymentError()
                 elif type == "batou-unknown-error":
@@ -151,8 +151,7 @@ class LocalHost(Host):
         # XXX the cwd isn't right.
         self.rpc.setup_deployment(env.name, self.fqdn,
                                   env.overrides, env.secret_files,
-                                  env._host_data(), env.deployment.timeout,
-                                  env.deployment.platform)
+                                  env._host_data(), env.timeout, env.platform)
 
     def disconnect(self):
         if hasattr(self, "gateway"):

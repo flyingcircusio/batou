@@ -1,7 +1,8 @@
 from .environment import Environment, MissingEnvironment
 from .utils import locked, self_id
 from .utils import notify
-from batou import DeploymentError, ConfigurationError, FileLockedError
+from batou import ConfigurationError, SilentConfigurationError, ReportingException
+from batou import ReportingException, DeploymentError, FileLockedError
 from batou._output import output, TerminalBackend
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
@@ -9,6 +10,7 @@ import random
 import sys
 import threading
 import time
+import traceback
 
 
 class Connector(threading.Thread):
@@ -59,9 +61,10 @@ class Deployment(object):
                  dirty,
                  jobs,
                  predict_only=False):
-        self.environment = environment
-        self.platform = platform
-        self.timeout = timeout
+
+        self.environment = Environment(environment, timeout, platform)
+        self.environment.deployment = self
+
         self.dirty = dirty
         self.predict_only = predict_only
         self.jobs = jobs
@@ -69,12 +72,9 @@ class Deployment(object):
     def load(self):
         output.section("Preparing")
 
-        output.step("main",
-                    "Loading environment `{}`...".format(self.environment))
-
-        self.environment = Environment(self.environment, self.timeout,
-                                       self.platform)
-        self.environment.deployment = self
+        output.step(
+            "main",
+            "Loading environment `{}`...".format(self.environment.name))
         self.environment.load()
 
         if self.jobs is not None:
@@ -215,53 +215,54 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
     else:
         ACTION = "DEPLOYMENT"
     with locked(".batou-lock"):
+
+        deployment = Deployment(environment, platform, timeout, dirty, jobs,
+                                predict_only)
+        environment = deployment.environment
+
         try:
-            deployment = Deployment(environment, platform, timeout, dirty,
-                                    jobs, predict_only)
-            deployment.load()
-            deployment.connect()
-            deployment.configure()
+            for step in [
+                    deployment.load, deployment.connect, deployment.configure,
+                    deployment.deploy]:
+                try:
+                    step()
+                except Exception as e:
+                    environment.exceptions.append(e)
 
-            if deployment.environment.exceptions:
-                raise ConfigurationError()
+                if not environment.exceptions:
+                    continue
 
-            if not consistency_only:
-                deployment.deploy()
-        except FileLockedError as e:
-            output.error("File already locked: {}".format(e.filename))
-            output.section("{} FAILED".format(ACTION), red=True)
-            notify("{} FAILED".format(ACTION),
-                   "File already locked: {}".format(e.filename))
-        except MissingEnvironment as e:
-            e.report()
-            output.section("{} FAILED".format(ACTION), red=True)
-            notify(
-                "{} FAILED".format(ACTION),
-                "Configuration for {} encountered an error.".format(
-                    environment))
-            sys.exit(1)
-        except ConfigurationError:
-            output.section("{} FAILED".format(ACTION), red=True)
-            notify(
-                "{} FAILED".format(ACTION),
-                "Configuration for {} encountered an error.".format(
-                    environment))
-            sys.exit(1)
-        except DeploymentError as e:
-            e.report()
-            output.section("{} FAILED".format(ACTION), red=True)
-            notify("{} FAILED".format(ACTION),
-                   "{} encountered an error.".format(environment))
-            sys.exit(1)
-        except Exception:
-            # An unexpected exception happened. Bad.
-            output.error("Unexpected exception", exc_info=sys.exc_info())
-            output.section("{} FAILED".format(ACTION), red=True)
-            notify("{} FAILED".format(ACTION),
-                   "Encountered an unexpected exception.")
-            sys.exit(1)
-        else:
-            output.section("{} FINISHED".format(ACTION), green=True)
-            notify("{} SUCCEEDED".format(ACTION), environment)
+                # Note: There is a similar sorting / output routine in
+                # remote_core __channelexec__. This is a bit of copy/paste
+                # due to the way bootstrapping works
+                environment.exceptions = list(
+                    filter(
+                        lambda e: not isinstance(e, SilentConfigurationError),
+                        environment.exceptions))
+
+                environment.exceptions.sort(
+                    key=lambda x: getattr(x, 'sort_key', (-99,)))
+
+                exception = ''
+                for exception in environment.exceptions:
+                    if isinstance(exception, ReportingException):
+                        output.line('')
+                        exception.report()
+                    else:
+                        output.line('')
+                        output.error("Unexpected exception")
+                        tb = traceback.TracebackException.from_exception(
+                            exception)
+                        for line in tb.format():
+                            output.line('\t' + line.strip(), red=True)
+
+                summary = "{} FAILED (during {})".format(ACTION, step.__name__)
+                output.section(summary, red=True)
+
+                notify(summary, str(exception))
+                sys.exit(1)
+
         finally:
             deployment.disconnect()
+        output.section("{} FINISHED".format(ACTION), green=True)
+        notify("{} SUCCEEDED".format(ACTION), environment)

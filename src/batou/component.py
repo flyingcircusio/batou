@@ -71,7 +71,8 @@ def load_components_from_file(filename):
         module_name, "Component definition module for {}".format(filename))
     sys.modules[module_path] = module
     setattr(batou.c, module_name, module)
-    exec(compile(open(filename).read(), filename, "exec"), module.__dict__)
+    with open(filename) as f:
+        exec(compile(f.read(), filename, "exec"), module.__dict__)
 
     for candidate in list(module.__dict__.values()):
         if candidate in [Component]:

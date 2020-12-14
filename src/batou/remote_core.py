@@ -382,16 +382,33 @@ if __name__ == "__channelexec__":
         try:
             result = locals()[task](*args, **kw)
             channel.send(("batou-result", result))
-        except getattr(batou, "ConfigurationError", DummyException) as e:
-            if e not in deployment.environment.exceptions:
-                deployment.environment.exceptions.append(e)
-            # Report on why configuration failed.
+        except getattr(batou, "ConfigurationError",
+                       DummyException) as exception:
+            SilentConfigurationError = getattr(batou,
+                                               "SilentConfigurationError",
+                                               DummyException)
+            ReportingException = getattr(batou, "ReportingException",
+                                         DummyException)
+
+            environment = deployment.environment
+            if exception not in environment.exceptions:
+                environment.exceptions.append(e)
+
+            environment.exceptions = list(
+                filter(lambda e: not isinstance(e, SilentConfigurationError),
+                       environment.exceptions))
             deployment.environment.exceptions.sort(key=lambda x: x.sort_key)
 
             for exception in deployment.environment.exceptions:
-                if isinstance(exception, batou.SilentConfigurationError):
-                    continue
-                exception.report()
+                if isinstance(exception, ReportingException):
+                    output.line('')
+                    exception.report()
+                else:
+                    output.line('')
+                    output.error("Unexpected exception")
+                    tb = traceback.TracebackException.from_exception(exception)
+                    for line in tb.format():
+                        output.line('\t' + line.strip(), red=True)
 
             batou.output.section(
                 "{} ERRORS - CONFIGURATION FAILED".format(

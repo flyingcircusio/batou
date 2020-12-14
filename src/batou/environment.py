@@ -108,6 +108,12 @@ class Environment(object):
         self.secret_files = {}
 
     def load(self):
+        # Load environment configuration
+        config_file = os.path.join(self.base_dir,
+                                   "environments/{}.cfg".format(self.name))
+        if not os.path.isfile(config_file):
+            raise MissingEnvironment(self)
+
         # Scan all components
         for filename in sorted(
                 glob.glob(
@@ -116,12 +122,6 @@ class Environment(object):
                 self.components.update(load_components_from_file(filename))
             except Exception as e:
                 self.exceptions.append(ComponentLoadingError(filename, e))
-
-        # Load environment configuration
-        config_file = os.path.join(self.base_dir,
-                                   "environments/{}.cfg".format(self.name))
-        if not os.path.isfile(config_file):
-            raise MissingEnvironment(self)
 
         config = Config(config_file)
 
@@ -352,7 +352,6 @@ class Environment(object):
                 except ConfigurationError as e:
                     # A known exception which we can report gracefully later.
                     exceptions.append(e)
-                    print(root, e)
                     retry.add(root)
                 except Exception as e:
                     # An unknown exception which we have to work harder
@@ -360,7 +359,6 @@ class Environment(object):
                     ex_type, ex, tb = sys.exc_info()
                     exceptions.append(
                         UnknownComponentConfigurationError(root, e, tb))
-                    print(root, e)
                     retry.add(root)
 
             retry.update(self.resources.dirty_dependencies)
