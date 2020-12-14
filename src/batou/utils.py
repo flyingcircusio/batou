@@ -310,15 +310,13 @@ class CmdExecutionError(DeploymentError, RuntimeError):
         output.annotate(self.stderr)
 
 
-def cmd(
-    cmd,
-    silent=False,
-    ignore_returncode=False,
-    communicate=True,
-    env=None,
-    acceptable_returncodes=[0],
-    encoding="utf-8",
-):
+def cmd(cmd,
+        silent=False,
+        ignore_returncode=False,
+        communicate=True,
+        env=None,
+        acceptable_returncodes=[0],
+        encoding="utf-8"):
     if not isinstance(cmd, str):
         # We use `shell=True`, so the command needs to be a single string and
         # we need to pay attention to shell quoting.

@@ -29,14 +29,11 @@ class ConfigurationError(Exception):
         self.component = component
 
     def report(self):
+        message = self.message
         if self.component:
-            message = "{}@{}: {}".format(
-                self.component.root.name,
-                self.component.root.host.name,
-                self.message,
-            )
-        else:
-            message = self.message
+            message = "{}@{}: {}".format(self.component.root.name,
+                                         self.component.root.host.name,
+                                         message)
         output.error(message)
 
 
@@ -45,12 +42,8 @@ class ConversionError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (
-            1,
-            self.component.root.host.name,
-            self.component._breadcrumbs,
-            self.key,
-        )
+        return (1, self.component.root.host.name, self.component._breadcrumbs,
+                self.key)
 
     def __init__(self, component, key, value, conversion, error):
         self.component = component
@@ -65,13 +58,11 @@ class ConversionError(ConfigurationError):
         output.tabular(
             "Attribute",
             "{}.{}".format(self.component._breadcrumbs, self.key),
-            red=True,
-        )
+            red=True)
         output.tabular(
             "Conversion",
             "{}({})".format(self.conversion.__name__, repr(self.value)),
-            red=True,
-        )
+            red=True)
         # TODO provide traceback in debug output
         output.tabular("Error", str(self.error), red=True)
 
@@ -151,8 +142,7 @@ class UnknownComponentConfigurationError(ConfigurationError):
         output.error(repr(self.exception))
         output.annotate(
             "This /might/ be a batou bug. Please consider reporting it.\n",
-            red=True,
-        )
+            red=True)
         output.tabular("Host", self.root.host.name, red=True)
         output.tabular("Component", self.root.name + "\n", red=True)
         output.annotate(
@@ -163,9 +153,7 @@ class UnknownComponentConfigurationError(ConfigurationError):
 class UnusedResources(ConfigurationError):
     """Some provided resources were never used."""
 
-    @property
-    def sort_key(self):
-        return (5, "unused")
+    sort_key = (5, "unused")
 
     def __init__(self, resources):
         self.resources = resources
@@ -177,16 +165,13 @@ class UnusedResources(ConfigurationError):
                 output.line(
                     '    Resource "{}" provided by {} with value {}'.format(
                         key, component.name, value),
-                    red=True,
-                )
+                    red=True)
 
 
 class UnsatisfiedResources(ConfigurationError):
     """Some required resources were never provided."""
 
-    @property
-    def sort_key(self):
-        return (6, "unsatisfied")
+    sort_key = (6, "unsatisfied")
 
     def __init__(self, resources):
         self.resources = resources
@@ -197,16 +182,13 @@ class UnsatisfiedResources(ConfigurationError):
             output.line(
                 '    Resource "{}" required by {}'.format(
                     key, ",".join(r.name for r in self.resources[key])),
-                red=True,
-            )
+                red=True)
 
 
 class MissingEnvironment(ConfigurationError):
     """The specified environment does not exist."""
 
-    @property
-    def sort_key(self):
-        return (0,)
+    sort_key = (0,)
 
     def __init__(self, environment):
         self.environment = environment
@@ -219,9 +201,7 @@ class MissingEnvironment(ConfigurationError):
 class ComponentLoadingError(ConfigurationError):
     """The specified component file failed to load."""
 
-    @property
-    def sort_key(self):
-        return (0,)
+    sort_key = (0,)
 
     def __init__(self, filename, exception):
         self.filename = filename
@@ -237,9 +217,7 @@ class ComponentLoadingError(ConfigurationError):
 class MissingComponent(ConfigurationError):
     """The specified environment does not exist."""
 
-    @property
-    def sort_key(self):
-        return (0,)
+    sort_key = (0,)
 
     def __init__(self, component, hostname):
         self.component = component
@@ -255,9 +233,7 @@ class SuperfluousSection(ConfigurationError):
     """A superfluous section was found in the environment
     configuration file."""
 
-    @property
-    def sort_key(self):
-        return (0,)
+    sort_key = (0,)
 
     def __init__(self, section):
         self.section = section
@@ -272,9 +248,7 @@ class SuperfluousComponentSection(ConfigurationError):
     """A component section was found in the environment
     but no associated component is known."""
 
-    @property
-    def sort_key(self):
-        return (0,)
+    sort_key = (0,)
 
     def __init__(self, component):
         self.component = component
@@ -289,9 +263,7 @@ class SuperfluousSecretsSection(ConfigurationError):
     """A component section was found in the secrets
     but no associated component is known."""
 
-    @property
-    def sort_key(self):
-        return (0,)
+    sort_key = (0,)
 
     def __init__(self, component):
         self.component = component
@@ -306,9 +278,7 @@ class CycleErrorDetected(ConfigurationError):
     """We think we found a cycle in the component dependencies.
     """
 
-    @property
-    def sort_key(self):
-        return (99,)
+    sort_key = (99,)
 
     def __init__(self, error):
         self.error = error
@@ -322,9 +292,7 @@ class CycleErrorDetected(ConfigurationError):
 class NonConvergingWorkingSet(ConfigurationError):
     """A working set did not converge."""
 
-    @property
-    def sort_key(self):
-        return (100,)
+    sort_key = (100,)
 
     def __init__(self, roots):
         self.roots = roots
@@ -341,9 +309,7 @@ class NonConvergingWorkingSet(ConfigurationError):
 class DeploymentError(Exception):
     """Indicates that a deployment failed.."""
 
-    @property
-    def sort_key(self):
-        return (200,)
+    sort_key = (100,)
 
     def report(self):
         pass
@@ -352,9 +318,7 @@ class DeploymentError(Exception):
 class RepositoryDifferentError(DeploymentError):
     """The repository on the remote side is different."""
 
-    @property
-    def sort_key(self):
-        return (150,)
+    sort_key = (150,)
 
     def __init__(self, local, remote):
         self.local = local
@@ -383,9 +347,7 @@ class DuplicateHostError(ConfigurationError):
 
 class InvalidIPAddressError(ConfigurationError):
 
-    @property
-    def sort_key(self):
-        return (0,)
+    sort_key = (0,)
 
     def __init__(self, address):
         self.address = address

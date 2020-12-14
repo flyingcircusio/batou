@@ -63,8 +63,7 @@ class RPCWrapper(object):
         def call(*args, **kw):
             output.annotate(
                 "rpc {}: {}(*{}, **{})".format(self.host.fqdn, name, args, kw),
-                debug=True,
-            )
+                debug=True)
             self.host.channel.send((name, args, kw))
             while True:
                 message = self.host.channel.receive()

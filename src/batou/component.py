@@ -666,8 +666,7 @@ class Component(object):
             output.annotate(
                 "assert_component_is_current({}, ...): No reference".format(
                     self._breadcrumb),
-                debug=True,
-            )
+                debug=True)
             raise batou.UpdateNeeded()
         for requirement in requirements:
             self |= requirement
@@ -677,13 +676,9 @@ class Component(object):
             if reference < required:
                 output.annotate(
                     "assert_component_is_current({}, {}): {} < {}".format(
-                        self._breadcrumb,
-                        requirement._breadcrumb,
-                        reference,
-                        required,
-                    ),
-                    debug=True,
-                )
+                        self._breadcrumb, requirement._breadcrumb, reference,
+                        required),
+                    debug=True)
                 raise batou.UpdateNeeded()
 
     def assert_no_subcomponent_changes(self):
@@ -730,15 +725,13 @@ class Component(object):
             raise batou.UpdateNeeded()
         self.assert_no_subcomponent_changes()
 
-    def cmd(
-        self,
-        cmd,
-        silent=False,
-        ignore_returncode=False,
-        communicate=True,
-        env=None,
-        expand=True,
-    ):
+    def cmd(self,
+            cmd,
+            silent=False,
+            ignore_returncode=False,
+            communicate=True,
+            env=None,
+            expand=True):
         """Perform a (shell) command.
 
         Use this to interact with the target system during ``verify``,
@@ -959,18 +952,16 @@ class RootComponent(object):
     ignore = False
     _logs = None
 
-    def __init__(
-        self,
-        name,
-        environment,
-        host,
-        features,
-        ignore,
-        factory,
-        defdir,
-        workdir,
-        overrides=None,
-    ):
+    def __init__(self,
+                 name,
+                 environment,
+                 host,
+                 features,
+                 ignore,
+                 factory,
+                 defdir,
+                 workdir,
+                 overrides=None):
         self.name = name
         self.environment = environment
         self.host = host
@@ -1040,13 +1031,11 @@ class Attribute(object):
 
     """
 
-    def __init__(
-        self,
-        conversion=None,
-        default=ATTRIBUTE_NODEFAULT,
-        expand=True,
-        map=False,
-    ):
+    def __init__(self,
+                 conversion=None,
+                 default=ATTRIBUTE_NODEFAULT,
+                 expand=True,
+                 map=False):
         if isinstance(conversion, str):
             conversion = getattr(self, "convert_{}".format(conversion))
         self.conversion = conversion

@@ -108,17 +108,12 @@ class Deployment(object):
                     "Connection ignored ({}/{})".format(
                         i, len(self.environment.hosts)),
                     bold=False,
-                    red=True,
-                )
+                    red=True)
                 continue
             output.step(
-                hostname,
-                "Connecting via {} ({}/{})".format(
-                    self.environment.connect_method,
-                    i,
-                    len(self.environment.hosts),
-                ),
-            )
+                hostname, "Connecting via {} ({}/{})".format(
+                    self.environment.connect_method, i,
+                    len(self.environment.hosts)))
             sem = threading.Semaphore(5)
             c = Connector(host, sem)
             c.start()

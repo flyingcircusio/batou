@@ -247,12 +247,8 @@ class Environment(object):
         components = parse_host_components(component_list)
         for component, settings in list(components.items()):
             try:
-                self.add_root(
-                    component,
-                    hostname,
-                    settings["features"],
-                    settings["ignore"],
-                )
+                self.add_root(component, hostname, settings["features"],
+                              settings["ignore"])
             except KeyError:
                 self.exceptions.append(MissingComponent(component, hostname))
 
