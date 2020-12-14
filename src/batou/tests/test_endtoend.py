@@ -25,11 +25,11 @@ main: Verifying repository ...
 main: Loading secrets ...
 
 ERROR: Failed loading component file
-      File: /Users/ctheune/Code/batou/examples/errors/components/component5/component.py
+      File: .../examples/errors/components/component5/component.py
  Exception: invalid syntax (component.py, line 1)
 
 ERROR: Failed loading component file
-      File: /Users/ctheune/Code/batou/examples/errors/components/component6/component.py
+      File: .../examples/errors/components/component6/component.py
  Exception: No module named 'asdf'
 
 ERROR: Missing component
