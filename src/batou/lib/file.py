@@ -4,6 +4,7 @@ from batou.utils import dict_merge
 import batou
 import difflib
 import glob
+import grp
 import json
 import os.path
 import pwd
@@ -561,13 +562,10 @@ class Group(FileComponent):
 
     group = None
 
-    def configure(self):
-        super(Group, self).configure()
-        if isinstance(self.group, str):
-            self.group = pwd.getpwnam(self.group)
-
     def verify(self):
         assert os.path.exists(self.path)
+        if isinstance(self.group, str):
+            self.group = grp.getgrnam(self.group).gr_gid
         assert os.stat(self.path).st_gid == self.group
 
     def update(self):

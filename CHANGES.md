@@ -4,7 +4,7 @@
 2.2.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Repair `File(group=)`, it now works just like `File(owner=)`
 
 
 2.2.2 (2020-12-14)

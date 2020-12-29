@@ -8,8 +8,10 @@ from batou.tests.ellipsis import Ellipsis
 from mock import Mock, patch
 from stat import S_IMODE
 import getpass
+import grp
 import json
 import os
+import pwd
 import pytest
 import yaml
 
@@ -1039,6 +1041,40 @@ def test_owner_is_configurable_when_user_doesnt_exist_yet(root):
     file = File("asdf", owner="foobar", content="")
     # This is a regression test against #12911 and ensures that we can
     # configure a file component's owner even if the owner doesn't exist yet.
+    root.component += file
+
+
+def current_group():
+    gid = pwd.getpwnam(getpass.getuser()).pw_gid
+    for group in grp.getgrall():
+        if group.gr_gid == gid:
+            return group.gr_name
+
+
+@patch("os.chown")
+def test_group_lazy(chown, root):
+    with open("asdf", "w"):
+        pass
+    file = File("asdf", group=current_group())
+    root.component += file
+    root.component.deploy()
+    assert not os.chown.called
+
+
+@patch("os.chown")
+@patch("os.stat")
+def test_group_calls_chown(chown, stat, root):
+    os.stat.return_value = Mock()
+    os.stat.return_value.st_gid = 0
+    os.stat.return_value.st_mode = 0
+    file = File("asdf", group=current_group(), content="")
+    root.component += file
+    root.component.deploy()
+    assert os.chown.called
+
+
+def test_group_is_configurable_when_group_doesnt_exist_yet(root):
+    file = File("asdf", group="foobar", content="")
     root.component += file
 
 
