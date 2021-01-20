@@ -15,7 +15,7 @@ A new project is started by placing the batou master command into the project an
     $ mkdir myproject
     $ cd myproject
     $ git init
-    $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/src/bootstrap | sh
+    $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
     $ git commit -m "Start a batou project."
 
 Local
