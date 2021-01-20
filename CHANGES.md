@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.2.3 (unreleased)
+2.2.3 (2021-01-20)
 ------------------
 
 - Fix #124: notifications crashed when trying to display environment names
