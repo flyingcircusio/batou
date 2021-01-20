@@ -83,7 +83,7 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.2.3 (unreleased)
+2.2.3 (2021-01-20)
 ------------------
 
 - Fix #124: notifications crashed when trying to display environment names
