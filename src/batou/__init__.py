@@ -233,7 +233,7 @@ class MissingEnvironment(ConfigurationError):
         self.environment = environment
 
     def __str__(self):
-        return 'Missing environment `{}`'.format(self.environment)
+        return 'Missing environment `{}`'.format(self.environment.name)
 
     def report(self):
         output.error("Missing environment")

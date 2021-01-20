@@ -265,4 +265,4 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
         finally:
             deployment.disconnect()
         output.section("{} FINISHED".format(ACTION), green=True)
-        notify("{} SUCCEEDED".format(ACTION), environment)
+        notify("{} SUCCEEDED".format(ACTION), environment.name)
