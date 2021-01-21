@@ -4,7 +4,11 @@
 2.2.4 (unreleased)
 ------------------
 
-- Fix shipping of deployment code with git-bundle when using a branch. Before the entire branch history was uploaded with each deployment to each host (#131)
+- Repair `File(group=)`, it now works just like `File(owner=)`
+
+- Fix shipping of deployment code with git-bundle when using a
+  branch. Before the entire branch history was uploaded with each
+  deployment to each host (#131)
 
 
 2.2.3 (2021-01-20)
