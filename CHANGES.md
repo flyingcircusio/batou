@@ -4,7 +4,7 @@
 2.2.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix shipping of deployment code with git-bundle when using a branch. Before the entire branch history was uploaded with each deployment to each host (#131)
 
 
 2.2.3 (2021-01-20)
