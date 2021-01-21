@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.0.3 (unreleased)
+2.0.3 (2021-01-21)
 ------------------
 
 - Fix shipping of deployment code with git-bundle when using a branch. Before the entire branch history was uploaded with each deployment to each host (#131)
