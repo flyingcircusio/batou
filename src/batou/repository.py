@@ -270,7 +270,7 @@ class GitPullRepository(GitRepository):
 class GitBundleRepository(GitRepository):
 
     def _ship(self, host):
-        head = host.rpc.git_current_head(self.branch)
+        head = host.rpc.git_current_head()
         if head is None:
             bundle_range = self.branch
         else:
