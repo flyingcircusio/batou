@@ -1,10 +1,21 @@
 ## Changelog
 
 
-2.2.3 (unreleased)
+2.2.4 (unreleased)
 ------------------
 
 - Repair `File(group=)`, it now works just like `File(owner=)`
+
+- Fix shipping of deployment code with git-bundle when using a
+  branch. Before the entire branch history was uploaded with each
+  deployment to each host (#131)
+
+
+2.2.3 (2021-01-20)
+------------------
+
+- Fix #124: notifications crashed when trying to display environment names
+  but used environment objects.
 
 
 2.2.2 (2020-12-14)

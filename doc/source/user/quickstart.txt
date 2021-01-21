@@ -17,7 +17,7 @@ feel free to follow along using Mercurial -- batou can handle both.
   $ mkdir myproject
   $ cd myproject
   $ git init
-  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/src/bootstrap | sh
+  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
   $ git commit -m "Start a batou project."
 
 The project is now initialized and batou is ready to be used.
