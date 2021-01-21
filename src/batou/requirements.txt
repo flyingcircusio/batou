@@ -7,7 +7,7 @@ urllib3==1.25.3
 apipkg==1.5
 Jinja2==2.11.2
 requests==2.22.0
-setuptools==50.3.2
+setuptools==51.3.3
 execnet==1.7.1
 PyYAML==5.1.2
 py==1.8.2
