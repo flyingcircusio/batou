@@ -268,11 +268,10 @@ def hg_update_working_copy(branch):
 git_origin = 'batou-bundle'
 
 
-def git_current_head(branch):
+def git_current_head():
     target = target_directory
     os.chdir(target)
-    id, err = cmd('git rev-parse {branch}'.format(branch=branch),
-                  acceptable_returncodes=[0, 128])
+    id, err = cmd('git rev-parse HEAD', acceptable_returncodes=[0, 128])
     id = id.strip()
     return id if b'unknown revision' not in err else None
 

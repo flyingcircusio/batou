@@ -4,7 +4,7 @@
 2.0.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix shipping of deployment code with git-bundle when using a branch. Before the entire branch history was uploaded with each deployment to each host (#131)
 
 
 2.0.2 (2020-11-18)
@@ -41,8 +41,8 @@
 
 - Fix binary file handling that broke during 2to3 migration and the test
   was doing the wrong thing.
-  
-- Allow marking file content as sensitive, which - for now - will suppress 
+
+- Allow marking file content as sensitive, which - for now - will suppress
   diff generation/logging.
 
 - Allow specifying the service_user attribute per host.
@@ -59,7 +59,7 @@
 - Allow the Content component to predict a change based on
   a not-yet-realized source file on the target system.
 
-- Limit parallel connection setup to 5 connections at once. Also, retry 
+- Limit parallel connection setup to 5 connections at once. Also, retry
   up to 3 times per connection and stagger retries according to a CSMA/CD
   schema. This helps make connection setup more reliable if using SSH jump
   hosts where many connections may cause sshd's MaxStart to start rejecting
@@ -101,7 +101,7 @@
 2.0b9 (2020-05-09)
 ------------------
 
-- Refactor the `appenv` component into smaller components (and move it to `batou.lib.appenv`. 
+- Refactor the `appenv` component into smaller components (and move it to `batou.lib.appenv`.
 
 - Always update pip when installing an appenv - this also fixes the Travis tests.
 
@@ -155,7 +155,7 @@
 - Simplify SSH/sudo and try sudo first. Probably needs further attention once
   we're along the release cycle.
 
-- Fix Python 2.7 virtualenvs - upgrade to latest old-style release of 
+- Fix Python 2.7 virtualenvs - upgrade to latest old-style release of
   `virtualenv`.
 
 ### 2.0b5 (2020-04-15)
