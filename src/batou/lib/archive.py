@@ -11,7 +11,7 @@ import shutil
 
 class Extract(Component):
 
-    namevar = 'archive'
+    namevar = "archive"
 
     create_target_dir = True
     target = None
@@ -25,13 +25,16 @@ class Extract(Component):
             if candidate.can_handle(self.archive):
                 break
         else:
-            raise ValueError("No handler found for archive '{}'."
-                             .format(self.archive))
+            raise ValueError("No handler found for archive '{}'.".format(
+                self.archive))
         extractor = candidate(
             self.archive,
             target=self.target,
             create_target_dir=self.create_target_dir,
-            strip=self.strip)
+            strip=self.strip,
+        )
+        # Testability
+        self.extractor = extractor
         self += extractor
         self.target = extractor.target
 
@@ -42,7 +45,7 @@ class Extract(Component):
 
 class Extractor(Component):
 
-    namevar = 'archive'
+    namevar = "archive"
 
     _supports_strip = False
 
@@ -76,7 +79,7 @@ class Extractor(Component):
             self += d
             self.target = d.path
         else:
-            self.target = self.map('.')
+            self.target = self.map(".")
 
     def verify(self):
         # If the archive is not there yet, then it will likely be downloaded
@@ -87,9 +90,14 @@ class Extractor(Component):
         # preservation?
         for filename in self.get_names_from_archive():
             filename = os.path.join(*filename.split(os.path.sep)[self.strip:])
+            filename = os.path.join(self.target, filename)
+            if os.path.isdir(filename):
+                # We can't compare the ctime of things like / or other
+                # directories that might be outside of our control as their
+                # ctimes won't change when extracting over them.
+                continue
             self.assert_file_is_current(
-                os.path.join(self.target, filename),
-                [self.archive], key='st_ctime')
+                filename, [self.archive], key="st_ctime")
 
     @property
     def namevar_for_breadcrumb(self):
@@ -98,44 +106,44 @@ class Extractor(Component):
 
 class Unzip(Extractor):
 
-    suffixes = ('.zip',)
+    suffixes = (".zip",)
 
     def get_names_from_archive(self):
         with ZipFile(self.archive) as f:
             return f.namelist()
 
     def update(self):
-        self.cmd(self.expand(
-            'unzip -o {{component.archive}} -d {{component.target}}'))
+        self.cmd(
+            self.expand(
+                "unzip -o {{component.archive}} -d {{component.target}}"))
 
 
 class Untar(Extractor):
 
-    suffixes = ('.tar.gz', '.tar', '.tar.bz2', '.tgz', 'tar.xz')
-    exclude = ('._*',)
+    suffixes = (".tar.gz", ".tar", ".tar.bz2", ".tgz", "tar.xz")
+    exclude = ("._*",)
     _supports_strip = True
 
     def configure(self):
         super(Untar, self).configure()
-        self.exclude = ' '.join("--exclude='{}'".format(x)
+        self.exclude = " ".join("--exclude='{}'".format(x)
                                 for x in self.exclude)
 
     def get_names_from_archive(self):
         # Note, this does not work combined with strip ... :/
         stdout, stderr = self.cmd(
-            'tar tf {{component.archive}} {{component.exclude}}')
+            "tar tf {{component.archive}} {{component.exclude}}")
         return stdout.splitlines()
 
     def update(self):
-        self.cmd(
-            'tar xf {{component.archive}} -C {{component.target}} '
-            '--strip-components {{component.strip}}')
+        self.cmd("tar xf {{component.archive}} -C {{component.target}} "
+                 "--strip-components {{component.strip}}")
 
 
 class DMGVolume(object):
     """Wrapper to mount a .dmg volume and operate on it."""
 
-    HDIUTIL = '/usr/bin/hdiutil'
+    HDIUTIL = "/usr/bin/hdiutil"
     volume_path = None
 
     def __init__(self, path):
@@ -157,33 +165,32 @@ class DMGVolume(object):
     def _mount(self):
         """Mount the .dmg file as volume."""
         if not os.path.exists(self.path):
-            raise UserWarning('Path %r does not exist.' % self.path)
+            raise UserWarning("Path %r does not exist." % self.path)
         volume_path = None
-        mount_plist, _ = cmd(
-            [self.HDIUTIL, 'mount', '-plist', self.path], encoding=None)
-        mount_points = plistlib.loads(
-            mount_plist)['system-entities']
+        mount_plist, _ = cmd([self.HDIUTIL, "mount", "-plist", self.path],
+                             encoding=None)
+        mount_points = plistlib.loads(mount_plist)["system-entities"]
         if len(mount_points) == 1:
             # maybe there is no content-hint
-            volume_path = mount_points[0]['mount-point']
+            volume_path = mount_points[0]["mount-point"]
         else:
             for entity in mount_points:
-                if entity.get('content-hint') == 'Apple_HFS':
-                    volume_path = entity['mount-point']
+                if entity.get("content-hint") == "Apple_HFS":
+                    volume_path = entity["mount-point"]
                     break
         if volume_path is None:
-            raise UserWarning('Did not find mounted volume.')
+            raise UserWarning("Did not find mounted volume.")
         return volume_path
 
     def _unmount(self):
         """Unmount and eject the mounted .dmg file."""
         if self.volume_path is not None:
-            cmd([self.HDIUTIL, 'eject', self.volume_path])
+            cmd([self.HDIUTIL, "eject", self.volume_path])
 
 
 class DMGExtractor(Extractor):
 
-    suffixes = ('.dmg',)
+    suffixes = (".dmg",)
 
     def __enter__(self):
         self.volume = DMGVolume(self.archive)

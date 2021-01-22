@@ -12,7 +12,7 @@ class Developer(object):
         if not os.path.isabs(path):
             return path
         path = path[1:]
-        path = os.path.join(self.environment.workdir_base, '_', path)
+        path = os.path.join(self.environment.workdir_base, "_", path)
         dir = os.path.dirname(path)
         if not os.path.exists(dir):
             os.makedirs(dir)
@@ -24,7 +24,7 @@ class Map(object):
     def __init__(self, environment, config):
         self._map = []
         for key, value in list(config.items()):
-            if not key.startswith('/'):
+            if not key.startswith("/"):
                 continue
             self._map.append((key, value))
         self._map.sort(key=lambda x: len(x[0]), reverse=True)

@@ -14,8 +14,7 @@ def buildout(**kw):
 
 def test_update_should_pass_config_file_name(root):
     b = buildout(
-        python='2.7', setuptools='1.0',
-        config=File('myown.cfg', content=''))
+        python="2.7", setuptools="1.0", config=File("myown.cfg", content=""))
     root.component += b
     b.update()
 
@@ -25,9 +24,7 @@ def test_update_should_pass_config_file_name(root):
 
 
 def test_update_should_pass_custom_timeout(root):
-    b = buildout(
-        python='2.7', setuptools='1.0',
-        timeout=40)
+    b = buildout(python="2.7", setuptools="1.0", timeout=40)
     b.update()
 
     assert b.cmd.call_count == 1
@@ -39,12 +36,18 @@ def test_update_should_pass_custom_timeout(root):
 @pytest.mark.timeout(60)
 def test_runs_buildout_successfully(root):
     b = Buildout(
-        python='2.7', version='2.9.5', setuptools='36.7.2',
-        config=File('buildout.cfg', source=pkg_resources.resource_filename(
-            __name__, 'buildout-example.cfg')))
+        python="2.7",
+        version="2.9.5",
+        setuptools="36.7.2",
+        config=File(
+            "buildout.cfg",
+            source=pkg_resources.resource_filename(__name__,
+                                                   "buildout-example.cfg"),
+        ),
+    )
     root.component += b
     root.component.deploy()
-    assert os.path.isdir(os.path.join(
-        root.environment.workdir_base, 'mycomponent/parts'))
-    assert os.path.isfile(os.path.join(
-        root.environment.workdir_base, 'mycomponent/bin/py'))
+    assert os.path.isdir(
+        os.path.join(root.environment.workdir_base, "mycomponent/parts"))
+    assert os.path.isfile(
+        os.path.join(root.environment.workdir_base, "mycomponent/bin/py"))

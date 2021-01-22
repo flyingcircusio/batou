@@ -1,10 +1,6 @@
 <!-- DO NOT EDIT THE README.md FILE. IT IS GENERATED FROM README.md.in AND
      CHANGES.md BECAUSE Github CANNOT DO INCLUDES -->
 
-<p align="right">
-    <a href="https://travis-ci.org/flyingcircusio/batou"><img title="Current Build Status" src="https://travis-ci.org/flyingcircusio/batou.svg?branch=master"></a>
-</p>
-
 <img width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
 
 batou helps you to automate your application deployments:
@@ -16,11 +12,11 @@ batou helps you to automate your application deployments:
 Getting started with a new project is easy:
 
 ```console
-$ mkdir myproject
-$ cd myproject
-$ curl https://raw.githubusercontent.com/flyingcircusio/batou/master/src/batou/bootstrap-template -o batou
-$ chmod +x batou
-$ ./batou
+mkdir myproject
+cd myproject
+git init
+curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
+git commit -m "Start a batou project."
 ```
 
 Here's a minimal application model:

@@ -4,18 +4,16 @@ import pwd
 import subprocess
 import traceback
 
-
 # Satisfy flake8 and support testing.
 try:
     channel
 except NameError:
     channel = None
 
-
 deployment = None
 environment = None
-target_directory = ''
-deployment_base = ''
+target_directory = ""
+deployment_base = ""
 
 # The output class should really live in _output. However, to support
 # bootstrapping we define it here and then re-import in the _output module.
@@ -61,11 +59,11 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        lines = message.split('\n')
-        message = '\n'.join(lines)
+        lines = message.split("\n")
+        message = "\n".join(lines)
         self.line(message, **format)
 
-    def tabular(self, key, value, separator=': ', debug=False, **kw):
+    def tabular(self, key, value, separator=": ", debug=False, **kw):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
@@ -76,7 +74,7 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        _format = {'bold': True}
+        _format = {"bold": True}
         _format.update(format)
         self.backend.sep("=", title, **_format)
 
@@ -88,9 +86,9 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        _format = {'bold': True}
+        _format = {"bold": True}
         _format.update(format)
-        self.line('{}: {}'.format(context, message), **_format)
+        self.line("{}: {}".format(context, message), **_format)
 
     def error(self, message, exc_info=None, debug=False):
         if debug and not self.enable_debug:
@@ -98,10 +96,14 @@ class Output(object):
         self.flush_buffer()
         self.step("ERROR", message, red=True)
         if exc_info:
-            tb = traceback.format_exception(*exc_info)
-            tb = ''.join(tb)
-            tb = '      ' + tb.replace('\n', '\n      ') + '\n'
-            self.backend.write(tb, red=True)
+            if self.enable_debug:
+                out = traceback.format_exception(*exc_info)
+            else:
+                etype, value, _ = exc_info
+                out = traceback.format_exception_only(etype, value)
+            out = "".join(out)
+            out = "      " + out.replace("\n", "\n      ") + "\n"
+            self.backend.write(out, red=True)
 
 
 class ChannelBackend(object):
@@ -110,40 +112,43 @@ class ChannelBackend(object):
         self.channel = channel
 
     def _send(self, output_cmd, *args, **kw):
-        self.channel.send(('batou-output', output_cmd, args, kw))
+        self.channel.send(("batou-output", output_cmd, args, kw))
 
     def line(self, message, **format):
-        self._send('line', message, **format)
+        self._send("line", message, **format)
 
     def sep(self, sep, title, **format):
-        self._send('sep', sep, title, **format)
+        self._send("sep", sep, title, **format)
 
     def write(self, content, **format):
-        self._send('write', content, **format)
+        self._send("write", content, **format)
 
 
 class Deployment(object):
 
     environment = None
 
-    def __init__(self, env_name, host_name, overrides, host_data,
+    def __init__(self, env_name, host_name, overrides, secret_files, host_data,
                  timeout, platform):
         self.env_name = env_name
         self.host_name = host_name
         self.overrides = overrides
         self.host_data = host_data
+        self.secret_files = secret_files
         self.timeout = timeout
         self.platform = platform
 
     def load(self):
         from batou.environment import Environment
-        self.environment = Environment(
-            self.env_name, self.timeout, self.platform)
+
+        self.environment = Environment(self.env_name, self.timeout,
+                                       self.platform)
         self.environment.deployment = self
         self.environment.load()
         self.environment.overrides = self.overrides
         for hostname, data in self.host_data.items():
             self.environment.hosts[hostname].data.update(data)
+        self.environment.secret_files = self.secret_files
         self.environment.configure()
 
     def deploy(self, root, predict_only):
@@ -153,7 +158,7 @@ class Deployment(object):
 
 def lock():
     # XXX implement!
-    return 'OK'
+    return "OK"
 
 
 class CmdError(Exception):
@@ -167,19 +172,20 @@ class CmdError(Exception):
     def report(self):
         output.error(self.cmd)
         output.tabular("Return code", str(self.returncode), red=True)
-        output.line('STDOUT', red=True)
-        output.annotate(self.stdout.decode('utf-8', errors='replace'))
-        output.line('STDERR', red=True)
-        output.annotate(self.stderr.decode('utf-8', errors='replace'))
+        output.line("STDOUT", red=True)
+        output.annotate(self.stdout.decode("utf-8", errors="replace"))
+        output.line("STDERR", red=True)
+        output.annotate(self.stderr.decode("utf-8", errors="replace"))
 
 
 def cmd(c, acceptable_returncodes=[0]):
     process = subprocess.Popen(
-        ['LANG=C LC_ALL=C LANGUAGE=C {}'.format(c)],
+        ["LANG=C LC_ALL=C LANGUAGE=C {}".format(c)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         stdin=subprocess.PIPE,
-        shell=True)
+        shell=True,
+    )
     stdout, stderr = process.communicate()
     # We do not have enough knowledge here to decode so we keep
     # stdout and stderr as byte strings for now.
@@ -196,15 +202,15 @@ def ensure_repository(target, method):
     if not os.path.exists(target):
         os.makedirs(target)
 
-    if method in ['hg-pull', 'hg-bundle']:
-        if not os.path.exists(target + '/.hg'):
+    if method in ["hg-pull", "hg-bundle"]:
+        if not os.path.exists(target + "/.hg"):
             cmd("hg init {}".format(target))
-    elif method in ['git-pull', 'git-bundle']:
-        if not os.path.exists(target + '/.git'):
+    elif method in ["git-pull", "git-bundle"]:
+        if not os.path.exists(target + "/.git"):
             cmd("git init {}".format(target))
-    elif method == 'rsync':
+    elif method == "rsync":
         pass
-    elif method == 'local':
+    elif method == "local":
         pass
     else:
         raise RuntimeError("Unknown repository method: {}".format(method))
@@ -224,15 +230,15 @@ def hg_current_heads():
     target = target_directory
     os.chdir(target)
     result = []
-    id, _ = cmd('hg id -i')
+    id, _ = cmd("hg id -i")
     id = id.strip()
-    if id == '000000000000':
+    if id == "000000000000":
         return [id]
-    heads, _ = cmd('hg heads')
-    for line in heads.split('\n'):
-        if not line.startswith('changeset:'):
+    heads, _ = cmd("hg heads")
+    for line in heads.split("\n"):
+        if not line.startswith("changeset:"):
             continue
-        line = line.split(':')
+        line = line.split(":")
         result.append(line[2])
     return result
 
@@ -251,7 +257,7 @@ def hg_unbundle_code():
     # XXX does this protect us from accidental new heads?
     target = target_directory
     os.chdir(target)
-    cmd('hg -y unbundle batou-bundle.hg')
+    cmd("hg -y unbundle batou-bundle.hg")
 
 
 def hg_update_working_copy(branch):
@@ -265,62 +271,61 @@ def hg_update_working_copy(branch):
 # `GitBundleRepository`). Hence setting the origin inside `git_unbundle_code`
 # doesn't work very well. OTOH `git_pull_code` is called regardles of the
 # repository state. So default to `git-bundle`, and only change for pull.
-git_origin = 'batou-bundle'
+git_origin = "batou-bundle"
 
 
-def git_current_head(branch):
+def git_current_head():
     target = target_directory
     os.chdir(target)
-    id, err = cmd('git rev-parse {branch}'.format(branch=branch),
-                  acceptable_returncodes=[0, 128])
+    id, err = cmd('git rev-parse HEAD', acceptable_returncodes=[0, 128])
     id = id.strip()
-    return id if b'unknown revision' not in err else None
+    return id if b"unknown revision" not in err else None
 
 
 def git_pull_code(upstream, branch):
     global git_origin
-    git_origin = 'batou-pull'
+    git_origin = "batou-pull"
     target = target_directory
     os.chdir(target)
-    out, err = cmd('git remote -v')
+    out, err = cmd("git remote -v")
     for line in out.splitlines():
         line = line.strip()
-        line = line.replace(' ', '\t')
+        line = line.replace(" ", "\t")
         if not line:
             continue
-        name, remote, _ = line.split('\t', 3)
+        name, remote, _ = line.split("\t", 3)
         if name != git_origin:
             continue
         if remote != upstream:
-            cmd('git remote remove {origin}'.format(origin=git_origin))
+            cmd("git remote remove {origin}".format(origin=git_origin))
         # The batou-pull remote is correctly configured.
         break
     else:
-        cmd('git remote add {origin} {upstream}'.format(origin=git_origin,
-                                                        upstream=upstream))
-    cmd('git fetch batou-pull')
+        cmd("git remote add {origin} {upstream}".format(
+            origin=git_origin, upstream=upstream))
+    cmd("git fetch batou-pull")
 
 
 def git_unbundle_code():
     target = target_directory
     os.chdir(target)
-    out, err = cmd('git remote -v')
-    if b'batou-bundle' not in out:
-        cmd('git remote add {origin} batou-bundle.git'.format(
-                origin=git_origin))
-    cmd('git fetch {origin}'.format(origin=git_origin))
+    out, err = cmd("git remote -v")
+    if b"batou-bundle" not in out:
+        cmd("git remote add {origin} batou-bundle.git".format(
+            origin=git_origin))
+    cmd("git fetch {origin}".format(origin=git_origin))
 
 
 def git_update_working_copy(branch):
-    cmd('git reset --hard {origin}/{branch}'.format(origin=git_origin,
-                                                    branch=branch))
-    id, _ = cmd('git rev-parse HEAD')
-    return id.strip().decode('ascii')
+    cmd("git reset --hard {origin}/{branch}".format(
+        origin=git_origin, branch=branch))
+    id, _ = cmd("git rev-parse HEAD")
+    return id.strip().decode("ascii")
 
 
 def build_batou():
     os.chdir(deployment_base)
-    cmd('./batou --help')
+    cmd("./batou --help")
 
 
 def setup_deployment(*args):
@@ -336,12 +341,14 @@ def deploy(root, predict_only=False):
 
 def root_dependencies():
     deps = {}
-    for root, dependencies in (
-            deployment.environment.root_dependencies().items()):
+    for (
+            root,
+            dependencies,
+    ) in deployment.environment.root_dependencies().items():
         key = (root.host.fqdn, root.name)
         deps[key] = {
-            'dependencies': [(r.host.fqdn, r.name) for r in dependencies],
-            'ignore': root.ignore}
+            "dependencies": [(r.host.fqdn, r.name) for r in dependencies],
+            "ignore": root.ignore,}
     return deps
 
 
@@ -351,6 +358,7 @@ def whoami():
 
 def setup_output():
     from batou._output import output
+
     output.backend = ChannelBackend(channel)
 
 
@@ -359,7 +367,7 @@ class DummyException(Exception):
     pass
 
 
-if __name__ == '__channelexec__':
+if __name__ == "__channelexec__":
     output = Output(ChannelBackend(channel))
     while not channel.isclosed():
         task, args, kw = channel.receive()
@@ -370,31 +378,49 @@ if __name__ == '__channelexec__':
             batou = None
         try:
             result = locals()[task](*args, **kw)
-            channel.send(('batou-result', result))
-        except getattr(batou, 'ConfigurationError', DummyException) as e:
-            if e not in deployment.environment.exceptions:
-                deployment.environment.exceptions.append(e)
-            # Report on why configuration failed.
+            channel.send(("batou-result", result))
+        except getattr(batou, "ConfigurationError",
+                       DummyException) as exception:
+            SilentConfigurationError = getattr(batou,
+                                               "SilentConfigurationError",
+                                               DummyException)
+            ReportingException = getattr(batou, "ReportingException",
+                                         DummyException)
+
+            environment = deployment.environment
+            if exception not in environment.exceptions:
+                environment.exceptions.append(e)
+
+            environment.exceptions = list(
+                filter(lambda e: not isinstance(e, SilentConfigurationError),
+                       environment.exceptions))
             deployment.environment.exceptions.sort(key=lambda x: x.sort_key)
 
             for exception in deployment.environment.exceptions:
-                if isinstance(e, batou.SilentConfigurationError):
-                    continue
-                exception.report()
+                if isinstance(exception, ReportingException):
+                    output.line('')
+                    exception.report()
+                else:
+                    output.line('')
+                    output.error("Unexpected exception")
+                    tb = traceback.TracebackException.from_exception(exception)
+                    for line in tb.format():
+                        output.line('\t' + line.strip(), red=True)
 
             batou.output.section(
                 "{} ERRORS - CONFIGURATION FAILED".format(
-                    len(deployment.environment.exceptions)), red=True)
-            channel.send(('batou-configuration-error', None))
-        except getattr(batou, 'DeploymentError', DummyException) as e:
+                    len(deployment.environment.exceptions)),
+                red=True)
+            channel.send(("batou-configuration-error", None))
+        except getattr(batou, "DeploymentError", DummyException) as e:
             e.report()
-            channel.send(('batou-deployment-error', None))
+            channel.send(("batou-deployment-error", None))
         except Exception as e:
             # I voted for duck-typing here as we may be running in the
             # bootstrapping phase and don't have access to all classes yet.
-            if hasattr(e, 'report'):
+            if hasattr(e, "report"):
                 e.report()
-                channel.send(('batou-error', None))
+                channel.send(("batou-error", None))
             else:
                 tb = traceback.format_exc()
-                channel.send(('batou-unknown-error', tb))
+                channel.send(("batou-unknown-error", tb))

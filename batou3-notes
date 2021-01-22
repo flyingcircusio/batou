@@ -1,0 +1,160 @@
+programmatische definition des environments während
+der (konvergenten) configure phase
+
+entdecken neuer hosts
+	- hosts sind  komponenten die selbst verbindungen repräsentieren
+	- komponenten können stellvertreter woanders hin sein
+	- fakten und daten zum kontroller übertragen
+	- übergreifende skripte die nicht nur lokale logik haben
+	- was ist das top-level ... ein environment?
+		- oder ist 'deploy' nur ein task und environments
+		  fallen als konzept weg? oder als aspekt eines tasks? (tue X in environment bla),
+		  d.h. ein (task) deployment wird von einem
+		  skript konstruiert mit model und environment
+		  als input
+	- komponente die daten irgendwo hinliefert ("fetch")
+	- ordering nicht nur am tree (siehe host configure)
+	- komponenten abstrahieren eine verify/update/cmd syntax
+		- je nach top-komponente
+
+
+	- workdirs und komponenten sind interessant: wann gibt es ein workdir und wann nicht?
+		- implizite workdirs verorten das batou mit seinem ~batou/deployment ziel
+		- explizite workdirs (für die es defaults gibt) wären interessant
+
+
+
+
+	- konfigurations-konvergenz mit reaktion auf die faktenlage:
+
+		- tree muss gebaut werden, daran die fakten angefüttert
+		- wenn die fakten sich ändern und jmd zugegriffen   hat (hierarchiches/globbing?) dann fakten wieder updaten und
+		- fakten als generischere variante von provide/require?
+
+
+
+	- was ist die einheitliche API im tree und wie variieren wir? procurves können bestimmte sachen ja nicht so einfach
+
+
+	- task typen: ssh (single), pssh, query, grep, find, download ...
+
+
+	- controller als daemon (der connections haelt und neu aufbaut, cli als wrapper
+
+		- automatischer shutdown des controllers nach x zeit inaktivität in bestimmten situationen
+
+	- controller hält das modell (nicht der erste host) aber wir führen code aus der daten erzeugt und nach lokal überträgt um das modell einheitlich zu halten und übergreifende entscheidungen coden zu können (wir wollen ja fakten remote einsammeln und dann lokal zu einem modell zusammenziehen)
+
+
+	- nicht per sub-classing sonder per decorator
+
+		- was sind die obereinheiten die wir haben?
+
+			(subject, 		predicate,         object ... )
+				|				|				|
+				connection     	  policy      component
+
+
+		@task
+		class Deploy(object):
+
+		@subject
+
+
+		@component
+		class Foobar(object):
+
+			def configure()
+
+			def verify()
+
+			def update()
+
+
+		- wie kann man komponenten-übergreifende sachen ausdrücken?
+
+		@ensure
+		def everything_is_up
+
+
+
+		@do
+		def deploy():
+
+
+
+		@define
+		def
+
+
+
+		@get
+
+
+		class Foo(object):
+
+			def ensure(self):
+				...
+
+
+
+
+
+
+				- "lockfile" pro user@host um eine ressource zu markieren, dass sie von einer anderen controller-instanz (z.b. local user vs. pipeline) benutzt wird
+
+
+		- sinnvolle lernkurve?
+
+		- kann ich mit einer einzelnen Instanz (local) anfangen und das dann immer komplizierter machen?
+		 	-> instanz an remote host
+		 	-> host an environment
+		 	-> environment an pipeline
+
+		 - ohne brüche in den konzepten beim verkomplizieren?
+
+
+-- model --
+
+
+	class Frontend(Host):
+
+		def configure(self):
+			self += Nginx()
+			self += Foobar()
+			self += Blubble()
+
+
+-- environment --
+
+
+map Frontend Component/role to
+
+
+
+
+-- deploy.py task ---
+
+
+
+
+-- backup.py task --
+
+
+
+
+class Foobar(ProcurveSwitch):
+
+	def configure(self):
+
+
+
+
+
+
+
+
+
+for x in range(1, 10):
+	# tools für einfacheres hostname-templating
+	host = Host(f'foobar{x}')

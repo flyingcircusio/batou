@@ -9,7 +9,6 @@ Jinja2::
 
 """
 
-
 import jinja2
 import io
 from batou import output
@@ -24,9 +23,9 @@ class TemplateEngine(object):
     @classmethod
     def get(cls, enginename):
         """Return TemplateEngine instance for `enginename`."""
-        if enginename.lower() == 'jinja2':
+        if enginename.lower() == "jinja2":
             return Jinja2Engine()
-        raise NotImplementedError('template engine not known', enginename)
+        raise NotImplementedError("template engine not known", enginename)
 
     def template(self, sourcefile, args):
         """Render template from `sourcefile` and return the value.
@@ -47,19 +46,21 @@ class Jinja2Engine(TemplateEngine):
     def __init__(self, *args, **kwargs):
         super(Jinja2Engine, self).__init__(*args, **kwargs)
         self.env = jinja2.Environment(
-            line_statement_prefix='@@',
+            line_statement_prefix="@@",
             keep_trailing_newline=True,
-            undefined=jinja2.StrictUndefined)
+            undefined=jinja2.StrictUndefined,
+        )
 
     def _render_template_file(self, sourcefile, args):
-        tmpl = open(sourcefile).read()
+        with open(sourcefile) as f:
+            tmpl = f.read()
         tmpl = self.env.from_string(tmpl)
         output = io.StringIO()
         print(tmpl.render(args), file=output)
         return output
 
-    def expand(self, templatestr, args, identifier='<template>'):
-        if len(templatestr) > 100*1024:
+    def expand(self, templatestr, args, identifier="<template>"):
+        if len(templatestr) > 100 * 1024:
             output.error(
                 "You are trying to render a template that is bigger than "
                 "100KiB we've seen that Jinja can crash at large templates "

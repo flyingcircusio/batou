@@ -4,10 +4,15 @@ Install batou's requirements on Fedora / openSUSE / RHEL / CentOS
 On rpm-based Linux distributions software packages are usually installed using
 `yum <http://yum.baseurl.org/>`_.
 
-Python 2.7
-~~~~~~~~~~
 
-In many distributions, Python 2.7 should ship as the default system Python and
+.. note:: RPM-based environments are not native for any of the developers and
+    not tested systematically. Let us know if any of this information is
+    incorrect and we'll gladly update this.
+
+Python 3
+~~~~~~~~
+
+In many distributions, Python 3 should ship as the default system Python and
 should therefore already be installed. If not, you can install it by executing:
 
 .. code-block:: bash

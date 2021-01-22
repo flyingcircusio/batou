@@ -1,10 +1,6 @@
 <!-- DO NOT EDIT THE README.md FILE. IT IS GENERATED FROM README.md.in AND
      CHANGES.md BECAUSE Github CANNOT DO INCLUDES -->
 
-<p align="right">
-    <a href="https://travis-ci.org/flyingcircusio/batou"><img title="Current Build Status" src="https://travis-ci.org/flyingcircusio/batou.svg?branch=master"></a>
-</p>
-
 <img width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
 
 batou helps you to automate your application deployments:
@@ -16,11 +12,11 @@ batou helps you to automate your application deployments:
 Getting started with a new project is easy:
 
 ```console
-$ mkdir myproject
-$ cd myproject
-$ curl https://raw.githubusercontent.com/flyingcircusio/batou/master/src/batou/bootstrap-template -o batou
-$ chmod +x batou
-$ ./batou
+mkdir myproject
+cd myproject
+git init
+curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
+git commit -m "Start a batou project."
 ```
 
 Here's a minimal application model:
@@ -87,10 +83,103 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.0b13 (unreleased)
+2.2.3 (2021-01-20)
+------------------
+
+- Fix #124: notifications crashed when trying to display environment names
+  but used environment objects.
+
+
+2.2.2 (2020-12-14)
+------------------
+
+- Another brownbag release - connecting to remote hosts was broken
+  after refactoring due to missing test coverage. Fixed and 
+  added coverage.
+
+
+2.2.1 (2020-12-14)
+------------------
+
+- Fix error reporting that was partially broken in 2.2.
+
+
+2.2 (2020-12-10)
+----------------
+
+- Add `secret files` in addition to secret overrides. Using
+  `./batou secrets edit {environment} {example.yaml}` you can
+  now create multiple files that are all encrypted using the
+  environment's keys.
+
+  To access those secrets you can read them from `environment.secret_files['{example.yaml}']` in your deployment.
+
+  This feature is useful to embed longer data or formats that are
+  hard to embed syntactically into the cfg/ini style of the
+  main secrets file.
+
+- Fix bug preventing to use `nagios=True` in Supervisor components,
+  introduced in batou 2.1.
+  ([#98](https://github.com/flyingcircusio/batou/issues/98))
+
+- Make batou compatible with Python 3.9, ie asyncio's `all_tasks`
+  has been moved to a new location.
+  ([#93](https://github.com/flyingcircusio/batou/issues/93))
+
+- Actually silence SilentConfiguration errors.
+
+- Consider unknown secret overrides (components and attributes)
+  to be a configuration error.
+
+2.1 (2020-09-09)
+----------------
+
+- Bug 81: provide explicit support for JSON- and YAML-files with
+  proper integration to the new diff support and the ability to
+  update data through a "dict merge" approach.
+
+- Bug 77: use `ConfigUpdater` so comments are kept when editing secrets.
+
+- Bug 1: provide better error message if remote user does not exist.
+
+  This is also cleaning up the general error output and we're now hiding
+  full tracebacks unless batou is run with --debug. People keep complaining
+  about traceback output and I agree that it makes things harder to read
+  for someone not used to scanning through them quickly.
+
+- Bug 63: provide better error message if GPG is missing.
+
+- Bug 65: don't allow passing undefined namevars or undefined attributes
+  to the component constructor. Also prohibit (accidentally) overriding
+  methods.
+
+- Bug: zsh compatibility on the remote host was broken with more
+  complex sudo mechanism. Added a ZSH workaround.
+
+
+2.0 (2020-07-15)
+----------------
+
+- Ignore directories when verifying archive extractions to avoid
+  false non-convergence.
+
+
+2.0b14 (2020-06-25)
 -------------------
 
-- Allow marking file content as sensitive, which - for now - will suppress 
+- Make sudo properly conditional if we log in directly with the service user,
+  but avoid adding a re-connect performance penalty.
+
+
+2.0b13 (2020-06-25)
+-------------------
+
+- Fix git clone when cloning into the component work directory. #27
+
+- Fix binary file handling that broke during 2to3 migration and the test
+  was doing the wrong thing.
+
+- Allow marking file content as sensitive, which - for now - will suppress
   diff generation/logging.
 
 - Allow specifying the service_user attribute per host.
@@ -107,7 +196,7 @@ The project is licensed under the 2-clause BSD license.
 - Allow the Content component to predict a change based on
   a not-yet-realized source file on the target system.
 
-- Limit parallel connection setup to 5 connections at once. Also, retry 
+- Limit parallel connection setup to 5 connections at once. Also, retry
   up to 3 times per connection and stagger retries according to a CSMA/CD
   schema. This helps make connection setup more reliable if using SSH jump
   hosts where many connections may cause sshd's MaxStart to start rejecting
@@ -120,6 +209,9 @@ The project is licensed under the 2-clause BSD license.
 
 - Improve verify() of archive handler so we predict a change if
   something goes wrong (like not having the archive downloaded yet)
+
+- Fix "is supervisor program running" check if it is stopped or exited
+
 
 2.0b12 (2020-05-13)
 -------------------
@@ -146,7 +238,7 @@ The project is licensed under the 2-clause BSD license.
 2.0b9 (2020-05-09)
 ------------------
 
-- Refactor the `appenv` component into smaller components (and move it to `batou.lib.appenv`. 
+- Refactor the `appenv` component into smaller components (and move it to `batou.lib.appenv`.
 
 - Always update pip when installing an appenv - this also fixes the Travis tests.
 
@@ -200,7 +292,7 @@ The project is licensed under the 2-clause BSD license.
 - Simplify SSH/sudo and try sudo first. Probably needs further attention once
   we're along the release cycle.
 
-- Fix Python 2.7 virtualenvs - upgrade to latest old-style release of 
+- Fix Python 2.7 virtualenvs - upgrade to latest old-style release of
   `virtualenv`.
 
 ### 2.0b5 (2020-04-15)

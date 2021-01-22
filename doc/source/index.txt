@@ -5,12 +5,11 @@ batou
 
 .. raw:: html
 
-    <a href="https://bitbucket.org/flyingcircus/batou"
-       style="float:right;border-bottom:none">
-      <img src="https://bitbucket.org/zgramana/bitbucket-ribbons/raw/988dffc5fbeb/png/bitbucket-ribbon-dark-gray.png" />
-    </a>
+  <a href="https://github.com/flyingcircusio/batou" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
 
 Release v\ |version|.
+
+|build-status| |github-stars| |badge-opensource| |badge-downloads| |badge-python|
 
 batou is a BSD licensed utility, written in Python, to configure
 development and production environments for web applications.
@@ -29,7 +28,7 @@ is:
 
 .. code-block:: console
 
- $ hg clone https://bitbucket.org/example/myproject
+ $ git clone https://github.com/myorg/myproject
  $ cd myproject
  $ ./batou deploy dev
 
@@ -64,7 +63,7 @@ VirtualEnv and asks Supervisor to run it:
   class MyApp(Component):
 
     def configure(self):
-      venv = VirtualEnv('2.7')
+      venv = VirtualEnv('3.5')
       self += venv
       venv += Package('myapp')
       self += Program('myapp', command='bin/myapp')
@@ -106,8 +105,11 @@ Features
 --------
 
 * Run the same command to deploy locally, to Vagrant, or to remote clusters.
-* Use different versions of batou in different projects. Ensure everybody uses the same version.
+* Use different versions of batou in different projects. batou automatically
+  ensures everyone uses the correct version in each project and updates when
+  needed.
 * Check before deploying whether your configuration is internally consistent and consistent with what has been deployed before.
+* Predict changes and predict what further changes will be triggered.
 * Convergent, idempotent components are fast to deploy.
 * Resume partial deployments where they were aborted.
 * Store database passwords, SSH keys, SSL certificates or other secret data with on the-fly decryption. Manage access to secrets per environment and user.
@@ -115,13 +117,13 @@ Features
 * Dynamically connect services during deployments and track their dependencies.
 * Few run-time requirements on your servers: only Python 2.7 and SSH are needed.
 * Use pre-defined components to manage files, python environments, supervisor, cronjobs, and more.
-* Writing your own components is easy and you can use  additional Python package dependencies.
+* Writing your own components is easy and you can use additional Python
+  package dependencies.
 
 User guide
 ----------
 
 This part of the documentation, begins with some background information about Requests, then focuses on step-by-step instructions for getting the most out of batou.
-
 
 .. toctree::
    :maxdepth: 2
@@ -205,9 +207,19 @@ Resources
     :maxdepth: 1
 
     changes
+    upgrading
 
 Presentations from conferences:
 
 * `EuroPython 2013 - batou (talk slides) <http://www.slideshare.net/theuni/batou-multicomponenthostenvironment-deployment>`_
 * `PyConDE 2013 - batou (talk video, German) <ttp://pyvideo.org/video/2436/batou-multicomponenthostenvironment-depl>`_
 
+.. |build-status| image:: https://img.shields.io/travis/flyingcircusio/batou
+
+.. |github-stars| image:: https://img.shields.io/github/stars/flyingcircusio/batou.svg?style=social&label=Star&maxAge=2592000
+
+.. |badge-opensource| image:: https://badges.frapsoft.com/os/v3/open-source.svg?v=103
+
+.. |badge-downloads| image:: https://img.shields.io/pypi/dm/batou
+
+.. |badge-python| image:: https://img.shields.io/badge/Made%20with-Python-1f425f.svg

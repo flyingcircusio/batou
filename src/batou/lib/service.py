@@ -8,7 +8,7 @@ class Service(Component):
     to ensure startup and shutdown of the executable correctly.
     """
 
-    namevar = 'executable'
+    namevar = "executable"
 
     pidfile = None  # The pidfile as written by the services' executable.
 
@@ -22,7 +22,7 @@ class Service(Component):
         """
         if self._platform_component is not None:
             assert self._platform_component._prepared
-            start = getattr(self._platform_component, 'start', None)
+            start = getattr(self._platform_component, "start", None)
             if callable(start):
                 start()
                 return

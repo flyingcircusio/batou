@@ -6,6 +6,7 @@ class TerminalBackend(object):
 
     def __init__(self):
         import py.io
+
         self._tw = py.io.TerminalWriter(sys.stdout)
 
     def line(self, message, **format):
@@ -33,16 +34,16 @@ class NullBackend(object):
 class TestBackend(object):
 
     def __init__(self):
-        self.output = ''
+        self.output = ""
 
     def line(self, message, **format):
-        self.output += message + '\n'
+        self.output += message + "\n"
 
     def sep(self, sep, title, **format):
-        self.output += ' {} {} {} '.format(sep*3, title, sep*3)
+        self.output += " {} {} {} ".format(sep * 3, title, sep * 3)
 
     def write(self, content, **format):
-        self.output += content + '\n'
+        self.output += content + "\n"
 
 
 output = Output(NullBackend())

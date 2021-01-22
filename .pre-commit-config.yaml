@@ -1,0 +1,13 @@
+exclude: '(components/component5/component.py|haproxy.cfg|encrypted.cfg|\.appenv|\.batou|lib/python|/examples/tutorial-secrets/secrets/|)'
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+-   repo: https://github.com/pre-commit/mirrors-yapf
+    rev: 'v0.30.0'  # Use the sha / tag you want to point at
+    hooks:
+    -   id: yapf
+        args: [-i, -p]

@@ -6,54 +6,50 @@ General options
 
 .. code-block:: console
 
-    usage: batou [-h] [-d] [-F] {deploy,secrets,init,update} ...
+  usage: batou [-h] [-d] {deploy,secrets,init} ...
 
-    batou v1.2b1 multi-(host|component|environment|version|platform) deployment
+  batou v2.0b12: multi-(host|component|environment|version|platform) deployment
 
-    positional arguments:
-      {deploy,remote,secrets,init,update}
-        deploy              Deploy an environment.
-        secrets             Manage encrypted secret files. Relies on gpg being
-                            installed and configured correctly.
-        init                Initialize batou project in the given directory. If
-                            the given directory does not exist, it will be
-                            created. If no directory is given, the current
-                            directory is used.
-        update              Update the batou version.
+  positional arguments:
+    {deploy,secrets,init}
+      deploy              Deploy an environment.
+      secrets             Manage encrypted secret files. Relies on gpg being
+                          installed and configured correctly.
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -d, --debug           Enable debug mode. (default: False)
-      -F, --fast            Enable fast mode. Do not perform bootstrapping.
-                            (default: False)
-      --reset               Reset batou environment. (default: False)
+  optional arguments:
+    -h, --help            show this help message and exit
+    -d, --debug           Enable debug mode. (default: False)
 
 
 batou deploy
 ------------
 
-
 .. code-block:: console
 
-    usage: batou deploy [-h] [-p PLATFORM] [-t TIMEOUT] [-D] [-c] [-P] environment
+  usage: batou deploy [-h] [-p PLATFORM] [-t TIMEOUT] [-D] [-c] [-P] [-j JOBS]
+                      environment
 
-    positional arguments:
-      environment           Environment to deploy.
+  positional arguments:
+    environment           Environment to deploy.
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -p PLATFORM, --platform PLATFORM
-                            Alternative platform to choose. Empty for no platform.
-      -t TIMEOUT, --timeout TIMEOUT
-                            Override the environment's timeout setting
-      -D, --dirty           Allow deploying with dirty working copy or outgoing
-                            changes.
-      -c, --consistency-only
-                            Only perform a deployment model and environment
-                            consistency check. Only connects to a single host.
-                            Does not touch anything.
-      -P, --predict-only    Only predict what updates would happen. Do not change
-                            anything.
+  optional arguments:
+    -h, --help            show this help message and exit
+    -p PLATFORM, --platform PLATFORM
+                          Alternative platform to choose. Empty for no platform.
+    -t TIMEOUT, --timeout TIMEOUT
+                          Override the environment's timeout setting
+    -D, --dirty           Allow deploying with dirty working copy or outgoing
+                          changes.
+    -c, --consistency-only
+                          Only perform a deployment model and environment
+                          consistency check. Only connects to a single host.
+                          Does not touch anything.
+    -P, --predict-only    Only predict what updates would happen. Do not change
+                          anything.
+    -j JOBS, --jobs JOBS  Defines number of jobs running parallel to deploy. The
+                          default results in a serial deployment of components.
+                          Will override the environment settings for operational
+                          flexibility.
 
 batou secrets edit
 ------------------
@@ -81,6 +77,25 @@ Show an overview of which users have access to what encrypted secrets.
 
     optional arguments:
       -h, --help  show this help message and exit
+
+Example:
+
+.. code-block:: console
+
+  $ ./batou secrets summary
+
+  production
+     members
+      - alice@example.com
+     secret files
+      - secrets.yaml
+
+  tutorial
+     members
+      - alice@example.com
+      - bob@example.com
+     secret files
+      (none)
 
 
 batou secrets add
@@ -114,16 +129,3 @@ batou secrets remove
       --environments ENVIRONMENTS
                             The environments to update. Update all if not
                             specified.
-
-
-batou update
-------------
-
-.. code-block:: console
-
-    usage: batou update [-h] (--version VERSION | --develop DEVELOP)
-
-    optional arguments:
-      -h, --help         show this help message and exit
-      --version VERSION  Exact version to install.
-      --develop DEVELOP  Path to checkout of batou to install in edit mode.

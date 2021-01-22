@@ -3,21 +3,38 @@ from ._output import output
 import os.path
 import traceback
 
-__version__ = open(os.path.dirname(__file__) + '/version.txt').read().strip()
+with open(os.path.dirname(__file__) + "/version.txt") as f:
+    __version__ = f.read().strip()
 
 
-class FileLockedError(Exception):
+class ReportingException(Exception):
+    """Exceptions that support user-readable reporting."""
+
+    def __str__(self):
+        raise NotImplementedError()
+
+    def report(self):
+        raise NotImplementedError()
+
+
+class FileLockedError(ReportingException):
     """A file is already locked and we do not want to block."""
 
     def __init__(self, filename):
         self.filename = filename
+
+    def __str__(self):
+        return "File already locked: {}".format(self.filename)
+
+    def report(self):
+        output.error(str(self))
 
 
 class UpdateNeeded(AssertionError):
     """A component requires an update."""
 
 
-class ConfigurationError(Exception):
+class ConfigurationError(ReportingException):
     """Indicates that an environment could not be configured successfully."""
 
     @property
@@ -28,14 +45,15 @@ class ConfigurationError(Exception):
         self.message = message
         self.component = component
 
+    def __str__(self):
+        return str(self.message)
+
     def report(self):
+        message = self.message
         if self.component:
-            message = '{}@{}: {}'.format(
-                self.component.root.name,
-                self.component.root.host.name,
-                self.message)
-        else:
-            message = self.message
+            message = "{}@{}: {}".format(self.component.root.name,
+                                         self.component.root.host.name,
+                                         message)
         output.error(message)
 
 
@@ -44,8 +62,8 @@ class ConversionError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (1, self.component.root.host.name,
-                self.component._breadcrumbs, self.key)
+        return (1, self.component.root.host.name, self.component._breadcrumbs,
+                self.key)
 
     def __init__(self, component, key, value, conversion, error):
         self.component = component
@@ -54,23 +72,22 @@ class ConversionError(ConfigurationError):
         self.conversion = conversion
         self.error = error
 
+    def __str__(self):
+        return self.error
+
     def report(self):
-        output.error('Failed override attribute conversion')
+        output.error("Failed override attribute conversion")
+        output.tabular("Host", self.component.root.host.name, red=True)
         output.tabular(
-            'Host', self.component.root.host.name,
+            "Attribute",
+            "{}.{}".format(self.component._breadcrumbs, self.key),
             red=True)
         output.tabular(
-            'Attribute',
-            '{}.{}'.format(
-                self.component._breadcrumbs,
-                self.key),
+            "Conversion",
+            "{}({})".format(self.conversion.__name__, repr(self.value)),
             red=True)
-        output.tabular('Conversion',
-                       '{}({})'.format(self.conversion.__name__,
-                                       repr(self.value)),
-                       red=True)
         # TODO provide traceback in debug output
-        output.tabular('Error', str(self.error), red=True)
+        output.tabular("Error", str(self.error), red=True)
 
 
 class SilentConfigurationError(Exception):
@@ -86,26 +103,21 @@ class MissingOverrideAttributes(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (3, self.component.root.host.name,
-                self.component._breadcrumbs)
+        return (3, self.component.root.host.name, self.component._breadcrumbs)
 
     def __init__(self, component, attributes):
         self.component = component
         self.attributes = attributes
 
+    def __str__(self):
+        return 'Overrides for undefined attributes ' + ','.join(
+            self.attributes)
+
     def report(self):
-        output.error('Overrides for undefined attributes')
-        output.tabular(
-            'Host', self.component.root.host.name,
-            red=True)
-        output.tabular(
-            'Component',
-            self.component._breadcrumbs,
-            red=True)
-        output.tabular(
-            'Attributes',
-            ', '.join(self.attributes),
-            red=True)
+        output.error("Overrides for undefined attributes")
+        output.tabular("Host", self.component.root.host.name, red=True)
+        output.tabular("Component", self.component._breadcrumbs, red=True)
+        output.tabular("Attributes", ", ".join(self.attributes), red=True)
 
         # TODO point to specific line in secrets or environments
         # cfg file and show context
@@ -121,10 +133,13 @@ class DuplicateComponent(ConfigurationError):
         self.a = a
         self.b = b
 
+    def __str__(self):
+        return 'Duplicate component: ' + self.a
+
     def report(self):
         output.error('Duplicate component "{}"'.format(self.a.name))
-        output.tabular('Occurence', self.a.filename)
-        output.tabular('Occurence', self.b.filename)
+        output.tabular("Occurence", self.a.filename)
+        output.tabular("Occurence", self.b.filename)
 
 
 class UnknownComponentConfigurationError(ConfigurationError):
@@ -139,40 +154,45 @@ class UnknownComponentConfigurationError(ConfigurationError):
         self.exception = exception
         stack = traceback.extract_tb(tb)
         from batou import environment, component
+
         while True:
             # Delete remoting-internal stack frames.'
             line = stack.pop(0)
-            if line[0] in ['<string>', '<remote exec>',
-                           environment.__file__.rstrip('c'),
-                           component.__file__.rstrip('c')]:
+            if line[0] in [
+                    "<string>",
+                    "<remote exec>",
+                    environment.__file__.rstrip("c"),
+                    component.__file__.rstrip("c"),]:
                 continue
             stack.insert(0, line)
             break
-        self.traceback = ''.join(traceback.format_list(stack))
+        self.traceback = "".join(traceback.format_list(stack))
+
+    def __str__(self):
+        return repr(self.exception)
 
     def report(self):
         output.error(repr(self.exception))
         output.annotate(
             "This /might/ be a batou bug. Please consider reporting it.\n",
             red=True)
-        output.tabular(
-            "Host", self.root.host.name, red=True)
-        output.tabular(
-            "Component", self.root.name + '\n', red=True)
-        output.annotate('Traceback (simplified, most recent call last):',
-                        red=True)
+        output.tabular("Host", self.root.host.name, red=True)
+        output.tabular("Component", self.root.name + "\n", red=True)
+        output.annotate(
+            "Traceback (simplified, most recent call last):", red=True)
         output.annotate(self.traceback, red=True)
 
 
 class UnusedResources(ConfigurationError):
     """Some provided resources were never used."""
 
-    @property
-    def sort_key(self):
-        return (5, 'unused')
+    sort_key = (5, "unused")
 
     def __init__(self, resources):
         self.resources = resources
+
+    def __str__(self):
+        return 'Unused provided resources'
 
     def report(self):
         output.error("Unused provided resources")
@@ -187,46 +207,50 @@ class UnusedResources(ConfigurationError):
 class UnsatisfiedResources(ConfigurationError):
     """Some required resources were never provided."""
 
-    @property
-    def sort_key(self):
-        return (6, 'unsatisfied')
+    sort_key = (6, "unsatisfied")
 
     def __init__(self, resources):
         self.resources = resources
 
+    def __str__(self):
+        return 'Unsatisfied resource requirements'
+
     def report(self):
         output.error("Unsatisfied resource requirements")
         for key in sorted(self.resources):
-            output.line('    Resource "{}" required by {}'.format(
-                key, ','.join(r.name for r in self.resources[key])),
+            output.line(
+                '    Resource "{}" required by {}'.format(
+                    key, ",".join(r.name for r in self.resources[key])),
                 red=True)
 
 
 class MissingEnvironment(ConfigurationError):
     """The specified environment does not exist."""
 
-    @property
-    def sort_key(self):
-        return (0, )
+    sort_key = (0,)
 
     def __init__(self, environment):
         self.environment = environment
 
+    def __str__(self):
+        return 'Missing environment `{}`'.format(self.environment.name)
+
     def report(self):
         output.error("Missing environment")
-        output.tabular('Environment', self.environment.name, red=True)
+        output.tabular("Environment", self.environment.name, red=True)
 
 
 class ComponentLoadingError(ConfigurationError):
     """The specified component file failed to load."""
 
-    @property
-    def sort_key(self):
-        return (0, )
+    sort_key = (0,)
 
     def __init__(self, filename, exception):
         self.filename = filename
         self.exception = exception
+
+    def __str__(self):
+        return 'Failed loading component file ' + self.filename
 
     def report(self):
         output.error("Failed loading component file")
@@ -238,30 +262,32 @@ class ComponentLoadingError(ConfigurationError):
 class MissingComponent(ConfigurationError):
     """The specified environment does not exist."""
 
-    @property
-    def sort_key(self):
-        return (0, )
+    sort_key = (0,)
 
     def __init__(self, component, hostname):
         self.component = component
         self.hostname = hostname
 
+    def __str__(self):
+        return 'Missing component: ' + self.component
+
     def report(self):
         output.error("Missing component")
-        output.tabular('Component', self.component, red=True)
-        output.tabular('Host', self.hostname, red=True)
+        output.tabular("Component", self.component, red=True)
+        output.tabular("Host", self.hostname, red=True)
 
 
 class SuperfluousSection(ConfigurationError):
     """A superfluous section was found in the environment
     configuration file."""
 
-    @property
-    def sort_key(self):
-        return (0, )
+    sort_key = (0,)
 
     def __init__(self, section):
         self.section = section
+
+    def __str__(self):
+        return 'Superfluous section in environment: ' + self.section
 
     def report(self):
         output.error("Superfluous section in environment configuration")
@@ -273,12 +299,13 @@ class SuperfluousComponentSection(ConfigurationError):
     """A component section was found in the environment
     but no associated component is known."""
 
-    @property
-    def sort_key(self):
-        return (0, )
+    sort_key = (0,)
 
     def __init__(self, component):
         self.component = component
+
+    def __str__(self):
+        return 'Override section for unknown component found: ' + self.component
 
     def report(self):
         output.error("Override section for unknown component found")
@@ -290,12 +317,13 @@ class SuperfluousSecretsSection(ConfigurationError):
     """A component section was found in the secrets
     but no associated component is known."""
 
-    @property
-    def sort_key(self):
-        return (0, )
+    sort_key = (0,)
 
     def __init__(self, component):
         self.component = component
+
+    def __str__(self):
+        return 'Secrets section for unknown component found: ' + self.component
 
     def report(self):
         output.error("Secrets section for unknown component found")
@@ -307,12 +335,13 @@ class CycleErrorDetected(ConfigurationError):
     """We think we found a cycle in the component dependencies.
     """
 
-    @property
-    def sort_key(self):
-        return (99, )
+    sort_key = (99,)
 
     def __init__(self, error):
         self.error = error
+
+    def __str__(self):
+        return 'Found dependency cycle.'
 
     def report(self):
         output.error("Found dependency cycle")
@@ -323,28 +352,30 @@ class CycleErrorDetected(ConfigurationError):
 class NonConvergingWorkingSet(ConfigurationError):
     """A working set did not converge."""
 
-    @property
-    def sort_key(self):
-        return (100, )
+    sort_key = (100,)
 
     def __init__(self, roots):
         self.roots = roots
+
+    def __str__(self):
+        return 'There are unconfigured components remaining.'
 
     def report(self):
         # TODO show this last or first, but not in the middle
         # of everything
         output.error("{} remaining unconfigured component(s)".format(
-                     len(self.roots)))
+            len(self.roots)))
         # TODO show all incl. their host name in -vv or so
         # output.annotate(', '.join(c.name for c in self.roots))
 
 
-class DeploymentError(Exception):
+class DeploymentError(ReportingException):
     """Indicates that a deployment failed.."""
 
-    @property
-    def sort_key(self):
-        return (200, )
+    sort_key = (100,)
+
+    def __str__(self):
+        return 'The deployment encountered an error.'
 
     def report(self):
         pass
@@ -353,13 +384,14 @@ class DeploymentError(Exception):
 class RepositoryDifferentError(DeploymentError):
     """The repository on the remote side is different."""
 
-    @property
-    def sort_key(self):
-        return (150, )
+    sort_key = (150,)
 
     def __init__(self, local, remote):
         self.local = local
         self.remote = remote
+
+    def __str__(self):
+        return 'Remote repository has diverged. Wrong branch?'
 
     def report(self):
         output.error(
@@ -373,10 +405,13 @@ class DuplicateHostError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0, )
+        return (0,)
 
     def __init__(self, hostname):
         self.hostname = hostname
+
+    def __str__(self):
+        return 'Duplicate host: ' + self.hostname
 
     def report(self):
         output.error("Duplicate definition of host: {}".format(self.hostname))
@@ -384,12 +419,13 @@ class DuplicateHostError(ConfigurationError):
 
 class InvalidIPAddressError(ConfigurationError):
 
-    @property
-    def sort_key(self):
-        return (0, )
+    sort_key = (0,)
 
     def __init__(self, address):
         self.address = address
+
+    def __str__(self):
+        return 'Not a valid IP address: ' + self.address
 
     def report(self):
         output.error("Not a valid IP address: {}".format(self.address))

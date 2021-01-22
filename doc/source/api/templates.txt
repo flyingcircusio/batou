@@ -1,4 +1,2 @@
 Jinja2 templates (TODO)
 =======================
-
-

@@ -35,4 +35,3 @@ batou has some support for downloading and compiling software packages, aka the
 .. py:attribute:: build_environment
 
     Dict of variables to add to the environment during all CMMI invocations.
-

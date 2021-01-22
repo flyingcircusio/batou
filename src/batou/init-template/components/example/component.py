@@ -5,4 +5,4 @@ from batou.lib.file import File
 class Example(Component):
 
     def configure(self):
-        self += File('hello', content='Hello world!')
+        self += File("hello", content="Hello world!")
