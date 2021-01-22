@@ -10,6 +10,7 @@
   branch. Before the entire branch history was uploaded with each
   deployment to each host (#131)
 
+- Allow specifying a custom pip version in `AppEnv`.
 
 2.2.3 (2021-01-20)
 ------------------
