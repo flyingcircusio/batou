@@ -19,12 +19,13 @@ class VirtualEnv(Component):
             del os.environ["__PYVENV_LAUNCHER__"]
         self.cmd("python{{component.python_version}} -m venv "
                  "{{component.parent.env_dir}}")
-        self.cmd("{{component.parent.env_dir}}/bin/python -m pip "
-                 "install --upgrade pip")
         if self.pip_version:
             self.cmd(
                 '{{component.parent.env_dir}}/bin/pip '
                 f'install pip=={self.pip_version}')
+        else:
+            self.cmd("{{component.parent.env_dir}}/bin/python -m pip "
+                     "install --upgrade pip")
 
 
 class LockedRequirements(Component):
