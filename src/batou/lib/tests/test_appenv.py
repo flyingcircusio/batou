@@ -81,10 +81,6 @@ def test_appenv_custom_pip_version(root):
     appenv = AppEnv("3", pip_version=pip_version)
     root.component += appenv
     root.component.deploy()
-    pip = appenv.cmd(
-        os.path.join(
-            root.component.workdir,
-            '{{component.env_dir}}/bin/pip --version'
-        )
-    )
+    pip = appenv.cmd(os.path.join(root.component.workdir,
+                                  '{{component.env_dir}}/bin/pip --version'))
     assert f'pip {pip_version}' in pip[0]
