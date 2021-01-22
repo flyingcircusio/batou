@@ -70,3 +70,21 @@ def test_simple_appenv(root):
     assert "current" in hashes4
     assert second_hash in hashes4
     assert first_hash not in hashes4
+
+
+def test_appenv_custom_pip_version(root):
+    pip_version = '20.1.1'
+    with open("requirements.lock", "w") as f:
+        # I hate using a real package and a real index here ...
+        f.write("six==1.14.0\n")
+
+    appenv = AppEnv("3", pip_version=pip_version)
+    root.component += appenv
+    root.component.deploy()
+    pip = appenv.cmd(
+        os.path.join(
+            root.component.workdir,
+            '{{component.env_dir}}/bin/pip --version'
+        )
+    )
+    assert f'pip {pip_version}' in pip[0]
