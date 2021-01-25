@@ -86,6 +86,11 @@ Creates a file. The main parameter for File is the target path. A ``File`` insta
 
     Source of symlink (for :py:attr:`ensure` = 'symlink')
 
+.. py:attribute:: sensitive_data
+    Signal that the content is sensitive data,
+    which you do not want to see in log files.
+    This suppresses diff generation.
+    [Default: False]
 
 .. py:class:: batou.lib.BinaryFile(path)
 
