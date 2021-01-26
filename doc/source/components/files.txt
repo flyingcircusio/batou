@@ -86,6 +86,12 @@ Creates a file. The main parameter for File is the target path. A ``File`` insta
 
     Source of symlink (for :py:attr:`ensure` = 'symlink')
 
+.. py:attribute:: sensitive_data
+
+    Mark a file as sensitive so its content is not exposed by the
+    (diff-)output of batou. This is useful in situations where the
+    rendered file contains a password or other sensitive data.
+    [Default: False]
 
 .. py:class:: batou.lib.BinaryFile(path)
 
