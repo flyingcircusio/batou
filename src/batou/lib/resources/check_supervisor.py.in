@@ -9,7 +9,7 @@ import sys
 
 SUPERVISORCTL = '{{component.workdir}}/bin/supervisorctl'
 
-OK, WARNING, CRITICAL, UKNOWN = 0, 1, 2, 3
+OK, WARNING, CRITICAL, UNKNOWN = 0, 1, 2, 3
 
 states = [OK]
 
