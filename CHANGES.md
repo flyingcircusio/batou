@@ -6,6 +6,8 @@
 
 - Repair `File(group=)`, it now works just like `File(owner=)`
 
+- Remove debugging code from secrets editing which caused encryption errors to crash and loose unsaved edits. (#139)
+
 - Fix shipping of deployment code with git-bundle when using a
   branch. Before the entire branch history was uploaded with each
   deployment to each host (#131)

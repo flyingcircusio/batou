@@ -83,6 +83,12 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.2.4 (unreleased)
+------------------
+
+- Remove debugging code from secrets editing which caused encryption errors to crash and loose unsaved edits. (#139)
+
+
 2.2.3 (2021-01-20)
 ------------------
 
