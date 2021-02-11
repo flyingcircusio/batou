@@ -1,11 +1,13 @@
 """Securely edit encrypted secret files."""
-from .encryption import EncryptedConfigFile
-from batou.lib.file import ensure_path_nonexistent
 import glob
 import os
 import subprocess
 import sys
 import tempfile
+
+from batou.lib.file import ensure_path_nonexistent
+
+from .encryption import EncryptedConfigFile
 
 
 class Editor(object):
