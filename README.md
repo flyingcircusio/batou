@@ -83,7 +83,7 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.2.4 (unreleased)
+2.2.4 (2021-02-11)
 ------------------
 
 - Repair `File(group=)`, it now works just like `File(owner=)`
