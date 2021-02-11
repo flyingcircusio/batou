@@ -268,7 +268,7 @@ Your repository has outgoing changes on branch {branch}:
 
 I am refusing to deploy in this situation as the results will be unpredictable.
 Please push first.
-""".format(branch=branch, outgoing=outgoing))
+""".format(branch=self.branch, outgoing=outgoing))
             raise DeploymentError()
 
 
