@@ -86,8 +86,15 @@ The project is licensed under the 2-clause BSD license.
 2.2.4 (unreleased)
 ------------------
 
+- Repair `File(group=)`, it now works just like `File(owner=)`
+
 - Remove debugging code from secrets editing which caused encryption errors to crash and loose unsaved edits. (#139)
 
+- Fix shipping of deployment code with git-bundle when using a
+  branch. Before the entire branch history was uploaded with each
+  deployment to each host (#131)
+
+- Allow specifying a custom pip version in `AppEnv`.
 
 2.2.3 (2021-01-20)
 ------------------
