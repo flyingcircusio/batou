@@ -733,7 +733,7 @@ batou keeps the file suffix in the temporary file, so that your editor should be
 
 Whenever you edit one of the secret files of an environment all files will be reencrypted to be sure that they are encrypted with a consistent set of keys.
 
-To use those secret files, you can simply retrieve them from the environment object in your deployment code:
+To use those secret files, you can simply retrieve them from the environment object in your deployment code via the `secret_files` dict:
 
 .. code-block:: python
   :caption: components/myapp/component.py (v5)
@@ -748,7 +748,7 @@ To use those secret files, you can simply retrieve them from the environment obj
           self += File(
             'secrets.yaml',
             mode=0600,
-            content=self.environment.secret_files('secretdata.yaml'))
+            content=self.environment.secret_files['secretdata.yaml'])
 
 
 Using version control to ensure consistent deployments
