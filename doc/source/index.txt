@@ -11,7 +11,7 @@ Release v\ |version|.
 
 |build-status| |github-stars| |badge-opensource| |badge-downloads| |badge-python|
 
-batou is a BSD licensed utility, written in Python, to configure
+batou is a BSD-licensed utility, written in Python, to configure
 development and production environments for web applications.
 
 Deployments are hard and complicated. Tools like Docker, Puppet, chef, and
