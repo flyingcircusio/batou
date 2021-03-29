@@ -248,7 +248,7 @@ class Component(object):
     def _overrides(self, overrides={}):
         missing = []
         for key, value in list(overrides.items()):
-            # I explicity check whether we're overriding an attribute on the
+            # I explicitly check whether we're overriding an attribute on the
             # class. a) that's the intended semantic I want to check for and
             # b) this suppresses implicit __get__ conversions of Attribute
             # objects.
