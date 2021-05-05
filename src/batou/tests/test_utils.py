@@ -12,6 +12,11 @@ from batou.utils import (Address, CmdExecutionError, MultiFile, NetLoc,
                          notify, remove_nodes_without_outgoing_edges, resolve,
                          resolve_v6, revert_graph, topological_sort)
 
+RESOLVER_ERRORS = [
+    '[Errno -2] Name or service not known',  # Linux
+    '[Errno 8] nodename nor servname provided, or not known',  # MacOS
+]
+
 
 @mock.patch("socket.getaddrinfo")
 def test_host_without_port_resolves(ghbn):
@@ -119,13 +124,11 @@ def test_address_v6_only(monkeypatch):
 
     with pytest.raises(socket.gaierror) as f:
         Address(hostname, 1234)
-    assert "[Errno 8] nodename nor servname provided, or not known" == str(
-        f.value)
+    assert str(f.value) in RESOLVER_ERRORS
 
     with pytest.raises(socket.gaierror) as f:
         Address(hostname, 1234, require_v6=True)
-    assert "[Errno 8] nodename nor servname provided, or not known" == str(
-        f.value)
+    assert str(f.value) in RESOLVER_ERRORS
 
     address = Address(hostname, 1234, require_v4=False, require_v6=True)
     assert address.listen is None
@@ -135,24 +138,21 @@ def test_address_v6_only(monkeypatch):
 def test_address_fails_when_name_cannot_be_looked_up_at_all():
     with pytest.raises(socket.gaierror) as f:
         Address("does-not-exist.example.com:1234")
-    assert "[Errno 8] nodename nor servname provided, or not known" == str(
-        f.value)
+    assert str(f.value) in RESOLVER_ERRORS
 
     with pytest.raises(socket.gaierror) as f:
         Address(
             "does-not-exist.example.com:1234",
             require_v4=False,
             require_v6=True)
-    assert "[Errno 8] nodename nor servname provided, or not known" == str(
-        f.value)
+    assert str(f.value) in RESOLVER_ERRORS
 
     with pytest.raises(socket.gaierror) as f:
         Address(
             "does-not-exist.example.com:1234",
             require_v4=True,
             require_v6=True)
-    assert "[Errno 8] nodename nor servname provided, or not known" == str(
-        f.value)
+    assert str(f.value) in RESOLVER_ERRORS
 
 
 def test_address_format_with_port():
