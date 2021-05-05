@@ -1,9 +1,11 @@
-from ..buildout import Buildout
-from ..file import File
-import mock
 import os.path
+
+import mock
 import pkg_resources
 import pytest
+
+from ..buildout import Buildout
+from ..file import File
 
 
 def buildout(**kw):
@@ -37,14 +39,12 @@ def test_update_should_pass_custom_timeout(root):
 def test_runs_buildout_successfully(root):
     b = Buildout(
         python="2.7",
-        version="2.9.5",
-        setuptools="36.7.2",
+        version="2.13.4",
+        setuptools="44.1.1",
         config=File(
             "buildout.cfg",
             source=pkg_resources.resource_filename(__name__,
-                                                   "buildout-example.cfg"),
-        ),
-    )
+                                                   "buildout-example.cfg")))
     root.component += b
     root.component.deploy()
     assert os.path.isdir(

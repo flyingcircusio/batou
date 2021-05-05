@@ -1,38 +1,42 @@
-from batou.utils import call_with_optional_args
-from batou.utils import hash, CmdExecutionError
-from batou.utils import remove_nodes_without_outgoing_edges, cmd
-from batou.utils import resolve, resolve_v6, MultiFile, locked, notify, Address
-from batou.utils import revert_graph, topological_sort, flatten, NetLoc
-from io import StringIO
-import mock
 import os
-import pytest
 import socket
 import tempfile
 import threading
 import unittest
+from io import StringIO
+
+import mock
+import pytest
+from batou.utils import (Address, CmdExecutionError, MultiFile, NetLoc,
+                         call_with_optional_args, cmd, flatten, hash, locked,
+                         notify, remove_nodes_without_outgoing_edges, resolve,
+                         resolve_v6, revert_graph, topological_sort)
 
 
-@mock.patch("socket.gethostbyname")
+@mock.patch("socket.getaddrinfo")
 def test_host_without_port_resolves(ghbn):
-    ghbn.return_value = "127.0.0.1"
+    ghbn.return_value = [
+        (None, None, None, None, ('127.0.0.1', 0, None, None))]
     assert resolve("localhost") == "127.0.0.1"
 
 
-@mock.patch(
-    "socket.gethostbyname", side_effect=socket.gaierror("lookup failed"))
+@mock.patch("socket.getaddrinfo", side_effect=socket.gaierror("lookup failed"))
 def test_resolve_v4_socket_error_returns_none(ghbn):
-    assert resolve("localhost") is None
+    with pytest.raises(socket.gaierror) as f:
+        resolve("localhost", 80)
+    assert "lookup failed" == str(f.value)
 
 
 @mock.patch("socket.getaddrinfo", side_effect=socket.gaierror("lookup failed"))
-def test_resolve_v6_should_return_none_on_socket_error(gai):
-    assert resolve_v6("localhost", 22) is None
+def test_resolve_v6_raises_on_socket_error(gai):
+    with pytest.raises(socket.gaierror) as f:
+        resolve_v6("localhost", 22)
+    assert "lookup failed" == str(f.value)
 
 
 def test_resolve_override():
     ov = {"foo.example.com": "1.2.3.4"}
-    assert "1.2.3.4" == resolve("foo.example.com", resolve_override=ov)
+    assert "1.2.3.4" == resolve("foo.example.com", 80, resolve_override=ov)
 
 
 def test_resolve_v6_override():
@@ -40,9 +44,33 @@ def test_resolve_v6_override():
     assert "::27" == resolve_v6("foo.example.com", 80, resolve_override=ov)
 
 
-def test_resolve_v6_does_not_return_link_local_addresses():
-    ov = {"foo.example.com": "fe80::8bf:8387:1234:5678"}
-    assert resolve_v6("foo.example.com", 80, resolve_override=ov) is None
+def test_resolve_v6_does_not_return_link_local_addresses(output, monkeypatch):
+
+    def link_local_addrinfo(*args, **kw):
+        return [(None, None, None, None, ('fe80::feaa:14ff:fe8f:94ba', 80,
+                                          None, None))]
+
+    monkeypatch.setattr(socket, 'getaddrinfo', link_local_addrinfo)
+
+    with pytest.raises(ValueError) as f:
+        resolve_v6("foo.example.com", 80)
+    assert 'No valid address found for `foo.example.com`.'
+
+    def link_local_addrinfo(*args, **kw):
+        return [(None, None, None, None, ('fe80::feaa:14ff:fe8f:94ba', 80,
+                                          None, None)),
+                (None, None, None, None, ('2a02::1', 80, None, None))]
+
+    monkeypatch.setattr(socket, 'getaddrinfo', link_local_addrinfo)
+
+    output.backend.output = ''
+    assert resolve_v6('foo.example.com', 80) == '2a02::1'
+
+    assert """\
+resolving (v6) `foo.example.com` (getaddrinfo)
+resolved (v6) `foo.example.com` to [(None, None, None, None, ('fe80::feaa:14ff:fe8f:94ba', 80, None, None)), (None, None, None, None, ('2a02::1', 80, None, None))]
+selected 2a02::1
+""" == output.backend.output
 
 
 def test_address_without_implicit_or_explicit_port_fails():
@@ -76,22 +104,54 @@ def test_address_sort():
     assert [address1, address3, address4, address2] == list1
 
 
-def test_address_v6_only():
-    from batou.utils import resolve_v6_override
+def test_address_neither_v4_v6_invalid():
+    with pytest.raises(ValueError) as f:
+        Address("asdf", require_v4=False, require_v6=False)
+    assert ("One of `require_v4` or `require_v6` must be selected. "
+            "None were selected." == str(f.value))
 
-    resolve_v6_override["v6only.example.com"] = "::346"
-    try:
-        address = Address("v6only.example.com:42")
-        assert address.listen is None
-        assert address.listen_v6.host == "::346"
-    finally:
-        resolve_v6_override.clear()
+
+def test_address_v6_only(monkeypatch):
+    hostname = 'v6only.example.com'
+
+    from batou.utils import resolve_v6_override
+    monkeypatch.setitem(resolve_v6_override, hostname, '::346')
+
+    with pytest.raises(socket.gaierror) as f:
+        Address(hostname, 1234)
+    assert "[Errno 8] nodename nor servname provided, or not known" == str(
+        f.value)
+
+    with pytest.raises(socket.gaierror) as f:
+        Address(hostname, 1234, require_v6=True)
+    assert "[Errno 8] nodename nor servname provided, or not known" == str(
+        f.value)
+
+    address = Address(hostname, 1234, require_v4=False, require_v6=True)
+    assert address.listen is None
+    assert address.listen_v6.host == "::346"
 
 
 def test_address_fails_when_name_cannot_be_looked_up_at_all():
     with pytest.raises(socket.gaierror) as f:
         Address("does-not-exist.example.com:1234")
-    assert "No IPv4 or IPv6 address for 'does-not-exist.example.com'" == str(
+    assert "[Errno 8] nodename nor servname provided, or not known" == str(
+        f.value)
+
+    with pytest.raises(socket.gaierror) as f:
+        Address(
+            "does-not-exist.example.com:1234",
+            require_v4=False,
+            require_v6=True)
+    assert "[Errno 8] nodename nor servname provided, or not known" == str(
+        f.value)
+
+    with pytest.raises(socket.gaierror) as f:
+        Address(
+            "does-not-exist.example.com:1234",
+            require_v4=True,
+            require_v6=True)
+    assert "[Errno 8] nodename nor servname provided, or not known" == str(
         f.value)
 
 
@@ -101,14 +161,18 @@ def test_address_format_with_port():
 
 @mock.patch("socket.getaddrinfo")
 def test_address_should_contain_v6_address_if_available(gai):
-    gai.return_value = [(None, None, None, None, ("::1",))]
-    address = Address("localhost:8080")
+    gai.return_value = [(None, None, None, None, ("::1", None, None, None))]
+    address = Address("localhost:8080", require_v6=True)
     assert address.listen_v6.host == "::1"
 
 
-@mock.patch("socket.getaddrinfo", side_effect=socket.gaierror("lookup failed"))
-def test_address_should_not_contain_v6_address_if_not_resolvable(gai):
+@mock.patch(
+    "batou.utils.resolve_v6", side_effect=socket.gaierror("lookup failed"))
+def test_address_does_not_fail_if_missing_v6_when_no_v6_requested(gai):
+    assert Address("localhost", 22, require_v6=False).listen_v6 is None
     assert Address("localhost", 22).listen_v6 is None
+    with pytest.raises(socket.gaierror):
+        assert Address("localhost", 22, require_v6=True)
 
 
 def test_netloc_str_should_brace_ipv6_addresses():

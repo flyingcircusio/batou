@@ -1,8 +1,9 @@
-from batou.environment import Environment
-from batou.utils import cmd
 import os
 import os.path
+
+from batou.environment import Environment
 from batou.tests.ellipsis import Ellipsis
+from batou.utils import cmd
 
 
 def test_service_early_resource():
@@ -71,7 +72,7 @@ ERROR: Failed override attribute conversion
       Host: localhost
  Attribute: Component1.do_what_is_needed
 Conversion: convert_literal('false')
-     Error: malformed node or string: <_ast.Name object at 0x...>
+     Error: malformed node or string: <...Name object at 0x...>
 
 ERROR: Failed override attribute conversion
       Host: localhost

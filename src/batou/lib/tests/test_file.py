@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from batou.lib.file import BinaryFile, JSONContent, YAMLContent
-from batou.lib.file import Content, Mode, Symlink, File, Purge
-from batou.lib.file import ensure_path_nonexistent
-from batou.lib.file import Presence, Directory, FileComponent
-from batou.tests.ellipsis import Ellipsis
-from mock import Mock, patch
-from stat import S_IMODE
 import getpass
 import grp
 import json
 import os
 import pwd
+from stat import S_IMODE
+
 import pytest
 import yaml
+from batou.lib.file import (BinaryFile, Content, Directory, File,
+                            FileComponent, JSONContent, Mode, Presence, Purge,
+                            Symlink, YAMLContent, ensure_path_nonexistent)
+from batou.tests.ellipsis import Ellipsis
+from mock import Mock, patch
 
 
 def test_ensure_path_nonexistent_removes_normal_file(tmpdir):
@@ -463,11 +463,7 @@ def test_content_does_not_allow_both_content_and_source(root):
         root.component += Content(path, content="asdf", source="bsdf")
 
 
-def test_content_large_diff_logged(root):
-    from batou import output
-    from batou._output import TestBackend
-
-    output.backend = TestBackend()
+def test_content_large_diff_logged(output, root):
     path = "path"
     p = Content(path, content="\n".join(["asdf"] * 21))
     p._max_diff = 20
@@ -515,12 +511,7 @@ def test_json_content_data_given(root):
         assert f.read() == p.content
 
 
-def test_json_diff(root):
-    from batou import output
-    from batou._output import TestBackend
-
-    output.backend = TestBackend()
-
+def test_json_diff(output, root):
     p = JSONContent("target.json", data={"asdf": 1, "bsdf": 2})
     root.component += p
 
@@ -541,12 +532,7 @@ host > MyComponent > JSONContent('work/mycomponent/target.json')
 """)
 
 
-def test_json_diff_not_for_sensitive(root):
-    from batou import output
-    from batou._output import TestBackend
-
-    output.backend = TestBackend()
-
+def test_json_diff_not_for_sensitive(output, root):
     p = JSONContent(
         "target.json", data={
             "asdf": 1,
@@ -696,12 +682,7 @@ asdf: 1
         assert f.read() == p.content
 
 
-def test_yaml_diff(root):
-    from batou import output
-    from batou._output import TestBackend
-
-    output.backend = TestBackend()
-
+def test_yaml_diff(output, root):
     p = YAMLContent("target.yaml", data={"asdf": 1, "bsdf": 2})
     root.component += p
 
@@ -725,12 +706,7 @@ host > MyComponent > YAMLContent(\'work/mycomponent/target.yaml\')
     # fmt: on
 
 
-def test_yaml_diff_not_for_sensitive(root):
-    from batou import output
-    from batou._output import TestBackend
-
-    output.backend = TestBackend()
-
+def test_yaml_diff_not_for_sensitive(output, root):
     p = YAMLContent(
         "target.yaml", data={
             "asdf": 1,

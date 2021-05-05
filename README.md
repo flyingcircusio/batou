@@ -83,6 +83,35 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
+2.2.5 (unreleased)
+------------------
+
+- Improve DNS lookup semantics.
+
+  We experienced two major problems with the current code: 
+
+  1. IPv6 lookups were done opportunistically and thus if DNS issues happened
+  during deployments we would suddenly drop IPv6 support instead of failing.
+
+  2. There was no logging to find out why the code was making specific decisions
+  and to see what the underlying network APIs were returning. We now provide
+  detailed debug logs for analyzing DNS issues.
+
+  There were slight adjustments in the internal API (resolve/resolve_v6) that
+  should be backwards compatible.
+
+  The public API reflects a more strict stance now:
+
+  - by default we only look up IPv4
+
+  - you can explicitly set the `require_v6` and `require_v4` options for
+    `Address` objects. batou will then perform the required lookups (or not)
+    and it will be a hard failure if required lookups can not be performed. 
+
+  We recommend to adjust those parameters on Address objects depending on your
+  environment, e.g. if you want IPv6 in production but not in Vagrant.
+
+
 2.2.4 (2021-02-11)
 ------------------
 

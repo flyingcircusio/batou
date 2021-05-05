@@ -1,9 +1,10 @@
+import os
+import subprocess
+
+import batou.utils
+import pytest
 from batou.component import Component, ComponentDefinition
 from batou.environment import Environment
-import batou.utils
-import os
-import pytest
-import subprocess
 
 
 @pytest.fixture
@@ -42,3 +43,13 @@ def pytest_assertrepr_compare(op, left, right):
 def reset_resolve_overrides():
     batou.utils.resolve_override.clear()
     batou.utils.resolve_v6_override.clear()
+
+
+@pytest.fixture(autouse=True)
+def output(monkeypatch):
+    from batou import output
+    from batou._output import TestBackend
+
+    backend = TestBackend()
+    monkeypatch.setattr(output, 'backend', backend)
+    return output

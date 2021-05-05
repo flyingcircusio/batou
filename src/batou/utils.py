@@ -1,5 +1,3 @@
-from batou import output, DeploymentError
-from collections import defaultdict
 import contextlib
 import copy
 import fcntl
@@ -7,11 +5,14 @@ import hashlib
 import inspect
 import itertools
 import os
-import pkg_resources
 import socket
 import subprocess
 import sys
 import time
+from collections import defaultdict
+
+import pkg_resources
+from batou import DeploymentError, output
 
 
 def self_id():
@@ -97,30 +98,37 @@ resolve_override = {}
 resolve_v6_override = {}
 
 
-def resolve(host, resolve_override=resolve_override):
-    address = resolve_override.get(host)
-    if not address:
-        try:
-            address = socket.gethostbyname(host)
-        except socket.gaierror:
-            return None
+def resolve(host, port=0, resolve_override=resolve_override):
+    if host in resolve_override:
+        address = resolve_override[host]
+        output.annotate('resolved `{}` to {} (override)'.format(host, address))
+    else:
+        output.annotate('resolving `{}` (v4)'.format(host))
+        responses = socket.getaddrinfo(host, int(port), socket.AF_INET)
+        output.annotate('resolved `{}` to {}'.format(host, responses))
+        address = responses[0][4][0]
+        output.annotate('selected '.format(host, address))
     return address
 
 
-def resolve_v6(host, port, resolve_override=resolve_v6_override):
-    address = resolve_override.get(host)
-    if not address:
-        try:
-            address = socket.getaddrinfo(host, int(port),
-                                         socket.AF_INET6)[0][4][0]
-        except socket.gaierror:
-            address = None
-    if address and address.startswith("fe80:"):
-        # Don't hand out link-local addresses. This happes with
-        # vagrant, and does not help as services cannot bind those
-        # addresses without additional configuration, i.e. the
-        # interface.
+def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
+    if host in resolve_override:
+        address = resolve_override[host]
+        output.annotate('resolved `{}` to {} (override)'.format(host, address))
+    else:
+        output.annotate('resolving (v6) `{}` (getaddrinfo)'.format(host))
+        responses = socket.getaddrinfo(host, int(port), socket.AF_INET6)
+        output.annotate('resolved (v6) `{}` to {}'.format(host, responses))
         address = None
+        for _, _, _, _, sockaddr in responses:
+            addr, _, _, _ = sockaddr
+            if addr.startswith('fe80:'):
+                continue
+            address = addr
+            break
+        if not address:
+            raise ValueError('No valid address found for `{}`.'.format(host))
+        output.annotate('selected {}'.format(address))
     return address
 
 
@@ -153,7 +161,15 @@ class Address(object):
     #: there is no IPv6 address.
     listen_v6 = None
 
-    def __init__(self, connect_address, port=None):
+    def __init__(self,
+                 connect_address,
+                 port=None,
+                 require_v4=True,
+                 require_v6=False):
+        if not require_v4 and not require_v6:
+            raise ValueError(
+                "One of `require_v4` or `require_v6` must be selected. "
+                "None were selected.")
         if ":" in connect_address:
             connect, port = connect_address.split(":")
         else:
@@ -161,16 +177,12 @@ class Address(object):
         if port is None:
             raise ValueError("Need port for service address.")
         self.connect = NetLoc(connect, str(port))
-        v4_address = resolve(connect)
-        if v4_address:
-            self.listen = NetLoc(v4_address, str(port))
-        v6_address = resolve_v6(connect, port)
-        if v6_address:
-            self.listen_v6 = NetLoc(v6_address, str(port))
-
-        if not self.listen and not self.listen_v6:
-            raise socket.gaierror(
-                "No IPv4 or IPv6 address for {!r}".format(connect))
+        if require_v4:
+            address = resolve(connect, port)
+            self.listen = NetLoc(address, str(port))
+        if require_v6:
+            address = resolve_v6(connect, port)
+            self.listen_v6 = NetLoc(address, str(port))
 
     def __lt__(self, other):
         if isinstance(other, Address):
