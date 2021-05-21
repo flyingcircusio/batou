@@ -1,8 +1,9 @@
-from batou.component import Component
-from batou.lib.file import File, Presence
-from batou.lib.python import VirtualEnv, Package
 import contextlib
 import os
+
+from batou.component import Component
+from batou.lib.file import File, Presence
+from batou.lib.python import Package, VirtualEnv
 
 
 class Buildout(Component):
@@ -17,6 +18,7 @@ class Buildout(Component):
     executable = None
     distribute = None
     setuptools = None
+    wheel = None
     version = None
 
     build_env = {}  # XXX not frozen. :/
@@ -48,11 +50,13 @@ class Buildout(Component):
             venv += Package(
                 "distribute",
                 version=self.distribute,
-                check_package_is_module=False,
-            )
+                check_package_is_module=False)
 
         if self.setuptools:
             venv += Package("setuptools", version=self.setuptools)
+
+        if self.wheel:
+            venv += Package("wheel", version=self.wheel)
 
         # Install without dependencies (that's just setuptools anyway), since
         # that could cause pip to pull in the latest version of setuptools,

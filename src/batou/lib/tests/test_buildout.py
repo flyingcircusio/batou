@@ -51,3 +51,23 @@ def test_runs_buildout_successfully(root):
         os.path.join(root.environment.workdir_base, "mycomponent/parts"))
     assert os.path.isfile(
         os.path.join(root.environment.workdir_base, "mycomponent/bin/py"))
+
+
+@pytest.mark.slow
+@pytest.mark.timeout(60)
+def test_runs_buildout3_successfully(root):
+    b = Buildout(
+        python="3",
+        version="3.0.0b1",
+        setuptools="54.1.1",
+        wheel="0.36.2",
+        config=File(
+            "buildout.cfg",
+            source=pkg_resources.resource_filename(__name__,
+                                                   "buildout-example.cfg")))
+    root.component += b
+    root.component.deploy()
+    assert os.path.isdir(
+        os.path.join(root.environment.workdir_base, "mycomponent/parts"))
+    assert os.path.isfile(
+        os.path.join(root.environment.workdir_base, "mycomponent/bin/py"))
