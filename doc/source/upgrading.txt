@@ -6,6 +6,46 @@ Generally batou tries to be *very* friendly when upgrading from version to
 version so you don't have to unnecessarily change your deployments. We try to
 introduce new features without breaking existing semantics.
 
+Upgrading to the separated appenv bootstrap file
+================================================
+
+`appenv` is a small, separate utility that batou uses to bootstrap and
+update itself, introduced in batou 2.
+
+Initially we placed this file directly as `./batou` but this turned out to be
+hard to deal with due to its "meta argument parser". New versions of batou will
+automatically bootstrap this into two separate files: `./appenv` and a symlink
+`batou -> appenv`.
+
+To upgrade your project to this schema, follow those steps:
+
+.. code-block:: console
+
+  
+  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/appenv.py -o appenv
+  $ chmod +x appenv
+  $ rm batou
+  $ ln -sf appenv batou
+
+You can now use the appenv meta commands by calling the appenv utility itself:
+
+.. code-block:: console
+
+  $ ./appenv --help
+  usage: appenv [-h] {update-lockfile,init,reset,python,run} ...
+
+  positional arguments:
+    {update-lockfile,init,reset,python,run}
+      update-lockfile     Update the lock file.
+      init                Create a new appenv project.
+      reset               Reset the environment.
+      python              Spawn the embedded Python interpreter REPL
+      run                 Run a script from the bin/ directory of the virtual env.
+
+  optional arguments:
+    -h, --help            show this help message and exit
+
+
 batou 1.x to batou 2.x
 ======================
 
