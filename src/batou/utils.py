@@ -350,8 +350,7 @@ def cmd(cmd,
         stderr=subprocess.PIPE,
         stdin=subprocess.PIPE,
         shell=True,
-        env=env,
-    )
+        env=env)
     if not communicate:
         # XXX See #12550
         return process
