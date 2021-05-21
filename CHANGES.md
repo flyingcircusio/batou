@@ -1,8 +1,10 @@
 ## Changelog
 
 
-2.2.5 (unreleased)
+2.3 (unreleased)
 ------------------
+
+- Drop support for Python 3.5. (#114)
 
 - Improve DNS lookup semantics.
 
