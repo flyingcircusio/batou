@@ -24,6 +24,8 @@ setup(
         "py",
         "pyyaml",
         "remote-pdb",
+        # Unclean dependency of urllib3/requests and to fix Python 3.10
+        "six>=1.16",
     ],
     extras_require={
         "test": [
