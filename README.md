@@ -77,10 +77,28 @@ Check the [detailed documentation](http://batou.readthedocs.org) to get going wi
 * self-bootstrapping and self-updating - no additional
   scripting needed
 
+## Run tests
+
+We use [tox](https://tox.readthedocs.io/en/latest/) to run the test suite.
+
+You can run the complete test suite for all supported Python interpreters by just entering `tox`.
+
+You can also run a specific `testenv`, e.g. `tox -e py39`.
+
+If you have not installed `mercurial`,
+which is a hard dependency of this project,
+you can run `tox -e skip-mercurial`.
+
 ## License
 
 The project is licensed under the 2-clause BSD license.
 ## Changelog
+
+
+2.3b2 (unreleased)
+------------------
+
+- Nothing changed yet.
 
 
 2.3b1 (2021-05-21)
