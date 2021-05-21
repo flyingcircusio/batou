@@ -38,13 +38,3 @@ jobs:
 
       - name: Test
         run: bin/tox
-
-      - name: Rocket.Chat Notification
-        continue-on-error: true
-        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
-        if: always()
-        with:
-          type: ${{ job.status }}
-          job_name: 'Unit tests'
-          channel: '#infrastructure'
-          url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
