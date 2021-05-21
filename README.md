@@ -84,9 +84,22 @@ The project is licensed under the 2-clause BSD license.
 
 
 2.3 (unreleased)
-------------------
+----------------
 
 - Drop support for Python 3.5. (#114)
+
+- batou.lib.buildout: Enable support for Buildout 3 by allowing
+  to specify a `wheel` package version to install in the 
+  virtualenv. (#148)
+
+- Fix bootstrapping projects with the new appenv structure. Vendor
+  an appenv version to ensure lockstep compatibility.
+
+- Fix consistency check semantics: we accidentally performed
+  actual deployments during consistency checks.
+
+- Fix rsync repository mode to capture deleted top-level elements
+  in the source.
 
 - Improve DNS lookup semantics.
 
