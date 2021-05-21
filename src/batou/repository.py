@@ -1,10 +1,12 @@
-from batou import DeploymentError, output, RepositoryDifferentError
-from batou.utils import cmd as cmd_, CmdExecutionError
-import execnet
 import os
 import subprocess
 import sys
 import tempfile
+
+import execnet
+from batou import DeploymentError, RepositoryDifferentError, output
+from batou.utils import CmdExecutionError
+from batou.utils import cmd as cmd_
 
 
 def cmd(c, *args, **kw):
@@ -59,9 +61,30 @@ class NullRepository(Repository):
     """A repository that does nothing to verify or update."""
 
 
-class RSyncRepository(Repository):
+class FilteredRSync(execnet.RSync):
+    """Implement a filtered RSync that
+    avoids copying files from our blacklist.
+    """
 
-    root = "."
+    blacklist = (
+        ".batou",
+        ".batou-lock",
+        ".git",
+        ".hg",
+        ".kitchen",
+        ".vagrant",
+        "work",
+    )
+
+    def __init__(self, *args, **kw):
+        super(FilteredRSync, self).__init__(*args, **kw)
+        self.blacklist = set(self.blacklist)
+
+    def filter(self, path):
+        return os.path.relpath(path, self._sourcedir) not in self.blacklist
+
+
+class RSyncRepository(Repository):
 
     def verify(self):
         output.annotate(
@@ -70,26 +93,11 @@ class RSyncRepository(Repository):
             red=True)
 
     def update(self, host):
-        env = self.environment
-        blacklist = [
-            ".batou",
-            "work",
-            ".git",
-            ".hg",
-            ".vagrant",
-            ".kitchen",
-            ".batou-lock",]
-        for candidate in os.listdir(env.base_dir):
-            if candidate in blacklist:
-                continue
-
-            source = os.path.join(env.base_dir, candidate)
-            target = os.path.join(host.remote_base, candidate)
-            output.annotate(
-                "rsync: {} -> {}".format(source, target), debug=True)
-            rsync = execnet.RSync(source, verbose=False)
-            rsync.add_target(host.gateway, target, delete=True)
-            rsync.send()
+        source, target = self.environment.base_dir, host.remote_base
+        output.annotate("rsync: {} -> {}".format(source, target), debug=True)
+        rsync = FilteredRSync(source, verbose=False)
+        rsync.add_target(host.gateway, target, delete=True)
+        rsync.send()
 
 
 class MercurialRepository(Repository):
