@@ -488,7 +488,7 @@ class AppEnv(object):
 
         extra_specs = []
         result = cmd(
-            "{tmpdir}/bin/python -m pip freeze".format(tmpdir=tmpdir),
+            "{tmpdir}/bin/python -m pip freeze --all".format(tmpdir=tmpdir),
             merge_stderr=False,
         ).decode("ascii")
         pinned_versions = {}

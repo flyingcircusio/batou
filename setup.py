@@ -18,12 +18,14 @@ setup(
         "Jinja2==3.0.1",
         "requests",
         # ConfigUpdater does not manage its minimum requirements correctly.
-        "setuptools>=38.3",
+        "setuptools>=56.2",
         "execnet>=1.8.1",
         "importlib_metadata",
         "py",
         "pyyaml",
         "remote-pdb",
+        # Unclean dependency of urllib3/requests and to fix Python 3.10
+        "six>=1.16",
     ],
     extras_require={
         "test": [
