@@ -171,3 +171,20 @@ def test_example_job_option_overrides_environment():
     out, _ = cmd("./batou -d deploy -j 5 async")
     print(out)
     assert "Number of jobs: 5" in out
+
+
+def test_consistency_does_not_start_deployment():
+    os.chdir("examples/tutorial-helloworld")
+    out, _ = cmd("./batou deploy -c tutorial")
+    print(out)
+    assert "Deploying" not in out
+    assert "localhost: Scheduling" not in out
+    assert "CONSISTENCY CHECK FINISHED" in out
+
+    # Counter-test that "Deploying" and "localhost: Scheduling" show
+    # up if deployments happen
+    out, _ = cmd("./batou deploy tutorial")
+    print(out)
+    assert "Deploying" in out
+    assert "localhost: Scheduling" in out
+    assert "CONSISTENCY CHECK FINISHED" not in out

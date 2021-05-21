@@ -1,16 +1,17 @@
-from .environment import Environment, MissingEnvironment
-from .utils import locked, self_id
-from .utils import notify
-from batou import ConfigurationError, SilentConfigurationError, ReportingException
-from batou import ReportingException, DeploymentError, FileLockedError
-from batou._output import output, TerminalBackend
-from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import random
 import sys
 import threading
 import time
 import traceback
+from concurrent.futures import ThreadPoolExecutor
+
+from batou import (ConfigurationError, DeploymentError, FileLockedError,
+                   ReportingException, SilentConfigurationError)
+from batou._output import TerminalBackend, output
+
+from .environment import Environment, MissingEnvironment
+from .utils import locked, notify, self_id
 
 
 class Connector(threading.Thread):
@@ -208,24 +209,22 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
          jobs):
     output.backend = TerminalBackend()
     output.line(self_id())
+    STEPS = ['load', 'connect', 'configure', 'deploy']
     if consistency_only:
         ACTION = "CONSISTENCY CHECK"
+        STEPS.remove('deploy')
     elif predict_only:
         ACTION = "DEPLOYMENT PREDICTION"
     else:
         ACTION = "DEPLOYMENT"
     with locked(".batou-lock"):
-
         deployment = Deployment(environment, platform, timeout, dirty, jobs,
                                 predict_only)
         environment = deployment.environment
-
         try:
-            for step in [
-                    deployment.load, deployment.connect, deployment.configure,
-                    deployment.deploy]:
+            for step in STEPS:
                 try:
-                    step()
+                    getattr(deployment, step)()
                 except Exception as e:
                     environment.exceptions.append(e)
 
@@ -256,7 +255,7 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
                         for line in tb.format():
                             output.line('\t' + line.strip(), red=True)
 
-                summary = "{} FAILED (during {})".format(ACTION, step.__name__)
+                summary = "{} FAILED (during {})".format(ACTION, step)
                 output.section(summary, red=True)
 
                 notify(summary, str(exception))
