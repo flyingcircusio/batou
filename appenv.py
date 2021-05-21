@@ -130,22 +130,35 @@ def ensure_venv(target):
             target=target))
 
 
-def ensure_newest_python():
-    if "APPENV_NEWEST_PYTHON" in os.environ:
-        # Don't do this twice to avoid surprised with
+def ensure_best_python():
+    if "APPENV_BEST_PYTHON" in os.environ:
+        # Don't do this twice to avoid being surprised with
         # accidental infinite loops.
         return
     import shutil
 
+    with open('requirements.txt') as f:
+        for line in f:
+            # Expected format:
+            # # appenv-python-preference: 3.1,3.9,3.4
+            if not line.startswith("# appenv-python-preference: "):
+                continue
+            preferences = line.split(':')[1]
+            preferences = [x.strip() for x in preferences.split(',')]
+            preferences = list(filter(None, preferences))
+            break
+        else:
+            preferences = ['3.{}'.format(x) for x in reversed(range(4, 20))]
+
     current_python = os.path.realpath(sys.executable)
-    for version in reversed(range(4, 20)):
-        python = shutil.which("python3.{}".format(version))
+    for version in preferences:
+        python = shutil.which("python{}".format(version))
         if not python:
             # not a usable python
             continue
         python = os.path.realpath(python)
         if python == current_python:
-            # found best python and we're already running as it
+            # found a preferred python and we're already running as it
             break
         # Try whether this Python works
         try:
@@ -155,8 +168,12 @@ def ensure_newest_python():
         except subprocess.CalledProcessError:
             continue
         argv = [os.path.basename(python)] + sys.argv
-        os.environ["APPENV_NEWEST_PYTHON"] = python
+        os.environ["APPENV_BEST_PYTHON"] = python
         os.execv(python, argv)
+    else:
+        print("Could not find a preferred Python version.")
+        print("Preferences: {}".format(', '.join(preferences)))
+        sys.exit(65)
 
 
 class AppEnv(object):
@@ -201,10 +218,9 @@ class AppEnv(object):
         p.set_defaults(func=self.python)
 
         p = subparsers.add_parser(
-            "run", help="Run a script from the bin/ directory of the virtual env.")
-        p.add_argument(
-            "script",
-            help="Name of the script to run.")
+            "run",
+            help="Run a script from the bin/ directory of the virtual env.")
+        p.add_argument("script", help="Name of the script to run.")
         p.set_defaults(func=self.run_script)
 
         args, remaining = parser.parse_known_args()
@@ -363,15 +379,22 @@ class AppEnv(object):
             sys.path.append(line)
         import pkg_resources
 
+        extra_specs = []
         result = cmd("{tmpdir}/bin/python -m pip freeze".format(tmpdir=tmpdir),
                      merge_stderr=False).decode('ascii')
         pinned_versions = {}
         for line in result.splitlines():
+            if line.strip().startswith('-e '):
+                # We'd like to pick up the original -e statement here.
+                continue
             spec = list(pkg_resources.parse_requirements(line))[0]
             pinned_versions[spec.project_name] = spec
         requested_versions = {}
         with open('requirements.txt') as f:
             for line in f.readlines():
+                if line.strip().startswith('-e '):
+                    extra_specs.append(line.strip())
+                    continue
                 spec = list(pkg_resources.parse_requirements(line))[0]
                 requested_versions[spec.project_name] = spec
 
@@ -387,6 +410,7 @@ class AppEnv(object):
                 continue
             final_versions[spec.project_name] = spec
         lines = [str(spec) for spec in final_versions.values()]
+        lines.extend(extra_specs)
         lines.sort()
         with open(os.path.join(self.base, "requirements.lock"), "w") as f:
             f.write('\n'.join(lines))
@@ -395,6 +419,7 @@ class AppEnv(object):
 
 
 def main():
+    ensure_best_python()
     # clear PYTHONPATH variable to get a defined environment
     # XXX this is a bit of history. not sure whether its still needed. keeping it
     # for good measure
