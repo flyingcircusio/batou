@@ -83,8 +83,8 @@ The project is licensed under the 2-clause BSD license.
 ## Changelog
 
 
-2.3 (unreleased)
-----------------
+2.3b1 (2021-05-21)
+------------------
 
 - Drop support for Python 3.5. (#114)
 
