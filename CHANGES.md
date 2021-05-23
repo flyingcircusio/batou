@@ -4,7 +4,7 @@
 2.3b2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- NetLoc objects are now comparable. (#88)
 
 
 2.3b1 (2021-05-21)
