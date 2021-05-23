@@ -12,6 +12,7 @@
 /doc/build
 /eggs
 /examples/*/work
+/examples/*/.appenv
 /htmlcov
 /include
 /lib
