@@ -63,9 +63,9 @@ def test_runs_buildout3_successfully(root, output):
         setuptools="54.1.1",
         wheel="0.36.2",
         config=File(
-            "buildout.cfg",
+            "buildout3.cfg",
             source=pkg_resources.resource_filename(__name__,
-                                                   "buildout-example.cfg")))
+                                                   "buildout3-example.cfg")))
     root.component += b
     try:
         root.component.deploy()
