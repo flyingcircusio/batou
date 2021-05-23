@@ -99,14 +99,27 @@ def test_address_netloc_attributes():
     assert "8080" == address.connect.port
 
 
-def test_address_sort():
+def test_netloc_ordering():
+    address1 = NetLoc("127.0.0.5")
+    address2 = NetLoc("127.0.0.5", "80")
+    address3 = NetLoc("asdf")
+    address4 = NetLoc("asdf", "90")
+    sorted_list = sorted([address3, address2, address4, address1])
+    assert [address1, address2, address3, address4] == sorted_list
+
+
+def test_netloc_repr():
+    assert "<NetLoc `127.0.0.5:80`>" == repr(NetLoc("127.0.0.5", "80"))
+    assert "<NetLoc `127.0.0.5`>" == repr(NetLoc("127.0.0.5"))
+
+
+def test_address_ordering():
     address1 = Address("127.0.0.5:8080")
     address2 = Address("localhost:8080")
     address3 = Address("127.10.1.5:8080")
     address4 = Address("127.122.122.133:8080")
-    list1 = sorted([address1, address2, address3, address4])
-    print(list1)
-    assert [address1, address3, address4, address2] == list1
+    sorted_list = sorted([address1, address2, address3, address4])
+    assert [address1, address3, address4, address2] == sorted_list
 
 
 def test_address_neither_v4_v6_invalid():

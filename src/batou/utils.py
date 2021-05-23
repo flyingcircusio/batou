@@ -1,6 +1,7 @@
 import contextlib
 import copy
 import fcntl
+import functools
 import hashlib
 import inspect
 import itertools
@@ -132,6 +133,7 @@ def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
     return address
 
 
+@functools.total_ordering
 class Address(object):
     """An internet service address that can be listened and connected to.
 
@@ -189,10 +191,16 @@ class Address(object):
             return str(self) < str(other)
         return NotImplemented
 
+    def __eq__(self, other):
+        if isinstance(other, Address):
+            return str(self) == str(other)
+        return NotImplemented
+
     def __str__(self):
         return str(self.connect)
 
 
+@functools.total_ordering
 class NetLoc(object):
     """A network location specified by host and port.
 
@@ -233,6 +241,19 @@ class NetLoc(object):
         else:
             fmt = "{self.host}"
         return fmt.format(self=self)
+
+    def __repr__(self):
+        return "<NetLoc `{}`>".format(self)
+
+    # These are not "correct" comparisons from a networking viewpoint.
+    # However, they are useful to provide a predictable ordering to
+    # avoid unnecessary config changes. Also, the values do not have
+    # to be IP addresses but can be hostnames as well.
+    def __lt__(self, other):
+        return str(self) < other
+
+    def __eq__(self, other):
+        return str(self) == other
 
 
 def revert_graph(graph):
