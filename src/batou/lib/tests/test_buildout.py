@@ -3,6 +3,7 @@ import os.path
 import mock
 import pkg_resources
 import pytest
+from batou.utils import CmdExecutionError
 
 from ..buildout import Buildout
 from ..file import File
@@ -55,7 +56,7 @@ def test_runs_buildout_successfully(root):
 
 @pytest.mark.slow
 @pytest.mark.timeout(60)
-def test_runs_buildout3_successfully(root):
+def test_runs_buildout3_successfully(root, output):
     b = Buildout(
         python="3",
         version="3.0.0b1",
@@ -66,7 +67,12 @@ def test_runs_buildout3_successfully(root):
             source=pkg_resources.resource_filename(__name__,
                                                    "buildout-example.cfg")))
     root.component += b
-    root.component.deploy()
+    try:
+        root.component.deploy()
+    except CmdExecutionError as e:
+        e.report()
+        print(output.backend.output)
+        raise
     assert os.path.isdir(
         os.path.join(root.environment.workdir_base, "mycomponent/parts"))
     assert os.path.isfile(
