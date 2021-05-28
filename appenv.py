@@ -130,7 +130,9 @@ def ensure_venv(target):
             target=target))
 
 
-def ensure_best_python():
+def ensure_best_python(base):
+    os.chdir(base)
+
     if "APPENV_BEST_PYTHON" in os.environ:
         # Don't do this twice to avoid being surprised with
         # accidental infinite loops.
@@ -419,7 +421,9 @@ class AppEnv(object):
 
 
 def main():
-    ensure_best_python()
+    base = os.path.dirname(__file__)
+
+    ensure_best_python(base)
     # clear PYTHONPATH variable to get a defined environment
     # XXX this is a bit of history. not sure whether its still needed. keeping it
     # for good measure
@@ -428,7 +432,6 @@ def main():
 
     # Determine whether we're being called as appenv or as an application name
     application_name = os.path.splitext(os.path.basename(__file__))[0]
-    base = os.path.dirname(__file__)
 
     appenv = AppEnv(base)
     try:
