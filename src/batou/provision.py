@@ -83,7 +83,7 @@ Host {container}
             'PROVISION_CONTAINER': container,
             'PROVISION_HOST': self.target_host,
             'SSH_CONFIG': self.ssh_config_file,
-            'RSYNC_SSH': 'ssh -F {}'.format(self.ssh_config_file)}
+            'RSYNC_RSH': 'ssh -F {}'.format(self.ssh_config_file)}
         if self.rebuild:
             env['PROVISION_REBUILD'] = '1'
         # Add all component variables (uppercased) to the environment
@@ -110,6 +110,19 @@ Host {container}
                 key = key.upper()
                 env[key] = str(value)
 
+        seed_script_file = 'environments/{}/provision.sh'.format(
+            host.environment.name)
+        if os.path.exists(seed_script_file):
+            seed_script = """\
+# BEGIN CUSTOM SEED SCRIPT
+cd {basedir}
+{script}
+# END CUSTOM SEED SCRIPT
+""".format(basedir=os.path.dirname(seed_script_file),
+            script=open(seed_script_file).read())
+        else:
+            seed_script = ''
+
         _, provision_script = tempfile.mkstemp()
         try:
             os.chmod(provision_script, 0o700)
@@ -124,19 +137,19 @@ set -ex
 {ENV}
 
 ECHO() {{
-    what=$1
-    where=$2
-    RUN 'echo $what > $where'
+    what=${{1?what to echo}}
+    where=${{2?where to echo}}
+    RUN "echo $what > $where"
 }}
 
 RUN() {{
     cmd=$@
-    ssh -F $SSH_CONFIG $PROVISION_CONTAINER '$cmd'
+    ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
 }}
 
 COPY() {{
-    what=$1
-    where=$2
+    what=${{1?what to copy}}
+    where=${{2?where to copy}}
     rsync $what $PROVISION_CONTAINER:$where
 }}
 
@@ -146,18 +159,18 @@ fi
 
 ssh $PROVISION_HOST fc-build-dev-container ensure $PROVISION_CONTAINER
 
-# BEGIN CUSTOM SEED SCRIPT
-# seed_script
-# END CUSTOM SEED SCRIPT
+{seed_script}
 
 RUN sudo -i fc-manage -b
 
-""".format(ENV='\n'.join(
-                    sorted('{}="{}"'.format(k, v) for k, v in env.items()))))
+""".format(seed_script=seed_script,
+                ENV='\n'.join(
+                sorted('export {}="{}"'.format(k, v) for k, v in env.items()))))
             cmd(provision_script)
+            # XXX
             print(provision_script)
         finally:
             # The script includes secrets so we must be sure that we delete
             # it.
-            #os.unlink(provision_script)
+            # XXX os.unlink(provision_script)
             pass
