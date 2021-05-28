@@ -1,27 +1,30 @@
-from .component import load_components_from_file
-from .host import LocalHost, RemoteHost
-from .resources import Resources
-from .secrets import add_secrets_to_environment
-from configparser import RawConfigParser
-from batou import DuplicateHostError, InvalidIPAddressError
-from batou import MissingComponent
-from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
-from batou import NonConvergingWorkingSet, UnusedResources, ConfigurationError
-from batou import SuperfluousComponentSection, CycleErrorDetected
-from batou import UnknownComponentConfigurationError, UnsatisfiedResources
-from batou._output import output
-from batou.component import RootComponent
-from batou.repository import Repository
-from batou.utils import cmd
-from batou.utils import CycleError
 import ast
-import batou.c
-import batou.utils
-import batou.vfs
 import glob
 import os
 import os.path
 import sys
+from configparser import RawConfigParser
+
+import batou.c
+import batou.utils
+import batou.vfs
+from batou import (ComponentLoadingError, ConfigurationError,
+                   CycleErrorDetected, DuplicateHostError,
+                   InvalidIPAddressError, MissingComponent, MissingEnvironment,
+                   MultipleEnvironmentConfigs, NonConvergingWorkingSet,
+                   SuperfluousComponentSection, SuperfluousSection,
+                   UnknownComponentConfigurationError, UnsatisfiedResources,
+                   UnusedResources)
+from batou._output import output
+from batou.component import RootComponent
+from batou.repository import Repository
+from batou.utils import CycleError, cmd
+from importlib_metadata import entry_points
+
+from .component import load_components_from_file
+from .host import LocalHost, RemoteHost
+from .resources import Resources
+from .secrets import add_secrets_to_environment
 
 
 class ConfigSection(dict):
@@ -83,10 +86,16 @@ class Environment(object):
     jobs = None
 
     repository_url = None
-    version = None
-    develop = None
+    repository_root = None
 
-    def __init__(self, name, timeout=None, platform=None, basedir="."):
+    provision_rebuild = False
+
+    def __init__(self,
+                 name,
+                 timeout=None,
+                 platform=None,
+                 basedir=".",
+                 provision_rebuild=False):
         self.name = name
         self.hosts = {}
         self.resources = Resources()
@@ -95,6 +104,7 @@ class Environment(object):
         self.exceptions = []
         self.timeout = timeout
         self.platform = platform
+        self.provision_rebuild = provision_rebuild
 
         # These are the component classes, decorated with their
         # name.
@@ -109,11 +119,19 @@ class Environment(object):
         self.secret_files = {}
 
     def load(self):
-        # Load environment configuration
-        config_file = os.path.join(self.base_dir,
-                                   "environments/{}.cfg".format(self.name))
-        if not os.path.isfile(config_file):
+        existing_configs = []
+        for candidate in [
+                "environments/{}.cfg", "environments/{}/environment.cfg"]:
+            candidate = os.path.join(self.base_dir,
+                                     candidate.format(self.name))
+            if os.path.isfile(candidate):
+                existing_configs.append(candidate)
+
+        if not existing_configs:
             raise MissingEnvironment(self)
+        elif len(existing_configs) > 1:
+            raise MultipleEnvironmentConfigs(self, existing_configs)
+        config_file = existing_configs[0]
 
         # Scan all components
         for filename in sorted(
@@ -129,10 +147,13 @@ class Environment(object):
         self.load_environment(config)
         self.load_hosts(config)
         self.load_resolver(config)
+        self.load_provisioners(config)
 
         # load overrides
         for section in config:
             if section.startswith("host:"):
+                continue
+            if section.startswith('provisioner:'):
                 continue
             if not section.startswith("component:"):
                 if section not in ["hosts", "environment", "vfs", "resolver"]:
@@ -170,8 +191,8 @@ class Environment(object):
                 "branch",
                 "platform",
                 "timeout",
-                "develop",
                 "repository_url",
+                "repository_root",
                 "jobs",]:
             if key not in environment:
                 continue
@@ -210,6 +231,18 @@ class Environment(object):
         batou.utils.resolve_v6_override.clear()
         batou.utils.resolve_v6_override.update(v6)
 
+    def load_provisioners(self, config):
+        self.provisioners = {}
+        for section in config:
+            if not section.startswith('provisioner:'):
+                continue
+            name = section.replace('provisioner:', '')
+            method = config[section]['method']
+            factory = entry_points(group='batou.provisioners')[method].load()
+            provisioner = factory.from_config_section(name, config[section])
+            provisioner.rebuild = self.provision_rebuild
+            self.provisioners[name] = provisioner
+
     def load_hosts(self, config):
         self._load_hosts_single_section(config)
         self._load_hosts_multi_section(config)
@@ -237,6 +270,7 @@ class Environment(object):
             host.platform = config[section].get("platform", self.platform)
             host.service_user = config[section].get("service_user",
                                                     self.service_user)
+            host.provisioner = config[section].get("provisioner")
             self._load_host_components(hostname,
                                        config[section].as_list("components"))
             for key, value in list(config[section].items()):
@@ -270,12 +304,6 @@ class Environment(object):
         else:
             self.timeout = int(self.timeout)
 
-        if self.version is None:
-            self.version = os.environ.get("BATOU_VERSION")
-
-        if self.develop is None:
-            self.develop = os.environ.get("BATOU_DEVELOP")
-
     # API to instrument environment config loading
 
     def add_host(self, hostname):
@@ -298,8 +326,7 @@ class Environment(object):
             ignore=ignore,
             factory=compdef.factory,
             defdir=compdef.defdir,
-            workdir=os.path.join(self.workdir_base, compdef.name),
-        )
+            workdir=os.path.join(self.workdir_base, compdef.name))
         self.root_components.append(root)
         return root
 

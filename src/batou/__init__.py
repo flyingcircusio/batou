@@ -1,7 +1,8 @@
 # This code must not cause non-stdlib imports to support self-bootstrapping.
-from ._output import output
 import os.path
 import traceback
+
+from ._output import output
 
 with open(os.path.dirname(__file__) + "/version.txt") as f:
     __version__ = f.read().strip()
@@ -256,6 +257,26 @@ class MissingEnvironment(ConfigurationError):
     def report(self):
         output.error("Missing environment")
         output.tabular("Environment", self.environment.name, red=True)
+
+
+class MultipleEnvironmentConfigs(ConfigurationError):
+    """The specified environment has multiple configurations.."""
+
+    sort_key = (0,)
+
+    def __init__(self, environment, configs):
+        self.environment = environment
+        self.configs
+
+    def __str__(self):
+        return 'Environment has multiple configs `{}`'.format(
+            self.environment.name)
+
+    def report(self):
+        output.error("Multiple configs for environment")
+        output.tabular("Environment", self.environment.name, red=True)
+        for config in self.configs:
+            output.tabular("Config", config, red=True)
 
 
 class ComponentLoadingError(ConfigurationError):

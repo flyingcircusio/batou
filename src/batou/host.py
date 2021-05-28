@@ -1,10 +1,11 @@
-from batou import output, DeploymentError, SilentConfigurationError
-from batou import remote_core
-import execnet.gateway_io
 import os
 import subprocess
 import sys
+
+import execnet.gateway_io
 import yaml
+from batou import (DeploymentError, SilentConfigurationError, output,
+                   remote_core)
 
 # Monkeypatch execnet to support 'vagrant ssh' and 'kitchen exec'.
 # 'vagrant' support has been added to 'execnet' release 1.4.
@@ -106,6 +107,7 @@ class Host(object):
     service_user = None
     ignore = False
     platform = None
+    provisioner = None
 
     def __init__(self, fqdn, environment):
         self.fqdn = fqdn
@@ -184,8 +186,12 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
             sudo=CONDITIONAL_SUDO,
             interpreter=interpreter,
             method=self.environment.connect_method)
-        if os.path.exists("ssh_config"):
-            spec += "//ssh_config=ssh_config"
+        ssh_configs = [
+            'ssh_config_{}'.format(self.environment.name), 'ssh_config']
+        for ssh_config in ssh_configs:
+            if os.path.exists(ssh_config):
+                spec += "//ssh_config={}".format(ssh_config)
+                break
         self.gateway = execnet.makegateway(spec)
         try:
             self.channel = self.gateway.remote_exec(remote_core)
@@ -213,7 +219,10 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.
-        self.connect(self.remote_base + "/batou appenv-python")
+        #
+        # XXX this requires an interesting move of detecting which appenv
+        # version we have available to make this backwards compatible.
+        self.connect(self.remote_base + "/appenv python")
 
         # Reinit after reconnect ...
         self.rpc.lock()

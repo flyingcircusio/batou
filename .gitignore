@@ -28,3 +28,4 @@ pip-selfcheck.json
 pyvenv.cfg
 report.xml
 pip-wheel-metadata
+/examples/*/ssh_config_*
