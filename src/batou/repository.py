@@ -66,7 +66,8 @@ class FilteredRSync(execnet.RSync):
     avoids copying files from our blacklist.
     """
 
-    blacklist = (
+    IGNORE_LIST = (
+        ".appenv",
         ".batou",
         ".batou-lock",
         ".git",
@@ -78,10 +79,10 @@ class FilteredRSync(execnet.RSync):
 
     def __init__(self, *args, **kw):
         super(FilteredRSync, self).__init__(*args, **kw)
-        self.blacklist = set(self.blacklist)
+        self.IGNORE_LIST = set(self.IGNORE_LIST)
 
     def filter(self, path):
-        return os.path.relpath(path, self._sourcedir) not in self.blacklist
+        return os.path.basename(path) not in self.IGNORE_LIST
 
 
 class RSyncRepository(Repository):
@@ -96,7 +97,10 @@ class RSyncRepository(Repository):
         source, target = self.environment.base_dir, host.remote_base
         output.annotate("rsync: {} -> {}".format(source, target), debug=True)
         rsync = FilteredRSync(source, verbose=False)
-        rsync.add_target(host.gateway, target, delete=True)
+        # We really want to use `delete=True` here but there's an execnet issue
+        # preventing us to use it. See
+        # https://github.com/flyingcircusio/batou/issues/107
+        rsync.add_target(host.gateway, target)
         rsync.send()
 
 
