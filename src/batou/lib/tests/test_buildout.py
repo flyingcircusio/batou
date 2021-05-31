@@ -54,7 +54,9 @@ def test_runs_buildout_successfully(root):
         os.path.join(root.environment.workdir_base, "mycomponent/bin/py"))
 
 
+# XFAIL due to https://github.com/flyingcircusio/batou/issues/169
 @pytest.mark.slow
+@pytest.mark.xfail
 @pytest.mark.timeout(60)
 def test_runs_buildout3_successfully(root, output):
     b = Buildout(
