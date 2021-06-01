@@ -2,6 +2,5 @@ include src/batou/insecure-private.key
 recursive-include src/batou/init-template *
 recursive-include src/batou/tests/fixture *
 recursive-include src/batou/lib/resources *
-recursive-include . *.txt
-recursive-include . *.in
-recursive-include . *.md
+global-include *.txt
+global-include *.in
