@@ -16,11 +16,6 @@ def project_path(*names):
 
 version = open(project_path("src/batou/version.txt")).read().strip()
 
-with open(project_path("README.md"), "w") as out:
-    for f in ["README.md.in", "CHANGES.md"]:
-        with open(project_path(f), "r") as f:
-            out.write(f.read())
-
 setup(
     name="batou",
     version=version,
@@ -66,12 +61,9 @@ Programming Language :: Python :: 3 :: Only
     packages=find_packages("src"),
     package_dir={"": "src"},
     include_package_data=True,
-    data_files=[(
-        "",
-        glob.glob(project_path("*.txt")) + glob.glob(project_path("*.in")) +
-        glob.glob(project_path("*.md")),
-    )],
+    data_files=[
+        ("", glob.glob(project_path("*.txt")) +
+         glob.glob(project_path("*.in")) + glob.glob(project_path("*.md")))],
     zip_safe=False,
     test_suite="batou.tests",
-    python_requires=">=3.6",
-)
+    python_requires=">=3.6")
