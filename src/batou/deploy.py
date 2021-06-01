@@ -100,22 +100,16 @@ class Deployment(object):
         self.environment.load_secrets()
 
     def provision(self):
+        if not self.environment.provisioners:
+            return
         output.section("Provisioning hosts ...")
         for host in self.environment.hosts.values():
-            if host.provisioner == 'none':
-                # Provisioning explicitly disabled for this host
-                provisioner = None
-            elif not host.provisioner:
-                # Default provisionier (if available)
-                provisioner = self.environment.provisioners.get('default')
-            else:
-                provisioner = self.environment.provisioners[host.provisioner]
-            if provisioner:
+            if host.provisioner:
                 output.step(
                     host.name, "Provisioning with `{}` provisioner. {}".format(
-                        provisioner.name,
-                        "(Rebuild)" if provisioner.rebuild else ""))
-                provisioner.provision(host)
+                        host.provisioner.name,
+                        "(Rebuild)" if host.provisioner.rebuild else ""))
+                host.provisioner.provision(host)
 
     def configure(self):
         output.section("Configuring model ...")

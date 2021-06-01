@@ -1,6 +1,7 @@
 import os
 import os.path
 import tempfile
+import uuid
 
 from batou.utils import cmd
 
@@ -19,6 +20,9 @@ class Provisioner(object):
     def provision(self, host):
         pass
 
+    def suggest_name(self, name):
+        return name
+
 
 class FCDevContainer(Provisioner):
 
@@ -32,6 +36,17 @@ class FCDevContainer(Provisioner):
         instance.target_host = section['host']
         instance.aliases = section.get('aliases', [])
         return instance
+
+    def suggest_name(self, name):
+        config = "-F ssh_config" if os.path.exists('ssh_config') else ''
+        out, _ = cmd(
+            "ssh {config} {target_host} 'sudo nixos-container list'".format(
+                config=config, target_host=self.target_host))
+        names = filter(None, [x.strip() for x in out.splitlines()])
+        while True:
+            name = uuid.uuid4().hex[:11]
+            if name not in names:
+                return name
 
     def _prepare_ssh(self, host):
         container = host.name
@@ -54,14 +69,17 @@ class FCDevContainer(Provisioner):
         if os.path.exists('ssh_config'):
             ssh_config.append('Include {}'.format(
                 os.path.abspath('ssh_config')))
+
         ssh_config.append("""
-Host {container}
+Host {container} {aliases}
+    HostName {container}
     ProxyJump {target_host}
     User developer
     IdentityFile {insecure_private_key}
     StrictHostKeyChecking no
     UserKnownHostsFile {known_hosts}
 """.format(container=container,
+           aliases=' '.join(host.aliases),
            target_host=self.target_host,
            known_hosts=KNOWN_HOSTS_FILE,
            insecure_private_key=os.path.join(
@@ -167,10 +185,7 @@ RUN sudo -i fc-manage -b
                 ENV='\n'.join(
                 sorted('export {}="{}"'.format(k, v) for k, v in env.items()))))
             cmd(provision_script)
-            # XXX
-            print(provision_script)
         finally:
             # The script includes secrets so we must be sure that we delete
             # it.
-            # XXX os.unlink(provision_script)
-            pass
+            os.unlink(provision_script)

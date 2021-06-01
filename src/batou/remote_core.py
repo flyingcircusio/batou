@@ -154,7 +154,8 @@ class Deployment(object):
         self.environment.configure()
 
     def deploy(self, root, predict_only):
-        root = self.environment.get_root(root, self.host_name)
+        host = self.environment.get_host(self.host_name)
+        root = self.environment.get_root(root, host)
         root.component.deploy(predict_only)
 
 

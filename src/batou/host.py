@@ -1,3 +1,4 @@
+import ast
 import os
 import subprocess
 import sys
@@ -70,8 +71,7 @@ class RPCWrapper(object):
                 message = self.host.channel.receive()
                 output.annotate(
                     "{}: message: {}".format(self.host.fqdn, message),
-                    debug=True,
-                )
+                    debug=True)
                 type = message[0]
                 if type == "batou-result":
                     return message[1]
@@ -107,15 +107,62 @@ class Host(object):
     service_user = None
     ignore = False
     platform = None
-    provisioner = None
+    _provisioner = None
+    remap = False
+    ignore = False
 
-    def __init__(self, fqdn, environment):
-        self.fqdn = fqdn
-        self.name = self.fqdn.split(".")[0]
+    def __init__(self, name, environment, config={}):
+        self._name = name
         self.data = {}
 
         self.rpc = RPCWrapper(self)
         self.environment = environment
+
+        self.ignore = ast.literal_eval(config.get("ignore", "False"))
+        self.remap = ast.literal_eval(
+            config.get("provision-dynamic-hostname", "False"))
+
+        self.platform = config.get("platform", environment.platform)
+        self.service_user = config.get("service_user",
+                                       environment.service_user)
+        self._provisioner = config.get("provisioner")
+
+        for key, value in list(config.items()):
+            if key.startswith("data-"):
+                key = key.replace("data-", "", 1)
+                self.data[key] = value
+
+    @property
+    def provisioner(self):
+        if self._provisioner == 'none':
+            # Provisioning explicitly disabled for this host
+            return
+        elif not self._provisioner:
+            # Default provisionier (if available)
+            return self.environment.provisioners.get('default')
+        return self.environment.provisioners[self._provisioner]
+
+    @property
+    def aliases(self):
+        if self._name == self.name:
+            return []
+        return [self._name]
+
+    @property
+    def name(self):
+        if not self.remap:
+            return self._name
+        mapping = self.environment.hostname_mapping
+        if self._name not in mapping:
+            mapping[self._name] = self.provisioner.suggest_name(self._name)
+        return mapping[self._name]
+
+    @property
+    def fqdn(self):
+        name = self.name
+        if self.environment.host_domain:
+            name += "." + self.environment.host_domain
+        return name
 
     def deploy_component(self, component, predict_only):
         self.rpc.deploy(component, predict_only)

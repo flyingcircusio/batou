@@ -157,8 +157,28 @@ class DuplicateComponent(ConfigurationError):
 
     def report(self):
         output.error('Duplicate component "{}"'.format(self.a.name))
-        output.tabular("Occurence", self.a.filename)
-        output.tabular("Occurence", self.b.filename)
+        output.tabular("Occurrence", self.a.filename)
+        output.tabular("Occurrence", self.b.filename)
+
+
+class DuplicateHostMapping(ConfigurationError):
+
+    @property
+    def sort_key(self):
+        return (3, self.hostname, self.a, self.b)
+
+    def __init__(self, hostname, a, b):
+        self.hostname = hostname
+        self.a = a
+        self.b = b
+
+    def __str__(self):
+        return 'Duplicate host mapping: ' + self.hostname
+
+    def report(self):
+        output.error('Duplicate host mapping "{}"'.format(self.hostname))
+        output.tabular("Mapping 1: ", self.a)
+        output.tabular("Mapping 2: ", self.b)
 
 
 class UnknownComponentConfigurationError(ConfigurationError):

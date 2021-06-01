@@ -19,7 +19,7 @@ def test_server_template(root):
 #
 define service {
     use         generic-service
-    host_name   host
+    host_name   localhost
     service_description http
     check_command http!-H localhost -u /login.html
     servicegroups direct
@@ -28,7 +28,7 @@ define service {
 define servicedependency {
     use generic-servicedependency
     host_name localhost
-    dependent_host_name host
+    dependent_host_name localhost
     service_description Supervisor
     dependent_service_description http
 }
