@@ -8,14 +8,12 @@ from configparser import RawConfigParser
 import batou.c
 import batou.utils
 import batou.vfs
-from batou import (ComponentLoadingError, ConfigurationError,
-                   CycleErrorDetected, DuplicateHostError,
-                   DuplicateHostMapping, InvalidIPAddressError,
-                   MissingComponent, MissingEnvironment,
-                   MultipleEnvironmentConfigs, NonConvergingWorkingSet,
-                   SuperfluousComponentSection, SuperfluousSection,
-                   UnknownComponentConfigurationError, UnsatisfiedResources,
-                   UnusedResources)
+from batou import (
+    ComponentLoadingError, ConfigurationError, CycleErrorDetected,
+    DuplicateHostError, DuplicateHostMapping, InvalidIPAddressError,
+    MissingComponent, MissingEnvironment, MultipleEnvironmentConfigs,
+    NonConvergingWorkingSet, SuperfluousComponentSection, SuperfluousSection,
+    UnknownComponentConfigurationError, UnsatisfiedResources, UnusedResources)
 from batou._output import output
 from batou.component import RootComponent
 from batou.repository import Repository
@@ -149,7 +147,7 @@ class Environment(object):
         mapping_file = self._environment_path('hostmap.json')
         if os.path.exists(mapping_file):
             with open(mapping_file, 'r') as f:
-                for k, v in json.load(f):
+                for k, v in json.load(f).items():
                     if k in self.hostname_mapping:
                         raise DuplicateHostMapping(k, v,
                                                    self.hostname_mapping[k])
