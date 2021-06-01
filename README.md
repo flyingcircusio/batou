@@ -88,4 +88,4 @@ to run the test suite (`bin/tox`) and build the documentation (`cd doc; make`).
 
 ## Changelog
 
-See [CHANGES.md](./CHANGES.MD).
+See [CHANGES.md](./CHANGES.md).
