@@ -70,6 +70,16 @@ class FCDevContainer(Provisioner):
             ssh_config.append('Include {}'.format(
                 os.path.abspath('ssh_config')))
 
+        # We need to provide a version of the key that doesn't trigger
+        # OpenSSHs "wrong permission" check.
+        packaged_insecure_key = os.path.join(
+            os.path.dirname(__file__), 'insecure-private.key')
+        local_insecure_key = os.path.abspath('insecure-private.key')
+        with open(local_insecure_key, 'w') as f_target:
+            with open(packaged_insecure_key) as f_packaged:
+                f_target.write(f_packaged.read())
+        os.chmod(local_insecure_key, 0o600)
+
         ssh_config.append("""
 Host {container} {aliases}
     HostName {container}
@@ -82,8 +92,7 @@ Host {container} {aliases}
            aliases=' '.join(host.aliases),
            target_host=self.target_host,
            known_hosts=KNOWN_HOSTS_FILE,
-           insecure_private_key=os.path.join(
-               os.path.dirname(__file__), 'insecure-private.key')))
+           insecure_private_key=local_insecure_key))
 
         # Place this in the deployment base directory persistently and
         # keep updating it. This helps users to also interact with containers
