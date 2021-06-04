@@ -27,9 +27,17 @@ setup(
         "setuptools>=38.3",
         "execnet",
         "pyyaml",
-        "py",],
+        "py",
+    ],
     extras_require={
-        "test": ["pytest", "pytest-timeout", "pytest-coverage", "mock"]},
+        "test": [
+            "mock",
+            "pytest",
+            "pytest-coverage",
+            "pytest-instafail",
+            "pytest-timeout",
+        ]
+    },
     entry_points="""
         [console_scripts]
             batou = batou.main:main
