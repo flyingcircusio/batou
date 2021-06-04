@@ -1,6 +1,3 @@
-<!-- DO NOT EDIT THE README.md FILE. IT IS GENERATED FROM README.md.in AND
-     CHANGES.md BECAUSE Github CANNOT DO INCLUDES -->
-
 <img width="150" src="https://batou.readthedocs.io/en/latest/_static/batou.png">
 
 batou helps you to automate your application deployments:
@@ -64,18 +61,15 @@ Check the [detailed documentation](http://batou.readthedocs.org) to get going wi
 * Separate your application model from environments
 * Supports idempotent operation for incremental deployments
 * Deploy to multiple hosts simultaneously
-* Automated dependency resolution for multi-host
-  scenarios
+* Automated dependency resolution for multi-host scenarios
 * No runtime requirements on your application
 * Encrypted secrets with multiple access levels: store your
   SSL certificates, SSH keys, service secrets and more to get true 1-button deployments.
 * Deploy to local machines, Vagrant, or any SSH host
 * Broad SSH feature support by using OpenSSH through execnet
 * Only few dependencies required on the remote host
-* Ships with a library of components for regularly needed
-  tasks
-* self-bootstrapping and self-updating - no additional
-  scripting needed
+* Ships with a library of components for regularly needed tasks
+* self-bootstrapping and self-updating - no additional scripting needed
 
 ## License
 
@@ -83,8 +77,10 @@ The project is licensed under the 2-clause BSD license.
 
 ## Hacking
 
-Run `./develop.sh` to create a local virtualenv with everything set up
-to run the test suite (`bin/tox`) and build the documentation (`cd doc; make`).
+* Make sure `mercurial` and `subversion` are installed and in `$PATH`.
+* Run `./develop.sh` to create a local virtualenv with everything set up.
+* Run the test suite using: `bin/tox`
+* Build the documentation using: `cd doc; make`
 
 ## Changelog
 
