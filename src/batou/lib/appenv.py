@@ -20,9 +20,8 @@ class VirtualEnv(Component):
         self.cmd("python{{component.python_version}} -m venv "
                  "{{component.parent.env_dir}}")
         if self.pip_version:
-            self.cmd(
-                '{{component.parent.env_dir}}/bin/pip '
-                f'install pip=={self.pip_version}')
+            self.cmd('{{component.parent.env_dir}}/bin/pip '
+                     f'install pip=={self.pip_version}')
         else:
             self.cmd("{{component.parent.env_dir}}/bin/python -m pip "
                      "install --upgrade pip")
