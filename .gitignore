@@ -4,6 +4,7 @@
 .batou
 .batou-lock
 .coverage
+.coverage.*
 .installed.cfg
 .pytest_cache
 .vagrant
@@ -16,6 +17,7 @@
 /htmlcov
 /include
 /lib
+/lib64
 /src/batou/secrets/tests/fixture/gnupg/.gpg-v21-migrated
 /src/batou/secrets/tests/fixture/gnupg/crls.d
 /src/batou/secrets/tests/fixture/gnupg/private-keys*/*.key
