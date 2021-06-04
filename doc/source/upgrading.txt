@@ -21,7 +21,7 @@ To upgrade your project to this schema, follow those steps:
 
 .. code-block:: console
 
-  
+
   $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/appenv.py -o appenv
   $ chmod +x appenv
   $ rm batou

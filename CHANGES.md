@@ -13,7 +13,7 @@
 - Drop support for Python 3.5. (#114)
 
 - batou.lib.buildout: Enable support for Buildout 3 by allowing
-  to specify a `wheel` package version to install in the 
+  to specify a `wheel` package version to install in the
   virtualenv. (#148)
 
 - Fix bootstrapping projects with the new appenv structure. Vendor
@@ -27,7 +27,7 @@
 
 - Improve DNS lookup semantics.
 
-  We experienced two major problems with the current code: 
+  We experienced two major problems with the current code:
 
   1. IPv6 lookups were done opportunistically and thus if DNS issues happened
   during deployments we would suddenly drop IPv6 support instead of failing.
@@ -45,7 +45,7 @@
 
   - you can explicitly set the `require_v6` and `require_v4` options for
     `Address` objects. batou will then perform the required lookups (or not)
-    and it will be a hard failure if required lookups can not be performed. 
+    and it will be a hard failure if required lookups can not be performed.
 
   We recommend to adjust those parameters on Address objects depending on your
   environment, e.g. if you want IPv6 in production but not in Vagrant.
@@ -75,7 +75,7 @@
 ------------------
 
 - Another brownbag release - connecting to remote hosts was broken
-  after refactoring due to missing test coverage. Fixed and 
+  after refactoring due to missing test coverage. Fixed and
   added coverage.
 
 

@@ -205,8 +205,8 @@ class AppEnv(object):
         # Parse the appenv arguments
         parser = argparse.ArgumentParser()
         subparsers = parser.add_subparsers()
-        p = subparsers.add_parser("update-lockfile",
-                                  help="Update the lock file.")
+        p = subparsers.add_parser(
+            "update-lockfile", help="Update the lock file.")
         p.set_defaults(func=self.update_lockfile)
 
         p = subparsers.add_parser("init", help="Create a new appenv project.")
@@ -264,8 +264,8 @@ class AppEnv(object):
                                    b"".join(hash_content)).hexdigest()[:8]
             env_dir = os.path.join(self.appenv_dir, env_hash)
 
-            whitelist = set(
-                [env_dir, os.path.join(self.appenv_dir, "unclean")])
+            whitelist = set([
+                env_dir, os.path.join(self.appenv_dir, "unclean")])
             for path in glob.glob(
                     "{appenv_dir}/*".format(appenv_dir=self.appenv_dir)):
                 if not path in whitelist:
@@ -382,8 +382,9 @@ class AppEnv(object):
         import pkg_resources
 
         extra_specs = []
-        result = cmd("{tmpdir}/bin/python -m pip freeze".format(tmpdir=tmpdir),
-                     merge_stderr=False).decode('ascii')
+        result = cmd(
+            "{tmpdir}/bin/python -m pip freeze".format(tmpdir=tmpdir),
+            merge_stderr=False).decode('ascii')
         pinned_versions = {}
         for line in result.splitlines():
             if line.strip().startswith('-e '):
