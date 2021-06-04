@@ -20,7 +20,8 @@ DATABASES = {
         "HOST":
         "",  # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
         "PORT": "",  # Set to empty string for default.
-    }}
+    }
+}
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
@@ -139,14 +140,21 @@ LOGGING = {
     "disable_existing_loggers": False,
     "filters": {
         "require_debug_false": {
-            "()": "django.utils.log.RequireDebugFalse"}},
+            "()": "django.utils.log.RequireDebugFalse"
+        }
+    },
     "handlers": {
         "mail_admins": {
             "level": "ERROR",
             "filters": ["require_debug_false"],
-            "class": "django.utils.log.AdminEmailHandler",}},
+            "class": "django.utils.log.AdminEmailHandler",
+        }
+    },
     "loggers": {
         "django.request": {
             "handlers": ["mail_admins"],
             "level": "ERROR",
-            "propagate": True,}},}
+            "propagate": True,
+        }
+    },
+}

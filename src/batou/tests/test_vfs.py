@@ -28,7 +28,8 @@ def test_arbitrary_mapping():
         # longer paths are preferred matches
         "/a/b": "/a2",
         # non-absolute paths are ignored
-        "etc": "none",}
+        "etc": "none",
+    }
     mapping = Map(environment, config)
 
     assert mapping.map("/etc") == "/etc"

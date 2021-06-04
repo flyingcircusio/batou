@@ -39,7 +39,8 @@ templates_path = ["_templates"]
 source_suffix = {
     ".rst": "restructuredtext",
     ".txt": "restructuredtext",
-    ".md": "markdown",}
+    ".md": "markdown",
+}
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
@@ -147,13 +148,16 @@ html_sidebars = {
         "sidebarintro.html",
         "localtoc.html",
         "sourcelink.html",
-        "searchbox.html",],
+        "searchbox.html",
+    ],
     "**": [
         "sidebarlogo.html",
         "localtoc.html",
         "relations.html",
         "sourcelink.html",
-        "searchbox.html",],}
+        "searchbox.html",
+    ],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -230,8 +234,8 @@ latex_documents = [("index2", "batou.tex", "batou Documentation",
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ("index2", "batou", "batou Documentation", ["Christian Theune"], 1)]
+man_pages = [("index2", "batou", "batou Documentation", ["Christian Theune"],
+              1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False

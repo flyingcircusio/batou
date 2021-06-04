@@ -162,7 +162,8 @@ class UnknownComponentConfigurationError(ConfigurationError):
                     "<string>",
                     "<remote exec>",
                     environment.__file__.rstrip("c"),
-                    component.__file__.rstrip("c"),]:
+                    component.__file__.rstrip("c"),
+            ]:
                 continue
             stack.insert(0, line)
             break

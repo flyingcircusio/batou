@@ -348,7 +348,8 @@ def root_dependencies():
         key = (root.host.fqdn, root.name)
         deps[key] = {
             "dependencies": [(r.host.fqdn, r.name) for r in dependencies],
-            "ignore": root.ignore,}
+            "ignore": root.ignore,
+        }
     return deps
 
 

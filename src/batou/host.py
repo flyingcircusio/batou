@@ -24,7 +24,8 @@ def get_kitchen_ssh_connection_info(name):
         state["port"],
         "-l",
         state["username"],
-        state["hostname"],]
+        state["hostname"],
+    ]
 
 
 def new_ssh_args(spec):

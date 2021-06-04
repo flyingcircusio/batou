@@ -46,8 +46,8 @@ class CleanupUnused(Component):
     def verify(self):
         if not os.path.exists(".appenv/"):
             return
-        protected = set([
-            self.parent.env_hash, self.parent.last_env_hash, "current"])
+        protected = set(
+            [self.parent.env_hash, self.parent.last_env_hash, "current"])
         self.cleanup = set(os.listdir(".appenv/")) - protected
         assert not self.cleanup
 

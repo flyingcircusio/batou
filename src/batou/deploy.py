@@ -173,8 +173,8 @@ class Deployment(object):
         # Pick a reference remote (the last we initialised) that will pass us
         # the order we should be deploying components in.
         reference_node = [
-            h for h in list(self.environment.hosts.values())
-            if not h.ignore][0]
+            h for h in list(self.environment.hosts.values()) if not h.ignore
+        ][0]
 
         self.loop = asyncio.get_event_loop()
         self.taskpool = ThreadPoolExecutor(self.jobs)

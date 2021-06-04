@@ -20,8 +20,8 @@ RESOLVER_ERRORS = [
 
 @mock.patch("socket.getaddrinfo")
 def test_host_without_port_resolves(ghbn):
-    ghbn.return_value = [
-        (None, None, None, None, ('127.0.0.1', 0, None, None))]
+    ghbn.return_value = [(None, None, None, None, ('127.0.0.1', 0, None, None))
+                         ]
     assert resolve("localhost") == "127.0.0.1"
 
 

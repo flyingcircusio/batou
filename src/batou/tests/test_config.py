@@ -47,14 +47,16 @@ def test_production_environment_is_loaded(env_prod):
     assert sorted(env_prod.hosts) == [
         "host1.example.com",
         "host2.example.com",
-        "host3.example.com",]
+        "host3.example.com",
+    ]
 
     host1 = env_prod.hosts["host1.example.com"]
     assert host1.name == "host1"
     assert host1.fqdn == "host1.example.com"
     assert host1.service_user == "alice"
     host1_components = [
-        x.name for x in env_prod.root_components if x.host is host1]
+        x.name for x in env_prod.root_components if x.host is host1
+    ]
     assert host1_components == ["zope"]
 
 
@@ -66,8 +68,8 @@ def test_dev_environment_is_loaded(env):
     localhost = env.hosts["localhost"]
     assert localhost.name == "localhost"
     assert localhost.fqdn == "localhost"
-    root_components = set([
-        x.name for x in env.root_components if x.host is localhost])
+    root_components = set(
+        [x.name for x in env.root_components if x.host is localhost])
     assert root_components == set(["zeo", "zope"])
 
     zeo = env.get_root("zeo", "localhost")
@@ -125,7 +127,8 @@ def test_config_exceptions_orderable(env):
         batou.DeploymentError(),
         batou.RepositoryDifferentError("asdf", "bsdf"),
         batou.DuplicateHostError("localhost"),
-        batou.InvalidIPAddressError("asdf"),]
+        batou.InvalidIPAddressError("asdf"),
+    ]
 
     # Ensure all exceptions can be compared
     for x in exceptions:

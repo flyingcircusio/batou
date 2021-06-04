@@ -71,7 +71,8 @@ Programming Language :: Python :: 3 :: Only
     include_package_data=True,
     data_files=[
         ("", glob.glob(project_path("*.txt")) +
-         glob.glob(project_path("*.in")) + glob.glob(project_path("*.md")))],
+         glob.glob(project_path("*.in")) + glob.glob(project_path("*.md")))
+    ],
     zip_safe=False,
     test_suite="batou.tests",
     python_requires=">=3.6")

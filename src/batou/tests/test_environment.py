@@ -115,22 +115,30 @@ def test_parse_host_components():
     assert parse_host_components(["asdf"]) == {
         "asdf": {
             "features": [],
-            "ignore": False}}
+            "ignore": False
+        }
+    }
 
     assert parse_host_components(["!asdf"]) == {
         "asdf": {
             "features": [],
-            "ignore": True}}
+            "ignore": True
+        }
+    }
 
     assert parse_host_components(["!asdf:test", "asdf:bar"]) == {
         "asdf": {
             "features": ["test", "bar"],
-            "ignore": True}}
+            "ignore": True
+        }
+    }
 
     assert parse_host_components(["asdf:test", "asdf:bar"]) == {
         "asdf": {
             "features": ["test", "bar"],
-            "ignore": False}}
+            "ignore": False
+        }
+    }
 
 
 @mock.patch("batou.environment.Environment.add_root")
@@ -146,7 +154,8 @@ components = bar
     e.load_hosts(config)
     assert [
         mock.call("bar", "foo", [], False),
-        mock.call("bar", "baz", [], False),] == add_root.call_args_list
+        mock.call("bar", "baz", [], False),
+    ] == add_root.call_args_list
 
 
 @mock.patch("batou.environment.Environment.add_root")

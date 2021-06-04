@@ -101,7 +101,8 @@ def test_dmg_extracts_archive_to_target_directory(root):
     assert sorted(os.listdir(str(extract.target))) == [
         " ",
         "a\u0308sdf.txt",
-        "example.app",]
+        "example.app",
+    ]
 
     # ' ' is a symlink which stays one after copying:
     assert os.path.islink(extract.target + "/ ")

@@ -536,7 +536,8 @@ def test_json_diff_not_for_sensitive(output, root):
     p = JSONContent(
         "target.json", data={
             "asdf": 1,
-            "bsdf": 2}, sensitive_data=True)
+            "bsdf": 2
+        }, sensitive_data=True)
     root.component += p
 
     with open(p.path, "w") as f:
@@ -612,13 +613,16 @@ def test_json_content_source_with_override(root):
             json.dumps({
                 "database": {
                     "address": "localhost",
-                    "password": "topsecret"}}))
+                    "password": "topsecret"
+                }
+            }))
 
     p = JSONContent(
         "target.json",
         source="source.json",
         override={"database": {
-            "password": "realpassword"}},
+            "password": "realpassword"
+        }},
     )
 
     root.component += p
@@ -710,7 +714,8 @@ def test_yaml_diff_not_for_sensitive(output, root):
     p = YAMLContent(
         "target.yaml", data={
             "asdf": 1,
-            "bsdf": 2}, sensitive_data=True)
+            "bsdf": 2
+        }, sensitive_data=True)
     root.component += p
 
     with open(p.path, "w") as f:
@@ -778,13 +783,16 @@ def test_yaml_content_source_with_override(root):
             yaml.safe_dump({
                 "database": {
                     "address": "localhost",
-                    "password": "topsecret"}}))
+                    "password": "topsecret"
+                }
+            }))
 
     p = YAMLContent(
         "target.yaml",
         source="source.yaml",
         override={"database": {
-            "password": "realpassword"}},
+            "password": "realpassword"
+        }},
     )
 
     root.component += p

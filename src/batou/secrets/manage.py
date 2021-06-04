@@ -54,7 +54,8 @@ class Environment(object):
         print("\t secret files")
         files = [f for f in self.f.files if f != self.path]
         files = [
-            f.replace('secrets/{}-'.format(self.name), '', 1) for f in files]
+            f.replace('secrets/{}-'.format(self.name), '', 1) for f in files
+        ]
         for f in files:
             print("\t\t-", f)
         if not files:

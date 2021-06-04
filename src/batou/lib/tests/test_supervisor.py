@@ -94,4 +94,5 @@ def test_setting_nagios_to_True_creates_a_nagios_nrpe_service(root):
     # assert nothing raised
     root.component.configure()
     assert "NRPEService" in [
-        x.__class__.__name__ for x in supervisor.sub_components]
+        x.__class__.__name__ for x in supervisor.sub_components
+    ]

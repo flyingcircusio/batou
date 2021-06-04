@@ -60,7 +60,8 @@ class Resources(object):
     def _subscriptions(self, key, host):
         return [
             s for s in self.subscribers.get(key, ())
-            if s.host is None or host is None or s.host is host]
+            if s.host is None or host is None or s.host is host
+        ]
 
     @property
     def strict_subscribers(self):
@@ -72,8 +73,8 @@ class Resources(object):
         values = self.resources.setdefault(key, defaultdict(list))
         values[root].append(value)
         self.dirty_dependencies.update([
-            s.root for s in self._subscriptions(key, root.host)
-            if not s.dirty])
+            s.root for s in self._subscriptions(key, root.host) if not s.dirty
+        ])
 
     def get(self, key, host=None):
         """Return resource values without recording a dependency."""
@@ -109,7 +110,8 @@ class Resources(object):
             # need to mark them as dirty if they want to be clean.
             s = [
                 s.root for s in self._subscriptions(key, root.host)
-                if not s.dirty]
+                if not s.dirty
+            ]
             self.dirty_dependencies.update(s)
 
     def copy_resources(self):
@@ -151,16 +153,16 @@ class Resources(object):
     def unsatisfied_components(self):
         components = set()
         for resource in self.unsatisfied:
-            components.update([
-                s.root for s in self._subscriptions(resource, None)])
+            components.update(
+                [s.root for s in self._subscriptions(resource, None)])
         return components
 
     @property
     def unsatisfied_keys_and_components(self):
         keys = {}
         for resource in self.unsatisfied:
-            keys[resource] = set([
-                s.root for s in self._subscriptions(resource, None)])
+            keys[resource] = set(
+                [s.root for s in self._subscriptions(resource, None)])
         return keys
 
     def get_dependency_graph(self):

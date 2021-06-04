@@ -171,7 +171,8 @@ class Environment(object):
                 "timeout",
                 "develop",
                 "repository_url",
-                "jobs",]:
+                "jobs",
+        ]:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:

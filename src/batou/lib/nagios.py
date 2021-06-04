@@ -90,7 +90,8 @@ class NRPEHost(Component):
     def configure(self):
         self.services = [
             service for service in self.require(Service.key, host=self.host)
-            if isinstance(service, NRPEService)]
+            if isinstance(service, NRPEService)
+        ]
         self.services.sort(key=lambda x: x.name)
 
         self += File(

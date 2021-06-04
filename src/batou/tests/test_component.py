@@ -111,7 +111,8 @@ def test_recursive_sub_component_iterator(root):
         "x1y1",
         "x2",
         "x2y0",
-        "x2y1",] == recursive
+        "x2y1",
+    ] == recursive
 
 
 def test_op_orassignment_ignores_already_preapred_component(root):

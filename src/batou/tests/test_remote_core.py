@@ -78,7 +78,8 @@ changeset: 372:revision-b
         ),
         ("", ""),
         ("", ""),
-        ("", ""),]
+        ("", ""),
+    ]
     heads = remote_core.hg_current_heads()
     assert heads == ["revision-a", "revision-b"]
     remote_core.hg_unbundle_code()
@@ -204,7 +205,8 @@ def test_channelexec_multiple_echo_cmds(remote_core_mod):
     assert channel.receivequeue == []
     assert channel.sendqueue == [
         ("batou-result", (b"asdf1\n", b"")),
-        ("batou-result", (b"asdf2\n", b"")),]
+        ("batou-result", (b"asdf2\n", b"")),
+    ]
 
 
 def test_channelexec_handle_exception(remote_core_mod):
@@ -221,7 +223,8 @@ def test_channelexec_handle_exception(remote_core_mod):
         ("ERROR: fdjkahfkjdasbfda",),
         {
             "bold": True,
-            "red": True},
+            "red": True
+        },
     )
 
     assert next(response) == (
@@ -229,7 +232,8 @@ def test_channelexec_handle_exception(remote_core_mod):
         "line",
         ("Return code: 127",),
         {
-            "red": True},
+            "red": True
+        },
     )
 
     assert next(response) == (
@@ -237,7 +241,8 @@ def test_channelexec_handle_exception(remote_core_mod):
         "line",
         ("STDOUT",),
         {
-            "red": True},
+            "red": True
+        },
     )
 
     assert next(response) == ("batou-output", "line", ("",), {})
@@ -247,7 +252,8 @@ def test_channelexec_handle_exception(remote_core_mod):
         "line",
         ("STDERR",),
         {
-            "red": True},
+            "red": True
+        },
     )
 
     # Different /bin/sh versions have different error reporting

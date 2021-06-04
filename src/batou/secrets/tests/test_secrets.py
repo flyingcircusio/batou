@@ -23,7 +23,8 @@ def cleanup_gpg_sockets():
             "S.gpg-agent",
             "S.gpg-agent.browser",
             "S.gpg-agent.extra",
-            "S.gpg-agent.ssh",]:
+            "S.gpg-agent.ssh",
+    ]:
         try:
             os.remove(os.path.join(FIXTURE, "gnupg", path))
         except OSError:

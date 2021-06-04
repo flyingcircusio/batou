@@ -309,7 +309,8 @@ def topological_sort(graph):
     sorted = []
     reverse_graph = revert_graph(graph)
     roots = [
-        node for node, incoming in list(reverse_graph.items()) if not incoming]
+        node for node, incoming in list(reverse_graph.items()) if not incoming
+    ]
     while roots:
         root = roots.pop()
         sorted.append(root)

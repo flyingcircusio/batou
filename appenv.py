@@ -264,8 +264,8 @@ class AppEnv(object):
                                    b"".join(hash_content)).hexdigest()[:8]
             env_dir = os.path.join(self.appenv_dir, env_hash)
 
-            whitelist = set([
-                env_dir, os.path.join(self.appenv_dir, "unclean")])
+            whitelist = set(
+                [env_dir, os.path.join(self.appenv_dir, "unclean")])
             for path in glob.glob(
                     "{appenv_dir}/*".format(appenv_dir=self.appenv_dir)):
                 if not path in whitelist:
