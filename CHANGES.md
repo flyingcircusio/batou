@@ -6,6 +6,8 @@
 
 - NetLoc objects are now comparable. (#88)
 
+- Support `ls` syntax in mode attributes. (#61)
+
 
 2.3b1 (2021-05-21)
 ------------------

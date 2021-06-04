@@ -80,6 +80,12 @@ ERROR: Failed override attribute conversion
 Conversion: Address('localhost')
      Error: Need port for service address.
 
+ERROR: Failed override attribute conversion
+      Host: localhost
+ Attribute: FileMode > File('work/filemode/new-file.txt') > Mode('new-file.txt').mode
+Conversion: convert_mode('wrongmode')
+     Error: Mode-string should be between `---------` and `rwxrwxrwx`.
+
 ERROR: Overrides for undefined attributes
       Host: localhost
  Component: Component2
@@ -99,8 +105,8 @@ cycle1 depends on
 cycle2 depends on
         cycle1
 
-ERROR: 6 remaining unconfigured component(s)
-======================= 8 ERRORS - CONFIGURATION FAILED ======================\
+ERROR: 7 remaining unconfigured component(s)
+======================= 9 ERRORS - CONFIGURATION FAILED ======================\
 ==
 ===================== DEPLOYMENT FAILED (during configure) ===================\
 ==
