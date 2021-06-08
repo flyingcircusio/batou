@@ -191,7 +191,7 @@ ssh $PROVISION_HOST fc-build-dev-container ensure $PROVISION_CONTAINER
 
 {seed_script}
 
-RUN sudo -i fc-manage -b
+RUN sudo -i fc-manage -b || true
 
 """.format(seed_script=seed_script,
                 ENV='\n'.join(
