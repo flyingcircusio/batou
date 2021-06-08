@@ -6,8 +6,7 @@ def test_server_template(root):
         "http",
         command="http",
         args="-H localhost -u /login.html",
-        depend_on=[("localhost", "Supervisor")],
-    )
+        depend_on=[("localhost", "Supervisor")])
     root.component |= service
     server = NagiosServer()
     root.component += server
