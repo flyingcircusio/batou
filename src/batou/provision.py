@@ -159,7 +159,10 @@ cd {basedir}
                 # deleted it later, though, because it might contain secrets.
                 f.write("""\
 #/bin/sh
-set -ex
+# We used to run '-e' here but this can cause deadlocks if batou
+# leaves a partial deployment behind that we can't fix in the provisioning
+# phase.
+set -x
 
 {ENV}
 
