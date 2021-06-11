@@ -11,7 +11,8 @@ import pytest
 import yaml
 from batou.lib.file import (BinaryFile, Content, Directory, File,
                             FileComponent, JSONContent, Mode, Presence, Purge,
-                            Symlink, YAMLContent, ensure_path_nonexistent)
+                            Symlink, YAMLContent, ensure_path_nonexistent,
+                            convert_mode)
 from batou.tests.ellipsis import Ellipsis
 from mock import Mock, patch
 
@@ -839,7 +840,10 @@ def test_mode_verifies_for_nonexistent_file(root):
         mode.verify()
 
 
-def test_mode_ensures_mode_for_files(root):
+@pytest.mark.parametrize('input,expected', [
+    (0o777, 0o777),
+    ('rwxrw-r--', 0o764),])
+def test_mode_ensures_mode_for_files(root, input, expected):
     path = "path"
     open("work/mycomponent/" + path, "w").close()
     mode = Mode(path, mode=0o000)
@@ -847,13 +851,38 @@ def test_mode_ensures_mode_for_files(root):
     root.component.deploy()
     assert S_IMODE(os.stat(mode.path).st_mode) == 0o000
 
-    mode.mode = 0o777
+    mode.mode = input
     root.component.deploy()
-    assert S_IMODE(os.stat(mode.path).st_mode) == 0o777
+    assert S_IMODE(os.stat(mode.path).st_mode) == expected
     assert mode.changed
 
     root.component.deploy()
     assert not mode.changed
+
+
+@pytest.mark.parametrize('input,expected', [
+    ('---------', 0o000),
+    ('r--------', 0o400),
+    ('rw-------', 0o600),
+    ('rwx------', 0o700),
+    ('----wxr--', 0o034),
+    ('rwxrwxrwx', 0o777),])
+def test_mode_conversion_supports_strings(input, expected):
+    """It converts chmod strings to bitmask."""
+    assert convert_mode(input) == expected
+
+
+@pytest.mark.parametrize(
+    'input,exception',
+    [
+        ('-l-------', SyntaxError),  # wrong character
+        ('rwxrwx', SyntaxError),  # too short
+        ('rwxrwxrwxrwx', SyntaxError),  # too long
+    ])
+def test_mode_conversion_handles_errors(input, exception):
+    """It raises syntax errors when format is wrong."""
+    with pytest.raises(exception):
+        convert_mode(input)
 
 
 def test_mode_ensures_mode_for_directories(root):

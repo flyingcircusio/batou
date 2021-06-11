@@ -1,5 +1,6 @@
 from batou import output
 from batou.component import Component
+from batou.component import Attribute
 from batou.utils import dict_merge
 import batou
 import difflib
@@ -12,6 +13,7 @@ import shutil
 import stat
 import tempfile
 import yaml
+import re
 
 
 def ensure_path_nonexistent(path):
@@ -573,9 +575,36 @@ class Group(FileComponent):
         os.chown(self.path, owner, self.group)
 
 
+def convert_mode(string: str) -> int:
+    """Convert ls-string representation to bitmask."""
+    pattern = re.compile(
+        r'''^ # ensure length
+        (?P<o400>r|-) # Use groups as octal values.
+        (?P<o200>w|-)
+        (?P<o100>x|-)
+        (?P<o040>r|-)
+        (?P<o020>w|-)
+        (?P<o010>x|-)
+        (?P<o004>r|-)
+        (?P<o002>w|-)
+        (?P<o001>x|-)
+        $ # ensure length''',
+        re.VERBOSE,
+    )
+    match = pattern.match(string)
+    if match:
+        return sum(
+            int(f'0{key}', base=8) for key, value in match.groupdict().items()
+            if value != '-')
+    else:
+        # No match, treat it as wrong syntax
+        raise SyntaxError(
+            'Mode-string should be between `---------` and `rwxrwxrwx`.')
+
+
 class Mode(FileComponent):
 
-    mode = None
+    mode = Attribute(conversion=convert_mode, default=None)
 
     def verify(self):
         try:
