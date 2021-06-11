@@ -1,11 +1,4 @@
-from batou import output, DuplicateComponent
-from batou import SilentConfigurationError
-from batou.utils import call_with_optional_args
 import ast
-import batou
-import batou.c
-import batou.template
-import batou.utils
 import contextlib
 import inspect
 import os
@@ -13,6 +6,13 @@ import os.path
 import sys
 import types
 import weakref
+
+import batou
+import batou.c
+import batou.template
+import batou.utils
+from batou import DuplicateComponent, SilentConfigurationError, output
+from batou.utils import call_with_optional_args
 
 
 def platform(name, component):
@@ -875,7 +875,9 @@ class Component(object):
         if component is None:
             component = self
         args = dict(
-            host=self.host, environment=self.environment, component=component)
+            host=component.host,
+            environment=component.environment,
+            component=component)
         args.update(kw)
         return args
 
