@@ -4,13 +4,17 @@
 2.3b2 (unreleased)
 ------------------
 
-- NetLoc objects are now comparable. (#88)
+- NetLoc objects are now comparable.
+  ([#88](https://github.com/flyingcircusio/batou/issues/88))
 
 - Render a better error message if gpg failed to decrypt a secrets file.
   ([#123](https://github.com/flyingcircusio/batou/issues/123))
 
-- Support `ls` syntax in mode attributes. (#61)
+- Support `ls` syntax in mode attributes.
+  ([#61](https://github.com/flyingcircusio/batou/issues/61))
 
+- Fail if an attribute is set both in environment and via secrets.
+  ([#28](https://github.com/flyingcircusio/batou/issues/28))
 - Raise exception when calling `batou secrets add` or `batou secrets remove`
   with an unknown environment name.
   ([#143](https://github.com/flyingcircusio/batou/issues/143))

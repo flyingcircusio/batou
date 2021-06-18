@@ -20,8 +20,9 @@ new one is created.
 
 """
 
-from batou import SuperfluousSecretsSection
 from .encryption import EncryptedConfigFile
+from batou import DuplicateOverride
+from batou import SuperfluousSecretsSection
 import os.path
 import glob
 
@@ -50,9 +51,13 @@ def add_secrets_to_environment(environment):
                 if component not in environment.components:
                     environment.exceptions.append(
                         SuperfluousSecretsSection(component))
-                o = environment.overrides.setdefault(component, {})
-                o.update(((k, o.value)
-                          for k, o in config_file.config.items(section_)))
+                overrides = environment.overrides.setdefault(component, {})
+                for k, v in config_file.config.items(section_):
+                    if k in overrides:
+                        environment.exceptions.append(
+                            DuplicateOverride(component, k))
+                    else:
+                        overrides[k] = v.value
 
         # additional_secrets
         prefix = "secrets/{}-".format(environment.name)

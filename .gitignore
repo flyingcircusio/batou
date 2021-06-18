@@ -8,6 +8,7 @@
 .installed.cfg
 .pytest_cache
 .vagrant
+/.tox
 /bin
 /develop-eggs
 /doc/build

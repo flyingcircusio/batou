@@ -4,6 +4,7 @@ from batou.component import Component, Attribute
 class Component1(Component):
 
     do_what_is_needed = Attribute("literal", None)
+    my_attribute = None
 
 
 class Component2(Component):
