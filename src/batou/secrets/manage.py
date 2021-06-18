@@ -1,8 +1,19 @@
 """Summarize status of secret files."""
 
 from .encryption import EncryptedConfigFile
+from batou import ConfigurationError
 import glob
 import os.path
+
+
+class UnknownEnvironmentError(ValueError):
+    """There is/are no environment(s) for this name(s)."""
+
+    def __init__(self, names: list):
+        self.names = names
+
+    def __str__(self):
+        return f'Unknown environment(s): {", ".join(self.names)}'
 
 
 class Environment(object):
@@ -23,6 +34,12 @@ class Environment(object):
             quiet=True)
         self.f.__enter__()
 
+    def __del__(self):
+        try:
+            self.f.__exit__()
+        except AttributeError:
+            pass
+
     @classmethod
     def all(cls):
         for e in glob.glob("environments/*.cfg"):
@@ -33,10 +50,17 @@ class Environment(object):
     def by_filter(cls, filter):
         if filter:
             filter = filter.split(",")
+        environments = []
         for e in cls.all():
-            if filter and e.name not in filter:
-                continue
-            yield e
+            if filter:
+                if e.name in filter:
+                    filter.remove(e.name)
+                else:
+                    continue
+            environments.append(e)
+        if filter:
+            raise UnknownEnvironmentError(filter)
+        return environments
 
     def summary(self):
         try:
@@ -130,7 +154,7 @@ def add_user(keyid, environments, **kw):
 def remove_user(keyid, environments, **kw):
     """Remove a user from a given environment.
 
-    If environments is not given, the user is removedd
+    If environments is not given, the user is removed
     from all environments.
 
     """
