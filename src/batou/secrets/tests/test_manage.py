@@ -22,14 +22,14 @@ def test_manage__2(tmp_path, monkeypatch, capsys):
 
     summary()
     out, err = capsys.readouterr()
-    assert 'ct@gocept.com' in out
+    assert 'cz@flyingcircus.io' in out
 
-    remove_user('ct@gocept.com', 'errors')
+    remove_user('cz@flyingcircus.io', 'errors')
     summary()
     out, err = capsys.readouterr()
-    assert 'ct@gocept.com' not in out
+    assert 'cz@flyingcircus.io' not in out
 
-    add_user('ct@gocept.com', 'errors')
+    add_user('cz@flyingcircus.io', 'errors')
     summary()
     out, err = capsys.readouterr()
-    assert 'ct@gocept.com' in out
+    assert 'cz@flyingcircus.io' in out
