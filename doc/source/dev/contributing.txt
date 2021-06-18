@@ -58,7 +58,7 @@ Code Contributions
 When contributing code, you’ll want to follow this checklist:
 
 1. Fork the repository on
-   `bitbucket <https://bitbucket.org/flyingcircus/batou>`_.
+   `GitHub <https://github.com/flyingcircusio/batou>`_.
 2. Run the tests to confirm they all pass on your system. If they don’t,
    you’ll need to investigate why they fail. If you’re unable to diagnose
    this yourself, raise it as a bug report by following the guidelines in
@@ -116,7 +116,7 @@ identifier, e.g.:
 .. code-block:: console
 
     $ ./batou
-    batou/1.2 (CPython 2.7.10-final0, Darwin 15.3.0 x86_64)
+    batou/2.3b2.dev0 (cpython 3.9.5-final0, Darwin 20.5.0 x86_64)
     ...
 
 Also, include console output, relevant component code and maybe environment

@@ -1,0 +1,20 @@
+Testing
+=======
+
+Run the tests
+-------------
+
+* ``bin/tox``
+
+Changing the examples
+---------------------
+
+The batou configurations in the ``examples/`` directory use a custom GPG key.
+To change the secrets files or to run the examples you have to set the
+environment variable ``GNUPGHOME`` to point to
+``./src/batou/secrets/tests/fixture/gnupg``. (But the path has to be absolute!)
+
+Example::
+
+    $ cd examples/errors
+    $ GNUPGHOME=/home/user1/clones/batou/src/batou/secrets/tests/fixture/gnupg ./batou deploy errors
