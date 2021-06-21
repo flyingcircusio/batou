@@ -116,7 +116,7 @@ Host {container} {aliases}
         env = {
             'PROVISION_CONTAINER': container,
             'PROVISION_HOST': self.target_host,
-            'PROVISION_CHANNEL': ' '.join(host.provision_channel),
+            'PROVISION_CHANNEL': host.provision_channel,
             'PROVISION_ALIASES': ' '.join(host.provision_aliases),
             'SSH_CONFIG': self.ssh_config_file,
             'RSYNC_RSH': 'ssh -F {}'.format(self.ssh_config_file)}
