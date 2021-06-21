@@ -127,6 +127,9 @@ class Host(object):
                                        environment.service_user)
         self._provisioner = config.get("provisioner")
 
+        if self.provisioner:
+            self.provisioner.configure_host(self, config)
+
         for key, value in list(config.items()):
             if key.startswith("data-"):
                 key = key.replace("data-", "", 1)

@@ -27,14 +27,14 @@ class Provisioner(object):
 class FCDevContainer(Provisioner):
 
     target_host = None
+    channel = None
     aliases = ()
-    nix_config = None  # Filename
 
     @classmethod
     def from_config_section(cls, name, section):
         instance = FCDevContainer(name)
         instance.target_host = section['host']
-        instance.aliases = section.get('aliases', [])
+        instance.channel = section['channel']
         return instance
 
     def suggest_name(self, name):
@@ -102,6 +102,13 @@ Host {container} {aliases}
         with open(self.ssh_config_file, 'w') as f:
             f.write('\n'.join(ssh_config))
 
+    def configure_host(self, host, config):
+        # Extract provisioning-specific config from host
+        host.provision_aliases = [
+            x.strip()
+            for x in config.get('provision-aliases', '').strip().split()]
+        host.provision_channel = config.get('provision-channel', self.channel)
+
     def provision(self, host):
         container = host.name
         self._prepare_ssh(host)
@@ -109,6 +116,8 @@ Host {container} {aliases}
         env = {
             'PROVISION_CONTAINER': container,
             'PROVISION_HOST': self.target_host,
+            'PROVISION_CHANNEL': ' '.join(host.provision_channel),
+            'PROVISION_ALIASES': ' '.join(host.provision_aliases),
             'SSH_CONFIG': self.ssh_config_file,
             'RSYNC_RSH': 'ssh -F {}'.format(self.ssh_config_file)}
         if self.rebuild:
@@ -184,10 +193,10 @@ COPY() {{
 }}
 
 if [ ${{PROVISION_REBUILD+x}} ]; then
-    ssh $PROVISION_HOST fc-build-dev-container destroy $PROVISION_CONTAINER
+    ssh $PROVISION_HOST sudo fc-build-dev-container destroy $PROVISION_CONTAINER
 fi
 
-ssh $PROVISION_HOST fc-build-dev-container ensure $PROVISION_CONTAINER
+ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "$PROVISION_ALIASES"
 
 {seed_script}
 
