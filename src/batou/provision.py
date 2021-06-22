@@ -40,7 +40,7 @@ class FCDevContainer(Provisioner):
     def suggest_name(self, name):
         config = "-F ssh_config" if os.path.exists('ssh_config') else ''
         out, _ = cmd(
-            "ssh {config} {target_host} 'sudo nixos-container list'".format(
+            "ssh {config} {target_host} 'nixos-container list'".format(
                 config=config, target_host=self.target_host))
         names = filter(None, [x.strip() for x in out.splitlines()])
         while True:
