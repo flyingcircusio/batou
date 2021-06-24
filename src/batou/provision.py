@@ -64,12 +64,6 @@ class FCDevContainer(Provisioner):
             cmd(['ssh-keygen', '-R', container, '-f', KNOWN_HOSTS_FILE])
 
         ssh_config = []
-        if os.path.exists(os.path.expanduser('~/.ssh/config')):
-            ssh_config.append('Include ~/.ssh/config')
-        if os.path.exists('ssh_config'):
-            ssh_config.append('Include {}'.format(
-                os.path.abspath('ssh_config')))
-
         # We need to provide a version of the key that doesn't trigger
         # OpenSSHs "wrong permission" check.
         packaged_insecure_key = os.path.join(
@@ -93,6 +87,16 @@ Host {container} {aliases}
            target_host=self.target_host,
            known_hosts=KNOWN_HOSTS_FILE,
            insecure_private_key=local_insecure_key))
+
+        # More generic includes need to go last because parameters are
+        # set by a match-first and things like User settings for * may
+        # otherwise collide with our very specific settings. See
+        # `man 5 ssh_config`.
+        if os.path.exists(os.path.expanduser('~/.ssh/config')):
+            ssh_config.append('Include ~/.ssh/config')
+        if os.path.exists('ssh_config'):
+            ssh_config.append('Include {}'.format(
+                os.path.abspath('ssh_config')))
 
         # Place this in the deployment base directory persistently and
         # keep updating it. This helps users to also interact with containers
