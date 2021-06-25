@@ -47,6 +47,10 @@ ERROR: Superfluous section in environment configuration
 ERROR: Override section for unknown component found
  Component: nonexisting-component-section
 
+ERROR: Attribute override found both in environment and secrets
+ Component: component1
+ Attribute: my_attribute
+
 ERROR: Secrets section for unknown component found
  Component: another-nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================

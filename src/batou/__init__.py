@@ -349,6 +349,28 @@ class SuperfluousSecretsSection(ConfigurationError):
         # TODO provide traceback in debug output
 
 
+class DuplicateOverride(ConfigurationError):
+    """An override for a component attribute was found both in the secrets and
+    in the environment configuration."""
+
+    sort_key = (0,)
+
+    def __init__(self, component, attribute):
+        self.component = component
+        self.attribute = attribute
+
+    def __str__(self):
+        return (f'A value {self.component}.{self.attribute} is defined both in'
+                ' environment and secrets.')
+
+    def report(self):
+        output.error(
+            "Attribute override found both in environment and secrets")
+        output.tabular("Component", self.component, red=True)
+        output.tabular("Attribute", self.attribute, red=True)
+        # TODO provide traceback in debug output
+
+
 class CycleErrorDetected(ConfigurationError):
     """We think we found a cycle in the component dependencies.
     """
