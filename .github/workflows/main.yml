@@ -37,4 +37,4 @@ jobs:
         run: set
 
       - name: Test
-        run: bin/tox -e py
+        run: bin/tox -e py -- -vv

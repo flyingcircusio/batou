@@ -1,13 +1,13 @@
 from batou.secrets.encryption import EncryptedConfigFile, EncryptedFile
 from batou.secrets.encryption import NEW_FILE_TEMPLATE
 from batou.secrets import add_secrets_to_environment
+import batou
 import configparser
 import mock
 import os
 import os.path
 import pytest
 import shutil
-import subprocess
 import tempfile
 
 FIXTURE = os.path.join(os.path.dirname(__file__), "fixture")
@@ -59,7 +59,7 @@ def test_caches_cleartext():
 def test_decrypt_missing_key(monkeypatch):
     monkeypatch.setitem(os.environ, "GNUPGHOME", '/tmp')
 
-    with pytest.raises(subprocess.CalledProcessError):
+    with pytest.raises(batou.GPGCallError):
         EncryptedConfigFile(encrypted_file)
         f = secrets.__enter__()
         f.read()
