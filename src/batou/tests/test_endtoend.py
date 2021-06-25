@@ -64,8 +64,7 @@ ERROR: Error while calling GPG
    command: gpg --decrypt secrets/errors.cfg
  exit code: 2
    message:
-gpg: ... 2013-07-10
-      "Christian Zagrodnick (replaces C17A4728) <christian@zagrodnick.de>"
+gpg: ...
 ...
 ERROR: Failed loading component file
       File: .../examples/errors/components/component5/component.py
