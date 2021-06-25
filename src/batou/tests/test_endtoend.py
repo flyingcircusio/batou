@@ -49,6 +49,44 @@ ERROR: Secrets section for unknown component found
 """)
 
 
+def test_example_errors_gpg_cannot_decrypt(monkeypatch):
+    monkeypatch.setitem(os.environ, "GNUPGHOME", '')
+    os.chdir("examples/errors")
+    out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
+    assert out == Ellipsis("""\
+batou/2... (cpython 3...)
+================================== Preparing ===================================
+main: Loading environment `errors`...
+main: Verifying repository ...
+main: Loading secrets ...
+
+ERROR: Error while calling GPG
+   command: gpg --decrypt secrets/errors.cfg
+ exit code: 2
+   message:
+gpg: ...
+...
+ERROR: Failed loading component file
+      File: .../examples/errors/components/component5/component.py
+ Exception: invalid syntax (component.py, line 1)
+
+ERROR: Failed loading component file
+      File: .../examples/errors/components/component6/component.py
+ Exception: No module named 'asdf'
+
+ERROR: Missing component
+ Component: missingcomponent
+      Host: localhost
+
+ERROR: Superfluous section in environment configuration
+   Section: superfluoussection
+
+ERROR: Override section for unknown component found
+ Component: nonexisting-component-section
+======================= DEPLOYMENT FAILED (during load) ========================
+""")
+
+
 def test_example_errors_late():
     os.chdir("examples/errors2")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])

@@ -1,4 +1,5 @@
 from batou import FileLockedError
+from batou import GPGCallError
 from configupdater import ConfigUpdater
 import fcntl
 import glob
@@ -93,7 +94,16 @@ class EncryptedFile(object):
         if self.quiet:
             args += ['-q', '--no-tty', '--batch']
         args += ['--decrypt', self.encrypted_filename]
-        return subprocess.check_output(args, stderr=NULL).decode("utf-8")
+        try:
+            result = subprocess.run(
+                args,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as e:
+            raise GPGCallError(args, e.returncode, e.stderr) from e
+        else:
+            return result.stdout.decode("utf-8")
 
     def _encrypt(self, data):
         if not self.recipients:
