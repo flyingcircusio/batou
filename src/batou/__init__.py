@@ -30,6 +30,24 @@ class FileLockedError(ReportingException):
         output.error(str(self))
 
 
+class GPGCallError(ReportingException):
+    """There was an error calling GPG on encrypted file."""
+
+    def __init__(self, command, exitcode, output):
+        self.command = ' '.join(command)
+        self.exitcode = str(exitcode)
+        self.output = output.decode('ascii', errors='replace')
+
+    def __str__(self):
+        return f"Error while calling {self.command}: {self.exitcode}"
+
+    def report(self):
+        output.error('Error while calling GPG')
+        output.tabular('command', self.command, red=True)
+        output.tabular('exit code', self.exitcode)
+        output.tabular('message', self.output, separator=":\n")
+
+
 class UpdateNeeded(AssertionError):
     """A component requires an update."""
 

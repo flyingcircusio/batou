@@ -6,6 +6,9 @@
 
 - NetLoc objects are now comparable. (#88)
 
+- Render a better error message if gpg failed to decrypt a secrets file.
+  ([#123](https://github.com/flyingcircusio/batou/issues/123))
+
 - Support `ls` syntax in mode attributes. (#61)
 
 
