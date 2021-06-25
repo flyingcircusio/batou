@@ -201,8 +201,7 @@ class LocalHost(Host):
         self.remote_base = self.rpc.ensure_base(env.deployment_base)
 
         # XXX the cwd isn't right.
-        self.rpc.setup_deployment(env.name, self.fqdn, env.overrides,
-                                  env.secret_files, env.secret_data,
+        self.rpc.setup_deployment(env.name, env.overrides, env.secret_files,
                                   env._host_data(), env.timeout, env.platform)
 
     def disconnect(self):
@@ -285,8 +284,8 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         # know about locally)
         self.rpc.setup_output()
 
-        self.rpc.setup_deployment(env.name, self.fqdn, env.overrides,
-                                  env.secret_files, env.secret_data,
+        self.rpc.setup_deployment(env.name, self.fqdn,
+                                  env.overrides, env.secret_files,
                                   env._host_data(), env.timeout, env.platform)
 
     def disconnect(self):

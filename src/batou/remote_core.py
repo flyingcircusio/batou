@@ -348,9 +348,9 @@ def root_dependencies():
             root,
             dependencies,
     ) in deployment.environment.root_dependencies().items():
-        key = (root.host.fqdn, root.name)
+        key = (root.host.name, root.name)
         deps[key] = {
-            "dependencies": [(r.host.fqdn, r.name) for r in dependencies],
+            "dependencies": [(r.host.name, r.name) for r in dependencies],
             "ignore": root.ignore,}
     return deps
 
