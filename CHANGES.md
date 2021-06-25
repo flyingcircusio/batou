@@ -8,6 +8,10 @@
 
 - Support `ls` syntax in mode attributes. (#61)
 
+- Raise exception when calling `batou secrets add` or `batou secrets remove`
+  with an unknown environment name.
+  ([#143](https://github.com/flyingcircusio/batou/issues/143))
+
 
 2.3b1 (2021-05-21)
 ------------------
