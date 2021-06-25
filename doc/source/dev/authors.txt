@@ -17,6 +17,7 @@ Patches and Suggestions
 
 * Michael Howitz, gocept gmbh & co. kg
 * Thomas Lotze, gocept gmbh & co. kg
+* Steffen Allner, gocept gmbh & co. kg
 * Sebastian Wehrmann, gocept gmbh & co. kg
 * Wolfgang "wosc" Schnerring
 * Gil Forcada Codinachs

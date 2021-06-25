@@ -182,6 +182,7 @@ If you want to contribute to the project, this part of the documentation is for 
    :maxdepth: 1
 
    dev/contributing
+   dev/testing
    dev/todo
    dev/authors
 

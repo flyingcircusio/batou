@@ -84,11 +84,6 @@ Run py.test to verify that everything works fine:
 Runtime Environments
 --------------------
 
-batou currently supports CPython 2.7 on Unix platforms.
-
-We may switch to Python 3 at some point, but due to the meta programming
-that we do we likely will not support 2 and 3 at the same time.
-
 We will likely not accept patches that are related to Windows. We are open
 to good arguments, though.
 
