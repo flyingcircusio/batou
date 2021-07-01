@@ -200,7 +200,7 @@ if [ ${{PROVISION_REBUILD+x}} ]; then
     ssh $PROVISION_HOST sudo fc-build-dev-container destroy $PROVISION_CONTAINER
 fi
 
-ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "$PROVISION_ALIASES"
+ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "'$PROVISION_ALIASES'"
 
 {seed_script}
 
