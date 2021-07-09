@@ -146,7 +146,7 @@ Remove a user's key from one or more secret files.
     del func_args["func"]
     del func_args["debug"]
     try:
-        args.func(**func_args)
+        return args.func(**func_args)
     except batou.FileLockedError as e:
         # Nicer error reporting for non-deployment commands.
         print("File already locked: {}".format(e.filename))
