@@ -182,7 +182,7 @@ data-csdf = 3
         secrets.read()
 
         with encrypted.add_file(str(tmpdir / 'secrets' / 'env-asdf.txt')) as f:
-            f.cleartext = 'hello!'
+            f.cleartext = 'hello to me!'
 
         secrets.write()
 
@@ -193,10 +193,12 @@ data-csdf = 3
     env.hosts = {}
     env.hosts["localhost"] = host = mock.Mock()
     env.secret_files = {}
+    env.secret_data = set()
     host.data = {"asdf": 1, "csdf": 3}
 
     add_secrets_to_environment(env)
 
     assert env.overrides == {"asdf": {"x": "asdf%asdf%"}}
     assert host.data == {"asdf": "2", "bsdf": "1", "csdf": "3"}
-    assert env.secret_files['asdf.txt'] == 'hello!'
+    assert env.secret_files['asdf.txt'] == 'hello to me!'
+    assert env.secret_data == {'asdf%asdf%', 'hello', 'me!'}

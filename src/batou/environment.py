@@ -91,6 +91,7 @@ class Environment(object):
         self.hosts = {}
         self.resources = Resources()
         self.overrides = {}
+        self.secret_data = set()
         self.exceptions = []
         self.timeout = timeout
         self.platform = platform

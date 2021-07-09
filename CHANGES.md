@@ -23,6 +23,9 @@
 - Render an error message if `batou secrets summary` fails during decryption.
   ([#165](https://github.com/flyingcircusio/batou/issues/165))
 
+- Do not render diffs for files which contain contents of `secrets/*`.
+  ([#91](https://github.com/flyingcircusio/batou/issues/91))
+
 
 2.3b1 (2021-05-21)
 ------------------
