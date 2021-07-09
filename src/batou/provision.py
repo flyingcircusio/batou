@@ -164,7 +164,7 @@ cd {basedir}
             seed_script = ''
 
         with tempfile.NamedTemporaryFile(
-                prefix='batou-provision', delete=False) as f:
+                mode='w+', prefix='batou-provision', delete=False) as f:
             try:
                 os.chmod(f.name, 0o700)
                 # We're placing the ENV vars directly in the script because
