@@ -2,8 +2,10 @@
 
 from .encryption import EncryptedConfigFile
 from batou import ConfigurationError
+from batou import GPGCallError
 import glob
 import os.path
+import sys
 
 
 class UnknownEnvironmentError(ValueError):
@@ -130,9 +132,14 @@ def summary(**kw):
     if not os.path.exists("secrets"):
         print("No secrets.")
 
-    for e in Environment.all():
-        print(e.name)
-        e.summary()
+    try:
+        for e in Environment.all():
+            print(e.name)
+            e.summary()
+    except GPGCallError as e:
+        print(e, file=sys.stderr)
+        print(e.output, file=sys.stderr)
+        return 1  # exit code
 
 
 def add_user(keyid, environments, **kw):

@@ -39,7 +39,7 @@ class GPGCallError(ReportingException):
         self.output = output.decode('ascii', errors='replace')
 
     def __str__(self):
-        return f"Error while calling {self.command}: {self.exitcode}"
+        return f"Exitcode {self.exitcode} while calling: {self.command}"
 
     def report(self):
         output.error('Error while calling GPG')

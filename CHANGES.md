@@ -15,9 +15,13 @@
 
 - Fail if an attribute is set both in environment and via secrets.
   ([#28](https://github.com/flyingcircusio/batou/issues/28))
+
 - Raise exception when calling `batou secrets add` or `batou secrets remove`
   with an unknown environment name.
   ([#143](https://github.com/flyingcircusio/batou/issues/143))
+
+- Render an error message if `batou secrets summary` fails during decryption.
+  ([#165](https://github.com/flyingcircusio/batou/issues/165))
 
 
 2.3b1 (2021-05-21)
