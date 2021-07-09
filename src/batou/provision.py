@@ -163,10 +163,10 @@ cd {basedir}
         else:
             seed_script = ''
 
-        _, provision_script = tempfile.mkstemp()
-        try:
-            os.chmod(provision_script, 0o700)
-            with open(provision_script, 'w') as f:
+        with tempfile.NamedTemporaryFile(
+                prefix='batou-provision', delete=False) as f:
+            try:
+                os.chmod(f.name, 0o700)
                 # We're placing the ENV vars directly in the script because
                 # that helps debugging a lot. We need to be careful to
                 # deleted it later, though, because it might contain secrets.
@@ -209,8 +209,9 @@ RUN sudo -i fc-manage -b || true
 """.format(seed_script=seed_script,
                 ENV='\n'.join(
                 sorted('export {}="{}"'.format(k, v) for k, v in env.items()))))
-            cmd(provision_script)
-        finally:
-            # The script includes secrets so we must be sure that we delete
-            # it.
-            os.unlink(provision_script)
+                f.close()
+                cmd(f.name)
+            finally:
+                # The script includes secrets so we must be sure that we delete
+                # it.
+                os.unlink(f.name)
