@@ -93,9 +93,9 @@ Host {container} {aliases}
         # otherwise collide with our very specific settings. See
         # `man 5 ssh_config`.
         if os.path.exists(os.path.expanduser('~/.ssh/config')):
-            ssh_config.append('Include ~/.ssh/config')
+            ssh_config.append('Host *\n  Include ~/.ssh/config')
         if os.path.exists('ssh_config'):
-            ssh_config.append('Include {}'.format(
+            ssh_config.append('Host *\n  Include {}'.format(
                 os.path.abspath('ssh_config')))
 
         # Place this in the deployment base directory persistently and
