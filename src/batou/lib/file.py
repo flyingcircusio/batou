@@ -80,7 +80,7 @@ class File(Component):
             if isinstance(self.mode, int):
                 mode_ = self.mode
             else:
-                mode_ = Mode.from_config_string(Mode_, self.mode)
+                mode_ = Mode.mode.from_config_string(Mode_, self.mode)
             Mode_.mode = mode_
 
         # no content or source given but file with same name
