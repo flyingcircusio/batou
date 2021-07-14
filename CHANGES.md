@@ -23,6 +23,10 @@
 - Render an error message if `batou secrets summary` fails during decryption.
   ([#165](https://github.com/flyingcircusio/batou/issues/165))
 
+- Avoid implicit conversion of Attribute defaults. In cases where the default
+  value should be converted, use `default_conf_string`.
+  ([#89](https://github.com/flyingcircusio/batou/issues/89))
+
 
 2.3b1 (2021-05-21)
 ------------------

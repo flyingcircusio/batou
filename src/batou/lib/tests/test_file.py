@@ -841,8 +841,7 @@ def test_mode_verifies_for_nonexistent_file(root):
 
 
 @pytest.mark.parametrize('input,expected', [
-    (0o777, 0o777),
-    ('rwxrw-r--', 0o764),])
+    (0o777, 0o777),])
 def test_mode_ensures_mode_for_files(root, input, expected):
     path = "path"
     open("work/mycomponent/" + path, "w").close()

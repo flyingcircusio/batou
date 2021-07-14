@@ -73,7 +73,15 @@ class File(Component):
         # The mode needs to be set early to allow batou to get out of
         # accidental "permission denied" situations.
         if self.mode:
-            self += Mode(self.path, mode=self.mode)
+            Mode_ = Mode(self.path)
+            self += Mode_
+            # We need to explicitly trigger the conversion at this point, as
+            # passed parameters are not converted implicitly.
+            if isinstance(self.mode, int):
+                mode_ = self.mode
+            else:
+                mode_ = Mode.from_config_string(Mode_, self.mode)
+            Mode_.mode = mode_
 
         # no content or source given but file with same name
         # exists
