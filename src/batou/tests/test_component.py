@@ -556,23 +556,42 @@ def test_root_overrides_existing_attribute(root):
     assert root.component.asdf == 1
 
 
-def test_attribute_split_list(root):
+@pytest.mark.parametrize("conv_func,conf_string,expected", [
+    ("list", "", []),
+    ("list", "1,2", ["1", "2"]),
+    ("list", "3", ["3"]),
+    ("list", "  3, 3,", ["3", "3"]),
+    ("list", [], []),
+    ("literal", '[3,3]', [3, 3]),
+    ("literal", 'True', True),
+    ("literal", 'False', False),])
+def test_attribute_conversion_functions(conv_func, conf_string, expected,
+                                        root):
+    """It converts config strings with conversion functions."""
 
     class Foo(Component):
-        a = Attribute("list", "")
-        b = Attribute("list", "1,2")
-        c = Attribute("list", "3")
-        d = Attribute("list", "  3, 3,")
-        e = Attribute("list", [])
+        a = Attribute(conv_func, default_conf_string=conf_string)
 
     f = Foo()
     root.component += f
     root.prepare()
-    assert f.a == []
-    assert f.b == ["1", "2"]
-    assert f.c == ["3"]
-    assert f.d == ["3", "3"]
-    assert f.e == []
+    assert f.a == expected
+
+
+@pytest.mark.parametrize("default,expected", [
+    (["3"], ["3"]),
+    ("True", "True"),
+    (True, True),])
+def test_attribute_conversion_default(default, expected, root):
+    """It does not convert default values with conversion function."""
+
+    class Foo(Component):
+        a = Attribute("list", default=default)
+
+    f = Foo()
+    root.component += f
+    root.prepare()
+    assert f.a == expected
 
 
 class EventHandlingComponent(Component):

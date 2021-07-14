@@ -33,6 +33,9 @@
 
 - Do not render diffs for files which contain contents of `secrets/*`.
   ([#91](https://github.com/flyingcircusio/batou/issues/91))
+- Avoid implicit conversion of Attribute defaults. In cases where the default
+  value should be converted, use `default_conf_string`.
+  ([#89](https://github.com/flyingcircusio/batou/issues/89))
 
 - Assure that `requirements.lock` is build with the oldest supported Python
   version to keep it consistent – newer Python versions have included some
@@ -50,6 +53,7 @@
 - Improve error message for DNS lookup semantics.
 
 - Adapt `bootstrap.sh` to the use of appenv.
+
 
 2.3b1 (2021-05-21)
 ------------------

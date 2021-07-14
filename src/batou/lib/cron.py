@@ -39,7 +39,7 @@ class CronTab(Component):
     purge = False
 
     # Dict of additional environment variables
-    env = Attribute("literal", "{}")
+    env = Attribute("literal", default_conf_string="{}")
 
     def configure(self):
         self.jobs = self.require(CronJob.key, host=self.host, strict=False)

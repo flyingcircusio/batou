@@ -255,6 +255,9 @@ class Component(object):
             if not hasattr(self.__class__, key):
                 missing.append(key)
                 continue
+            attribute = getattr(self.__class__, key, None)
+            if isinstance(attribute, Attribute):
+                value = attribute.from_config_string(self, value)
             setattr(self, key, value)
         if missing:
             raise batou.MissingOverrideAttributes(self, missing)
@@ -1021,28 +1024,58 @@ class Attribute(object):
     - provide type-conversion from overrides that are strings
     - provide a default.
 
-    The default is not passed through the type conversion.
-
     Conversion can be given as a string to indicate a built-in conversion:
 
         literal - interprets the string as a Python literal
         list - interpretes the string as a comma separated list
 
-    If conversion is a function the function will be used for the conversion.
+    If conversion is a callable the callable will be used for the conversion,
+    when the value is read from config file. On a ``setattr`` the conversion is
+    not applied.
 
-    The obj is expected to be a "Component" so that 'expand' can be accessed.
+    The obj is expected to be a ``Component`` so that 'expand' can be accessed.
+
+    :param conversion: A conversion callable which takes one parameter or a
+     string for built-in conversion (``literal`` or ``list``). This function
+     is used for strings from config files.
+    :type conversion: str, callable
+
+    :param default: The default value for the ``Attribute``. This is not
+     passed through the conversion function.
+    :type default: object
+
+    :param str default_conf_string: An alternative default parameter for the
+     ``Attribute``. This is treated like a string from config file
+     (expand, map, conversion) and thus can serve as documentation or as input
+     value for a more complex callable.
+
+    :param bool expand: Expand the config string in the context of this
+     component.
+
+    :param bool map: Perform a VFS mapping on the config string.
+
 
     """
 
     def __init__(self,
                  conversion=None,
                  default=ATTRIBUTE_NODEFAULT,
+                 default_conf_string=ATTRIBUTE_NODEFAULT,
                  expand=True,
                  map=False):
         if isinstance(conversion, str):
             conversion = getattr(self, "convert_{}".format(conversion))
         self.conversion = conversion
+
+        if (default is not ATTRIBUTE_NODEFAULT
+                and default_conf_string is not ATTRIBUTE_NODEFAULT):
+            raise batou.ConfigurationError(
+                'Attributes only support one of those parameters:'
+                ' `default` or `default_conf_string`.',
+                self,
+            )
         self.default = default
+        self.default_conf_string = default_conf_string
         self.expand = expand
         self.map = map
         self.instances = weakref.WeakKeyDictionary()
@@ -1052,12 +1085,27 @@ class Attribute(object):
             # We're being accessed as a class attribute.
             return self
         if obj not in self.instances:
-            if self.default is ATTRIBUTE_NODEFAULT:
+            if self.default is not ATTRIBUTE_NODEFAULT:
+                value = self.default
+            elif self.default_conf_string is not ATTRIBUTE_NODEFAULT:
+                value = self.from_config_string(obj, self.default_conf_string)
+            else:
+                # No defaults present
                 raise AttributeError()
-            self.__set__(obj, self.default)
+            self.__set__(obj, value)
         return self.instances[obj]
 
-    def __set__(self, obj, value):
+    def from_config_string(self, obj, value):
+        """Perform expansion, mapping and conversion after another."""
+        # In case the attribute is set from outside but the conversion should
+        # be applied, use the following pattern:
+        #
+        # attribute = getattr(self.__class__, key, None)
+        # if isinstance(attribute, Attribute):
+        #     value = attribute.from_config_string(self, value)
+        # setattr(self, key, value)
+        #
+
         if isinstance(value, str) and self.expand:
             value = obj.expand(value)
         if isinstance(value, str) and self.map:
@@ -1074,6 +1122,9 @@ class Attribute(object):
                         break
                 raise batou.ConversionError(obj, name, value, self.conversion,
                                             e)
+        return value
+
+    def __set__(self, obj, value):
         self.instances[obj] = value
 
     def convert_literal(self, value):

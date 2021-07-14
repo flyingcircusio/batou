@@ -159,7 +159,7 @@ process_name={{component.name}}
 
 class Supervisor(Component):
 
-    address = Attribute(Address, "localhost:9001")
+    address = Attribute(Address, default_conf_string="localhost:9001")
     buildout_cfg = os.path.join(
         os.path.dirname(__file__), "resources", "supervisor.buildout.cfg")
     supervisor_conf = os.path.join(
@@ -169,18 +169,18 @@ class Supervisor(Component):
     logdir = None
     loglevel = "info"
 
-    logrotate = Attribute("literal", "False")
-    nagios = Attribute("literal", "False")
+    logrotate = Attribute("literal", False)
+    nagios = Attribute("literal", False)
 
     # Allows turning "everything off" via environment configuration
-    enable = Attribute("literal", "True")
+    enable = Attribute("literal", True)
     # Hot deployments: if supervisor is already running stuff - keep them
     # running
     # Cold deployments: if supervisor is already running: let it run
     # but shutdown all processes before continuing
     deployment_mode = Attribute(str, "hot")
     max_startup_delay = Attribute(int, 0)
-    wait_for_running = Attribute("literal", "True")
+    wait_for_running = Attribute("literal", True)
     pidfile = Attribute(str, "supervisord.pid", map=True)
     socketpath = Attribute(
         str, "{{component.workdir}}/supervisor.sock", map=True)
