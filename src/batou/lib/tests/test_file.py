@@ -483,7 +483,7 @@ def test_content_large_diff_logged(output, root):
 
     assert output.backend.output == Ellipsis("""\
 host > MyComponent > Content('work/mycomponent/path')
-More than 20 lines of diff. Showing first and last 5 lines.
+More than 20 lines of diff. Showing first and last 5 lines,
 see ... for the full diff.
   path ---
   path +++
@@ -548,6 +548,26 @@ def test_json_diff_not_for_sensitive(output, root):
     assert output.backend.output == Ellipsis("""\
 host > MyComponent > JSONContent('work/mycomponent/target.json')
 Not showing diff as it contains sensitive data.
+""")
+
+
+def test_json_diff_not_for_data_from_secrets(output, root):
+    p = JSONContent(
+        "target.json", data={
+            "asdf": "deploy early",
+            "bsdf": "deploy often"})
+    root.component += p
+    root.environment.secret_data = {'often"'}
+
+    with open(p.path, "w") as f:
+        assert f.write(json.dumps({"bsdf": 2}, sort_keys=True, indent=4))
+
+    p.deploy()
+
+    assert output.backend.output == Ellipsis("""\
+host > MyComponent > JSONContent('work/mycomponent/target.json')
+Not showing diff as it contains sensitive data,
+see ...diff for the diff.
 """)
 
 

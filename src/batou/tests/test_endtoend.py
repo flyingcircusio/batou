@@ -1,5 +1,6 @@
 import os
 import os.path
+import shutil
 
 from batou.environment import Environment
 from batou.tests.ellipsis import Ellipsis
@@ -236,3 +237,40 @@ def test_consistency_does_not_start_deployment():
     assert "Deploying" in out
     assert "localhost: Scheduling" in out
     assert "CONSISTENCY CHECK FINISHED" not in out
+
+
+def test_diff_is_not_shown_for_keys_in_secrets(tmp_path, monkeypatch, capsys):
+    """It does not render diffs for files which contain secrets.
+
+    Secrets might be in the config file in secrets/ or additional encrypted
+    files belonging to the environment.
+    """
+    monkeypatch.chdir('examples/tutorial-secrets')
+    if os.path.exists('work'):
+        shutil.rmtree('work')
+    try:
+        out, _ = cmd("./batou deploy tutorial")
+    finally:
+        shutil.rmtree('work')
+    assert out == Ellipsis("""\
+batou/2... (cpython 3...)
+================================== Preparing ===================================
+main: Loading environment `tutorial`...
+main: Verifying repository ...
+main: Loading secrets ...
+================================ Connecting ... ================================
+localhost: Connecting via local (1/1)
+============================ Configuring model ... =============================
+==================== Waiting for remaining connections ... =====================
+================================== Deploying ===================================
+localhost: Scheduling component hello ...
+localhost > Hello > File('work/hello/hello') > Presence('hello')
+localhost > Hello > File('work/hello/hello') > Content('hello')
+Not showing diff as it contains sensitive data,
+see ...diff for the diff.
+localhost > Hello > File('work/hello/other-secrets.yaml') > Presence('other-secrets.yaml')
+localhost > Hello > File('work/hello/other-secrets.yaml') > Content('other-secrets.yaml')
+Not showing diff as it contains sensitive data,
+see ...diff for the diff.
+============================= DEPLOYMENT FINISHED ==============================
+""")

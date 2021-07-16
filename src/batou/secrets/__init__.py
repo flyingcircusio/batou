@@ -58,6 +58,7 @@ def add_secrets_to_environment(environment):
                             DuplicateOverride(component, k))
                     else:
                         overrides[k] = v.value
+                        environment.secret_data.update(v.value.split())
 
         # additional_secrets
         prefix = "secrets/{}-".format(environment.name)
@@ -66,3 +67,9 @@ def add_secrets_to_environment(environment):
             with config_file.add_file(other_filename) as other_file:
                 other_file.read()
                 environment.secret_files[secret_name] = other_file.cleartext
+                for line in other_file.cleartext.splitlines():
+                    environment.secret_data.update(line.split())
+    # Omit too short snippets which might accidentally be part of a file:
+    environment.secret_data = {
+        x
+        for x in environment.secret_data if len(x) > 2}
