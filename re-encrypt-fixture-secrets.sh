@@ -8,7 +8,3 @@ encrypt -o encrypted.cfg cleartext.cfg
 
 cd ${base}/examples/errors/secrets
 encrypt -o errors.cfg errors.cfg.clear
-
-
-
-
