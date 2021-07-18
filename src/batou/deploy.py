@@ -61,9 +61,14 @@ class Deployment(object):
                  timeout,
                  dirty,
                  jobs,
-                 predict_only=False):
+                 predict_only=False,
+                 provision_rebuild=False):
 
-        self.environment = Environment(environment, timeout, platform)
+        self.environment = Environment(
+            environment,
+            timeout,
+            platform,
+            provision_rebuild=provision_rebuild)
         self.environment.deployment = self
 
         self.dirty = dirty
@@ -93,6 +98,18 @@ class Deployment(object):
 
         output.step("main", "Loading secrets ...")
         self.environment.load_secrets()
+
+    def provision(self):
+        if not self.environment.provisioners:
+            return
+        output.section("Provisioning hosts ...")
+        for host in self.environment.hosts.values():
+            if host.provisioner:
+                output.step(
+                    host.name, "Provisioning with `{}` provisioner. {}".format(
+                        host.provisioner.name,
+                        "(Rebuild)" if host.provisioner.rebuild else ""))
+                host.provisioner.provision(host)
 
     def configure(self):
         output.section("Configuring model ...")
@@ -206,10 +223,10 @@ class Deployment(object):
 
 
 def main(environment, platform, timeout, dirty, consistency_only, predict_only,
-         jobs):
+         jobs, provision_rebuild):
     output.backend = TerminalBackend()
     output.line(self_id())
-    STEPS = ['load', 'connect', 'configure', 'deploy']
+    STEPS = ['load', 'provision', 'connect', 'configure', 'deploy']
     if consistency_only:
         ACTION = "CONSISTENCY CHECK"
         STEPS.remove('deploy')
@@ -219,7 +236,7 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
         ACTION = "DEPLOYMENT"
     with locked(".batou-lock"):
         deployment = Deployment(environment, platform, timeout, dirty, jobs,
-                                predict_only)
+                                predict_only, provision_rebuild)
         environment = deployment.environment
         try:
             for step in STEPS:

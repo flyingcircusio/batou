@@ -1,12 +1,13 @@
 import argparse
+import os
+import os.path
+import sys
+
 import batou
 import batou.deploy
 import batou.secrets.edit
 import batou.secrets.manage
-import os
-import os.path
 import pkg_resources
-import sys
 
 
 def main():
@@ -62,6 +63,11 @@ def main():
         "The default results in a serial deployment "
         "of components. Will override the environment settings "
         "for operational flexibility.")
+    p.add_argument(
+        "--provision-rebuild",
+        action="store_true",
+        help="Rebuild provisioned resources from scratch. "
+        "DANGER: this is potentially destructive.")
     p.add_argument(
         "environment",
         help="Environment to deploy.",

@@ -154,7 +154,8 @@ class Deployment(object):
         self.environment.configure()
 
     def deploy(self, root, predict_only):
-        root = self.environment.get_root(root, self.host_name)
+        host = self.environment.get_host(self.host_name)
+        root = self.environment.get_root(root, host)
         root.component.deploy(predict_only)
 
 
@@ -343,14 +344,12 @@ def deploy(root, predict_only=False):
 
 def root_dependencies():
     deps = {}
-    for (
-            root,
-            dependencies,
-    ) in deployment.environment.root_dependencies().items():
-        key = (root.host.fqdn, root.name)
+    for item in deployment.environment.root_dependencies().items():
+        (root, dependencies) = item
+        key = (root.host.name, root.name)
         deps[key] = {
-            "dependencies": [(r.host.fqdn, r.name) for r in dependencies],
-            "ignore": root.ignore,}
+            "dependencies": [(r.host.name, r.name) for r in dependencies],
+            "ignore": root.ignore}
     return deps
 
 

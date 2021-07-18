@@ -1,10 +1,12 @@
-from batou import output, DeploymentError, SilentConfigurationError
-from batou import remote_core
-import execnet.gateway_io
+import ast
 import os
 import subprocess
 import sys
+
+import execnet.gateway_io
 import yaml
+from batou import (DeploymentError, SilentConfigurationError, output,
+                   remote_core)
 
 # Monkeypatch execnet to support 'vagrant ssh' and 'kitchen exec'.
 # 'vagrant' support has been added to 'execnet' release 1.4.
@@ -69,8 +71,7 @@ class RPCWrapper(object):
                 message = self.host.channel.receive()
                 output.annotate(
                     "{}: message: {}".format(self.host.fqdn, message),
-                    debug=True,
-                )
+                    debug=True)
                 type = message[0]
                 if type == "batou-result":
                     return message[1]
@@ -106,14 +107,65 @@ class Host(object):
     service_user = None
     ignore = False
     platform = None
+    _provisioner = None
+    remap = False
+    ignore = False
 
-    def __init__(self, fqdn, environment):
-        self.fqdn = fqdn
-        self.name = self.fqdn.split(".")[0]
+    def __init__(self, name, environment, config={}):
+        self._name = name
         self.data = {}
 
         self.rpc = RPCWrapper(self)
         self.environment = environment
+
+        self.ignore = ast.literal_eval(config.get("ignore", "False"))
+        self.remap = ast.literal_eval(
+            config.get("provision-dynamic-hostname", "False"))
+
+        self.platform = config.get("platform", environment.platform)
+        self.service_user = config.get("service_user",
+                                       environment.service_user)
+        self._provisioner = config.get("provisioner")
+
+        if self.provisioner:
+            self.provisioner.configure_host(self, config)
+
+        for key, value in list(config.items()):
+            if key.startswith("data-"):
+                key = key.replace("data-", "", 1)
+                self.data[key] = value
+
+    @property
+    def provisioner(self):
+        if self._provisioner == 'none':
+            # Provisioning explicitly disabled for this host
+            return
+        elif not self._provisioner:
+            # Default provisionier (if available)
+            return self.environment.provisioners.get('default')
+        return self.environment.provisioners[self._provisioner]
+
+    @property
+    def aliases(self):
+        if self._name == self.name:
+            return []
+        return [self._name]
+
+    @property
+    def name(self):
+        if not self.remap:
+            return self._name
+        mapping = self.environment.hostname_mapping
+        if self._name not in mapping:
+            mapping[self._name] = self.provisioner.suggest_name(self._name)
+        return mapping[self._name]
+
+    @property
+    def fqdn(self):
+        name = self.name
+        if self.environment.host_domain:
+            name += "." + self.environment.host_domain
+        return name
 
     def deploy_component(self, component, predict_only):
         self.rpc.deploy(component, predict_only)
@@ -149,7 +201,7 @@ class LocalHost(Host):
         self.remote_base = self.rpc.ensure_base(env.deployment_base)
 
         # XXX the cwd isn't right.
-        self.rpc.setup_deployment(env.name, self.fqdn, env.overrides,
+        self.rpc.setup_deployment(env.name, self.name, env.overrides,
                                   env.secret_files, env.secret_data,
                                   env._host_data(), env.timeout, env.platform)
 
@@ -184,8 +236,12 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
             sudo=CONDITIONAL_SUDO,
             interpreter=interpreter,
             method=self.environment.connect_method)
-        if os.path.exists("ssh_config"):
-            spec += "//ssh_config=ssh_config"
+        ssh_configs = [
+            'ssh_config_{}'.format(self.environment.name), 'ssh_config']
+        for ssh_config in ssh_configs:
+            if os.path.exists(ssh_config):
+                spec += "//ssh_config={}".format(ssh_config)
+                break
         self.gateway = execnet.makegateway(spec)
         try:
             self.channel = self.gateway.remote_exec(remote_core)
@@ -213,7 +269,10 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
 
         # Now, replace the basic interpreter connection, with a "real" one
         # that has all our dependencies installed.
-        self.connect(self.remote_base + "/batou appenv-python")
+        #
+        # XXX this requires an interesting move of detecting which appenv
+        # version we have available to make this backwards compatible.
+        self.connect(self.remote_base + "/appenv python")
 
         # Reinit after reconnect ...
         self.rpc.lock()
@@ -226,7 +285,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         # know about locally)
         self.rpc.setup_output()
 
-        self.rpc.setup_deployment(env.name, self.fqdn, env.overrides,
+        self.rpc.setup_deployment(env.name, self.name, env.overrides,
                                   env.secret_files, env.secret_data,
                                   env._host_data(), env.timeout, env.platform)
 

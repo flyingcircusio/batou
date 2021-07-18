@@ -106,7 +106,10 @@ def main(editor, environment, edit_file=None, **kw):
     ending up in the deployment repository.
 
     """
-    if not os.path.exists("environments/{}.cfg".format(environment)):
+    if not any([
+            os.path.exists("environments/{}.cfg".format(environment)),
+            os.path.exists(
+                "environments/{}/environment.cfg".format(environment))]):
         print("Environment '{}' does not exist. Typo?".format(environment))
         print("Existing environments:")
         print("\n".join(os.listdir("environments")).replace(".cfg", ""))
