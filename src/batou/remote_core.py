@@ -344,14 +344,12 @@ def deploy(root, predict_only=False):
 
 def root_dependencies():
     deps = {}
-    for (
-            root,
-            dependencies,
-    ) in deployment.environment.root_dependencies().items():
+    for item in deployment.environment.root_dependencies().items():
+        (root, dependencies) = item
         key = (root.host.name, root.name)
         deps[key] = {
             "dependencies": [(r.host.name, r.name) for r in dependencies],
-            "ignore": root.ignore,}
+            "ignore": root.ignore}
     return deps
 
 

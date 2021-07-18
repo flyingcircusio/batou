@@ -454,9 +454,8 @@ class ManagedContentBase(FileComponent):
             if diff_too_long:
                 output.line(
                     f"More than {self._max_diff} lines of diff. Showing first "
-                    f"and last {self._max_diff_lead} lines,",
-                    yellow=True,
-                )
+                    f"and last {self._max_diff_lead} lines.",
+                    yellow=True)
                 output.line(
                     f"see {diff_log} for the full diff.".format(), yellow=True)
             if contains_secrets:
@@ -473,8 +472,7 @@ class ManagedContentBase(FileComponent):
                     output.annotate(
                         f"  {os.path.basename(self.path)} {line}",
                         red=line.startswith("-"),
-                        green=line.startswith("+"),
-                    )
+                        green=line.startswith("+"))
         raise batou.UpdateNeeded()
 
     def update(self):

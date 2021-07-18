@@ -121,6 +121,8 @@ class Environment(object):
         # Additional secrets files as placed in secrets/<env>-<name>
         self.secret_files = {}
 
+        self.provisioners = {}
+
     def _environment_path(self, path='.'):
         return os.path.abspath(
             os.path.join(self.base_dir, 'environments', self.name, path))
