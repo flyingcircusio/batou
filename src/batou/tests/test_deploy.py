@@ -1,6 +1,7 @@
-from batou.tests.ellipsis import Ellipsis
 import os
+
 import pytest
+from batou.tests.ellipsis import Ellipsis
 
 
 def test_main_with_errors(capsys):
@@ -16,7 +17,8 @@ def test_main_with_errors(capsys):
             dirty=False,
             consistency_only=False,
             predict_only=False,
-            jobs=None)
+            jobs=None,
+            provision_rebuild=False)
 
     assert r.value.code == 1
 

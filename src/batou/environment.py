@@ -1,27 +1,29 @@
-from .component import load_components_from_file
-from .host import LocalHost, RemoteHost
-from .resources import Resources
-from .secrets import add_secrets_to_environment
-from configparser import RawConfigParser
-from batou import DuplicateHostError, InvalidIPAddressError
-from batou import MissingComponent
-from batou import MissingEnvironment, ComponentLoadingError, SuperfluousSection
-from batou import NonConvergingWorkingSet, UnusedResources, ConfigurationError
-from batou import SuperfluousComponentSection, CycleErrorDetected
-from batou import UnknownComponentConfigurationError, UnsatisfiedResources
-from batou._output import output
-from batou.component import RootComponent
-from batou.repository import Repository
-from batou.utils import cmd
-from batou.utils import CycleError
-import ast
-import batou.c
-import batou.utils
-import batou.vfs
 import glob
+import json
 import os
 import os.path
 import sys
+from configparser import RawConfigParser
+
+import batou.c
+import batou.utils
+import batou.vfs
+from batou import (
+    ComponentLoadingError, ConfigurationError, CycleErrorDetected,
+    DuplicateHostError, DuplicateHostMapping, InvalidIPAddressError,
+    MissingComponent, MissingEnvironment, MultipleEnvironmentConfigs,
+    NonConvergingWorkingSet, SuperfluousComponentSection, SuperfluousSection,
+    UnknownComponentConfigurationError, UnsatisfiedResources, UnusedResources)
+from batou._output import output
+from batou.component import RootComponent
+from batou.repository import Repository
+from batou.utils import CycleError, cmd
+from importlib_metadata import entry_points
+
+from .component import load_components_from_file
+from .host import Host, LocalHost, RemoteHost
+from .resources import Resources
+from .secrets import add_secrets_to_environment
 
 
 class ConfigSection(dict):
@@ -83,17 +85,29 @@ class Environment(object):
     jobs = None
 
     repository_url = None
-    version = None
-    develop = None
+    repository_root = None
 
-    def __init__(self, name, timeout=None, platform=None, basedir="."):
+    provision_rebuild = False
+
+    host_factory = Host
+
+    def __init__(self,
+                 name,
+                 timeout=None,
+                 platform=None,
+                 basedir=".",
+                 provision_rebuild=False):
         self.name = name
         self.hosts = {}
         self.resources = Resources()
         self.overrides = {}
+        self.secret_data = set()
         self.exceptions = []
         self.timeout = timeout
         self.platform = platform
+        self.provision_rebuild = provision_rebuild
+
+        self.hostname_mapping = {}
 
         # These are the component classes, decorated with their
         # name.
@@ -107,12 +121,39 @@ class Environment(object):
         # Additional secrets files as placed in secrets/<env>-<name>
         self.secret_files = {}
 
+        self.provisioners = {}
+
+    def _environment_path(self, path='.'):
+        return os.path.abspath(
+            os.path.join(self.base_dir, 'environments', self.name, path))
+
+    def _ensure_environment_dir(self):
+        if not os.path.isdir(self._environment_path()):
+            os.makedirs(self._environment_path())
+
     def load(self):
-        # Load environment configuration
-        config_file = os.path.join(self.base_dir,
-                                   "environments/{}.cfg".format(self.name))
-        if not os.path.isfile(config_file):
+        existing_configs = []
+        for candidate in [
+                "environments/{}.cfg", "environments/{}/environment.cfg"]:
+            candidate = os.path.join(self.base_dir,
+                                     candidate.format(self.name))
+            if os.path.isfile(candidate):
+                existing_configs.append(candidate)
+
+        if not existing_configs:
             raise MissingEnvironment(self)
+        elif len(existing_configs) > 1:
+            raise MultipleEnvironmentConfigs(self, existing_configs)
+        config_file = existing_configs[0]
+
+        mapping_file = self._environment_path('hostmap.json')
+        if os.path.exists(mapping_file):
+            with open(mapping_file, 'r') as f:
+                for k, v in json.load(f).items():
+                    if k in self.hostname_mapping:
+                        raise DuplicateHostMapping(k, v,
+                                                   self.hostname_mapping[k])
+                    self.hostname_mapping[k] = v
 
         # Scan all components
         for filename in sorted(
@@ -126,12 +167,15 @@ class Environment(object):
         config = Config(config_file)
 
         self.load_environment(config)
+        self.load_provisioners(config)
         self.load_hosts(config)
         self.load_resolver(config)
 
         # load overrides
         for section in config:
             if section.startswith("host:"):
+                continue
+            if section.startswith('provisioner:'):
                 continue
             if not section.startswith("component:"):
                 if section not in ["hosts", "environment", "vfs", "resolver"]:
@@ -169,8 +213,8 @@ class Environment(object):
                 "branch",
                 "platform",
                 "timeout",
-                "develop",
                 "repository_url",
+                "repository_root",
                 "jobs",]:
             if key not in environment:
                 continue
@@ -186,6 +230,11 @@ class Environment(object):
             sandbox = config["vfs"]["sandbox"]
             sandbox = getattr(batou.vfs, sandbox)(self, config["vfs"])
             self.vfs_sandbox = sandbox
+
+        if self.connect_method == "local":
+            self.host_factory = LocalHost
+        else:
+            self.host_factory = RemoteHost
 
     def load_resolver(self, config):
         resolver = config.get("resolver", {})
@@ -209,48 +258,66 @@ class Environment(object):
         batou.utils.resolve_v6_override.clear()
         batou.utils.resolve_v6_override.update(v6)
 
+    def load_provisioners(self, config):
+        self.provisioners = {}
+        for section in config:
+            if not section.startswith('provisioner:'):
+                continue
+            name = section.replace('provisioner:', '')
+            method = config[section]['method']
+            factory = entry_points(group='batou.provisioners')[method].load()
+            provisioner = factory.from_config_section(name, config[section])
+            provisioner.rebuild = self.provision_rebuild
+            self.provisioners[name] = provisioner
+
     def load_hosts(self, config):
         self._load_hosts_single_section(config)
         self._load_hosts_multi_section(config)
 
+        if self.hostname_mapping:
+            self._ensure_environment_dir()
+            mapping_file = self._environment_path('hostmap.json')
+            with open(mapping_file, 'w') as f:
+                json.dump(self.hostname_mapping, f)
+
     def _load_hosts_single_section(self, config):
         for literal_hostname in config.get("hosts", {}):
-            hostname = literal_hostname.strip("!")
-            host = self.add_host(hostname)
-            host.ignore = literal_hostname.startswith("!")
-            host.platform = self.platform
-            host.service_user = self.service_user
+            hostname = literal_hostname.lstrip("!")
+            host = self.host_factory(
+                hostname,
+                self,
+                config={
+                    'ignore':
+                    'True' if literal_hostname.startswith("!") else 'False'})
+            self.hosts[host.name] = host
             self._load_host_components(
-                hostname, config["hosts"].as_list(literal_hostname))
+                host, config["hosts"].as_list(literal_hostname))
 
     def _load_hosts_multi_section(self, config):
         for section in config:
             if not section.startswith("host:"):
                 continue
             hostname = section.replace("host:", "", 1)
-            if hostname in self.hosts:
-                self.exceptions.append(DuplicateHostError(hostname))
-            host = self.add_host(hostname)
-            host.ignore = ast.literal_eval(config[section].get(
-                "ignore", "False"))
-            host.platform = config[section].get("platform", self.platform)
-            host.service_user = config[section].get("service_user",
-                                                    self.service_user)
-            self._load_host_components(hostname,
-                                       config[section].as_list("components"))
-            for key, value in list(config[section].items()):
-                if key.startswith("data-"):
-                    key = key.replace("data-", "", 1)
-                    host.data[key] = value
 
-    def _load_host_components(self, hostname, component_list):
+            host = self.host_factory(hostname, self, config[section])
+
+            # The name can now have been remapped.
+            if host.name in self.hosts:
+                self.exceptions.append(DuplicateHostError(host.name))
+
+            self.hosts[host.name] = host
+
+            self._load_host_components(host,
+                                       config[section].as_list("components"))
+
+    def _load_host_components(self, host, component_list):
         components = parse_host_components(component_list)
         for component, settings in list(components.items()):
             try:
-                self.add_root(component, hostname, settings["features"],
+                self.add_root(component, host, settings["features"],
                               settings["ignore"])
             except KeyError:
-                self.exceptions.append(MissingComponent(component, hostname))
+                self.exceptions.append(MissingComponent(component, host.name))
 
     def _set_defaults(self):
         if self.update_method is None:
@@ -269,25 +336,12 @@ class Environment(object):
         else:
             self.timeout = int(self.timeout)
 
-        if self.version is None:
-            self.version = os.environ.get("BATOU_VERSION")
-
-        if self.develop is None:
-            self.develop = os.environ.get("BATOU_DEVELOP")
-
     # API to instrument environment config loading
 
-    def add_host(self, hostname):
-        fqdn = self.normalize_host_name(hostname)
-        if fqdn not in self.hosts:
-            if self.connect_method == "local":
-                self.hosts[fqdn] = LocalHost(fqdn, self)
-            else:
-                self.hosts[fqdn] = RemoteHost(fqdn, self)
-        return self.hosts[fqdn]
+    def get_host(self, hostname):
+        return self.hosts[self.hostname_mapping.get(hostname, hostname)]
 
-    def add_root(self, component_name, hostname, features=(), ignore=False):
-        host = self.add_host(hostname)
+    def add_root(self, component_name, host, features=(), ignore=False):
         compdef = self.components[component_name]
         root = RootComponent(
             name=compdef.name,
@@ -297,18 +351,16 @@ class Environment(object):
             ignore=ignore,
             factory=compdef.factory,
             defdir=compdef.defdir,
-            workdir=os.path.join(self.workdir_base, compdef.name),
-        )
+            workdir=os.path.join(self.workdir_base, compdef.name))
         self.root_components.append(root)
         return root
 
-    def get_root(self, component_name, hostname):
-        host = self.add_host(hostname)
+    def get_root(self, component_name, host):
         for root in self.root_components:
             if root.host == host and root.name == component_name:
                 return root
         raise KeyError("Component {} not configured for host {}".format(
-            component_name, hostname))
+            component_name, host.name))
 
     def prepare_connect(self):
         if self.connect_method == "vagrant":
@@ -424,16 +476,6 @@ class Environment(object):
                     del dependencies[root]
         return dependencies
 
-    def normalize_host_name(self, hostname):
-        """Ensure the given host name is an FQDN for this environment."""
-        if not self.host_domain or hostname.endswith(self.host_domain):
-            return hostname
-        else:
-            return "%s.%s" % (hostname, self.host_domain)
-
-    def get_host(self, hostname):
-        return self.hosts[self.normalize_host_name(hostname)]
-
     def map(self, path):
         if self.vfs_sandbox:
             return self.vfs_sandbox.map(path)
@@ -477,7 +519,7 @@ def parse_host_components(components):
             feature = None
 
         ignore = name.startswith("!")
-        name = name.strip("!")
+        name = name.lstrip("!")
         result.setdefault(name, {"features": [], "ignore": False})
         result[name]["ignore"] |= ignore
         if feature:

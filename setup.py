@@ -9,12 +9,7 @@ import os.path
 
 from setuptools import find_packages, setup
 
-
-def project_path(*names):
-    return os.path.join(*names)
-
-
-version = open(project_path("src/batou/version.txt")).read().strip()
+version = open("src/batou/version.txt").read().strip()
 
 setup(
     name="batou",
@@ -27,6 +22,7 @@ setup(
         "setuptools>=38.3",
         "execnet",
         "pyyaml",
+        "importlib_metadata",
         "py",],
     extras_require={
         "test": [
@@ -44,6 +40,8 @@ setup(
             update_requirements = batou.release:update_requirements
         [zest.releaser.postreleaser.after]
             update_requirements = batou.release:update_requirements
+        [batou.provisioners]
+            fc-nixos-dev-container = batou.provision:FCDevContainer
     """,
     author="Christian Theune",
     author_email="ct@flyingcircus.io",
@@ -61,14 +59,11 @@ Programming Language :: Python :: 3.9
 Programming Language :: Python :: 3 :: Only
 """[:-1].split("\n"),
     description=__doc__.strip(),
-    long_description=open(project_path("README.md")).read(),
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     packages=find_packages("src"),
     package_dir={"": "src"},
     include_package_data=True,
-    data_files=[
-        ("", glob.glob(project_path("*.txt")) +
-         glob.glob(project_path("*.in")) + glob.glob(project_path("*.md")))],
     zip_safe=False,
     test_suite="batou.tests",
     python_requires=">=3.6")

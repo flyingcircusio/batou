@@ -1,8 +1,9 @@
-from batou import CycleErrorDetected, UnknownComponentConfigurationError
-from batou import UnsatisfiedResources, UnusedResources
+import pytest
+from batou import (CycleErrorDetected, UnknownComponentConfigurationError,
+                   UnsatisfiedResources, UnusedResources)
 from batou.component import Component, ComponentDefinition
 from batou.environment import Environment
-import pytest
+from batou.host import Host
 
 
 class Provider(Component):
@@ -69,36 +70,36 @@ def env():
 
 
 def test_provider_without_consumer_raises_error(env):
-    env.add_root("provider", "host")
+    env.add_root("provider", Host("host", env))
     with pytest.raises(UnusedResources):
         env.configure()
 
 
 def test_consumer_retrieves_value_from_provider_order1(env):
-    provider = env.add_root("provider", "test")
-    consumer = env.add_root("consumer", "test")
+    provider = env.add_root("provider", Host("test", env))
+    consumer = env.add_root("consumer", Host("test", env))
     env.configure()
     assert list(consumer.component.the_answer) == [42]
     assert env.root_dependencies() == {provider: set(), consumer: {provider}}
 
 
 def test_provider_with_consumer_limited_by_host_raises_error(env):
-    env.add_root("provider", "test2")
-    env.add_root("samehostconsumer", "test")
+    env.add_root("provider", Host("test2", env))
+    env.add_root("samehostconsumer", Host("test", env))
     with pytest.raises(UnusedResources):
         env.configure()
 
 
 def test_consumer_retrieves_value_from_provider_order2(env):
-    consumer = env.add_root("consumer", "host")
-    provider = env.add_root("provider", "host")
+    consumer = env.add_root("consumer", Host("host", env))
+    provider = env.add_root("provider", Host("host", env))
     env.configure()
     assert list(consumer.component.the_answer) == [42]
     assert env.root_dependencies() == {provider: set(), consumer: {provider}}
 
 
 def test_consumer_without_provider_raises_error(env):
-    env.add_root("consumer", "host")
+    env.add_root("consumer", Host("host", env))
     with pytest.raises(Exception):
         env.configure()
     for exc in env.exceptions:
@@ -110,7 +111,7 @@ def test_consumer_without_provider_raises_error(env):
 
 
 def test_aggressive_consumer_raises_unsatisfiedrequirement(env):
-    env.add_root("aggressiveconsumer", "host")
+    env.add_root("aggressiveconsumer", Host("host", env))
     with pytest.raises(Exception):
         env.configure()
     for exc in env.exceptions:
@@ -128,10 +129,13 @@ def test_broken_component_logs_real_exception(env):
 
 
 def test_consumer_retrieves_value_from_provider_with_same_host(env):
-    consumer = env.add_root("samehostconsumer", "host")
-    provider = env.add_root("provider", "host")
-    consumer2 = env.add_root("samehostconsumer", "host2")
-    provider2 = env.add_root("provider", "host2")
+    host = Host("host", env)
+    host2 = Host("host2", env)
+
+    consumer = env.add_root("samehostconsumer", host)
+    provider = env.add_root("provider", host)
+    consumer2 = env.add_root("samehostconsumer", host2)
+    provider2 = env.add_root("provider", host2)
     env.configure()
     assert list(consumer.component.the_answer) == [42]
     assert list(consumer2.component.the_answer) == [42]
@@ -143,10 +147,10 @@ def test_consumer_retrieves_value_from_provider_with_same_host(env):
 
 
 def test_components_are_ordered_over_multiple_hosts(env):
-    provider1 = env.add_root("provider", "host")
-    provider2 = env.add_root("provider", "host2")
-    consumer1 = env.add_root("consumer", "host")
-    consumer2 = env.add_root("consumer", "host2")
+    provider1 = env.add_root("provider", Host("host", env))
+    provider2 = env.add_root("provider", Host("host2", env))
+    consumer1 = env.add_root("consumer", Host("host", env))
+    consumer2 = env.add_root("consumer", Host("host2", env))
     env.configure()
     assert env.root_dependencies() == {
         consumer1: {provider1, provider2},
@@ -156,13 +160,13 @@ def test_components_are_ordered_over_multiple_hosts(env):
 
 
 def test_circular_depending_component(env):
-    env.add_root("circular1", "test")
-    env.add_root("circular2", "test")
+    env.add_root("circular1", Host("test", env))
+    env.add_root("circular2", Host("test", env))
     with pytest.raises(CycleErrorDetected):
         env.configure()
 
 
 def test_dirty_dependency_for_one_time_retrieval(env, capsys):
-    env.add_root("circular1", "test")
-    env.add_root("dirtysingularcircularreverse", "test")
+    env.add_root("circular1", Host("test", env))
+    env.add_root("dirtysingularcircularreverse", Host("test", env))
     env.configure()

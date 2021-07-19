@@ -24,17 +24,17 @@ def test_manage__2(tmp_path, monkeypatch, capsys):
 
     summary()
     out, err = capsys.readouterr()
-    assert 'cz@flyingcircus.io' in out
+    assert '306151601E813A47' in out
 
-    remove_user('cz@flyingcircus.io', 'errors')
+    remove_user('306151601E813A47', 'errors')
     summary()
     out, err = capsys.readouterr()
-    assert 'cz@flyingcircus.io' not in out
+    assert '306151601E813A47' not in out
 
-    add_user('cz@flyingcircus.io', 'errors')
+    add_user('306151601E813A47', 'errors')
     summary()
     out, err = capsys.readouterr()
-    assert 'cz@flyingcircus.io' in out
+    assert '306151601E813A47' in out
 
 
 def test_manage__summary__1(capsys, monkeypatch):
@@ -45,8 +45,8 @@ def test_manage__summary__1(capsys, monkeypatch):
     expected = textwrap.dedent("""\
         errors
         \t members
-        \t\t- ct@gocept.com
-        \t\t- cz@flyingcircus.io
+        \t\t- 03C7E67FC9FD9364
+        \t\t- 306151601E813A47
         \t secret files
         \t\t(none)
 

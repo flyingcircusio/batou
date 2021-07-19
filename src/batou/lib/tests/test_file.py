@@ -11,8 +11,7 @@ import pytest
 import yaml
 from batou.lib.file import (BinaryFile, Content, Directory, File,
                             FileComponent, JSONContent, Mode, Presence, Purge,
-                            Symlink, YAMLContent, ensure_path_nonexistent,
-                            convert_mode)
+                            Symlink, YAMLContent, ensure_path_nonexistent)
 from batou.tests.ellipsis import Ellipsis
 from mock import Mock, patch
 
@@ -482,7 +481,7 @@ def test_content_large_diff_logged(output, root):
 """ + "\n".join(["-bsdf"] * 21) + "\n" + "\n".join(["+asdf"] * 21) + "\n")
 
     assert output.backend.output == Ellipsis("""\
-host > MyComponent > Content('work/mycomponent/path')
+localhost > MyComponent > Content('work/mycomponent/path')
 More than 20 lines of diff. Showing first and last 5 lines.
 see ... for the full diff.
   path ---
@@ -522,7 +521,7 @@ def test_json_diff(output, root):
     p.deploy()
 
     assert output.backend.output == Ellipsis("""\
-host > MyComponent > JSONContent('work/mycomponent/target.json')
+localhost > MyComponent > JSONContent('work/mycomponent/target.json')
   target.json ---
   target.json +++
   target.json @@ -1,3 +1,4 @@
@@ -546,7 +545,7 @@ def test_json_diff_not_for_sensitive(output, root):
     p.deploy()
 
     assert output.backend.output == Ellipsis("""\
-host > MyComponent > JSONContent('work/mycomponent/target.json')
+localhost > MyComponent > JSONContent('work/mycomponent/target.json')
 Not showing diff as it contains sensitive data.
 """)
 
@@ -694,7 +693,7 @@ def test_yaml_diff(output, root):
 
     # fmt: off
     assert output.backend.output == Ellipsis("""\
-host > MyComponent > YAMLContent(\'work/mycomponent/target.yaml\')
+localhost > MyComponent > YAMLContent(\'work/mycomponent/target.yaml\')
   target.yaml ---
   target.yaml +++
   target.yaml @@ -1,3 +1,2 @@
@@ -720,7 +719,7 @@ def test_yaml_diff_not_for_sensitive(output, root):
     p.deploy()
 
     assert output.backend.output == Ellipsis("""\
-host > MyComponent > YAMLContent('work/mycomponent/target.yaml')
+localhost > MyComponent > YAMLContent('work/mycomponent/target.yaml')
 Not showing diff as it contains sensitive data.
 """)
 
@@ -840,9 +839,7 @@ def test_mode_verifies_for_nonexistent_file(root):
         mode.verify()
 
 
-@pytest.mark.parametrize('input,expected', [
-    (0o777, 0o777),])
-def test_mode_ensures_mode_for_files(root, input, expected):
+def test_mode_ensures_mode_for_files(root):
     path = "path"
     open("work/mycomponent/" + path, "w").close()
     mode = Mode(path, mode=0o000)
@@ -850,38 +847,13 @@ def test_mode_ensures_mode_for_files(root, input, expected):
     root.component.deploy()
     assert S_IMODE(os.stat(mode.path).st_mode) == 0o000
 
-    mode.mode = input
+    mode.mode = 0o777
     root.component.deploy()
-    assert S_IMODE(os.stat(mode.path).st_mode) == expected
+    assert S_IMODE(os.stat(mode.path).st_mode) == 0o777
     assert mode.changed
 
     root.component.deploy()
     assert not mode.changed
-
-
-@pytest.mark.parametrize('input,expected', [
-    ('---------', 0o000),
-    ('r--------', 0o400),
-    ('rw-------', 0o600),
-    ('rwx------', 0o700),
-    ('----wxr--', 0o034),
-    ('rwxrwxrwx', 0o777),])
-def test_mode_conversion_supports_strings(input, expected):
-    """It converts chmod strings to bitmask."""
-    assert convert_mode(input) == expected
-
-
-@pytest.mark.parametrize(
-    'input,exception',
-    [
-        ('-l-------', SyntaxError),  # wrong character
-        ('rwxrwx', SyntaxError),  # too short
-        ('rwxrwxrwxrwx', SyntaxError),  # too long
-    ])
-def test_mode_conversion_handles_errors(input, exception):
-    """It raises syntax errors when format is wrong."""
-    with pytest.raises(exception):
-        convert_mode(input)
 
 
 def test_mode_ensures_mode_for_directories(root):

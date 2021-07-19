@@ -1,9 +1,10 @@
-from batou.environment import Environment, Config
-from mock import Mock
 import batou
 import batou.utils
 import mock
 import pytest
+from batou.environment import Config, Environment
+from batou.host import Host
+from mock import Mock
 
 
 def test_environment_should_raise_if_no_config_file(tmpdir):
@@ -26,7 +27,7 @@ def test_load_should_use_config(sample_service):
     assert e.host_domain == "example.com"
     assert e.branch == "release"
 
-    assert e.hosts["foo1.example.com"].service_user == "bob"
+    assert e.hosts["foo1"].service_user == "bob"
 
 
 def test_load_ignores_predefined_environment_settings(sample_service):
@@ -64,25 +65,6 @@ def test_get_host_raises_keyerror_if_unknown():
         e.get_host("asdf")
 
 
-def test_get_host_normalizes_hostname():
-    e = Environment("name")
-    e.hosts["asdf.example.com"] = host = Mock()
-    e.host_domain = "example.com"
-    assert host == e.get_host("asdf")
-    assert host == e.get_host("asdf.example.com")
-
-
-def test_normalize_hostname_regression_11156():
-    # The issue here was that we used "rstrip" which works on characters,
-    # not substrings. Having the domain (example.com) start with an eee
-    # causes the hostname to get stripped of it's "eee"s ending in an
-    # empty hostname accidentally.
-    e = Environment("name")
-    e.hosts["eee.example.com"] = host = Mock()
-    e.host_domain = "example.com"
-    assert host == e.get_host("eee")
-
-
 def test_get_host_without_subdomain_also_works():
     e = Environment("name")
     e.hosts["example.com"] = host = Mock()
@@ -93,7 +75,7 @@ def test_get_host_without_subdomain_also_works():
 def test_get_root_raises_keyerror_on_nonassigned_component():
     e = Environment("foo")
     with pytest.raises(KeyError):
-        e.get_root("asdf", "localhost")
+        e.get_root("asdf", Host("localhost", e))
 
 
 def test_multiple_components(sample_service):
@@ -145,8 +127,9 @@ components = bar
     """)
     e.load_hosts(config)
     assert [
-        mock.call("bar", "foo", [], False),
-        mock.call("bar", "baz", [], False),] == add_root.call_args_list
+        mock.call("bar", e.hosts["foo"], [], False),
+        mock.call("bar", e.hosts["baz"], [], False),
+    ] == add_root.call_args_list
 
 
 @mock.patch("batou.environment.Environment.add_root")
@@ -158,7 +141,7 @@ def test_load_hosts_should_load_single_hosts_section(add_root):
 foo = bar
     """)
     e.load_hosts(config)
-    add_root.assert_called_once_with("bar", "foo", [], False)
+    add_root.assert_called_once_with("bar", e.hosts["foo"], [], False)
 
 
 @mock.patch("batou.environment.Environment.add_root")
@@ -171,7 +154,7 @@ def test_load_hosts_should_load_multi_hosts_section(add_root):
 components = bar
     """)
     e.load_hosts(config)
-    add_root.assert_called_once_with("bar", "foo", [], False)
+    add_root.assert_called_once_with("bar", e.hosts['foo'], [], False)
 
 
 @mock.patch("batou.environment.Environment.add_root")

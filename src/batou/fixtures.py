@@ -5,6 +5,7 @@ import batou.utils
 import pytest
 from batou.component import Component, ComponentDefinition
 from batou.environment import Environment
+from batou.host import Host
 
 
 @pytest.fixture
@@ -19,7 +20,8 @@ def root(tmpdir):
     compdef = ComponentDefinition(MyComponent)
     compdef.defdir = str(tmpdir)
     environment.components[compdef.name] = compdef
-    root = environment.add_root(compdef.name, "host")
+    environment.hosts["localhost"] = host = Host("localhost", environment)
+    root = environment.add_root(compdef.name, host)
     root.prepare()
     root.component.deploy()
     return root

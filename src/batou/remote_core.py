@@ -128,13 +128,14 @@ class Deployment(object):
 
     environment = None
 
-    def __init__(self, env_name, host_name, overrides, secret_files, host_data,
-                 timeout, platform):
+    def __init__(self, env_name, host_name, overrides, secret_files,
+                 secret_data, host_data, timeout, platform):
         self.env_name = env_name
         self.host_name = host_name
         self.overrides = overrides
         self.host_data = host_data
         self.secret_files = secret_files
+        self.secret_data = secret_data
         self.timeout = timeout
         self.platform = platform
 
@@ -149,10 +150,12 @@ class Deployment(object):
         for hostname, data in self.host_data.items():
             self.environment.hosts[hostname].data.update(data)
         self.environment.secret_files = self.secret_files
+        self.environment.secret_data = self.secret_data
         self.environment.configure()
 
     def deploy(self, root, predict_only):
-        root = self.environment.get_root(root, self.host_name)
+        host = self.environment.get_host(self.host_name)
+        root = self.environment.get_root(root, host)
         root.component.deploy(predict_only)
 
 
@@ -341,14 +344,12 @@ def deploy(root, predict_only=False):
 
 def root_dependencies():
     deps = {}
-    for (
-            root,
-            dependencies,
-    ) in deployment.environment.root_dependencies().items():
-        key = (root.host.fqdn, root.name)
+    for item in deployment.environment.root_dependencies().items():
+        (root, dependencies) = item
+        key = (root.host.name, root.name)
         deps[key] = {
-            "dependencies": [(r.host.fqdn, r.name) for r in dependencies],
-            "ignore": root.ignore,}
+            "dependencies": [(r.host.name, r.name) for r in dependencies],
+            "ignore": root.ignore}
     return deps
 
 

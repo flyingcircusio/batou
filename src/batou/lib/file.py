@@ -1,19 +1,20 @@
 from batou import output
-from batou.component import Component
 from batou.component import Attribute
+from batou.component import Component
 from batou.utils import dict_merge
 import batou
 import difflib
 import glob
 import grp
+import itertools
 import json
 import os.path
 import pwd
+import re
 import shutil
 import stat
 import tempfile
 import yaml
-import re
 
 
 def ensure_path_nonexistent(path):
@@ -306,24 +307,19 @@ def limited_buffer(iterator, limit, lead, separator="...", logdir="/tmp"):
     # memory!
     started_logging = False
     end_buffer = []
-    diff_log = None
-    diff_log_file = None
+    _, diff_log = tempfile.mkstemp(suffix=".diff", dir=logdir)
+    diff_log_file = open(diff_log, "a+")
+    for line in start_buffer:
+        diff_log_file.write(line + "\n")
     try:
         for line in iterator:
             line = line.rstrip()
-            if not started_logging:
-                _, diff_log = tempfile.mkstemp(suffix=".diff", dir=logdir)
-                diff_log_file = open(diff_log, "a+")
-                for line in start_buffer:
-                    diff_log_file.write(line + "\n")
-                started_logging = True
             diff_log_file.write(line + "\n")
             end_buffer.append(line)
             if len(end_buffer) > lead:
                 end_buffer.pop(0)
     finally:
-        if diff_log_file:
-            diff_log_file.close()
+        diff_log_file.close()
     # If we ended up with output in the end buffer, we need to merge the
     # output.
     if end_buffer:
@@ -446,8 +442,15 @@ class ManagedContentBase(FileComponent):
             output.annotate(
                 "Not showing diff as it contains sensitive data.", red=True)
         else:
-            diff = difflib.unified_diff(current_text.splitlines(),
-                                        wanted_text.splitlines())
+            current_lines = current_text.splitlines()
+            wanted_lines = wanted_text.splitlines()
+            words = set(
+                itertools.chain(*(x.split() for x in current_lines),
+                                *(x.split() for x in wanted_lines)))
+            contains_secrets = bool(
+                self.environment.secret_data.intersection(words))
+
+            diff = difflib.unified_diff(current_lines, wanted_lines)
             if not os.path.exists(self.diff_dir):
                 os.makedirs(self.diff_dir)
             diff, diff_too_long, diff_log = limited_buffer(
@@ -458,23 +461,26 @@ class ManagedContentBase(FileComponent):
 
             if diff_too_long:
                 output.line(
-                    ("More than {} lines of diff. Showing first and "
-                     "last {} lines.".format(self._max_diff,
-                                             self._max_diff_lead)),
-                    yellow=True,
-                )
+                    f"More than {self._max_diff} lines of diff. Showing first "
+                    f"and last {self._max_diff_lead} lines.",
+                    yellow=True)
                 output.line(
-                    "see {} for the full diff.".format(diff_log), yellow=True)
-
-            for line in diff:
-                line = line.replace("\n", "")
-                if not line.strip():
-                    continue
-                output.annotate(
-                    "  {} {}".format(os.path.basename(self.path), line),
-                    red=line.startswith("-"),
-                    green=line.startswith("+"),
-                )
+                    f"see {diff_log} for the full diff.".format(), yellow=True)
+            if contains_secrets:
+                output.line(
+                    "Not showing diff as it contains sensitive data,",
+                    yellow=True)
+                output.line(
+                    f"see {diff_log} for the diff.".format(), yellow=True)
+            else:
+                for line in diff:
+                    line = line.replace("\n", "")
+                    if not line.strip():
+                        continue
+                    output.annotate(
+                        f"  {os.path.basename(self.path)} {line}",
+                        red=line.startswith("-"),
+                        green=line.startswith("+"))
         raise batou.UpdateNeeded()
 
     def update(self):

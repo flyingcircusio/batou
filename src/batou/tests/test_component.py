@@ -1,12 +1,13 @@
-from batou import UpdateNeeded, SilentConfigurationError
-from batou.component import Component, RootComponent, platform, Attribute
-from batou.component import handle_event
-from batou.utils import CmdExecutionError
-from mock import Mock
-import batou
 import os
 import os.path
+
+import batou
 import pytest
+from batou import SilentConfigurationError, UpdateNeeded
+from batou.component import (Attribute, Component, RootComponent, handle_event,
+                             platform)
+from batou.utils import CmdExecutionError
+from mock import Mock
 
 
 @pytest.fixture
@@ -408,13 +409,13 @@ def test_touch_updates_mtime_leaves_content_intact(tmpdir):
 
 
 def test_expand(root):
-    assert root.component.expand("Hello {{host.fqdn}}") == ("Hello host")
+    assert root.component.expand("Hello {{host.fqdn}}") == ("Hello localhost")
 
 
 def test_templates(root):
     with open("sample", "w") as template:
         template.write("Hello {{host.fqdn}}")
-    assert root.component.template("sample") == ("Hello host\n")
+    assert root.component.template("sample") == ("Hello localhost\n")
 
 
 def test_chdir_contextmanager_is_stackable():

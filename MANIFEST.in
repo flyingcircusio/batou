@@ -1,9 +1,6 @@
-include LICENSE.txt
-include README
-include CHANGES.txt
-include src/batou/version.txt
-include src/batou/requirements.txt
-include src/batou/bootstrap-template
+include src/batou/insecure-private.key
 recursive-include src/batou/init-template *
 recursive-include src/batou/tests/fixture *
 recursive-include src/batou/lib/resources *
+global-include *.txt
+global-include *.in

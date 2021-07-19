@@ -27,6 +27,14 @@
   value should be converted, use `default_conf_string`.
   ([#89](https://github.com/flyingcircusio/batou/issues/89))
 
+- Do not render diffs for files which contain contents of `secrets/*`.
+  ([#91](https://github.com/flyingcircusio/batou/issues/91))
+
+- Implement dynamic, pluggable provisioning of hosts.
+
+  We provide a built-in plugin to support NixOS development containers
+  that feel similar to the Flying Circus VM platform.
+
 
 2.3b1 (2021-05-21)
 ------------------

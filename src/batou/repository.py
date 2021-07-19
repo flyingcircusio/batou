@@ -29,10 +29,11 @@ class Repository(object):
 
     """
 
-    root = "."
-
     def __init__(self, environment):
         self.environment = environment
+        # We can't set this default on the environment because we
+        # have a special use of None for test support.
+        self.root = environment.repository_root or '.'
 
     @classmethod
     def from_environment(cls, environment):
@@ -94,7 +95,7 @@ class RSyncRepository(Repository):
             red=True)
 
     def update(self, host):
-        source, target = self.environment.base_dir, host.remote_base
+        source, target = self.root, host.remote_repository
         output.annotate("rsync: {} -> {}".format(source, target), debug=True)
         rsync = FilteredRSync(source, verbose=False)
         # We really want to use `delete=True` here but there's an execnet issue
