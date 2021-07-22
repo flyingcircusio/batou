@@ -67,8 +67,8 @@ Legal
 The copyright holder for batou is::
 
     Flying Circus Internet Operations GmbH
-    Forsterstraße 29
-    06112 Halle (Saale)
+    Leipziger Str. 70/71
+    06108 Halle (Saale)
     GERMANY
 
 The code of batou is licensed under the 2-clause BSD license:
