@@ -26,6 +26,11 @@
 - Do not render diffs for files which contain contents of `secrets/*`.
   ([#91](https://github.com/flyingcircusio/batou/issues/91))
 
+- Assure that `requirements.lock` is build with the oldest supported Python
+  version to keep it consistent – newer Python versions have included some
+  packages in standard library which older ones need as dependencies.
+  ([#145](https://github.com/flyingcircusio/batou/issues/145))
+
 - Implement dynamic, pluggable provisioning of hosts.
 
   We provide a built-in plugin to support NixOS development containers
