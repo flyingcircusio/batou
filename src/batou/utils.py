@@ -95,31 +95,44 @@ except (subprocess.CalledProcessError, OSError):
     except (subprocess.CalledProcessError, OSError):
         notify = notify_none
 
+RESOLVE_CACHE = dict(v6={}, v4={})
+
 resolve_override = {}
 resolve_v6_override = {}
 
 
 def resolve(host, port=0, resolve_override=resolve_override):
+    if host in RESOLVE_CACHE['v4']:
+        output.annotate('resolved `{}` to {} (cached)'.format(host, address))
+        return RESOLVE_CACHE['v4'][host]
     if host in resolve_override:
         address = resolve_override[host]
         output.annotate('resolved `{}` to {} (override)'.format(host, address))
     else:
         output.annotate('resolving `{}` (v4)'.format(host))
+        start = time.time()
         responses = socket.getaddrinfo(host, int(port), socket.AF_INET)
-        output.annotate('resolved `{}` to {}'.format(host, responses))
+        end = time.time()
+        output.annotate('resolved `{}` to {} in {}s'.format(host, responses, end-start))
         address = responses[0][4][0]
         output.annotate('selected '.format(host, address))
+    RESOLVE_CACHE['v4'][host] = address
     return address
 
 
 def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
+    if host in RESOLVE_CACHE['v6']:
+        output.annotate('resolved `{}` to {} (cached)'.format(host, address))
+        return RESOLVE_CACHE['v6'][host]
     if host in resolve_override:
         address = resolve_override[host]
         output.annotate('resolved `{}` to {} (override)'.format(host, address))
     else:
         output.annotate('resolving (v6) `{}` (getaddrinfo)'.format(host))
+        start = time.time()
         responses = socket.getaddrinfo(host, int(port), socket.AF_INET6)
-        output.annotate('resolved (v6) `{}` to {}'.format(host, responses))
+        end = time.time()
+        output.annotate('resolved (v6) `{}` to {} in {}s'.format(host, responses, end-start))
         address = None
         for _, _, _, _, sockaddr in responses:
             addr, _, _, _ = sockaddr
@@ -130,6 +143,7 @@ def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
         if not address:
             raise ValueError('No valid address found for `{}`.'.format(host))
         output.annotate('selected {}'.format(address))
+    RESOLVE_CACHE['v6'][host] = address
     return address
 
 
