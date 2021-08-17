@@ -17,7 +17,7 @@ mv requirements.txt.new requirements.txt
 ./appenv update-lockfile
 ./batou --help
 if [ -d ".git" ]; then
-	echo '.batou' >> .gitignore
-	git add .gitignore requirements.txt requirements.lock batou
+	echo '.appenv' >> .gitignore
+	git add .gitignore requirements.txt requirements.lock batou appenv
 fi
 }
