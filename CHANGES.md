@@ -36,6 +36,8 @@
   We provide a built-in plugin to support NixOS development containers
   that feel similar to the Flying Circus VM platform.
 
+- Adapt `bootstrap.sh` to the use of appenv.
+
 2.3b1 (2021-05-21)
 ------------------
 
