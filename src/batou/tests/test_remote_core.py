@@ -35,63 +35,57 @@ def mock_remote_core(monkeypatch):
 
 
 def test_update_code_existing_target(mock_remote_core, tmpdir):
-    remote_core.cmd.side_effect = [("", ""), ("", ""), ("", ""), ("", "")]
+    remote_core.cmd.side_effect = [("", ""), ("", ""), ("", ""),
+                                   ('[{"id": "12345"}]', "")]
 
     remote_core.ensure_repository(str(tmpdir), "hg-pull")
     remote_core.hg_pull_code("http://bitbucket.org/flyingcircus/batou")
-    remote_core.hg_update_working_copy("default")
+    assert '12345' == remote_core.hg_update_working_copy("default")
 
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert next(calls).startswith("hg init /")
     assert next(calls) == "hg pull http://bitbucket.org/flyingcircus/batou"
     assert next(calls) == "hg up -C default"
-    assert next(calls) == "hg id -i"
+    assert next(calls) == "hg id -Tjson"
     assert remote_core.cmd.call_count == 4
 
 
 def test_update_code_new_target(mock_remote_core, tmpdir):
-    remote_core.cmd.side_effect = [("", ""), ("", ""), ("", ""), ("", "")]
+    remote_core.cmd.side_effect = [("", ""), ("", ""), ("", ""),
+                                   ('[{"id": "12345"}]', "")]
     remote_core.ensure_repository(str(tmpdir) + "/foo", "hg-bundle")
     remote_core.hg_pull_code("http://bitbucket.org/flyingcircus/batou")
-    remote_core.hg_update_working_copy("default")
+    assert '12345' == remote_core.hg_update_working_copy("default")
 
     assert remote_core.cmd.call_count == 4
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert next(calls) == "hg init {}".format(remote_core.target_directory)
     assert next(calls) == "hg pull http://bitbucket.org/flyingcircus/batou"
     assert next(calls) == "hg up -C default"
-    assert next(calls) == "hg id -i"
+    assert next(calls) == "hg id -Tjson"
 
 
 def test_hg_bundle_shipping(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir) + "/foo", "hg-bundle")
     remote_core.cmd.side_effect = [
-        ("41fea38ce5d3", None),
-        (
-            """\
-changeset: 371:revision-a
-summary:fdsa
-
-changeset: 372:revision-b
-""",
-            None,
-        ),
-        ("", ""),
-        ("", ""),
-        ("", ""),]
+        (b'[{"id": "41fea38ce5d3"}]', None),
+        (b'[{"node": "revision-a"},{"node": "revision-b"}]', None),
+        (b"", b""),
+        (b"", b""),
+        (b'[{"id": "revision-b"}]', b""),]
     heads = remote_core.hg_current_heads()
     assert heads == ["revision-a", "revision-b"]
     remote_core.hg_unbundle_code()
-    remote_core.hg_update_working_copy("default")
+    assert remote_core.hg_update_working_copy("default") == "revision-b"
 
     assert remote_core.cmd.call_count == 6
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert next(calls) == "hg init {}".format(remote_core.target_directory)
-    assert next(calls) == "hg id -i"
-    assert next(calls) == "hg heads"
+    assert next(calls) == "hg id -Tjson"
+    assert next(calls) == "hg heads -Tjson"
     assert next(calls) == "hg -y unbundle batou-bundle.hg"
     assert next(calls) == "hg up -C default"
-    assert next(calls) == "hg id -i"
+    assert next(calls) == "hg id -Tjson"
 
 
 def test_build_batou_fresh_install(mock_remote_core, tmpdir):

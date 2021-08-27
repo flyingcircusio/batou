@@ -4,6 +4,8 @@
 2.3b2 (unreleased)
 ------------------
 
+- Fix Python 3 compatibility with some Mercurial-based batou repositories.
+
 - NetLoc objects are now comparable.
   ([#88](https://github.com/flyingcircusio/batou/issues/88))
 
