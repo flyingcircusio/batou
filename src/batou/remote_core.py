@@ -3,6 +3,7 @@ import os.path
 import pwd
 import subprocess
 import traceback
+import json
 
 # Satisfy flake8 and support testing.
 try:
@@ -229,21 +230,21 @@ def ensure_base(base):
     return deployment_base
 
 
+def _hg_current_id():
+    output, _ = cmd("hg id -Tjson")
+    output = json.loads(output)
+    return output[0]['id']
+
+
 def hg_current_heads():
     target = target_directory
     os.chdir(target)
-    result = []
-    id, _ = cmd("hg id -i")
-    id = id.strip()
-    if id == "000000000000":
+    id = _hg_current_id()
+    if id == "0000000000000000000000000000000000000000":
         return [id]
-    heads, _ = cmd("hg heads")
-    for line in heads.split("\n"):
-        if not line.startswith("changeset:"):
-            continue
-        line = line.split(":")
-        result.append(line[2])
-    return result
+    heads, _ = cmd("hg heads -Tjson")
+    heads = json.loads(heads)
+    return [x['node'] for x in heads]
 
 
 def hg_pull_code(upstream):
@@ -265,9 +266,7 @@ def hg_unbundle_code():
 
 def hg_update_working_copy(branch):
     cmd("hg up -C {}".format(branch))
-    id, _ = cmd("hg id -i")
-    id = id.strip()
-    return id
+    return _hg_current_id()
 
 
 # Unbundle is only called if there actually is something to unbundle (see
