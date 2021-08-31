@@ -25,14 +25,14 @@ from batou.component import Component
 from batou.lib.python import VirtualEnv, Package
 from batou.lib.supervisor import Program
 
-    class MyApp(Component):
+class MyApp(Component):
 
-        def configure(self):
-            venv = VirtualEnv('2.7')
-            self += venv
-            venv += Package('myapp')
-            self += Program('myapp',
-                command='bin/myapp')
+    def configure(self):
+        venv = VirtualEnv('2.7')
+        self += venv
+        venv += Package('myapp')
+        self += Program('myapp',
+            command='bin/myapp')
 ```
 
 And here's a minimal environment:

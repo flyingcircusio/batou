@@ -25,7 +25,7 @@ from a file of the same name in the component's directory (i.e.
 Jinja, with the file's parent component made available as ``component``.
 
 
-.. py:class:: batou.lib.File(path)
+.. py:class:: batou.lib.file.File(path)
 
 Creates a file. The main parameter for File is the target path. A ``File`` instance has an attribute ``path`` containing the full, absolute path to the resulting file.
 
@@ -93,9 +93,9 @@ Creates a file. The main parameter for File is the target path. A ``File`` insta
     rendered file contains a password or other sensitive data.
     [Default: False]
 
-.. py:class:: batou.lib.BinaryFile(path)
+.. py:class:: batou.lib.file.BinaryFile(path)
 
-Subclass of batou.lib.File. Creates a non-template binary file.
+Subclass of batou.lib.file.File. Creates a non-template binary file.
 
 
 .. _file-directory:

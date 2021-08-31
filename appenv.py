@@ -20,7 +20,6 @@ import hashlib
 import http.client
 import os
 import os.path
-import shlex
 import shutil
 import subprocess
 import sys
@@ -30,12 +29,12 @@ import venv
 
 def cmd(c, merge_stderr=True, quiet=False):
     # TODO revisit the cmd() architecture w/ python 3
-    # XXX better IO management for interactive output and seeing original errors
-    # and output at appropriate places ...
+    # XXX better IO management for interactive output and seeing original
+    # errors and output at appropriate places ...
     try:
         kwargs = {"shell": True}
         if merge_stderr:
-            kwargs["stderr"] = stderr = subprocess.STDOUT
+            kwargs["stderr"] = subprocess.STDOUT
         return subprocess.check_output([c], **kwargs)
     except subprocess.CalledProcessError as e:
         print("{} returned with exit code {}".format(c, e.returncode))
@@ -74,8 +73,8 @@ def ensure_venv(target):
         # This is trying to detect whether we're on a proper Python stdlib
         # or on a broken Debian. See various StackOverflow questions about
         # this.
-        import distutils.util
-        import ensurepip
+        import distutils.util  # noqa: F401 imported but unused
+        import ensurepip  # noqa: F401 imported but unused
     except ImportError:
         # Okay, lets repair this, if we can. May need privilege escalation
         # at some point.
@@ -107,8 +106,8 @@ def ensure_venv(target):
                                  "python{}.{}".format(*sys.version_info[:2]),
                                  "site-packages", module))
 
-            # (always) prepend the site packages so we can actually have a fixed
-            # distutils installation.
+            # (always) prepend the site packages so we can actually have a
+            # fixed distutils installation.
             site_packages = os.path.abspath(
                 os.path.join(target, "lib", "python" + python_maj_min,
                              "site-packages"))
@@ -121,13 +120,59 @@ def ensure_venv(target):
 
     print("Ensuring pip ...")
     cmd("{target}/bin/python -m ensurepip --default-pip".format(target=target))
-    if python_maj_min == "3.4":
-        # Last version of Pip supporting Python 3.4
-        cmd('{target}/bin/python -m pip install --upgrade "pip<19.2"'.format(
-            target=target))
+    cmd("{target}/bin/python -m pip install --upgrade pip".format(
+        target=target))
+
+
+def ensure_minimal_python():
+    current_python = os.path.realpath(sys.executable)
+    preferences = None
+    if os.path.exists('requirements.txt'):
+        with open('requirements.txt') as f:
+            for line in f:
+                # Expected format:
+                # # appenv-python-preference: 3.1,3.9,3.4
+                if not line.startswith("# appenv-python-preference: "):
+                    continue
+                preferences = line.split(':')[1]
+                preferences = [x.strip() for x in preferences.split(',')]
+                preferences = list(filter(None, preferences))
+                break
+    if not preferences:
+        # We have no preferences defined, use the current python.
+        print("Update lockfile with with {}.".format(current_python))
+        print("If you want to use a different version, set it as via")
+        print(" `# appenv-python-preference:` in requirements.txt.")
+        return
+
+    preferences.sort(key=lambda s: [int(u) for u in s.split('.')])
+
+    for version in preferences[0:1]:
+        python = shutil.which("python{}".format(version))
+        if not python:
+            # not a usable python
+            continue
+        python = os.path.realpath(python)
+        if python == current_python:
+            # found a preferred python and we're already running as it
+            break
+        # Try whether this Python works
+        try:
+            subprocess.check_call([python, "-c", "print(1)"],
+                                  stdout=subprocess.DEVNULL,
+                                  stderr=subprocess.DEVNULL)
+        except subprocess.CalledProcessError:
+            continue
+
+        argv = [os.path.basename(python)] + sys.argv
+        os.environ["APPENV_BEST_PYTHON"] = python
+        os.execv(python, argv)
     else:
-        cmd("{target}/bin/python -m pip install --upgrade pip".format(
-            target=target))
+        print("Could not find the minimal preferred Python version.")
+        print("To ensure a working requirements.lock on all Python versions")
+        print("make Python {} available on this system.".format(
+            preferences[0]))
+        sys.exit(66)
 
 
 def ensure_best_python(base):
@@ -139,18 +184,20 @@ def ensure_best_python(base):
         return
     import shutil
 
-    with open('requirements.txt') as f:
-        for line in f:
-            # Expected format:
-            # # appenv-python-preference: 3.1,3.9,3.4
-            if not line.startswith("# appenv-python-preference: "):
-                continue
-            preferences = line.split(':')[1]
-            preferences = [x.strip() for x in preferences.split(',')]
-            preferences = list(filter(None, preferences))
-            break
-        else:
-            preferences = ['3.{}'.format(x) for x in reversed(range(4, 20))]
+    # use newest Python available if nothing else is requested
+    preferences = ['3.{}'.format(x) for x in reversed(range(4, 20))]
+
+    if os.path.exists('requirements.txt'):
+        with open('requirements.txt') as f:
+            for line in f:
+                # Expected format:
+                # # appenv-python-preference: 3.1,3.9,3.4
+                if not line.startswith("# appenv-python-preference: "):
+                    continue
+                preferences = line.split(':')[1]
+                preferences = [x.strip() for x in preferences.split(',')]
+                preferences = list(filter(None, preferences))
+                break
 
     current_python = os.path.realpath(sys.executable)
     for version in preferences:
@@ -241,8 +288,8 @@ class AppEnv(object):
         os.execv(cmd, argv)
 
     def _prepare(self):
-        # copy used requirements.txt into the target directory so we can use that
-        # to check later
+        # copy used requirements.txt into the target directory so we can use
+        # that to check later
         # - when to clean up old versions? keep like one or two old revisions?
         # - enumerate the revisions and just copy the requirements.txt, check
         #   for ones that are clean or rebuild if necessary
@@ -252,8 +299,8 @@ class AppEnv(object):
             env_dir = os.path.join(self.appenv_dir, 'unclean')
             ensure_venv(env_dir)
             print('Ensuring unclean install ...')
-            cmd('{env_dir}/bin/python -m pip install -r requirements.txt --upgrade'
-                .format(env_dir=env_dir))
+            cmd('{env_dir}/bin/python -m pip install -r requirements.txt'
+                ' --upgrade'.format(env_dir=env_dir))
         else:
             hash_content = []
             requirements = open("requirements.lock", "rb").read()
@@ -268,7 +315,7 @@ class AppEnv(object):
                 env_dir, os.path.join(self.appenv_dir, "unclean")])
             for path in glob.glob(
                     "{appenv_dir}/*".format(appenv_dir=self.appenv_dir)):
-                if not path in whitelist:
+                if path not in whitelist:
                     print(
                         "Removing expired path: {path} ...".format(path=path))
                     if not os.path.isdir(path):
@@ -276,10 +323,10 @@ class AppEnv(object):
                     else:
                         shutil.rmtree(path)
             if os.path.exists(env_dir):
-                # check whether the existing environment is OK, it might be nice
-                # to rebuild in a separate place if necessary to avoid interruptions
-                # to running services, but that isn't what we're using it for at the
-                # moment
+                # check whether the existing environment is OK, it might be
+                # nice to rebuild in a separate place if necessary to avoid
+                # interruptions to running services, but that isn't what we're
+                # using it for at the  moment
                 try:
                     if not os.path.exists(
                             "{env_dir}/appenv.ready".format(env_dir=env_dir)):
@@ -296,8 +343,8 @@ class AppEnv(object):
                     f.write(requirements)
 
                 print("Installing ...")
-                cmd("{env_dir}/bin/python -m pip install --no-deps -r {env_dir}/requirements.lock"
-                    .format(env_dir=env_dir))
+                cmd("{env_dir}/bin/python -m pip install --no-deps -r"
+                    " {env_dir}/requirements.lock".format(env_dir=env_dir))
 
                 cmd("{env_dir}/bin/python -m pip check".format(
                     env_dir=env_dir))
@@ -342,9 +389,9 @@ class AppEnv(object):
         with open("requirements.txt", "w") as requirements_txt:
             requirements_txt.write(dependency + "\n")
         print()
-        print(
-            "Done. You can now `cd {}` and call `./{}` to bootstrap and run it."
-            .format(os.path.relpath(target, self.original_cwd), command))
+        print("Done. You can now `cd {}` and call"
+              " `./{}` to bootstrap and run it.".format(
+                  os.path.relpath(target, self.original_cwd), command))
 
     def python(self, args, remaining):
         self.run('python', remaining)
@@ -359,6 +406,7 @@ class AppEnv(object):
         cmd("rm -rf {appenvdir}".format(appenvdir=self.appenv_dir))
 
     def update_lockfile(self, args=None, remaining=None):
+        ensure_minimal_python()
         os.chdir(self.base)
         print("Updating lockfile")
         tmpdir = os.path.join(self.appenv_dir, "updatelock")
@@ -371,8 +419,9 @@ class AppEnv(object):
 
         # Hack because we might not have pkg_resources, but the venv should
         tmp_paths = cmd(
-            "{tmpdir}/bin/python -c 'import sys; print(\"\\n\".join(sys.path))'"
-            .format(tmpdir=tmpdir),
+            "{tmpdir}/bin/python -c"
+            " 'import sys; print(\"\\n\".join(sys.path))'".format(
+                tmpdir=tmpdir),
             merge_stderr=False).decode(sys.getfilesystemencoding())
         for line in tmp_paths.splitlines():
             line = line.strip()
@@ -397,6 +446,9 @@ class AppEnv(object):
             for line in f.readlines():
                 if line.strip().startswith('-e '):
                     extra_specs.append(line.strip())
+                    continue
+                # filter comments, in particular # appenv-python-preferences
+                if line.strip().startswith('#'):
                     continue
                 spec = list(pkg_resources.parse_requirements(line))[0]
                 requested_versions[spec.project_name] = spec
@@ -426,8 +478,8 @@ def main():
 
     ensure_best_python(base)
     # clear PYTHONPATH variable to get a defined environment
-    # XXX this is a bit of history. not sure whether its still needed. keeping it
-    # for good measure
+    # XXX this is a bit of history. not sure whether its still needed. keeping
+    # it for good measure
     if "PYTHONPATH" in os.environ:
         del os.environ["PYTHONPATH"]
 
