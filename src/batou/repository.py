@@ -131,7 +131,8 @@ class MercurialRepository(Repository):
     def update(self, host):
         self._ship(host)
         remote_id = host.rpc.hg_update_working_copy(self.branch)
-        local_id, _ = cmd("hg id -i")
+        local_id, _ = cmd("hg id -Tjson")
+        local_id = json.loads(local_id)[0]['id']
         if self.environment.deployment.dirty:
             local_id = local_id.replace("+", "")
         local_id = local_id.strip()
