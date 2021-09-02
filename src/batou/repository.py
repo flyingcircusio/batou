@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import sys
@@ -105,6 +106,12 @@ class RSyncRepository(Repository):
         rsync.send()
 
 
+def hg_cmd(hgcmd):
+    output, _ = cmd(hgcmd + " -Tjson")
+    output = json.loads(output)
+    return output
+
+
 class MercurialRepository(Repository):
 
     root = None
@@ -112,8 +119,7 @@ class MercurialRepository(Repository):
 
     def __init__(self, environment):
         super(MercurialRepository, self).__init__(environment)
-        root_output = subprocess.check_output(["hg", "root"])
-        self.root = root_output.decode(sys.getfilesystemencoding()).strip()
+        self.root = hg_cmd("hg root")[0]["reporoot"]
         self.branch = environment.branch or "default"
         self.subdir = os.path.relpath(self.environment.base_dir, self.root)
 
@@ -122,20 +128,21 @@ class MercurialRepository(Repository):
         if self.environment.repository_url is not None:
             self._upstream = self.environment.repository_url
         elif self._upstream is None:
-            self._upstream = cmd("hg showconfig paths")[0]
-            self._upstream = self._upstream.split("\n")[0].strip()
-            assert self._upstream.startswith("paths.default")
-            self._upstream = self.upstream.split("=")[1]
+            for item in hg_cmd("hg showconfig paths"):
+                if item['name'] != "paths.default":
+                    continue
+                self._upstream = item['value']
+                break
+            else:
+                raise AssertionError("`paths.default` not found")
         return self._upstream
 
     def update(self, host):
         self._ship(host)
         remote_id = host.rpc.hg_update_working_copy(self.branch)
-        local_id, _ = cmd("hg id -Tjson")
-        local_id = json.loads(local_id)[0]['id']
+        local_id = hg_cmd("hg id")[0]['id']
         if self.environment.deployment.dirty:
             local_id = local_id.replace("+", "")
-        local_id = local_id.strip()
         if remote_id != local_id:
             raise RepositoryDifferentError(local_id, remote_id)
 
@@ -149,14 +156,13 @@ class MercurialRepository(Repository):
             return
 
         try:
-            status, _ = cmd("hg -q stat")
+            status = hg_cmd("hg stat")
         except CmdExecutionError:
             output.error("Unable to check repository status. "
                          "Is there an HG repository here?")
             raise
         else:
-            status = status.strip()
-            if status.strip():
+            if status:
                 output.error("Your repository has uncommitted changes.")
                 output.annotate(
                     """\
@@ -164,8 +170,10 @@ I am refusing to deploy in this situation as the results will be unpredictable.
 Please commit and push first.
 """,
                     red=True)
-                output.annotate(status, red=True)
-                raise DeploymentError()
+                for item in status:
+                    output.annotate(
+                        "{} {}".format(item['status'], item['path']), red=True)
+                raise DeploymentError("Uncommitted changes")
         try:
             cmd("hg -q outgoing -l 1", acceptable_returncodes=[1])
         except CmdExecutionError:
@@ -175,7 +183,7 @@ Your repository has outgoing changes.
 I am refusing to deploy in this situation as the results will be unpredictable.
 Please push first.
 """)
-            raise DeploymentError()
+            raise DeploymentError("Outgoing changes")
 
 
 class MercurialPullRepository(MercurialRepository):
