@@ -6,6 +6,7 @@ import textwrap
 import uuid
 
 import batou.utils
+from batou import output
 from batou.utils import cmd
 
 SEED_TEMPLATE = """\
@@ -179,6 +180,10 @@ Host {container} {aliases}
             pass
 
         host.provision_channel = config.get('provision-channel', self.channel)
+
+    def summarize(self, host):
+        for alias, fqdn in host.provision_aliases.items():
+            output.line(f' 🌐 https://{fqdn}/')
 
     def provision(self, host):
         container = host.name

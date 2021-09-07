@@ -215,6 +215,11 @@ class Deployment(object):
             self.loop.run_until_complete(asyncio.gather(*pending))
             pending = get_pending()
 
+    def summarize(self):
+        output.section("Summary")
+        for node in list(self.environment.hosts.values()):
+            node.summarize()
+
     def disconnect(self):
         output.step("main", "Disconnecting from nodes ...", debug=True)
         for node in list(self.environment.hosts.values()):
@@ -225,7 +230,8 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
          jobs, provision_rebuild):
     output.backend = TerminalBackend()
     output.line(self_id())
-    STEPS = ['load', 'provision', 'connect', 'configure', 'deploy']
+    STEPS = [
+        'load', 'provision', 'connect', 'configure', 'deploy', 'summarize']
     if consistency_only:
         ACTION = "CONSISTENCY CHECK"
         STEPS.remove('deploy')

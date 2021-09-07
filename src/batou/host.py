@@ -190,6 +190,10 @@ class Host(object):
     def components(self):
         return self.environment.components_for(self)
 
+    def summarize(self):
+        if self.provisioner:
+            self.provisioner.summarize(self)
+
 
 class LocalHost(Host):
 
