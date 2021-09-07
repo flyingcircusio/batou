@@ -57,7 +57,9 @@ class FCDevContainer(Provisioner):
         KNOWN_HOSTS_FILE = os.path.expanduser('~/.batou/known_hosts')
 
         if not os.path.exists(KNOWN_HOSTS_FILE):
-            os.makedirs(os.path.dirname(KNOWN_HOSTS_FILE))
+            prefix_dir = os.path.dirname(KNOWN_HOSTS_FILE)
+            if not os.path.exists(prefix_dir):
+                os.makedirs(prefix_dir)
             with open(KNOWN_HOSTS_FILE, 'w'):
                 pass
 
