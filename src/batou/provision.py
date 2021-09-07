@@ -6,6 +6,46 @@ import uuid
 
 from batou.utils import cmd
 
+SEED_TEMPLATE = """\
+#/bin/sh
+set -ex
+
+{ENV}
+
+ECHO() {{
+    what=${{1?what to echo}}
+    where=${{2?where to echo}}
+    RUN "echo $what > $where"
+}}
+
+RUN() {{
+    cmd=$@
+    ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
+}}
+
+COPY() {{
+    what=${{1?what to copy}}
+    where=${{2?where to copy}}
+    rsync $what $PROVISION_CONTAINER:$where
+}}
+
+if [ ${{PROVISION_REBUILD+x}} ]; then
+    ssh $PROVISION_HOST sudo fc-build-dev-container destroy $PROVISION_CONTAINER
+fi
+
+ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "'$PROVISION_ALIASES'"
+
+
+# We used to run '-e' here but this can cause deadlocks if batou
+# leaves a partial deployment behind that we can't fix in the provisioning
+# phase.
+set +e
+
+{seed_script}
+
+RUN sudo -i fc-manage -c || true
+"""
+
 
 class Provisioner(object):
 
@@ -175,47 +215,11 @@ Host {container} {aliases}
                 # that helps debugging a lot. We need to be careful to
                 # deleted it later, though, because it might contain secrets.
                 f.write(
-                    textwrap.dedent("""\
-                    #/bin/sh
-                    # We used to run '-e' here but this can cause deadlocks if batou
-                    # leaves a partial deployment behind that we can't fix in the provisioning
-                    # phase.
-                    set -x
-
-                    {ENV}
-
-                    ECHO() {{
-                        what=${{1?what to echo}}
-                        where=${{2?where to echo}}
-                        RUN "echo $what > $where"
-                    }}
-
-                    RUN() {{
-                        cmd=$@
-                        ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
-                    }}
-
-                    COPY() {{
-                        what=${{1?what to copy}}
-                        where=${{2?where to copy}}
-                        rsync $what $PROVISION_CONTAINER:$where
-                    }}
-
-                    if [ ${{PROVISION_REBUILD+x}} ]; then
-                        ssh $PROVISION_HOST sudo fc-build-dev-container destroy $PROVISION_CONTAINER
-                    fi
-
-                    ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "'$PROVISION_ALIASES'"
-
-                    {seed_script}
-
-                    RUN sudo -i fc-manage -b || true
-
-                    """.format(  # noqa: E501 line too long
+                    SEED_TEMPLATE.format(
                         seed_script=seed_script,
                         ENV='\n'.join(
                             sorted('export {}="{}"'.format(k, v)
-                                   for k, v in env.items())))))
+                                   for k, v in env.items()))))
                 f.close()
                 cmd(f.name)
             finally:
