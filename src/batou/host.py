@@ -197,7 +197,7 @@ class LocalHost(Host):
         # Since we reconnected, any state on the remote side has been lost,
         # so we need to set the target directory again (which we only can
         # know about locally).
-        self.rpc.setup_output()
+        self.rpc.setup_output(output.enable_debug)
 
         env = self.environment
 
@@ -289,7 +289,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         # Since we reconnected, any state on the remote side has been lost,
         # so we need to set the target directory again (which we only can
         # know about locally)
-        self.rpc.setup_output()
+        self.rpc.setup_output(output.enable_debug)
 
         self.rpc.setup_deployment(
             env.name,

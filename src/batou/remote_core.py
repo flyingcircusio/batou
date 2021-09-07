@@ -367,10 +367,11 @@ def whoami():
     return pwd.getpwuid(os.getuid()).pw_name
 
 
-def setup_output():
+def setup_output(debug):
     from batou._output import output
 
     output.backend = ChannelBackend(channel)
+    output.enable_debug = debug
 
 
 class DummyException(Exception):
