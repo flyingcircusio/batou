@@ -1,9 +1,11 @@
 import os
 import os.path
+import socket
 import tempfile
 import textwrap
 import uuid
 
+import batou.utils
 from batou.utils import cmd
 
 SEED_TEMPLATE = """\
@@ -151,9 +153,31 @@ Host {container} {aliases}
 
     def configure_host(self, host, config):
         # Extract provisioning-specific config from host
-        host.provision_aliases = [
-            x.strip()
-            for x in config.get('provision-aliases', '').strip().split()]
+
+        # Establish host-specific list of aliases and their public FQDNs.
+        host.provision_aliases = {
+            alias.strip(): f'{alias}.{host.name}.{self.target_host}'
+            for alias in config.get('provision-aliases', '').strip().split()}
+
+        # Development containers have a different internal address for the
+        # external aliases so that we need to explicitly override the resolver
+        # so that services like nginx can bind to the correct local address.
+        try:
+            addr = batou.utils.resolve(host.name)
+            for alias_fqdn in host.provision_aliases.values():
+                output.annotate(f' alias override v4 {alias_fqdn} -> {addr}')
+                batou.utils.resolve_override[alias_fqdn] = addr
+        except (socket.gaierror, ValueError):
+            pass
+
+        try:
+            addr = batou.utils.resolve_v6(host.name)
+            for alias_fqdn in host.provision_aliases.values():
+                output.annotate(f' alias override v6 {alias_fqdn} -> {addr}')
+                batou.utils.resolve_v6_override[alias_fqdn] = addr
+        except (socket.gaierror, ValueError):
+            pass
+
         host.provision_channel = config.get('provision-channel', self.channel)
 
     def provision(self, host):
@@ -164,7 +188,7 @@ Host {container} {aliases}
             'PROVISION_CONTAINER': container,
             'PROVISION_HOST': self.target_host,
             'PROVISION_CHANNEL': host.provision_channel,
-            'PROVISION_ALIASES': ' '.join(host.provision_aliases),
+            'PROVISION_ALIASES': ' '.join(host.provision_aliases.keys()),
             'SSH_CONFIG': self.ssh_config_file,
             'RSYNC_RSH': 'ssh -F {}'.format(self.ssh_config_file)}
         if self.rebuild:

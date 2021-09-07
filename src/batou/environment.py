@@ -132,7 +132,11 @@ class Environment(object):
             os.makedirs(self._environment_path())
 
     def load(self):
+        batou.utils.resolve_override.clear()
+        batou.utils.resolve_v6_override.clear()
+
         existing_configs = []
+
         for candidate in [
                 "environments/{}.cfg", "environments/{}/environment.cfg"]:
             candidate = os.path.join(self.base_dir,
@@ -253,9 +257,7 @@ class Environment(object):
                 else:
                     self.exceptions.append(InvalidIPAddressError(ip))
 
-        batou.utils.resolve_override.clear()
         batou.utils.resolve_override.update(v4)
-        batou.utils.resolve_v6_override.clear()
         batou.utils.resolve_v6_override.update(v6)
 
     def load_provisioners(self, config):

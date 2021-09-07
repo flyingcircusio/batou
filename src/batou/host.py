@@ -118,21 +118,25 @@ class Host(object):
     ignore = False
 
     def __init__(self, name, environment, config={}):
+        # The _name attribute is the name that is given to this host in the
+        # environment. The `name` property will return the true name for this
+        # host in case that a mapping exists, e.g. due to a provisioner.
         self._name = name
+
         self.data = {}
 
         self.rpc = RPCWrapper(self)
         self.environment = environment
 
         self.ignore = ast.literal_eval(config.get("ignore", "False"))
-        self.remap = ast.literal_eval(
-            config.get("provision-dynamic-hostname", "False"))
 
         self.platform = config.get("platform", environment.platform)
         self.service_user = config.get("service_user",
                                        environment.service_user)
-        self._provisioner = config.get("provisioner")
 
+        self.remap = ast.literal_eval(
+            config.get("provision-dynamic-hostname", "False"))
+        self._provisioner = config.get("provisioner")
         if self.provisioner:
             self.provisioner.configure_host(self, config)
 
@@ -151,6 +155,9 @@ class Host(object):
             return self.environment.provisioners.get('default')
         return self.environment.provisioners[self._provisioner]
 
+    # These are internal aliases to allow having an explicit name
+    # for a host in the environment and then having a provisioner assign a
+    # different "true" name for this host.
     @property
     def aliases(self):
         if self._name == self.name:
