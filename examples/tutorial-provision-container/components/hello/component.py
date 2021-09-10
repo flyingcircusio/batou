@@ -8,5 +8,8 @@ class Hello(Component):
     password = "averysecretpassword"
 
     def configure(self):
-        self.address = Address(f"my.{self.host.name}.{self.host.provisioner.target_host}", port=443)
-        self += File('Hello', content='Hello World! {{component.address.listen}}')
+        self.address = Address(self.host.aliases.my, port=443)
+        self += File(
+            'Hello',
+            content=
+            'Hello World! {{host.aliases.my}} = {{component.address.listen}} ')

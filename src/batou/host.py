@@ -7,6 +7,8 @@ import execnet.gateway_io
 import yaml
 from batou import (DeploymentError, SilentConfigurationError, output,
                    remote_core)
+from batou.utils import BagOfAttributes
+
 
 # Keys in os.environ which get propagated to the remote side:
 REMOTE_OS_ENV_KEYS = (
@@ -16,8 +18,6 @@ REMOTE_OS_ENV_KEYS = (
 
 # Monkeypatch execnet to support 'vagrant ssh' and 'kitchen exec'.
 # 'vagrant' support has been added to 'execnet' release 1.4.
-
-
 def get_kitchen_ssh_connection_info(name):
     cmd = "kitchen", "diagnose", "--log-level=error", name
     info = yaml.load(subprocess.check_output(cmd))
@@ -123,6 +123,8 @@ class Host(object):
         # host in case that a mapping exists, e.g. due to a provisioner.
         self._name = name
 
+        self.aliases = BagOfAttributes()
+
         self.data = {}
 
         self.rpc = RPCWrapper(self)
@@ -159,7 +161,7 @@ class Host(object):
     # for a host in the environment and then having a provisioner assign a
     # different "true" name for this host.
     @property
-    def aliases(self):
+    def _aliases(self):
         if self._name == self.name:
             return []
         return [self._name]
