@@ -125,7 +125,7 @@ def test_address_ordering():
 def test_address_neither_v4_v6_invalid():
     with pytest.raises(ValueError) as f:
         Address("asdf", require_v4=False, require_v6=False)
-    assert ("One of `require_v4` or `require_v6` must be selected. "
+    assert ("At least one of `require_v4` or `require_v6` is required. "
             "None were selected." == str(f.value))
 
 
