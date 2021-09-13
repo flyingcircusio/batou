@@ -21,9 +21,10 @@ setup(
         # ConfigUpdater does not manage its minimum requirements correctly.
         "setuptools>=38.3",
         "execnet>=1.8.1",
-        "pyyaml",
         "importlib_metadata",
-        "py",],
+        "py",
+        "pyyaml",
+        'remote-pdb',],
     extras_require={
         "test": [
             "mock",

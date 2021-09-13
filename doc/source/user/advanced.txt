@@ -5,6 +5,33 @@ Advanced Usage
 Writing a custom component (TODO)
 ---------------------------------
 
+Debugging batou runs
+--------------------
+
+Using a debugger
+++++++++++++++++
+
+``batou`` comes with `remote-pdb <https://pypi.org/project/remote-pdb/>`_
+pre-installed. When running on Python 3.7+ you can use ``breakpoint()`` to drop
+into the debugger. You need ``telnet`` or ``netcat`` to connect to the hostname
+and port displayed.
+
+If you are using the default configuration, call::
+
+  $ nc -C 127.0.0.1 4444
+  or
+  $ telnet 127.0.0.1 4444
+
+You are able to configure hostname and port. For details see the documentation
+of `remote-pdb <https://pypi.org/project/remote-pdb/>`_.
+
+Using "print debugging"
++++++++++++++++++++++++
+
+* Inside a component you can use ``self.log("output")`` to print to the
+  console.
+* You can call ``batou`` with the ``-d`` flag to enable debugging output during
+  the deployment run.
 
 
 Using 3rd party libraries within batou
