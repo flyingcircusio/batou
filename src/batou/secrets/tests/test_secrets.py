@@ -1,24 +1,25 @@
+from batou.secrets import add_secrets_to_environment
 from batou.secrets.encryption import EncryptedConfigFile, EncryptedFile
 from batou.secrets.encryption import NEW_FILE_TEMPLATE
-from batou.secrets import add_secrets_to_environment
 import batou
 import configparser
 import mock
 import os
 import os.path
+import pathlib
 import pytest
 import shutil
 import tempfile
 
-FIXTURE = os.path.join(os.path.dirname(__file__), "fixture")
-cleartext_file = os.path.join(FIXTURE, "cleartext.cfg")
-FIXTURE_ENCRYPTED_CONFIG = os.path.join(FIXTURE, "encrypted.cfg")
+FIXTURE = pathlib.Path(__file__).parent / "fixture"
+cleartext_file = FIXTURE / "cleartext.cfg"
+FIXTURE_ENCRYPTED_CONFIG = FIXTURE / "encrypted.cfg"
 
 
 @pytest.fixture(scope="function")
 def encrypted_file(tmpdir):
     """Provide a temporary copy of the encrypted confi."""
-    return shutil.copy(FIXTURE_ENCRYPTED_CONFIG, tmpdir)
+    return pathlib.Path(shutil.copy(FIXTURE_ENCRYPTED_CONFIG, tmpdir))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -31,7 +32,7 @@ def cleanup_gpg_sockets():
             "S.gpg-agent.extra",
             "S.gpg-agent.ssh",]:
         try:
-            os.remove(os.path.join(FIXTURE, "gnupg", path))
+            (FIXTURE / "gnupg" / path).unlink()
         except OSError:
             pass
 
@@ -120,10 +121,8 @@ x = 1
         secrets.read()
         secrets.write()
 
-    with open(FIXTURE_ENCRYPTED_CONFIG, "rb") as old:
-        with open(encrypted_file, "rb") as new:
-            assert old.read() != new.read()
-    assert 0 != os.stat(encrypted_file).st_size
+    assert FIXTURE_ENCRYPTED_CONFIG.read_bytes() != encrypted_file.read_bytes()
+    assert 0 != encrypted_file.stat().st_size
 
 
 def test_write_fails_without_recipients(encrypted_file):
@@ -155,15 +154,14 @@ x = 1
         secrets.read()
         with pytest.raises(RuntimeError):
             secrets.write()
-    with open(encrypted_file, "rb") as new:
-        with open(FIXTURE_ENCRYPTED_CONFIG, "rb") as old:
-            assert new.read() == old.read()
+    assert encrypted_file.read_bytes() == FIXTURE_ENCRYPTED_CONFIG.read_bytes()
 
 
 def test_secrets_override_without_interpolation(tmpdir):
-    os.makedirs(str(tmpdir / "secrets"))
-    os.chdir(str(tmpdir))
-    secret_file = str(tmpdir / "secrets" / "env.cfg")
+    (tmpdir / "secrets").mkdir()
+    # `add_secrets_to_environment` assumes to be run in the batou root
+    os.chdir(tmpdir)
+    secret_file = tmpdir / "secrets" / "env.cfg"
     encrypted = EncryptedConfigFile(secret_file, write_lock=True)
 
     with encrypted as secrets:
@@ -179,7 +177,7 @@ data-csdf = 3
 """
         secrets.read()
 
-        with encrypted.add_file(str(tmpdir / 'secrets' / 'env-asdf.txt')) as f:
+        with encrypted.add_file(tmpdir / 'secrets' / 'env-asdf.txt') as f:
             f.cleartext = 'hello to me!'
 
         secrets.write()

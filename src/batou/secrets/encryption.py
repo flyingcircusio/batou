@@ -36,7 +36,8 @@ class EncryptedFile(object):
         `write_lock` must be set True if a modification of the file is
         intended.
         """
-        self.encrypted_filename = encrypted_filename
+        # Ensure compatibility with pathlib.
+        self.encrypted_filename = str(encrypted_filename)
         self.write_lock = write_lock
         self.quiet = quiet
         self.recipients = []
@@ -153,6 +154,8 @@ class EncryptedConfigFile(object):
                 self.add_file(other_filename)
 
     def add_file(self, filename):
+        # Ensure compatibility with pathlib.
+        filename = str(filename)
         if filename not in self.files:
             self.files[filename] = f = EncryptedFile(filename, self.write_lock,
                                                      self.quiet)
