@@ -33,6 +33,9 @@
   packages in standard library which older ones need as dependencies.
   ([#145](https://github.com/flyingcircusio/batou/issues/145))
 
+- Remove default option for installation via `pip`.
+  ([#212](https://github.com/flyingcircusio/batou/issues/212))
+
 - Implement dynamic, pluggable provisioning of hosts.
 
   We provide a built-in plugin to support NixOS development containers
