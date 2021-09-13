@@ -40,6 +40,9 @@
 
 - Adapt `bootstrap.sh` to the use of appenv.
 
+- Do not write secrets files without recipient.
+  ([#184](https://github.com/flyingcircusio/batou/issues/184))
+
 2.3b1 (2021-05-21)
 ------------------
 

@@ -29,9 +29,6 @@ class Editor(object):
                 write_lock=True) as configfile:
             self.configfile = configfile
 
-            # Initialize with template, if needed.
-            self.configfile.read()
-
             # Add the requested file to edit to the session, this might be
             # a new file.
             self.editing = configfile.add_file(self.edit_file)
@@ -57,7 +54,7 @@ class Editor(object):
                 print("Your changes are still available. You can try:")
                 print("\tedit       -- opens editor with current data again")
                 print("\tencrypt    -- tries to encrypt current data again")
-                print("\tquit       -- quits and loses your changes")
+                print("\tquit       -- aborts editing")
                 cmd = self._input()
             else:
                 break

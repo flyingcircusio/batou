@@ -65,7 +65,7 @@ class EncryptedFile(object):
                                          for x in self.GPG_BINARY_CANDIDATES)))
 
     def read(self):
-        """Read encrypted data into cleartext - if not not read already."""
+        """Read encrypted data into cleartext - if not read already."""
         if self.cleartext is None:
             if os.path.exists(self.encrypted_filename):
                 self.cleartext = self._decrypt()
@@ -80,8 +80,8 @@ class EncryptedFile(object):
         self._encrypt(self.cleartext)
 
     def _lock(self):
-        self.lockfd = open(self.encrypted_filename, self.write_lock and "a+"
-                           or "r+")
+        self.lockfd = open(self.encrypted_filename,
+                           "a+" if self.write_lock else "r+")
         try:
             fcntl.lockf(
                 self.lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB |
@@ -107,7 +107,8 @@ class EncryptedFile(object):
 
     def _encrypt(self, data):
         if not self.recipients:
-            raise ValueError('Need at least one recipient.')
+            raise ValueError(
+                'Need at least one recipient. Quitting will delete the file.')
         os.rename(self.encrypted_filename, self.encrypted_filename + ".old")
         args = [self.gpg(), '--encrypt']
         for r in self.recipients:
@@ -160,10 +161,14 @@ class EncryptedConfigFile(object):
 
     def __enter__(self):
         self.main_file.__enter__()
+        # Ensure `self.config`
+        self.read()
         return self
 
     def __exit__(self, _exc_type=None, _exc_value=None, _traceback=None):
         self.main_file.__exit__()
+        if not self.get_members():
+            os.unlink(self.main_file.encrypted_filename)
 
     def read(self):
         self.main_file.read()

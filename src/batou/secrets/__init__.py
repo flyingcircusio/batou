@@ -32,7 +32,6 @@ def add_secrets_to_environment(environment):
     if not os.path.exists(secrets_file):
         return
     with EncryptedConfigFile(secrets_file) as config_file:
-        config_file.read()
         for section_ in config_file.config.sections():
             if section_ == "batou":
                 continue
