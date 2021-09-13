@@ -13,7 +13,7 @@ import time
 from collections import defaultdict
 
 import pkg_resources
-from batou import DeploymentError, output
+from batou import DeploymentError, output, IPAddressConfigurationError
 
 
 def self_id():
@@ -154,15 +154,6 @@ class Address(object):
     #: This is a :py:class:`batou.utils.NetLoc` object.
     connect = None
 
-    #: The listen (or bind) address as it should be used when configuring
-    #: servers. This is a :py:class:`batou.utils.NetLoc` object.
-    listen = None
-
-    #: The IPv6 listen (or bind) address as it should be used when configuring
-    #: servers. This is a :py:class:`batou.utils.NetLoc` object or None, if
-    #: there is no IPv6 address.
-    listen_v6 = None
-
     def __init__(self,
                  connect_address,
                  port=None,
@@ -198,6 +189,38 @@ class Address(object):
 
     def __str__(self):
         return str(self.connect)
+
+    @property
+    def listen(self):
+        """The IPv4 listen (or bind) address as it should be used when
+           configuring servers. This is a :py:class:`batou.utils.NetLoc`
+           object. It raises an :py:class:`batou.IPAddressConfigurationError`
+           if used unconfigured.
+        """
+        try:
+            return self._listen
+        except AttributeError:
+            raise IPAddressConfigurationError(self, 4)
+
+    @listen.setter
+    def listen(self, value):
+        self._listen = value
+
+    @property
+    def listen_v6(self):
+        """The IPv6 listen (or bind) address as it should be used when
+           configuring servers. This is a :py:class:`batou.utils.NetLoc`
+           object. It raises an :py:class:`batou.IPAddressConfigurationError`
+           if used unconfigured.
+        """
+        try:
+            return self._listen_v6
+        except AttributeError:
+            raise IPAddressConfigurationError(self, 6)
+
+    @listen_v6.setter
+    def listen_v6(self, value):
+        self._listen_v6 = value
 
 
 @functools.total_ordering

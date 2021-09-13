@@ -101,6 +101,9 @@ batou/2... (cpython 3...)
 ================================== Preparing =================================\
 ==
 main: Loading environment `errors`...
+resolving `localhost` (v4)
+resolved `localhost...
+selected...
 main: Verifying repository ...
 main: Loading secrets ...
 ================================ Connecting ... ==============================\
@@ -108,6 +111,12 @@ main: Loading secrets ...
 localhost: Connecting via local (1/1)
 ============================ Configuring model ... ===========================\
 ==
+resolving `localhost` (v4)
+resolved `localhost...
+selected...
+
+ERROR: Trying to access address family IPv6 which is not configured for localhost:22.
+      Hint: Use `require_v6=True` when instantiating the Address object.
 
 ERROR: crontab@localhost: No cron jobs found.
 
@@ -148,8 +157,8 @@ cycle1 depends on
 cycle2 depends on
         cycle1
 
-ERROR: 7 remaining unconfigured component(s)
-======================= 9 ERRORS - CONFIGURATION FAILED ======================\
+ERROR: 8 remaining unconfigured component(s)
+======================= 10 ERRORS - CONFIGURATION FAILED =====================\
 ==
 ===================== DEPLOYMENT FAILED (during configure) ===================\
 ==

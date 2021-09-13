@@ -5,6 +5,7 @@ import threading
 import unittest
 from io import StringIO
 
+import batou
 import mock
 import pytest
 from batou.utils import (Address, CmdExecutionError, MultiFile, NetLoc,
@@ -144,7 +145,6 @@ def test_address_v6_only(monkeypatch):
     assert str(f.value) in RESOLVER_ERRORS
 
     address = Address(hostname, 1234, require_v4=False, require_v6=True)
-    assert address.listen is None
     assert address.listen_v6.host == "::346"
 
 
@@ -179,13 +179,22 @@ def test_address_should_contain_v6_address_if_available(gai):
     assert address.listen_v6.host == "::1"
 
 
-@mock.patch(
-    "batou.utils.resolve_v6", side_effect=socket.gaierror("lookup failed"))
-def test_address_does_not_fail_if_missing_v6_when_no_v6_requested(gai):
-    assert Address("localhost", 22, require_v6=False).listen_v6 is None
-    assert Address("localhost", 22).listen_v6 is None
-    with pytest.raises(socket.gaierror):
-        assert Address("localhost", 22, require_v6=True)
+def test_address_prevents_access_to_unconfigured_IPv4_netloc():
+    """It raises an exception if IPv4 is not configured but accessed."""
+    address = Address("localhost", 22, require_v4=False, require_v6=True)
+    with pytest.raises(batou.IPAddressConfigurationError) as err:
+        address.listen
+    assert ('Trying to access address family IPv4 which is not configured for'
+            ' localhost:22.' == str(err.value))
+
+
+def test_address_prevents_access_to_unconfigured_IPv6_netloc():
+    """It raises an exception if IPv6 is not configured but accessed."""
+    address = Address("localhost", 22, require_v4=True, require_v6=False)
+    with pytest.raises(batou.IPAddressConfigurationError) as err:
+        address.listen_v6
+    assert ('Trying to access address family IPv6 which is not configured for'
+            ' localhost:22.' == str(err.value))
 
 
 def test_netloc_str_should_brace_ipv6_addresses():

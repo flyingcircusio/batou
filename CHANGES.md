@@ -4,6 +4,9 @@
 2.3b2 (unreleased)
 ------------------
 
+- Raise an error if an internet protocol family is used but not configured.
+  ([#189](https://github.com/flyingcircusio/batou/issues/189))
+
 - Fix Python 3 compatibility with some Mercurial-based batou repositories.
 
 - NetLoc objects are now comparable.

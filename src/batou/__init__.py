@@ -510,3 +510,25 @@ class InvalidIPAddressError(ConfigurationError):
 
     def report(self):
         output.error("Not a valid IP address: {}".format(self.address))
+
+
+class IPAddressConfigurationError(ConfigurationError):
+    """An IP address family was accessed but not configured."""
+
+    sort_key = (0,)
+
+    def __init__(self, address, kind: int):
+        self.address = address
+        self.kind = kind
+
+    def __str__(self):
+        return (f'Trying to access address family IPv{self.kind} which is not'
+                f' configured for {self.address}.')
+
+    def report(self):
+        output.error(str(self))
+
+        output.tabular(
+            'Hint',
+            f'Use `require_v{self.kind}=True` when instantiating the Address'
+            ' object.')
