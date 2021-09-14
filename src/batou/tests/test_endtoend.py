@@ -220,6 +220,7 @@ otherhost: Connection ignored (2/2)
 localhost: Scheduling component component1 ...
 localhost: Skipping component fail ... (Component ignored)
 otherhost: Skipping component fail2 ... (Host ignored)
+=================================== Summary ====================================
 ============================= DEPLOYMENT FINISHED ============================\
 ==
 """)
@@ -297,5 +298,6 @@ localhost > Hello > File('work/hello/other-secrets.yaml') > Presence('other-secr
 localhost > Hello > File('work/hello/other-secrets.yaml') > Content('other-secrets.yaml')
 Not showing diff as it contains sensitive data,
 see ...diff for the diff.
+=================================== Summary ====================================
 ============================= DEPLOYMENT FINISHED ==============================
 """)  # noqa: E501 line too long
