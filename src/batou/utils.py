@@ -150,7 +150,7 @@ def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
             break
         if not address:
             raise ValueError('No valid address found for `{}`.'.format(host))
-        output.annotate('selected (v6) {}'.format(address), debug=True)
+        output.annotate('selected (v6) {}, {}'.format(host, address), debug=True)
     return address
 
 
