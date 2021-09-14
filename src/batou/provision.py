@@ -29,7 +29,7 @@ RUN() {{
 COPY() {{
     what=${{1?what to copy}}
     where=${{2?where to copy}}
-    rsync $what $PROVISION_CONTAINER:$where
+    rsync -avz --no-l --safe-links {rsync_path} $what $PROVISION_CONTAINER:$where
 }}
 
 if [ ${{PROVISION_REBUILD+x}} ]; then
@@ -38,15 +38,10 @@ fi
 
 ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "'$PROVISION_ALIASES'"
 
-
-# We used to run '-e' here but this can cause deadlocks if batou
-# leaves a partial deployment behind that we can't fix in the provisioning
-# phase.
-set +e
-
 {seed_script}
 
 RUN sudo -i fc-manage -c || true
+
 """
 
 
@@ -191,6 +186,9 @@ Host {container} {aliases}
         container = host.name
         self._prepare_ssh(host)
 
+        rsync_path = ''
+        if host.environment.service_user:
+            rsync_path = f'--rsync-path="sudo -u {host.environment.service_user} rsync"'
         env = {
             'PROVISION_CONTAINER': container,
             'PROVISION_HOST': self.target_host,
@@ -238,6 +236,7 @@ Host {container} {aliases}
         else:
             seed_script = ''
 
+        stdout = stderr = ''
         with tempfile.NamedTemporaryFile(
                 mode='w+', prefix='batou-provision', delete=False) as f:
             try:
@@ -252,8 +251,19 @@ Host {container} {aliases}
                             sorted('export {}="{}"'.format(k, v)
                                    for k, v in env.items()))))
                 f.close()
-                cmd(f.name)
+                stdout, stderr = cmd(f.name)
+            except Exception:
+                raise
+            else:
+                output.line("STDOUT", debug=True)
+                output.annotate(stdout, debug=True)
+                output.line("STDERR", debug=True)
+                output.annotate(stderr, debug=True)
             finally:
                 # The script includes secrets so we must be sure that we delete
                 # it.
-                os.unlink(f.name)
+                if not output.enable_debug:
+                    output.annotate(
+                        f"Not deleting provision script {f.name} in debug mode!",
+                        red=True)
+                    os.unlink(f.name)
