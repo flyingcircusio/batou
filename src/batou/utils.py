@@ -161,7 +161,7 @@ class Address(object):
                  require_v6=False):
         if not require_v4 and not require_v6:
             raise ValueError(
-                "One of `require_v4` or `require_v6` must be selected. "
+                "At least one of `require_v4` or `require_v6` is required. "
                 "None were selected.")
         if ":" in connect_address:
             connect, port = connect_address.split(":")
