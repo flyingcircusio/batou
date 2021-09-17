@@ -4,6 +4,9 @@
 2.3b2 (unreleased)
 ------------------
 
+- Raise an error if an internet protocol family is used but not configured.
+  ([#189](https://github.com/flyingcircusio/batou/issues/189))
+
 - Fix Python 3 compatibility with some Mercurial-based batou repositories.
 
 - NetLoc objects are now comparable.
@@ -36,10 +39,15 @@
   packages in standard library which older ones need as dependencies.
   ([#145](https://github.com/flyingcircusio/batou/issues/145))
 
+- Remove default option for installation via `pip`.
+  ([#212](https://github.com/flyingcircusio/batou/issues/212))
+
 - Implement dynamic, pluggable provisioning of hosts.
 
   We provide a built-in plugin to support NixOS development containers
   that feel similar to the Flying Circus VM platform.
+
+- Improve error message for DNS lookup semantics.
 
 - Adapt `bootstrap.sh` to the use of appenv.
 

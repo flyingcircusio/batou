@@ -1,0 +1,5 @@
+Exceptions
+----------
+
+.. automodule:: batou
+    :members:

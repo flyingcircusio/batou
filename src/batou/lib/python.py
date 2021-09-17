@@ -49,7 +49,7 @@ class VirtualEnvPyBase(Component):
     venv_options = ()
 
     installer = "pip"
-    install_options = ("--ignore-installed",)
+    install_options = ()
 
     def verify(self):
         expected_version = tuple(

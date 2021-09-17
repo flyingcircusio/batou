@@ -4,6 +4,7 @@ Component Python API
 ====================
 
 .. module:: batou
+    :noindex:
 
 This part of the documentation covers all the interfaces of batou you
 can use to develop your deployments.
