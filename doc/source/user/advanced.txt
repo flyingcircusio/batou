@@ -12,9 +12,9 @@ Using a debugger
 ++++++++++++++++
 
 ``batou`` comes with `remote-pdb <https://pypi.org/project/remote-pdb/>`_
-pre-installed. When running on Python 3.7+ you can use ``breakpoint()`` to drop
-into the debugger. You need ``telnet`` or ``netcat`` to connect to the hostname
-and port displayed.
+pre-installed. When running on Python 3.7+ [#]_ you can use ``breakpoint()`` to
+drop into the debugger. You need ``telnet`` or ``netcat`` to connect to the
+hostname and port displayed.
 
 If you are using the default configuration, call::
 
@@ -22,8 +22,35 @@ If you are using the default configuration, call::
   or
   $ telnet 127.0.0.1 4444
 
+If you are debugging a remote deployment you should create a port forward
+beforehand like this::
+
+  $ ssh -L 4444:localhost:4444 my.remote.host.dev
+
 You are able to configure hostname and port. For details see the documentation
-of `remote-pdb <https://pypi.org/project/remote-pdb/>`_.
+of `remote-pdb <https://pypi.org/project/remote-pdb/>`_. This only works for local
+deployments. The environment variables are currently not propagated to the remote host.
+
+Example shell session for a local debugging using a different port::
+
+  $ REMOTE_PDB_PORT=4445 ./batou deploy dev
+  batou/2.3b2.dev0 (cpython 3.6.15-final0, Darwin 20.6.0 x86_64)
+  ============================= Preparing ============================
+  main: Loading environment `dev`...
+  main: Verifying repository ...
+  main: Loading secrets ...
+  ============================= Connecting ... =======================
+  localhost: Connecting via local (1/1)
+  ============================= Configuring model ... ================
+  RemotePdb session open at 127.0.0.1:4445, waiting for connection ...
+
+Example for a second terminal where the opened port gets connected to::
+
+  $ nc -C 127.0.0.1 4445
+  > /.../components/supervisor/component.py(32)configure()
+  -> if self.host.platform in ('gocept.net', 'fcio.net'):
+  (Pdb)
+
 
 Using "print debugging"
 +++++++++++++++++++++++
@@ -223,3 +250,5 @@ batou.c (TODO)
 --------------
 
 ordered alphabetically (significant for imports)
+
+.. [#] On Python 3.6 you have to use ``from remote_pdb import set_trace; set_trace()``.

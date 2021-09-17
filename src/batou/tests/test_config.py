@@ -133,3 +133,10 @@ def test_config_exceptions_orderable(env):
     for x in exceptions:
         for y in exceptions:
             x.sort_key < y.sort_key
+
+
+def test_remote_pdb_config():
+    """There are some environment variables set with default values."""
+    assert os.environ["PYTHONBREAKPOINT"] == "remote_pdb.set_trace"
+    assert os.environ["REMOTE_PDB_HOST"] == "127.0.0.1"
+    assert os.environ["REMOTE_PDB_PORT"] == "4444"
