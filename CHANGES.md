@@ -31,11 +31,16 @@
 - Render an error message if `batou secrets summary` fails during decryption.
   ([#165](https://github.com/flyingcircusio/batou/issues/165))
 
-- Do not render diffs for files which contain contents of `secrets/*`.
-  ([#91](https://github.com/flyingcircusio/batou/issues/91))
 - Avoid implicit conversion of Attribute defaults. In cases where the default
   value should be converted, use `default_conf_string`.
   ([#89](https://github.com/flyingcircusio/batou/issues/89))
+
+- Enhance file `Mode` objects to accept integers, octal mode strings
+  and 'rwx' strings as the `mode` argument. This allows homogenous use
+  in Python code and overrides through config files.
+
+- Do not render diffs for files which contain contents of `secrets/*`.
+  ([#91](https://github.com/flyingcircusio/batou/issues/91))
 
 - Assure that `requirements.lock` is build with the oldest supported Python
   version to keep it consistent – newer Python versions have included some
