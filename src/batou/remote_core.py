@@ -129,8 +129,17 @@ class Deployment(object):
 
     environment = None
 
-    def __init__(self, env_name, host_name, overrides, secret_files,
-                 secret_data, host_data, timeout, platform):
+    def __init__(self,
+                 env_name,
+                 host_name,
+                 overrides,
+                 secret_files,
+                 secret_data,
+                 host_data,
+                 timeout,
+                 platform,
+                 *,
+                 os_env=None):
         self.env_name = env_name
         self.host_name = host_name
         self.overrides = overrides
@@ -139,10 +148,13 @@ class Deployment(object):
         self.secret_data = secret_data
         self.timeout = timeout
         self.platform = platform
+        self.os_env = os_env
 
     def load(self):
         from batou.environment import Environment
 
+        if self.os_env:
+            os.environ.update(self.os_env)
         self.environment = Environment(self.env_name, self.timeout,
                                        self.platform)
         self.environment.deployment = self

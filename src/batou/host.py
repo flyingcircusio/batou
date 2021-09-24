@@ -8,6 +8,12 @@ import yaml
 from batou import (DeploymentError, SilentConfigurationError, output,
                    remote_core)
 
+# Keys in os.environ which get propagated to the remote side:
+REMOTE_OS_ENV_KEYS = (
+    'REMOTE_PDB_HOST',
+    'REMOTE_PDB_PORT',
+)
+
 # Monkeypatch execnet to support 'vagrant ssh' and 'kitchen exec'.
 # 'vagrant' support has been added to 'execnet' release 1.4.
 
@@ -285,9 +291,19 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         # know about locally)
         self.rpc.setup_output()
 
-        self.rpc.setup_deployment(env.name, self.name, env.overrides,
-                                  env.secret_files, env.secret_data,
-                                  env._host_data(), env.timeout, env.platform)
+        self.rpc.setup_deployment(
+            env.name,
+            self.name,
+            env.overrides,
+            env.secret_files,
+            env.secret_data,
+            env._host_data(),
+            env.timeout,
+            env.platform,
+            os_env={
+                key: os.environ.get(key)
+                for key in REMOTE_OS_ENV_KEYS if os.environ.get(key)},
+        )
 
     def disconnect(self):
         if self.gateway is not None:
