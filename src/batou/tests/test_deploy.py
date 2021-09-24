@@ -41,7 +41,7 @@ ERROR: Failed loading component file
 
 ERROR: Failed loading component file
       File: .../examples/errors/components/component7/component.py
- Exception: Attributes only support one of those parameters: `default` or `default_conf_string`.
+ Exception: Attributes only support one of those parameters: either `default` or `default_conf_string`.
 
 ERROR: Missing component
  Component: component7

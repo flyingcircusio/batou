@@ -1071,9 +1071,7 @@ class Attribute(object):
                 and default_conf_string is not ATTRIBUTE_NODEFAULT):
             raise batou.ConfigurationError(
                 'Attributes only support one of those parameters:'
-                ' `default` or `default_conf_string`.',
-                self,
-            )
+                ' either `default` or `default_conf_string`.', self)
         self.default = default
         self.default_conf_string = default_conf_string
         self.expand = expand
