@@ -18,6 +18,9 @@
 - Support `ls` syntax in mode attributes.
   ([#61](https://github.com/flyingcircusio/batou/issues/61))
 
+- Integrate `remote-pdb` to debug batou runs.
+  ([#199](https://github.com/flyingcircusio/batou/issues/199))
+
 - Fail if an attribute is set both in environment and via secrets.
   ([#28](https://github.com/flyingcircusio/batou/issues/28))
 

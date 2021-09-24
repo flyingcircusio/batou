@@ -1,6 +1,7 @@
 from batou import remote_core
 import inspect
 import mock
+import os
 import os.path
 import pytest
 
@@ -287,3 +288,28 @@ def test_git_remote_init_pull(tmpdir):
         remote_core.git_update_working_copy("master")
 
     assert "bar" == dest.join("foo.txt").read()
+
+
+def test_Deployment_sets_os_environ_on_load(monkeypatch):
+    """If ``os_env`` is given to ``Deployment`` it changes os.environ, ...or
+
+    when the ``load()`` method is called.
+    """
+    monkeypatch.chdir('examples/tutorial-helloworld')
+
+    assert 'MY_ENV_VAR' not in os.environ
+
+    dep = remote_core.Deployment(
+        env_name='tutorial',
+        host_name='localhost',
+        overrides={},
+        secret_files=None,
+        secret_data=None,
+        host_data={},
+        timeout=None,
+        platform=None,
+        os_env={'MY_ENV_VAR': 'MY-VALUE'},
+    )
+    dep.load()
+
+    assert os.environ['MY_ENV_VAR'] == 'MY-VALUE'
