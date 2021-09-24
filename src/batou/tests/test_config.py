@@ -6,7 +6,6 @@ import pytest
 from batou import MissingEnvironment
 from batou.component import Component
 from batou.environment import Environment
-from batou.host import Host
 
 
 def test_parse_nonexisting_environment_raises_error(tmpdir):

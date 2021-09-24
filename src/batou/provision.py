@@ -1,6 +1,7 @@
 import os
 import os.path
 import tempfile
+import textwrap
 import uuid
 
 from batou.utils import cmd
@@ -153,13 +154,14 @@ Host {container} {aliases}
         seed_script_file = 'environments/{}/provision.sh'.format(
             host.environment.name)
         if os.path.exists(seed_script_file):
-            seed_script = """\
-# BEGIN CUSTOM SEED SCRIPT
-cd {basedir}
-{script}
-# END CUSTOM SEED SCRIPT
-""".format(basedir=os.path.dirname(seed_script_file),
-            script=open(seed_script_file).read())
+            seed_script = textwrap.dedent("""\
+                # BEGIN CUSTOM SEED SCRIPT
+                cd {basedir}
+                {script}
+                # END CUSTOM SEED SCRIPT
+            """.format(
+                basedir=os.path.dirname(seed_script_file),
+                script=open(seed_script_file).read()))
         else:
             seed_script = ''
 
@@ -170,45 +172,48 @@ cd {basedir}
                 # We're placing the ENV vars directly in the script because
                 # that helps debugging a lot. We need to be careful to
                 # deleted it later, though, because it might contain secrets.
-                f.write("""\
-#/bin/sh
-# We used to run '-e' here but this can cause deadlocks if batou
-# leaves a partial deployment behind that we can't fix in the provisioning
-# phase.
-set -x
+                f.write(
+                    textwrap.dedent("""\
+                    #/bin/sh
+                    # We used to run '-e' here but this can cause deadlocks if batou
+                    # leaves a partial deployment behind that we can't fix in the provisioning
+                    # phase.
+                    set -x
 
-{ENV}
+                    {ENV}
 
-ECHO() {{
-    what=${{1?what to echo}}
-    where=${{2?where to echo}}
-    RUN "echo $what > $where"
-}}
+                    ECHO() {{
+                        what=${{1?what to echo}}
+                        where=${{2?where to echo}}
+                        RUN "echo $what > $where"
+                    }}
 
-RUN() {{
-    cmd=$@
-    ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
-}}
+                    RUN() {{
+                        cmd=$@
+                        ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
+                    }}
 
-COPY() {{
-    what=${{1?what to copy}}
-    where=${{2?where to copy}}
-    rsync $what $PROVISION_CONTAINER:$where
-}}
+                    COPY() {{
+                        what=${{1?what to copy}}
+                        where=${{2?where to copy}}
+                        rsync $what $PROVISION_CONTAINER:$where
+                    }}
 
-if [ ${{PROVISION_REBUILD+x}} ]; then
-    ssh $PROVISION_HOST sudo fc-build-dev-container destroy $PROVISION_CONTAINER
-fi
+                    if [ ${{PROVISION_REBUILD+x}} ]; then
+                        ssh $PROVISION_HOST sudo fc-build-dev-container destroy $PROVISION_CONTAINER
+                    fi
 
-ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "'$PROVISION_ALIASES'"
+                    ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "'$PROVISION_ALIASES'"
 
-{seed_script}
+                    {seed_script}
 
-RUN sudo -i fc-manage -b || true
+                    RUN sudo -i fc-manage -b || true
 
-""".format(seed_script=seed_script,
-                ENV='\n'.join(
-                sorted('export {}="{}"'.format(k, v) for k, v in env.items()))))
+                    """.format(  # noqa: E501 line too long
+                        seed_script=seed_script,
+                        ENV='\n'.join(
+                            sorted('export {}="{}"'.format(k, v)
+                                   for k, v in env.items())))))
                 f.close()
                 cmd(f.name)
             finally:

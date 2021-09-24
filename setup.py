@@ -4,9 +4,6 @@
 and deployments.
 """
 
-import glob
-import os.path
-
 from setuptools import find_packages, setup
 
 version = open("src/batou/version.txt").read().strip()

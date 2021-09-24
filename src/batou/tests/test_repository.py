@@ -14,11 +14,11 @@ def test_repository_hg_norepo(tmpdir):
     environment.base_dir = tmpdir
     os.chdir(tmpdir)
 
-    with pytest.raises(batou.utils.CmdExecutionError) as e:
+    with pytest.raises(batou.utils.CmdExecutionError):
         MercurialRepository(environment)
 
     subprocess.check_call(['hg', 'init'])
-    repository = MercurialRepository(environment)
+    MercurialRepository(environment)
 
 
 def test_repository_hg_show_upstream(tmpdir):
@@ -35,7 +35,7 @@ def test_repository_hg_show_upstream(tmpdir):
     repository._upstream = None
 
     environment.repository_url = None
-    with pytest.raises(batou.utils.CmdExecutionError) as e:
+    with pytest.raises(batou.utils.CmdExecutionError):
         repository.upstream
 
     with open('.hg/hgrc', 'w') as f:
@@ -44,7 +44,7 @@ def test_repository_hg_show_upstream(tmpdir):
 foobar = 1234
 """)
 
-    with pytest.raises(AssertionError) as e:
+    with pytest.raises(AssertionError):
         repository.upstream
 
     with open('.hg/hgrc', 'w') as f:
@@ -124,7 +124,8 @@ def test_repository_hg_ship_verify_after_ship(tmpdir):
     repository._ship = no_ship
 
     host = mock.Mock()
-    host.rpc.hg_update_working_copy.return_value = '0000000000000000000000000000000000000000'
+    host.rpc.hg_update_working_copy.return_value = (
+        '0000000000000000000000000000000000000000')
     repository.update(host)
 
     with open('asdf', 'w') as f:

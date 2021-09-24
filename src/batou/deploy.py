@@ -6,11 +6,10 @@ import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 
-from batou import (ConfigurationError, DeploymentError, FileLockedError,
-                   ReportingException, SilentConfigurationError)
+from batou import ReportingException, SilentConfigurationError
 from batou._output import TerminalBackend, output
 
-from .environment import Environment, MissingEnvironment
+from .environment import Environment
 from .utils import locked, notify, self_id
 
 

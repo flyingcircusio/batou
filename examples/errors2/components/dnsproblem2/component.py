@@ -1,4 +1,4 @@
-from batou.component import Attribute, Component
+from batou.component import Component
 from batou.utils import Address
 
 

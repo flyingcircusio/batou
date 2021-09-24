@@ -389,7 +389,7 @@ if __name__ == "__channelexec__":
 
             environment = deployment.environment
             if exception not in environment.exceptions:
-                environment.exceptions.append(e)
+                environment.exceptions.append(exception)
 
             environment.exceptions = list(
                 filter(lambda e: not isinstance(e, SilentConfigurationError),

@@ -58,9 +58,9 @@ def test_resolve_v6_does_not_return_link_local_addresses(output, monkeypatch):
 
     monkeypatch.setattr(socket, 'getaddrinfo', link_local_addrinfo)
 
-    with pytest.raises(ValueError) as f:
+    with pytest.raises(ValueError) as err:
         resolve_v6("foo.example.com", 80)
-    assert 'No valid address found for `foo.example.com`.'
+    assert 'No valid address found for `foo.example.com`.' == str(err.value)
 
     def link_local_addrinfo(*args, **kw):
         return [(None, None, None, None, ('fe80::feaa:14ff:fe8f:94ba', 80,
@@ -76,7 +76,7 @@ def test_resolve_v6_does_not_return_link_local_addresses(output, monkeypatch):
 resolving (v6) `foo.example.com` (getaddrinfo)
 resolved (v6) `foo.example.com` to [(None, None, None, None, ('fe80::feaa:14ff:fe8f:94ba', 80, None, None)), (None, None, None, None, ('2a02::1', 80, None, None))]
 selected 2a02::1
-""" == output.backend.output
+""" == output.backend.output  # noqa: E501 line too long
 
 
 def test_address_without_implicit_or_explicit_port_fails():

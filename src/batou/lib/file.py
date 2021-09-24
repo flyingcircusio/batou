@@ -297,7 +297,6 @@ def limited_buffer(iterator, limit, lead, separator="...", logdir="/tmp"):
     # Fill the remainder into the end buffer but only keep lead size.
     # This is a memory optimization: don't ever keep the whole iterator in
     # memory!
-    started_logging = False
     end_buffer = []
     _, diff_log = tempfile.mkstemp(suffix=".diff", dir=logdir)
     diff_log_file = open(diff_log, "a+")
