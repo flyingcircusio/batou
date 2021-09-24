@@ -28,10 +28,11 @@ beforehand like this::
   $ ssh -L 4444:localhost:4444 my.remote.host.dev
 
 You are able to configure hostname and port. For details see the documentation
-of `remote-pdb <https://pypi.org/project/remote-pdb/>`_. This only works for local
-deployments. The environment variables are currently not propagated to the remote host.
+of `remote-pdb <https://pypi.org/project/remote-pdb/>`_. This works both for
+local and remote deployments. The environment variables for host and port are
+propagated to the remote host.
 
-Example shell session for a local debugging using a different port::
+Example shell session for debugging using a custom port::
 
   $ REMOTE_PDB_PORT=4445 ./batou deploy dev
   batou/2.3b2.dev0 (cpython 3.6.15-final0, Darwin 20.6.0 x86_64)
