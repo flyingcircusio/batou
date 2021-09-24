@@ -4,40 +4,38 @@
 2.3b2 (unreleased)
 ------------------
 
-- Raise an error if an internet protocol family is used but not configured.
-  ([#189](https://github.com/flyingcircusio/batou/issues/189))
-
-- Fix Python 3 compatibility with some Mercurial-based batou repositories.
-
-- NetLoc objects are now comparable.
-  ([#88](https://github.com/flyingcircusio/batou/issues/88))
-
-- Render a better error message if gpg failed to decrypt a secrets file.
-  ([#123](https://github.com/flyingcircusio/batou/issues/123))
-
-- Support `ls` syntax in mode attributes.
-  ([#61](https://github.com/flyingcircusio/batou/issues/61))
-
-- Integrate `remote-pdb` to debug batou runs.
-  ([#199](https://github.com/flyingcircusio/batou/issues/199))
+### Action needed
 
 - Fail if an attribute is set both in environment and via secrets.
   ([#28](https://github.com/flyingcircusio/batou/issues/28))
 
-- Raise exception when calling `batou secrets add` or `batou secrets remove`
-  with an unknown environment name.
-  ([#143](https://github.com/flyingcircusio/batou/issues/143))
-
-- Render an error message if `batou secrets summary` fails during decryption.
-  ([#165](https://github.com/flyingcircusio/batou/issues/165))
-
 - Avoid implicit conversion of Attribute defaults. In cases where the default
-  value should be converted, use `default_conf_string`.
+  value should be converted, use `default_conf_string`. This may result in
+  some changes if your code relied on this implicit conversion. If you use
+  `batou_ext`, update to a current commit..
   ([#89](https://github.com/flyingcircusio/batou/issues/89))
+
+- Raise an error if an internet protocol family is used but not configured.
+  ([#189](https://github.com/flyingcircusio/batou/issues/189))
+
+### Bug fixes
+
+- Fix Python 3 compatibility with some Mercurial-based batou repositories.
+
+- Adapt `bootstrap.sh` to the use of appenv.
+
+### Features
+
+- Integrate `remote-pdb` to debug batou runs.
+  ([#199](https://github.com/flyingcircusio/batou/issues/199))
+
+- NetLoc objects are now comparable.
+  ([#88](https://github.com/flyingcircusio/batou/issues/88))
 
 - Enhance file `Mode` objects to accept integers, octal mode strings
   and 'rwx' strings as the `mode` argument. This allows homogenous use
   in Python code and overrides through config files.
+  ([#61](https://github.com/flyingcircusio/batou/issues/61))
 
 - Do not render diffs for files which contain contents of `secrets/*`.
   ([#91](https://github.com/flyingcircusio/batou/issues/91))
@@ -55,9 +53,19 @@
   We provide a built-in plugin to support NixOS development containers
   that feel similar to the Flying Circus VM platform.
 
+### Other changes
+
 - Improve error message for DNS lookup semantics.
 
-- Adapt `bootstrap.sh` to the use of appenv.
+- Render a better error message if gpg failed to decrypt a secrets file.
+  ([#123](https://github.com/flyingcircusio/batou/issues/123))
+
+- Raise exception when calling `batou secrets add` or `batou secrets remove`
+  with an unknown environment name.
+  ([#143](https://github.com/flyingcircusio/batou/issues/143))
+
+- Render an error message if `batou secrets summary` fails during decryption.
+  ([#165](https://github.com/flyingcircusio/batou/issues/165))
 
 
 2.3b1 (2021-05-21)
