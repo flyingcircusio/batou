@@ -300,7 +300,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
             env._host_data(),
             env.timeout,
             env.platform,
-            os_env={
+            {
                 key: os.environ.get(key)
                 for key in REMOTE_OS_ENV_KEYS if os.environ.get(key)},
         )

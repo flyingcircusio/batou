@@ -138,7 +138,6 @@ class Deployment(object):
                  host_data,
                  timeout,
                  platform,
-                 *,
                  os_env=None):
         self.env_name = env_name
         self.host_name = host_name
