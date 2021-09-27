@@ -43,7 +43,7 @@ An error occurred: gpg is broken
 Your changes are still available. You can try:
 \tedit       -- opens editor with current data again
 \tencrypt    -- tries to encrypt current data again
-\tquit       -- aborts editing
+\tquit       -- quits and loses your changes
 
 
 An error occurred: gpg is broken
@@ -51,7 +51,7 @@ An error occurred: gpg is broken
 Your changes are still available. You can try:
 \tedit       -- opens editor with current data again
 \tencrypt    -- tries to encrypt current data again
-\tquit       -- aborts editing
+\tquit       -- quits and loses your changes
 
 
 An error occurred: unknown command `asdf`
@@ -59,7 +59,7 @@ An error occurred: unknown command `asdf`
 Your changes are still available. You can try:
 \tedit       -- opens editor with current data again
 \tencrypt    -- tries to encrypt current data again
-\tquit       -- aborts editing
+\tquit       -- quits and loses your changes
 
 
 An error occurred: gpg is broken
@@ -67,5 +67,5 @@ An error occurred: gpg is broken
 Your changes are still available. You can try:
 \tedit       -- opens editor with current data again
 \tencrypt    -- tries to encrypt current data again
-\tquit       -- aborts editing
+\tquit       -- quits and loses your changes
 """

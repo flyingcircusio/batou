@@ -54,7 +54,7 @@ class Editor(object):
                 print("Your changes are still available. You can try:")
                 print("\tedit       -- opens editor with current data again")
                 print("\tencrypt    -- tries to encrypt current data again")
-                print("\tquit       -- aborts editing")
+                print("\tquit       -- quits and loses your changes")
                 cmd = self._input()
             else:
                 break
