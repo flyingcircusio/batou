@@ -9,12 +9,12 @@ from batou import (DeploymentError, SilentConfigurationError, output,
                    remote_core)
 from batou.utils import BagOfAttributes
 
-
 # Keys in os.environ which get propagated to the remote side:
 REMOTE_OS_ENV_KEYS = (
     'REMOTE_PDB_HOST',
     'REMOTE_PDB_PORT',
 )
+
 
 # Monkeypatch execnet to support 'vagrant ssh' and 'kitchen exec'.
 # 'vagrant' support has been added to 'execnet' release 1.4.
