@@ -262,7 +262,7 @@ Host {container} {aliases}
             finally:
                 # The script includes secrets so we must be sure that we delete
                 # it.
-                if not output.enable_debug:
+                if output.enable_debug:
                     output.annotate(
                         f"Not deleting provision script {f.name} in debug mode!",
                         red=True)
