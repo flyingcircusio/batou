@@ -68,7 +68,7 @@ Creates a file. The main parameter for File is the target path. A ``File`` insta
 
 .. py:attribute:: mode
 
-    Unix permission mode (octal number, e.g. 0o755)
+    Unix permission mode. Can be given as an integer value (`0o755`) or as an octal integer string (`'755'`) or as a unix mode string similar to the output of `ls -l` (`'rwx--x--x'`).
 
 .. py:attribute:: leading
 

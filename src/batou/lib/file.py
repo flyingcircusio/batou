@@ -1,8 +1,3 @@
-from batou import output
-from batou.component import Attribute
-from batou.component import Component
-from batou.utils import dict_merge
-import batou
 import difflib
 import glob
 import grp
@@ -14,7 +9,12 @@ import re
 import shutil
 import stat
 import tempfile
+
+import batou
 import yaml
+from batou import output
+from batou.component import Attribute, Component
+from batou.utils import dict_merge
 
 
 def ensure_path_nonexistent(path):
@@ -610,7 +610,27 @@ def convert_mode(string: str) -> int:
 
 class Mode(FileComponent):
 
-    mode = Attribute(conversion=convert_mode, default=None)
+    mode = Attribute(default=None)
+
+    def configure(self):
+        super().configure()
+
+        if isinstance(self.mode, str):
+            try:
+                self.mode = int(self.mode, 8)
+            except ValueError:
+                try:
+                    self.mode = convert_mode(self.mode)
+                except Exception as e:
+                    raise batou.ConversionError(self, 'mode', self.mode,
+                                                convert_mode, e)
+
+        elif isinstance(self.mode, int):
+            pass
+        else:
+            raise batou.ConfigurationError(
+                f'`mode` is required and `{self.mode!r}` is not a valid value.`'
+            )
 
     def verify(self):
         try:

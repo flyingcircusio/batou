@@ -7,6 +7,7 @@ import os
 import pwd
 from stat import S_IMODE
 
+import batou
 import pytest
 import yaml
 from batou.lib.file import (BinaryFile, Content, Directory, File,
@@ -839,7 +840,9 @@ def test_mode_verifies_for_nonexistent_file(root):
         mode.verify()
 
 
-def test_mode_ensures_mode_for_files(root):
+@pytest.mark.parametrize('input,expected', [
+    (0o777, 0o777),])
+def test_mode_ensures_mode_for_files(root, input, expected):
     path = "path"
     open("work/mycomponent/" + path, "w").close()
     mode = Mode(path, mode=0o000)
@@ -854,6 +857,25 @@ def test_mode_ensures_mode_for_files(root):
 
     root.component.deploy()
     assert not mode.changed
+
+
+def test_mode_converts_to_numeric(root):
+    path = "path"
+    open("work/mycomponent/" + path, "w").close()
+
+    with pytest.raises(batou.ConfigurationError) as e:
+        mode = Mode(path)
+        root.component += mode
+    assert str(
+        e.value) == '`mode` is required and `None` is not a valid value.`'
+
+    mode = Mode(path, mode='rwx------')
+    root.component += mode
+    assert mode.mode == 0o700
+
+    mode = Mode(path, mode='500')
+    root.component += mode
+    assert mode.mode == 0o500
 
 
 def test_mode_ensures_mode_for_directories(root):
