@@ -1,9 +1,9 @@
+import json
 import os
 import os.path
 import pwd
 import subprocess
 import traceback
-import json
 
 # Satisfy flake8 and support testing.
 try:
@@ -194,13 +194,11 @@ class CmdError(Exception):
 
 
 def cmd(c, acceptable_returncodes=[0]):
-    process = subprocess.Popen(
-        ["LANG=C LC_ALL=C LANGUAGE=C {}".format(c)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        stdin=subprocess.PIPE,
-        shell=True,
-    )
+    process = subprocess.Popen(["LANG=C LC_ALL=C LANGUAGE=C {}".format(c)],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               stdin=subprocess.PIPE,
+                               shell=True)
     stdout, stderr = process.communicate()
     # We do not have enough knowledge here to decode so we keep
     # stdout and stderr as byte strings for now.
@@ -367,10 +365,11 @@ def whoami():
     return pwd.getpwuid(os.getuid()).pw_name
 
 
-def setup_output():
+def setup_output(debug):
     from batou._output import output
 
     output.backend = ChannelBackend(channel)
+    output.enable_debug = debug
 
 
 class DummyException(Exception):

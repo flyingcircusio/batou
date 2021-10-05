@@ -16,6 +16,21 @@ import pkg_resources
 from batou import DeploymentError, output, IPAddressConfigurationError
 
 
+class BagOfAttributes(dict):
+    """Provide a dict-like object that can also
+    be accessed using attributes.
+
+    It's sometimes more convenient to write
+    a.x instead of a['x']. However, namespaces may
+    require being able to also use non-Python-identifier
+    keys.
+
+    """
+
+    def __getattr__(self, key):
+        return self[key]
+
+
 def self_id():
     template = "batou/{version} ({python}, {system})"
     system = os.uname()
@@ -102,24 +117,31 @@ resolve_v6_override = {}
 def resolve(host, port=0, resolve_override=resolve_override):
     if host in resolve_override:
         address = resolve_override[host]
-        output.annotate('resolved `{}` to {} (override)'.format(host, address))
+        output.annotate(
+            'resolved (v4) `{}` to {} (override)'.format(host, address),
+            debug=True)
     else:
-        output.annotate('resolving `{}` (v4)'.format(host))
+        output.annotate('resolving (v4) `{}`'.format(host), debug=True)
         responses = socket.getaddrinfo(host, int(port), socket.AF_INET)
-        output.annotate('resolved `{}` to {}'.format(host, responses))
+        output.annotate(
+            'resolved (v4) `{}` to {}'.format(host, responses), debug=True)
         address = responses[0][4][0]
-        output.annotate('selected {}, {}'.format(host, address))
+        output.annotate(
+            'selected (v4) {}, {}'.format(host, address), debug=True)
     return address
 
 
 def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
     if host in resolve_override:
         address = resolve_override[host]
-        output.annotate('resolved `{}` to {} (override)'.format(host, address))
+        output.annotate(
+            'resolved (v6) `{}` to {} (override)'.format(host, address),
+            debug=True)
     else:
-        output.annotate('resolving (v6) `{}` (getaddrinfo)'.format(host))
+        output.annotate('resolving (v6) `{}`'.format(host), debug=True)
         responses = socket.getaddrinfo(host, int(port), socket.AF_INET6)
-        output.annotate('resolved (v6) `{}` to {}'.format(host, responses))
+        output.annotate(
+            'resolved (v6) `{}` to {}'.format(host, responses), debug=True)
         address = None
         for _, _, _, _, sockaddr in responses:
             addr, _, _, _ = sockaddr
@@ -129,7 +151,8 @@ def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
             break
         if not address:
             raise ValueError('No valid address found for `{}`.'.format(host))
-        output.annotate('selected {}'.format(address))
+        output.annotate(
+            'selected (v6) {}, {}'.format(host, address), debug=True)
     return address
 
 

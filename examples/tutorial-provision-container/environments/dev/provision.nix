@@ -6,7 +6,7 @@
 
   flyingcircus.roles.webgateway.enable = true;
   flyingcircus.roles.redis.enable = true;
-  flyingcircus.roles.percona80.enable = true;
+  # flyingcircus.roles.percona80.enable = true;
   services.percona.rootPasswordFile = lib.mkForce "/etc/local/nixos/mysql-root-password";
   flyingcircus.roles.postgresql12.enable = true;
 

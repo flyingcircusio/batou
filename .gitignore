@@ -30,3 +30,4 @@ report.xml
 pip-wheel-metadata
 /examples/*/ssh_config_*
 /examples/**/hostmap.json
+/examples/**/insecure-private.key

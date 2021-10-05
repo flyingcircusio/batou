@@ -7,6 +7,7 @@ import execnet.gateway_io
 import yaml
 from batou import (DeploymentError, SilentConfigurationError, output,
                    remote_core)
+from batou.utils import BagOfAttributes
 
 # Keys in os.environ which get propagated to the remote side:
 REMOTE_OS_ENV_KEYS = (
@@ -14,10 +15,9 @@ REMOTE_OS_ENV_KEYS = (
     'REMOTE_PDB_PORT',
 )
 
+
 # Monkeypatch execnet to support 'vagrant ssh' and 'kitchen exec'.
 # 'vagrant' support has been added to 'execnet' release 1.4.
-
-
 def get_kitchen_ssh_connection_info(name):
     cmd = "kitchen", "diagnose", "--log-level=error", name
     info = yaml.load(subprocess.check_output(cmd))
@@ -118,21 +118,27 @@ class Host(object):
     ignore = False
 
     def __init__(self, name, environment, config={}):
+        # The _name attribute is the name that is given to this host in the
+        # environment. The `name` property will return the true name for this
+        # host in case that a mapping exists, e.g. due to a provisioner.
         self._name = name
+
+        self.aliases = BagOfAttributes()
+
         self.data = {}
 
         self.rpc = RPCWrapper(self)
         self.environment = environment
 
         self.ignore = ast.literal_eval(config.get("ignore", "False"))
-        self.remap = ast.literal_eval(
-            config.get("provision-dynamic-hostname", "False"))
 
         self.platform = config.get("platform", environment.platform)
         self.service_user = config.get("service_user",
                                        environment.service_user)
-        self._provisioner = config.get("provisioner")
 
+        self.remap = ast.literal_eval(
+            config.get("provision-dynamic-hostname", "False"))
+        self._provisioner = config.get("provisioner")
         if self.provisioner:
             self.provisioner.configure_host(self, config)
 
@@ -151,8 +157,11 @@ class Host(object):
             return self.environment.provisioners.get('default')
         return self.environment.provisioners[self._provisioner]
 
+    # These are internal aliases to allow having an explicit name
+    # for a host in the environment and then having a provisioner assign a
+    # different "true" name for this host.
     @property
-    def aliases(self):
+    def _aliases(self):
         if self._name == self.name:
             return []
         return [self._name]
@@ -183,6 +192,10 @@ class Host(object):
     def components(self):
         return self.environment.components_for(self)
 
+    def summarize(self):
+        if self.provisioner:
+            self.provisioner.summarize(self)
+
 
 class LocalHost(Host):
 
@@ -197,7 +210,7 @@ class LocalHost(Host):
         # Since we reconnected, any state on the remote side has been lost,
         # so we need to set the target directory again (which we only can
         # know about locally).
-        self.rpc.setup_output()
+        self.rpc.setup_output(output.enable_debug)
 
         env = self.environment
 
@@ -289,7 +302,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         # Since we reconnected, any state on the remote side has been lost,
         # so we need to set the target directory again (which we only can
         # know about locally)
-        self.rpc.setup_output()
+        self.rpc.setup_output(output.enable_debug)
 
         self.rpc.setup_deployment(
             env.name,

@@ -1,10 +1,48 @@
 import os
 import os.path
+import socket
 import tempfile
 import textwrap
 import uuid
 
+import batou.utils
+from batou import output
 from batou.utils import cmd
+
+SEED_TEMPLATE = """\
+#/bin/sh
+set -ex
+
+{ENV}
+
+ECHO() {{
+    what=${{1?what to echo}}
+    where=${{2?where to echo}}
+    RUN "echo $what > $where"
+}}
+
+RUN() {{
+    cmd=$@
+    ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
+}}
+
+COPY() {{
+    what=${{1?what to copy}}
+    where=${{2?where to copy}}
+    rsync -avz --no-l --safe-links {rsync_path} $what $PROVISION_CONTAINER:$where
+}}
+
+if [ ${{PROVISION_REBUILD+x}} ]; then
+    ssh $PROVISION_HOST sudo fc-build-dev-container destroy $PROVISION_CONTAINER
+fi
+
+ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "'$PROVISION_ALIASES'"
+
+{seed_script}
+
+RUN sudo -i fc-manage -c || true
+
+"""  # noqa: E501 line too long
 
 
 class Provisioner(object):
@@ -57,7 +95,9 @@ class FCDevContainer(Provisioner):
         KNOWN_HOSTS_FILE = os.path.expanduser('~/.batou/known_hosts')
 
         if not os.path.exists(KNOWN_HOSTS_FILE):
-            os.makedirs(os.path.dirname(KNOWN_HOSTS_FILE))
+            prefix_dir = os.path.dirname(KNOWN_HOSTS_FILE)
+            if not os.path.exists(prefix_dir):
+                os.makedirs(prefix_dir)
             with open(KNOWN_HOSTS_FILE, 'w'):
                 pass
 
@@ -84,7 +124,7 @@ Host {container} {aliases}
     StrictHostKeyChecking no
     UserKnownHostsFile {known_hosts}
 """.format(container=container,
-           aliases=' '.join(host.aliases),
+           aliases=' '.join(host._aliases),
            target_host=self.target_host,
            known_hosts=KNOWN_HOSTS_FILE,
            insecure_private_key=local_insecure_key))
@@ -109,20 +149,53 @@ Host {container} {aliases}
 
     def configure_host(self, host, config):
         # Extract provisioning-specific config from host
-        host.provision_aliases = [
-            x.strip()
-            for x in config.get('provision-aliases', '').strip().split()]
+
+        # Establish host-specific list of aliases and their public FQDNs.
+        host.aliases.update({
+            alias.strip(): f'{alias}.{host.name}.{self.target_host}'
+            for alias in config.get('provision-aliases', '').strip().split()})
+
+        # Development containers have a different internal address for the
+        # external aliases so that we need to explicitly override the resolver
+        # so that services like nginx can bind to the correct local address.
+        try:
+            addr = batou.utils.resolve(host.name)
+            for alias_fqdn in host.aliases.values():
+                output.annotate(
+                    f' alias override v4 {alias_fqdn} -> {addr}', debug=True)
+                batou.utils.resolve_override[alias_fqdn] = addr
+        except (socket.gaierror, ValueError):
+            pass
+
+        try:
+            addr = batou.utils.resolve_v6(host.name)
+            for alias_fqdn in host.aliases.values():
+                output.annotate(
+                    f' alias override v6 {alias_fqdn} -> {addr}', debug=True)
+                batou.utils.resolve_v6_override[alias_fqdn] = addr
+        except (socket.gaierror, ValueError):
+            pass
+
         host.provision_channel = config.get('provision-channel', self.channel)
+
+    def summarize(self, host):
+        for alias, fqdn in host.aliases.items():
+            output.line(f' 🌐 https://{fqdn}/')
 
     def provision(self, host):
         container = host.name
         self._prepare_ssh(host)
 
+        rsync_path = ''
+        if host.environment.service_user:
+            rsync_path = (
+                f'--rsync-path="sudo -u {host.environment.service_user} '
+                f'rsync"')
         env = {
             'PROVISION_CONTAINER': container,
             'PROVISION_HOST': self.target_host,
             'PROVISION_CHANNEL': host.provision_channel,
-            'PROVISION_ALIASES': ' '.join(host.provision_aliases),
+            'PROVISION_ALIASES': ' '.join(host.aliases.keys()),
             'SSH_CONFIG': self.ssh_config_file,
             'RSYNC_RSH': 'ssh -F {}'.format(self.ssh_config_file)}
         if self.rebuild:
@@ -165,6 +238,7 @@ Host {container} {aliases}
         else:
             seed_script = ''
 
+        stdout = stderr = ''
         with tempfile.NamedTemporaryFile(
                 mode='w+', prefix='batou-provision', delete=False) as f:
             try:
@@ -173,50 +247,26 @@ Host {container} {aliases}
                 # that helps debugging a lot. We need to be careful to
                 # deleted it later, though, because it might contain secrets.
                 f.write(
-                    textwrap.dedent("""\
-                    #/bin/sh
-                    # We used to run '-e' here but this can cause deadlocks if batou
-                    # leaves a partial deployment behind that we can't fix in the provisioning
-                    # phase.
-                    set -x
-
-                    {ENV}
-
-                    ECHO() {{
-                        what=${{1?what to echo}}
-                        where=${{2?where to echo}}
-                        RUN "echo $what > $where"
-                    }}
-
-                    RUN() {{
-                        cmd=$@
-                        ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
-                    }}
-
-                    COPY() {{
-                        what=${{1?what to copy}}
-                        where=${{2?where to copy}}
-                        rsync $what $PROVISION_CONTAINER:$where
-                    }}
-
-                    if [ ${{PROVISION_REBUILD+x}} ]; then
-                        ssh $PROVISION_HOST sudo fc-build-dev-container destroy $PROVISION_CONTAINER
-                    fi
-
-                    ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "'$PROVISION_ALIASES'"
-
-                    {seed_script}
-
-                    RUN sudo -i fc-manage -b || true
-
-                    """.format(  # noqa: E501 line too long
+                    SEED_TEMPLATE.format(
                         seed_script=seed_script,
+                        rsync_path=rsync_path,
                         ENV='\n'.join(
                             sorted('export {}="{}"'.format(k, v)
-                                   for k, v in env.items())))))
+                                   for k, v in env.items()))))
                 f.close()
-                cmd(f.name)
+                stdout, stderr = cmd(f.name)
+            except Exception:
+                raise
+            else:
+                output.line("STDOUT", debug=True)
+                output.annotate(stdout, debug=True)
+                output.line("STDERR", debug=True)
+                output.annotate(stderr, debug=True)
             finally:
                 # The script includes secrets so we must be sure that we delete
                 # it.
-                os.unlink(f.name)
+                if output.enable_debug:
+                    output.annotate((f'Not deleting provision script '
+                                     f'{f.name} in debug mode!'),
+                                    red=True)
+                    os.unlink(f.name)
