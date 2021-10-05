@@ -1,5 +1,5 @@
-from batou.component import Component
 from batou import UpdateNeeded
+from batou.component import Component
 
 
 class DPKG(Component):

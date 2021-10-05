@@ -1,7 +1,8 @@
 import os
 
-import batou.utils
 import pytest
+
+import batou.utils
 from batou.component import Component, ComponentDefinition
 from batou.environment import Environment
 from batou.host import Host

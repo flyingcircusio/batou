@@ -1,7 +1,9 @@
-from batou.utils import cmd
-import batou.lib.mercurial
 import os.path
+
 import pytest
+
+import batou.lib.mercurial
+from batou.utils import cmd
 
 
 @pytest.fixture(scope="function")

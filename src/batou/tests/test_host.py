@@ -18,4 +18,4 @@ def test_rpcwrapper_error_contains_hostname():
     rpc = RPCWrapper(host)
     with pytest.raises(RuntimeError) as e:
         rpc.foo()
-    assert ("foo.example.com: Remote exception encountered.",) == e.value.args
+    assert ("foo.example.com: Remote exception encountered.", ) == e.value.args

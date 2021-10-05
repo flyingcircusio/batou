@@ -1,9 +1,10 @@
+import os.path
+import re
+
 from batou import UpdateNeeded, output
 from batou.component import Component
 from batou.lib.file import Directory
 from batou.utils import CmdExecutionError
-import os.path
-import re
 
 
 class Clone(Component):

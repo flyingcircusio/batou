@@ -1,8 +1,8 @@
-from batou.component import Attribute, Component, platform
-from batou.lib.cron import CronJob
 import batou.lib.logrotate
 import batou.lib.service
 import batou.lib.supervisor
+from batou.component import Attribute, Component, platform
+from batou.lib.cron import CronJob
 
 
 @platform("debian", batou.lib.service.Service)

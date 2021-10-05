@@ -1,6 +1,7 @@
+import os.path
+
 from batou.component import Component, HookComponent
 from batou.lib.file import File
-import os.path
 
 
 def ServiceCheck(description, **kw):

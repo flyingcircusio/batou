@@ -1,5 +1,6 @@
-from batou.utils import flatten
 from collections import defaultdict
+
+from batou.utils import flatten
 
 
 class Subscription(object):

@@ -1,7 +1,8 @@
-from batou.component import Component
-from batou import UpdateNeeded
-from batou.lib.file import File
 import time
+
+from batou import UpdateNeeded
+from batou.component import Component
+from batou.lib.file import File
 
 
 class Tick(Component):

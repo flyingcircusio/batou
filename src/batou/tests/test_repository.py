@@ -1,9 +1,10 @@
 import os
 import subprocess
 
-import batou.utils
 import mock
 import pytest
+
+import batou.utils
 from batou.repository import MercurialRepository
 
 

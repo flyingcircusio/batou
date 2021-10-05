@@ -1,15 +1,20 @@
-from batou.secrets import add_secrets_to_environment
-from batou.secrets.encryption import EncryptedConfigFile, EncryptedFile
-from batou.secrets.encryption import NEW_FILE_TEMPLATE
-import batou
 import configparser
-import mock
 import os
 import os.path
 import pathlib
-import pytest
 import shutil
 import tempfile
+
+import mock
+import pytest
+
+import batou
+from batou.secrets import add_secrets_to_environment
+from batou.secrets.encryption import (
+    NEW_FILE_TEMPLATE,
+    EncryptedConfigFile,
+    EncryptedFile,
+)
 
 FIXTURE = pathlib.Path(__file__).parent / "fixture"
 cleartext_file = FIXTURE / "cleartext.cfg"
@@ -30,7 +35,7 @@ def cleanup_gpg_sockets():
             "S.gpg-agent",
             "S.gpg-agent.browser",
             "S.gpg-agent.extra",
-            "S.gpg-agent.ssh",]:
+            "S.gpg-agent.ssh", ]:
         try:
             (FIXTURE / "gnupg" / path).unlink()
         except OSError:

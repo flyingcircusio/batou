@@ -13,7 +13,8 @@ import time
 from collections import defaultdict
 
 import pkg_resources
-from batou import DeploymentError, output, IPAddressConfigurationError
+
+from batou import DeploymentError, IPAddressConfigurationError, output
 
 
 class BagOfAttributes(dict):

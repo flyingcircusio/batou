@@ -3,6 +3,7 @@ import os.path
 import mock
 import pkg_resources
 import pytest
+
 from batou.utils import CmdExecutionError
 
 from ..buildout import Buildout

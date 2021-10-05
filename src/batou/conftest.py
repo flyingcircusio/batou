@@ -1,5 +1,6 @@
-import pytest
 import os.path
+
+import pytest
 
 
 @pytest.fixture(autouse=True)

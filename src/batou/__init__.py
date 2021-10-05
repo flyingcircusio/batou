@@ -1,6 +1,6 @@
 # This code must not cause non-stdlib imports to support self-bootstrapping.
-import os.path
 import os
+import os.path
 import traceback
 
 from ._output import output
@@ -48,8 +48,8 @@ class GPGCallError(ReportingException):
         self.output = output.decode('ascii', errors='replace')
 
     def __str__(self):
-        return (f"Exitcode {self.exitcode}"
-                f" while calling: {self.command}\n{self.output}")
+        return (f"Exitcode {self.exitcode} while calling: "
+                f"{self.command}\n{self.output}")
 
     def report(self):
         output.error('Error while calling GPG')
@@ -201,16 +201,15 @@ class UnknownComponentConfigurationError(ConfigurationError):
         self.root = root
         self.exception = exception
         stack = traceback.extract_tb(tb)
-        from batou import environment, component
+        from batou import component, environment
 
         while True:
             # Delete remoting-internal stack frames.'
             line = stack.pop(0)
             if line[0] in [
-                    "<string>",
-                    "<remote exec>",
+                    "<string>", "<remote exec>",
                     environment.__file__.rstrip("c"),
-                    component.__file__.rstrip("c"),]:
+                    component.__file__.rstrip("c")]:
                 continue
             stack.insert(0, line)
             break
@@ -275,7 +274,7 @@ class UnsatisfiedResources(ConfigurationError):
 class MissingEnvironment(ConfigurationError):
     """The specified environment does not exist."""
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, environment):
         self.environment = environment
@@ -291,7 +290,7 @@ class MissingEnvironment(ConfigurationError):
 class MultipleEnvironmentConfigs(ConfigurationError):
     """The specified environment has multiple configurations.."""
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, environment, configs):
         self.environment = environment
@@ -311,7 +310,7 @@ class MultipleEnvironmentConfigs(ConfigurationError):
 class ComponentLoadingError(ConfigurationError):
     """The specified component file failed to load."""
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, filename, exception):
         self.filename = filename
@@ -330,7 +329,7 @@ class ComponentLoadingError(ConfigurationError):
 class MissingComponent(ConfigurationError):
     """The specified environment does not exist."""
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, component, hostname):
         self.component = component
@@ -349,7 +348,7 @@ class SuperfluousSection(ConfigurationError):
     """A superfluous section was found in the environment
     configuration file."""
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, section):
         self.section = section
@@ -367,13 +366,14 @@ class SuperfluousComponentSection(ConfigurationError):
     """A component section was found in the environment
     but no associated component is known."""
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, component):
         self.component = component
 
     def __str__(self):
-        return 'Override section for unknown component found: ' + self.component
+        return ('Override section for unknown component found: ' +
+                self.component)
 
     def report(self):
         output.error("Override section for unknown component found")
@@ -385,7 +385,7 @@ class SuperfluousSecretsSection(ConfigurationError):
     """A component section was found in the secrets
     but no associated component is known."""
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, component):
         self.component = component
@@ -403,7 +403,7 @@ class DuplicateOverride(ConfigurationError):
     """An override for a component attribute was found both in the secrets and
     in the environment configuration."""
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, component, attribute):
         self.component = component
@@ -425,7 +425,7 @@ class CycleErrorDetected(ConfigurationError):
     """We think we found a cycle in the component dependencies.
     """
 
-    sort_key = (99,)
+    sort_key = (99, )
 
     def __init__(self, error):
         self.error = error
@@ -442,7 +442,7 @@ class CycleErrorDetected(ConfigurationError):
 class NonConvergingWorkingSet(ConfigurationError):
     """A working set did not converge."""
 
-    sort_key = (100,)
+    sort_key = (100, )
 
     def __init__(self, roots):
         self.roots = roots
@@ -462,7 +462,7 @@ class NonConvergingWorkingSet(ConfigurationError):
 class DeploymentError(ReportingException):
     """Indicates that a deployment failed.."""
 
-    sort_key = (100,)
+    sort_key = (100, )
 
     def __str__(self):
         return 'The deployment encountered an error.'
@@ -474,7 +474,7 @@ class DeploymentError(ReportingException):
 class RepositoryDifferentError(DeploymentError):
     """The repository on the remote side is different."""
 
-    sort_key = (150,)
+    sort_key = (150, )
 
     def __init__(self, local, remote):
         self.local = local
@@ -495,7 +495,7 @@ class DuplicateHostError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (0,)
+        return (0, )
 
     def __init__(self, hostname):
         self.hostname = hostname
@@ -509,7 +509,7 @@ class DuplicateHostError(ConfigurationError):
 
 class InvalidIPAddressError(ConfigurationError):
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, address):
         self.address = address
@@ -524,7 +524,7 @@ class InvalidIPAddressError(ConfigurationError):
 class IPAddressConfigurationError(ConfigurationError):
     """An IP address family was accessed but not configured."""
 
-    sort_key = (0,)
+    sort_key = (0, )
 
     def __init__(self, address, kind: int):
         self.address = address

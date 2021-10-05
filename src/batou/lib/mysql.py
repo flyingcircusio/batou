@@ -1,7 +1,8 @@
-from batou import UpdateNeeded
-from batou.component import Component
 import os
 import tempfile
+
+from batou import UpdateNeeded
+from batou.component import Component
 
 
 class Command(Component):
@@ -29,7 +30,7 @@ class Command(Component):
 
         command = [
             "mysql -Bs -u{{component.admin_user}}",
-            "-p{{component.admin_password}}",]
+            "-p{{component.admin_password}}", ]
         if self.hostname:
             command.append("-h {{component.hostname}}")
         if self.port:

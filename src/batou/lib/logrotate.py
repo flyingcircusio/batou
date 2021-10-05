@@ -1,7 +1,9 @@
-from batou.component import HookComponent, Component, platform
-from batou.lib.file import File
 import os.path
+
 import pkg_resources
+
+from batou.component import Component, HookComponent, platform
+from batou.lib.file import File
 
 
 class RotatedLogfile(HookComponent):

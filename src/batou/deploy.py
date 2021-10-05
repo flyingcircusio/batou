@@ -262,7 +262,7 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
                         environment.exceptions))
 
                 environment.exceptions.sort(
-                    key=lambda x: getattr(x, 'sort_key', (-99,)))
+                    key=lambda x: getattr(x, 'sort_key', (-99, )))
 
                 exception = ''
                 for exception in environment.exceptions:

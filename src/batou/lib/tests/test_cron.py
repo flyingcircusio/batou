@@ -1,8 +1,11 @@
-from ..cron import CronJob, CronTab, PurgeCronTab
-from batou import ConfigurationError
-import batou.vfs
 import os.path
+
 import pytest
+
+import batou.vfs
+from batou import ConfigurationError
+
+from ..cron import CronJob, CronTab, PurgeCronTab
 
 
 def test_collects_cronjobs_into_crontab(root):

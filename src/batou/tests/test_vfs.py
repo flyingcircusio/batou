@@ -1,6 +1,8 @@
-from batou.vfs import Developer, Map
-from mock import Mock
 import os.path
+
+from mock import Mock
+
+from batou.vfs import Developer, Map
 
 
 def test_developer_mapping(tmpdir):
@@ -28,7 +30,7 @@ def test_arbitrary_mapping():
         # longer paths are preferred matches
         "/a/b": "/a2",
         # non-absolute paths are ignored
-        "etc": "none",}
+        "etc": "none", }
     mapping = Map(environment, config)
 
     assert mapping.map("/etc") == "/etc"

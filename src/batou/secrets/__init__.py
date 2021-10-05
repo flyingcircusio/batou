@@ -20,11 +20,12 @@ new one is created.
 
 """
 
-from .encryption import EncryptedConfigFile
-from batou import DuplicateOverride
-from batou import SuperfluousSecretsSection
-import os.path
 import glob
+import os.path
+
+from batou import DuplicateOverride, SuperfluousSecretsSection
+
+from .encryption import EncryptedConfigFile
 
 
 def add_secrets_to_environment(environment):

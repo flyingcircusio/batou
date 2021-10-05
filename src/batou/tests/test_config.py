@@ -1,17 +1,18 @@
 import os
 import os.path
 
-import batou
 import pytest
+
+import batou
 from batou import MissingEnvironment
 from batou.component import Component
 from batou.environment import Environment
 
 
 def test_parse_nonexisting_environment_raises_error(tmpdir):
-    env = Environment("test", basedir=str(tmpdir))
+    environment = Environment("test", basedir=str(tmpdir))
     with pytest.raises(MissingEnvironment):
-        env.load()
+        environment.load()
 
 
 @pytest.fixture
@@ -47,7 +48,7 @@ def test_production_environment_is_loaded(env_prod):
     assert sorted(env_prod.hosts) == [
         "host1",
         "host2",
-        "host3",]
+        "host3", ]
 
     host1 = env_prod.hosts["host1"]
     assert host1.name == "host1"
@@ -126,7 +127,7 @@ def test_config_exceptions_orderable(env):
         batou.DuplicateHostMapping("host", "map1", "map2"),
         batou.RepositoryDifferentError("asdf", "bsdf"),
         batou.DuplicateHostError("localhost"),
-        batou.InvalidIPAddressError("asdf"),]
+        batou.InvalidIPAddressError("asdf"), ]
 
     # Ensure all exceptions can be compared
     for x in exceptions:

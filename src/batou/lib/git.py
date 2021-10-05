@@ -1,7 +1,8 @@
+import os.path
+
 from batou import UpdateNeeded, output
 from batou.component import Component
 from batou.lib.file import Directory, ensure_path_nonexistent
-import os.path
 
 
 def ensure_empty_directory(path):

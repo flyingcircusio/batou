@@ -1,7 +1,7 @@
-from batou.utils import Address
-from batou.component import Component, Attribute
-from batou.lib.file import File
+from batou.component import Attribute, Component
 from batou.lib.buildout import Buildout
+from batou.lib.file import File
+from batou.utils import Address
 
 
 class Test(Component):

@@ -1,4 +1,5 @@
 import pytest
+
 from batou.secrets.edit import Editor
 from batou.secrets.encryption import EncryptedConfigFile
 

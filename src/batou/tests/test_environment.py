@@ -1,10 +1,11 @@
-import batou
-import batou.utils
 import mock
 import pytest
+from mock import Mock
+
+import batou
+import batou.utils
 from batou.environment import Config, Environment
 from batou.host import Host
-from mock import Mock
 
 
 def test_environment_should_raise_if_no_config_file(tmpdir):

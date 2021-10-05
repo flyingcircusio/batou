@@ -1,7 +1,8 @@
-from batou.component import Component
-from batou.lib.file import File, Symlink, ensure_path_nonexistent
 import hashlib
 import os.path
+
+from batou.component import Component
+from batou.lib.file import File, Symlink, ensure_path_nonexistent
 
 
 class VirtualEnv(Component):

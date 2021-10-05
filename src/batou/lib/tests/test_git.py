@@ -1,7 +1,9 @@
-from batou.utils import cmd
-import batou.lib.git
 import os.path
+
 import pytest
+
+import batou.lib.git
+from batou.utils import cmd
 
 
 def _repos_path(root, name):

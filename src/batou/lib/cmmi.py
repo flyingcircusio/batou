@@ -1,7 +1,8 @@
+import os.path
+
 from batou.component import Component
 from batou.lib.archive import Extract
 from batou.lib.download import Download
-import os.path
 
 
 class Configure(Component):
