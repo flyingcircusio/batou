@@ -298,4 +298,4 @@ localhost > Hello > File('work/hello/other-secrets.yaml') > Content('other-secre
 Not showing diff as it contains sensitive data,
 see ...diff for the diff.
 ============================= DEPLOYMENT FINISHED ==============================
-""")
+""")  # noqa: E501 line too long

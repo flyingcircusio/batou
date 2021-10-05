@@ -1,5 +1,4 @@
 """Securely edit encrypted secret files."""
-import glob
 import os
 import subprocess
 import sys

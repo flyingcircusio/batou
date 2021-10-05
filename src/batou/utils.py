@@ -108,7 +108,7 @@ def resolve(host, port=0, resolve_override=resolve_override):
         responses = socket.getaddrinfo(host, int(port), socket.AF_INET)
         output.annotate('resolved `{}` to {}'.format(host, responses))
         address = responses[0][4][0]
-        output.annotate('selected '.format(host, address))
+        output.annotate('selected {}, {}'.format(host, address))
     return address
 
 

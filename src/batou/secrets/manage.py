@@ -1,7 +1,6 @@
 """Summarize status of secret files."""
 
 from .encryption import EncryptedConfigFile
-from batou import ConfigurationError
 from batou import GPGCallError
 import glob
 import os.path

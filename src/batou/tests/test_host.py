@@ -1,7 +1,7 @@
 import mock
 import pytest
 
-from ..host import Host, RPCWrapper
+from ..host import RPCWrapper
 
 
 def test_rpcwrapper_returns_result():

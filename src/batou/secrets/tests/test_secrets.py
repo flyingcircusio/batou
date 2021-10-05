@@ -66,8 +66,6 @@ def test_decrypt_missing_key(monkeypatch, encrypted_file):
 
     with pytest.raises(batou.GPGCallError):
         EncryptedConfigFile(encrypted_file)
-        f = secrets.__enter__()
-        f.read()
 
 
 def test_write_should_fail_unless_write_locked(encrypted_file):

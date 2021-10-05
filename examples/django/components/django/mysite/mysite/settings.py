@@ -12,15 +12,15 @@ MANAGERS = ADMINS
 DATABASES = {
     "default": {
         "ENGINE":
-        "django.db.backends.",  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        "django.db.backends.",  # Add 'postgresql_psycopg2', 'mysql', ...
         "NAME": "",  # Or path to database file if using sqlite3.
         # The following settings are not used with sqlite3:
         "USER": "",
         "PASSWORD": "",
         "HOST":
-        "",  # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        "",  # Empty for localhost through domain sockets or '127.0.0.1' ...
         "PORT": "",  # Set to empty string for default.
-    }}
+    }}  # noqa: E501 line too long
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
@@ -109,7 +109,8 @@ ROOT_URLCONF = "mysite.urls"
 WSGI_APPLICATION = "mysite.wsgi.application"
 
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Put strings here, like "/home/html/django_templates" or
+    # "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
 )

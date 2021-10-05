@@ -5,7 +5,6 @@ import fcntl
 import glob
 import io
 import os
-import shlex
 import subprocess
 import tempfile
 

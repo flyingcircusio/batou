@@ -103,7 +103,7 @@ def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
     remote_core.ensure_repository(str(tmpdir), "hg-pull")
     remote_core.ensure_base("asdf")
     os.mkdir(remote_core.target_directory + "/bin")
-    with open(remote_core.target_directory + "/bin/python3", "w") as f:
+    with open(remote_core.target_directory + "/bin/python3", "w"):
         # Break python
         pass
     remote_core.build_batou()

@@ -37,7 +37,6 @@ def test_remotehost_start(sample_service):
     env = Environment("test-with-env-config")
     env.load()
     env.configure()
-    d = Deployment(env, platform="", jobs=1, timeout=30, dirty=False)
     h = RemoteHost("asdf", env)
     h.connect = mock.Mock()
     h.rpc = mock.Mock()
