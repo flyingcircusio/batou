@@ -1,18 +1,25 @@
+from batou.secrets import add_secrets_to_environment
 from batou.secrets.encryption import EncryptedConfigFile, EncryptedFile
 from batou.secrets.encryption import NEW_FILE_TEMPLATE
-from batou.secrets import add_secrets_to_environment
 import batou
 import configparser
 import mock
 import os
 import os.path
+import pathlib
 import pytest
 import shutil
 import tempfile
 
-FIXTURE = os.path.join(os.path.dirname(__file__), "fixture")
-cleartext_file = os.path.join(FIXTURE, "cleartext.cfg")
-encrypted_file = os.path.join(FIXTURE, "encrypted.cfg")
+FIXTURE = pathlib.Path(__file__).parent / "fixture"
+cleartext_file = FIXTURE / "cleartext.cfg"
+FIXTURE_ENCRYPTED_CONFIG = FIXTURE / "encrypted.cfg"
+
+
+@pytest.fixture(scope="function")
+def encrypted_file(tmpdir):
+    """Provide a temporary copy of the encrypted confi."""
+    return pathlib.Path(shutil.copy(FIXTURE_ENCRYPTED_CONFIG, tmpdir))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -25,12 +32,12 @@ def cleanup_gpg_sockets():
             "S.gpg-agent.extra",
             "S.gpg-agent.ssh",]:
         try:
-            os.remove(os.path.join(FIXTURE, "gnupg", path))
+            (FIXTURE / "gnupg" / path).unlink()
         except OSError:
             pass
 
 
-def test_error_message_no_gpg_found():
+def test_error_message_no_gpg_found(encrypted_file):
     c = EncryptedFile(encrypted_file)
     c.GPG_BINARY_CANDIDATES = ["foobarasdf-54875982"]
     with pytest.raises(RuntimeError) as e:
@@ -40,23 +47,21 @@ def test_error_message_no_gpg_found():
         "`foobarasdf-54875982`")
 
 
-def test_decrypt():
+def test_decrypt(encrypted_file):
     with EncryptedConfigFile(encrypted_file) as secrets:
-        secrets.read()
         with open(cleartext_file) as cleartext:
             assert (cleartext.read().strip() ==
                     secrets.main_file.cleartext.strip())
 
 
-def test_caches_cleartext():
+def test_caches_cleartext(encrypted_file):
     with EncryptedConfigFile(encrypted_file) as secrets:
-        secrets.read()
         secrets.main_file.cleartext = "[foo]bar=2"
         secrets.read()
         assert secrets.main_file.cleartext == "[foo]bar=2"
 
 
-def test_decrypt_missing_key(monkeypatch):
+def test_decrypt_missing_key(monkeypatch, encrypted_file):
     monkeypatch.setitem(os.environ, "GNUPGHOME", '/tmp')
 
     with pytest.raises(batou.GPGCallError):
@@ -65,7 +70,7 @@ def test_decrypt_missing_key(monkeypatch):
         f.read()
 
 
-def test_write_should_fail_unless_write_locked():
+def test_write_should_fail_unless_write_locked(encrypted_file):
     with EncryptedConfigFile(encrypted_file) as secrets:
         secrets.main_file.cleartext = """\
 [batou]
@@ -89,83 +94,74 @@ def test_open_nonexistent_file_for_write_should_create_template_file():
     tf.close()  # deletes file
     encrypted = EncryptedConfigFile(tf.name, write_lock=True)
     with encrypted as secrets:
-        assert not secrets.main_file.cleartext
-        secrets.read()
         assert secrets.main_file.cleartext == NEW_FILE_TEMPLATE
         # The file exists, because we set the write lock
         assert os.path.exists(secrets.main_file.encrypted_filename)
+    # When saving a config without members, delete the file.
+    assert not os.path.exists(secrets.main_file.encrypted_filename)
 
 
-def test_write_unparsable_raises_error():
-    with tempfile.NamedTemporaryFile(prefix="new_encrypted.") as tf:
-        shutil.copy(encrypted_file, tf.name)
-        encrypted = EncryptedConfigFile(tf.name, write_lock=True)
-        with encrypted as secrets:
-            secrets.main_file.cleartext = "some new file contents\n"
-            with pytest.raises(configparser.Error):
-                secrets.read()
+def test_write_unparsable_raises_error(encrypted_file):
+    encrypted = EncryptedConfigFile(encrypted_file, write_lock=True)
+    with encrypted as secrets:
+        secrets.main_file.cleartext = "some new file contents\n"
+        with pytest.raises(configparser.Error):
+            secrets.read()
 
 
-def test_write():
-    with tempfile.NamedTemporaryFile(prefix="new_encrypted.") as tf:
-        shutil.copy(encrypted_file, tf.name)
-        encrypted = EncryptedConfigFile(tf.name, write_lock=True)
-        with encrypted as secrets:
-            secrets.main_file.cleartext = """\
+def test_write(encrypted_file):
+    encrypted = EncryptedConfigFile(encrypted_file, write_lock=True)
+    with encrypted as secrets:
+        secrets.main_file.cleartext = """\
 [batou]
 members = batou
 [asdf]
 x = 1
 """
-            secrets.read()
-            secrets.write()
+        secrets.read()
+        secrets.write()
 
-        with open(encrypted_file, "rb") as old:
-            with open(tf.name, "rb") as new:
-                assert old.read() != new.read()
-        assert 0 != os.stat(tf.name).st_size
+    assert FIXTURE_ENCRYPTED_CONFIG.read_bytes() != encrypted_file.read_bytes()
+    assert 0 != encrypted_file.stat().st_size
 
 
-def test_write_fails_without_recipients():
-    with tempfile.NamedTemporaryFile(prefix="new_encrypted.") as tf:
-        shutil.copy(encrypted_file, tf.name)
-        encrypted = EncryptedConfigFile(tf.name, write_lock=True)
-        with encrypted as secrets:
-            secrets.main_file.cleartext = """\
+def test_write_fails_without_recipients(encrypted_file):
+    encrypted = EncryptedConfigFile(encrypted_file, write_lock=True)
+    with encrypted as secrets:
+        secrets.main_file.cleartext = """\
 [batou]
 members =
 [asdf]
 x = 1
 """
-            secrets.read()
-            with pytest.raises(ValueError):
-                secrets.write()
+        secrets.read()
+        with pytest.raises(ValueError) as exc:
+            secrets.write()
+
+        assert str(exc.value).startswith('Need at least one recipient.')
 
 
-def test_write_fails_if_recipient_key_is_missing_keeps_old_file():
-    with tempfile.NamedTemporaryFile(prefix="new_encrypted.") as tf:
-        shutil.copy(encrypted_file, tf.name)
-        encrypted = EncryptedConfigFile(tf.name, write_lock=True)
-        with encrypted as secrets:
-            secrets.read()
-            secrets.main_file.cleartext = """\
+def test_write_fails_if_recipient_key_is_missing_keeps_old_file(
+        encrypted_file):
+    encrypted = EncryptedConfigFile(encrypted_file, write_lock=True)
+    with encrypted as secrets:
+        secrets.main_file.cleartext = """\
 [batou]
 members = foobar@example.com
 [asdf]
 x = 1
 """
-            secrets.read()
-            with pytest.raises(RuntimeError):
-                secrets.write()
-        with open(tf.name, "rb") as tf_h:
-            with open(encrypted_file, "rb") as encrypted_h:
-                assert tf_h.read() == encrypted_h.read()
+        secrets.read()
+        with pytest.raises(RuntimeError):
+            secrets.write()
+    assert encrypted_file.read_bytes() == FIXTURE_ENCRYPTED_CONFIG.read_bytes()
 
 
 def test_secrets_override_without_interpolation(tmpdir):
-    os.makedirs(str(tmpdir / "secrets"))
-    os.chdir(str(tmpdir))
-    secret_file = str(tmpdir / "secrets" / "env.cfg")
+    (tmpdir / "secrets").mkdir()
+    # `add_secrets_to_environment` assumes to be run in the batou root
+    os.chdir(tmpdir)
+    secret_file = tmpdir / "secrets" / "env.cfg"
     encrypted = EncryptedConfigFile(secret_file, write_lock=True)
 
     with encrypted as secrets:
@@ -181,7 +177,7 @@ data-csdf = 3
 """
         secrets.read()
 
-        with encrypted.add_file(str(tmpdir / 'secrets' / 'env-asdf.txt')) as f:
+        with encrypted.add_file(tmpdir / 'secrets' / 'env-asdf.txt') as f:
             f.cleartext = 'hello to me!'
 
         secrets.write()

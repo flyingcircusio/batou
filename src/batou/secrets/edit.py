@@ -29,9 +29,6 @@ class Editor(object):
                 write_lock=True) as configfile:
             self.configfile = configfile
 
-            # Initialize with template, if needed.
-            self.configfile.read()
-
             # Add the requested file to edit to the session, this might be
             # a new file.
             self.editing = configfile.add_file(self.edit_file)
