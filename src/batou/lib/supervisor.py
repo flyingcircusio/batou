@@ -1,14 +1,15 @@
-from batou import UpdateNeeded, output
-from batou.component import Component, Attribute, handle_event
-from batou.lib.buildout import Buildout
-from batou.lib.file import File, Directory
-from batou.lib.nagios import ServiceCheck
-from batou.lib.logrotate import RotatedLogfile
-from batou.lib.service import Service
-from batou.utils import Address, CmdExecutionError
 import os
 import os.path
 import time
+
+from batou import UpdateNeeded, output
+from batou.component import Attribute, Component, handle_event
+from batou.lib.buildout import Buildout
+from batou.lib.file import Directory, File
+from batou.lib.logrotate import RotatedLogfile
+from batou.lib.nagios import ServiceCheck
+from batou.lib.service import Service
+from batou.utils import Address, CmdExecutionError
 
 
 class Program(Component):
@@ -51,7 +52,7 @@ redirect_stderr = true
     def configure(self):
         self.supervisor = self.require_one("supervisor", self.host)
         if self.dependencies is None:
-            self.dependencies = (self.parent,)
+            self.dependencies = (self.parent, )
         if not self.command:
             raise ValueError("`command` option missing for program {}".format(
                 self.name))
@@ -138,7 +139,7 @@ process_name={{component.name}}
 
     namevar = "name"
 
-    events = ("TICK_60",)
+    events = ("TICK_60", )
     command = None
     args = None
 

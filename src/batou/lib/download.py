@@ -1,9 +1,11 @@
-from batou.component import Component
-import batou
-import batou.utils
 import os.path
 import urllib.parse
+
 import requests
+
+import batou
+import batou.utils
+from batou.component import Component
 
 try:
     from urllib.request import urlretrieve

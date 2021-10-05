@@ -1,4 +1,4 @@
-from batou.component import Component, Attribute
+from batou.component import Attribute, Component
 
 
 class Component1(Component):

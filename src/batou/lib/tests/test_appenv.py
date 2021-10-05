@@ -1,5 +1,6 @@
-from batou.lib.appenv import AppEnv
 import os.path
+
+from batou.lib.appenv import AppEnv
 
 
 def test_simple_appenv(root):

@@ -1,5 +1,5 @@
-import re
 import difflib
+import re
 
 
 class Report(object):

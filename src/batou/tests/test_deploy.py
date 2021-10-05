@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from batou.tests.ellipsis import Ellipsis
 
 

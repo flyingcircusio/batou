@@ -1,9 +1,11 @@
-from batou import remote_core
 import inspect
-import mock
 import os
 import os.path
+
+import mock
 import pytest
+
+from batou import remote_core
 
 
 @pytest.fixture(autouse=True)
@@ -73,7 +75,7 @@ def test_hg_bundle_shipping(mock_remote_core, tmpdir):
         (b'[{"node": "revision-a"},{"node": "revision-b"}]', None),
         (b"", b""),
         (b"", b""),
-        (b'[{"id": "revision-b"}]', b""),]
+        (b'[{"id": "revision-b"}]', b""), ]
     heads = remote_core.hg_current_heads()
     assert heads == ["revision-a", "revision-b"]
     remote_core.hg_unbundle_code()
@@ -183,7 +185,7 @@ def test_channelexec_already_closed(remote_core_mod):
 
 def test_channelexec_echo_cmd(remote_core_mod):
     channel, run = remote_core_mod
-    channel.receivequeue.append(("cmd", ('echo "asdf"',), {}))
+    channel.receivequeue.append(("cmd", ('echo "asdf"', ), {}))
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
@@ -192,19 +194,19 @@ def test_channelexec_echo_cmd(remote_core_mod):
 
 def test_channelexec_multiple_echo_cmds(remote_core_mod):
     channel, run = remote_core_mod
-    channel.receivequeue.append(("cmd", ('echo "asdf1"',), {}))
-    channel.receivequeue.append(("cmd", ('echo "asdf2"',), {}))
+    channel.receivequeue.append(("cmd", ('echo "asdf1"', ), {}))
+    channel.receivequeue.append(("cmd", ('echo "asdf2"', ), {}))
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
     assert channel.sendqueue == [
         ("batou-result", (b"asdf1\n", b"")),
-        ("batou-result", (b"asdf2\n", b"")),]
+        ("batou-result", (b"asdf2\n", b"")), ]
 
 
 def test_channelexec_handle_exception(remote_core_mod):
     channel, run = remote_core_mod
-    channel.receivequeue.append(("cmd", ("fdjkahfkjdasbfda",), {}))
+    channel.receivequeue.append(("cmd", ("fdjkahfkjdasbfda", ), {}))
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
@@ -213,7 +215,7 @@ def test_channelexec_handle_exception(remote_core_mod):
     assert next(response) == (
         "batou-output",
         "line",
-        ("ERROR: fdjkahfkjdasbfda",),
+        ("ERROR: fdjkahfkjdasbfda", ),
         {
             "bold": True,
             "red": True},
@@ -222,7 +224,7 @@ def test_channelexec_handle_exception(remote_core_mod):
     assert next(response) == (
         "batou-output",
         "line",
-        ("Return code: 127",),
+        ("Return code: 127", ),
         {
             "red": True},
     )
@@ -230,17 +232,17 @@ def test_channelexec_handle_exception(remote_core_mod):
     assert next(response) == (
         "batou-output",
         "line",
-        ("STDOUT",),
+        ("STDOUT", ),
         {
             "red": True},
     )
 
-    assert next(response) == ("batou-output", "line", ("",), {})
+    assert next(response) == ("batou-output", "line", ("", ), {})
 
     assert next(response) == (
         "batou-output",
         "line",
-        ("STDERR",),
+        ("STDERR", ),
         {
             "red": True},
     )

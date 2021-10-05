@@ -5,13 +5,27 @@ import threading
 import unittest
 from io import StringIO
 
-import batou
 import mock
 import pytest
-from batou.utils import (Address, CmdExecutionError, MultiFile, NetLoc,
-                         call_with_optional_args, cmd, flatten, hash, locked,
-                         notify, remove_nodes_without_outgoing_edges, resolve,
-                         resolve_v6, revert_graph, topological_sort)
+
+import batou
+from batou.utils import (
+    Address,
+    CmdExecutionError,
+    MultiFile,
+    NetLoc,
+    call_with_optional_args,
+    cmd,
+    flatten,
+    hash,
+    locked,
+    notify,
+    remove_nodes_without_outgoing_edges,
+    resolve,
+    resolve_v6,
+    revert_graph,
+    topological_sort,
+)
 
 RESOLVER_ERRORS = [
     '[Errno -2] Name or service not known',  # Linux
@@ -348,7 +362,7 @@ def test_cmd_joins_list_args(popen):
     popen().communicate.return_value = (b"", b"")
     popen().returncode = 0
     cmd(["cat", "foo", "bar"])
-    assert popen.call_args[0] == ("cat foo bar",)
+    assert popen.call_args[0] == ("cat foo bar", )
 
 
 @mock.patch("subprocess.Popen")
@@ -356,9 +370,9 @@ def test_cmd_quotes_spacey_args(popen):
     popen().communicate.return_value = (b"", b"")
     popen().returncode = 0
     cmd(["cat", "foo", "bar bz baz"])
-    assert popen.call_args[0] == ("cat foo 'bar bz baz'",)
+    assert popen.call_args[0] == ("cat foo 'bar bz baz'", )
     cmd(["cat", "foo", "bar 'bz baz"])
-    assert popen.call_args[0] == (r"cat foo 'bar \'bz baz'",)
+    assert popen.call_args[0] == (r"cat foo 'bar \'bz baz'", )
 
 
 @mock.patch("subprocess.Popen")

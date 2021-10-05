@@ -5,8 +5,13 @@ import sys
 
 import execnet.gateway_io
 import yaml
-from batou import (DeploymentError, SilentConfigurationError, output,
-                   remote_core)
+
+from batou import (
+    DeploymentError,
+    SilentConfigurationError,
+    output,
+    remote_core,
+)
 from batou.utils import BagOfAttributes
 
 # Keys in os.environ which get propagated to the remote side:
@@ -21,18 +26,14 @@ REMOTE_OS_ENV_KEYS = (
 def get_kitchen_ssh_connection_info(name):
     cmd = "kitchen", "diagnose", "--log-level=error", name
     info = yaml.load(subprocess.check_output(cmd))
-    (instance,) = list(info["instances"].values())
+    (instance, ) = list(info["instances"].values())
     state = instance["state_file"]
     return [
-        "-o",
-        "StrictHostKeyChecking=no",
-        "-i",
-        state["ssh_key"],
-        "-p",
-        state["port"],
-        "-l",
-        state["username"],
-        state["hostname"],]
+        "-o", "StrictHostKeyChecking=no",
+        "-i", state["ssh_key"],
+        "-p", state["port"],
+        "-l", state["username"],
+        state["hostname"]]  # yapf: disable
 
 
 def new_ssh_args(spec):

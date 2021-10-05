@@ -1,6 +1,7 @@
+import os.path
+
 from batou import UpdateNeeded
 from batou.component import Component
-import os.path
 
 
 class Hello(Component):

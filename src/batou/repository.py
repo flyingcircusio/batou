@@ -5,6 +5,7 @@ import sys
 import tempfile
 
 import execnet
+
 from batou import DeploymentError, RepositoryDifferentError, output
 from batou.utils import CmdExecutionError
 from batou.utils import cmd as cmd_

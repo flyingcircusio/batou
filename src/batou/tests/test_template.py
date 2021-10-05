@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-from batou.template import TemplateEngine
 import collections
+import os.path
+
 import jinja2
 import mock
-import os.path
 import pytest
+
+from batou.template import TemplateEngine
 
 Server = collections.namedtuple("Server", ["name", "address"])
 

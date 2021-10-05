@@ -10,8 +10,9 @@ import shutil
 import stat
 import tempfile
 
-import batou
 import yaml
+
+import batou
 from batou import output
 from batou.component import Attribute, Component
 from batou.utils import dict_merge

@@ -1,6 +1,11 @@
 import pytest
-from batou import (CycleErrorDetected, UnknownComponentConfigurationError,
-                   UnsatisfiedResources, UnusedResources)
+
+from batou import (
+    CycleErrorDetected,
+    UnknownComponentConfigurationError,
+    UnsatisfiedResources,
+    UnusedResources,
+)
 from batou.component import Component, ComponentDefinition
 from batou.environment import Environment
 from batou.host import Host
@@ -143,7 +148,7 @@ def test_consumer_retrieves_value_from_provider_with_same_host(env):
         consumer: {provider},
         provider: set(),
         consumer2: {provider2},
-        provider2: set(),}
+        provider2: set()}
 
 
 def test_components_are_ordered_over_multiple_hosts(env):
@@ -156,7 +161,7 @@ def test_components_are_ordered_over_multiple_hosts(env):
         consumer1: {provider1, provider2},
         provider1: set(),
         consumer2: {provider1, provider2},
-        provider2: set(),}
+        provider2: set()}
 
 
 def test_circular_depending_component(env):

@@ -1,8 +1,9 @@
 """Platform components specific to gocept.net."""
+import os.path
+
+import batou.lib.service
 from batou.component import Component, platform
 from batou.lib.file import File
-import batou.lib.service
-import os.path
 
 
 @platform("gocept.net", batou.lib.service.Service)

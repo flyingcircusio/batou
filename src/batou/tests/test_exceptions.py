@@ -1,14 +1,25 @@
-from batou import ConfigurationError, ConversionError
-from batou import MissingOverrideAttributes, DuplicateComponent
-from batou import UnknownComponentConfigurationError, UnusedResources
-from batou import UnsatisfiedResources, MissingEnvironment
-from batou import ComponentLoadingError, MissingComponent, SuperfluousSection
-from batou import SuperfluousComponentSection, SuperfluousSecretsSection
-from batou import CycleErrorDetected, NonConvergingWorkingSet
-from batou import DuplicateHostError, InvalidIPAddressError
-
-from batou.component import ComponentDefinition
 import sys
+
+from batou import (
+    ComponentLoadingError,
+    ConfigurationError,
+    ConversionError,
+    CycleErrorDetected,
+    DuplicateComponent,
+    DuplicateHostError,
+    InvalidIPAddressError,
+    MissingComponent,
+    MissingEnvironment,
+    MissingOverrideAttributes,
+    NonConvergingWorkingSet,
+    SuperfluousComponentSection,
+    SuperfluousSecretsSection,
+    SuperfluousSection,
+    UnknownComponentConfigurationError,
+    UnsatisfiedResources,
+    UnusedResources,
+)
+from batou.component import ComponentDefinition
 
 
 def test_configurationerrors_can_be_sorted(root):

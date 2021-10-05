@@ -3,11 +3,12 @@ import os
 import os.path
 import sys
 
+import pkg_resources
+
 import batou
 import batou.deploy
 import batou.secrets.edit
 import batou.secrets.manage
-import pkg_resources
 
 
 def main():

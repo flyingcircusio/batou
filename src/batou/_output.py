@@ -1,4 +1,5 @@
 import sys
+
 from batou.remote_core import Output
 
 

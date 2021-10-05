@@ -1,5 +1,6 @@
-from batou.resources import Resources
 import mock
+
+from batou.resources import Resources
 
 
 def test_regression_reset_works_if_provided_but_not_required():

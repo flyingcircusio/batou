@@ -21,14 +21,14 @@ setup(
         "importlib_metadata",
         "py",
         "pyyaml",
-        'remote-pdb',],
+        'remote-pdb', ],
     extras_require={
         "test": [
             "mock",
             "pytest",
             "pytest-coverage",
             "pytest-instafail",
-            "pytest-timeout",]},
+            "pytest-timeout", ]},
     entry_points="""
         [console_scripts]
             batou = batou.main:main

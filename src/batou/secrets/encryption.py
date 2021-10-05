@@ -1,12 +1,13 @@
-from batou import FileLockedError
-from batou import GPGCallError
-from configupdater import ConfigUpdater
 import fcntl
 import glob
 import io
 import os
 import subprocess
 import tempfile
+
+from configupdater import ConfigUpdater
+
+from batou import FileLockedError, GPGCallError
 
 # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
 NULL = tempfile.TemporaryFile()

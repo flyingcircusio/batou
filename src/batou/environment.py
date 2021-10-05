@@ -5,20 +5,32 @@ import os.path
 import sys
 from configparser import RawConfigParser
 
+from importlib_metadata import entry_points
+
 import batou.c
 import batou.utils
 import batou.vfs
 from batou import (
-    ComponentLoadingError, ConfigurationError, CycleErrorDetected,
-    DuplicateHostError, DuplicateHostMapping, InvalidIPAddressError,
-    MissingComponent, MissingEnvironment, MultipleEnvironmentConfigs,
-    NonConvergingWorkingSet, SuperfluousComponentSection, SuperfluousSection,
-    UnknownComponentConfigurationError, UnsatisfiedResources, UnusedResources)
+    ComponentLoadingError,
+    ConfigurationError,
+    CycleErrorDetected,
+    DuplicateHostError,
+    DuplicateHostMapping,
+    InvalidIPAddressError,
+    MissingComponent,
+    MissingEnvironment,
+    MultipleEnvironmentConfigs,
+    NonConvergingWorkingSet,
+    SuperfluousComponentSection,
+    SuperfluousSection,
+    UnknownComponentConfigurationError,
+    UnsatisfiedResources,
+    UnusedResources,
+)
 from batou._output import output
 from batou.component import RootComponent
 from batou.repository import Repository
 from batou.utils import CycleError, cmd
-from importlib_metadata import entry_points
 
 from .component import load_components_from_file
 from .host import Host, LocalHost, RemoteHost
@@ -219,7 +231,7 @@ class Environment(object):
                 "timeout",
                 "repository_url",
                 "repository_root",
-                "jobs",]:
+                "jobs", ]:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:

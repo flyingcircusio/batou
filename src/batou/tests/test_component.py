@@ -1,13 +1,19 @@
 import os
 import os.path
 
-import batou
 import pytest
-from batou import SilentConfigurationError, UpdateNeeded
-from batou.component import (Attribute, Component, RootComponent, handle_event,
-                             platform)
-from batou.utils import CmdExecutionError
 from mock import Mock
+
+import batou
+from batou import SilentConfigurationError, UpdateNeeded
+from batou.component import (
+    Attribute,
+    Component,
+    RootComponent,
+    handle_event,
+    platform,
+)
+from batou.utils import CmdExecutionError
 
 
 @pytest.fixture
@@ -112,7 +118,7 @@ def test_recursive_sub_component_iterator(root):
         "x1y1",
         "x2",
         "x2y0",
-        "x2y1",] == recursive
+        "x2y1", ] == recursive
 
 
 def test_op_orassignment_ignores_already_preapred_component(root):
@@ -564,7 +570,7 @@ def test_root_overrides_existing_attribute(root):
     ("list", [], []),
     ("literal", '[3,3]', [3, 3]),
     ("literal", 'True', True),
-    ("literal", 'False', False),])
+    ("literal", 'False', False), ])
 def test_attribute_conversion_functions(conv_func, conf_string, expected,
                                         root):
     """It converts config strings with conversion functions."""
@@ -581,7 +587,7 @@ def test_attribute_conversion_functions(conv_func, conf_string, expected,
 @pytest.mark.parametrize("default,expected", [
     (["3"], ["3"]),
     ("True", "True"),
-    (True, True),])
+    (True, True), ])
 def test_attribute_conversion_default(default, expected, root):
     """It does not convert default values with conversion function."""
 

@@ -1,7 +1,8 @@
-from batou import UpdateNeeded, ConfigurationError
+import os
+
+from batou import ConfigurationError, UpdateNeeded
 from batou.component import Attribute, Component, HookComponent, platform
 from batou.lib.file import File
-import os
 
 
 class CronJob(HookComponent):

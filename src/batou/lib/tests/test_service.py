@@ -1,6 +1,7 @@
+import pytest
+
 import batou.component
 import batou.lib.service
-import pytest
 
 
 @pytest.fixture

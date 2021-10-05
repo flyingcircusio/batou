@@ -1,7 +1,9 @@
-from batou.utils import cmd
-import batou.lib.svn
 import os.path
+
 import pytest
+
+import batou.lib.svn
+from batou.utils import cmd
 
 
 @pytest.mark.slow

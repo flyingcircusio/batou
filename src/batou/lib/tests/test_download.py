@@ -1,8 +1,10 @@
-from ..download import Download
-import mock
 import os.path
-import pytest
 import unittest
+
+import mock
+import pytest
+
+from ..download import Download
 
 
 class DownloadTest(unittest.TestCase):

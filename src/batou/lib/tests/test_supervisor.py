@@ -1,6 +1,8 @@
-import batou.lib.supervisor
 import os.path
+
 import pytest
+
+import batou.lib.supervisor
 
 
 @pytest.fixture

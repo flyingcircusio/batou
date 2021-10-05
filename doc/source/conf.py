@@ -39,7 +39,7 @@ templates_path = ["_templates"]
 source_suffix = {
     ".rst": "restructuredtext",
     ".txt": "restructuredtext",
-    ".md": "markdown",}
+    ".md": "markdown", }
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
@@ -147,13 +147,13 @@ html_sidebars = {
         "sidebarintro.html",
         "localtoc.html",
         "sourcelink.html",
-        "searchbox.html",],
+        "searchbox.html", ],
     "**": [
         "sidebarlogo.html",
         "localtoc.html",
         "relations.html",
         "sourcelink.html",
-        "searchbox.html",],}
+        "searchbox.html", ], }
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.

@@ -9,8 +9,10 @@ Jinja2::
 
 """
 
-import jinja2
 import io
+
+import jinja2
+
 from batou import output
 
 

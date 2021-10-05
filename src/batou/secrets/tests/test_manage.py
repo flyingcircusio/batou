@@ -1,11 +1,10 @@
-from ..manage import UnknownEnvironmentError
-from ..manage import add_user
-from ..manage import remove_user
-from ..manage import summary
 import os
-import pytest
 import shutil
 import textwrap
+
+import pytest
+
+from ..manage import UnknownEnvironmentError, add_user, remove_user, summary
 
 
 @pytest.mark.parametrize('func', (add_user, remove_user))

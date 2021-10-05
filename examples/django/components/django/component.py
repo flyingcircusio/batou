@@ -1,6 +1,6 @@
 from batou.component import Component
 from batou.lib.appenv import AppEnv
-from batou.lib.file import SyncDirectory, File
+from batou.lib.file import File, SyncDirectory
 from batou.lib.supervisor import Program
 from batou.utils import Address
 

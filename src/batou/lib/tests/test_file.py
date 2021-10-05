@@ -7,14 +7,26 @@ import os
 import pwd
 from stat import S_IMODE
 
-import batou
 import pytest
 import yaml
-from batou.lib.file import (BinaryFile, Content, Directory, File,
-                            FileComponent, JSONContent, Mode, Presence, Purge,
-                            Symlink, YAMLContent, ensure_path_nonexistent)
-from batou.tests.ellipsis import Ellipsis
 from mock import Mock, patch
+
+import batou
+from batou.lib.file import (
+    BinaryFile,
+    Content,
+    Directory,
+    File,
+    FileComponent,
+    JSONContent,
+    Mode,
+    Presence,
+    Purge,
+    Symlink,
+    YAMLContent,
+    ensure_path_nonexistent,
+)
+from batou.tests.ellipsis import Ellipsis
 
 
 def test_ensure_path_nonexistent_removes_normal_file(tmpdir):
@@ -841,7 +853,7 @@ def test_mode_verifies_for_nonexistent_file(root):
 
 
 @pytest.mark.parametrize('input,expected', [
-    (0o777, 0o777),])
+    (0o777, 0o777), ])
 def test_mode_ensures_mode_for_files(root, input, expected):
     path = "path"
     open("work/mycomponent/" + path, "w").close()
@@ -1007,7 +1019,7 @@ def test_directory_does_not_copy_excluded_files(root):
     os.mkdir("source")
     open("source/one", "w").close()
     open("source/two", "w").close()
-    p = Directory("target", source="source", exclude=("two",))
+    p = Directory("target", source="source", exclude=("two", ))
     root.component += p
     root.component.deploy()
     assert len(os.listdir("work/mycomponent/target")) == 1

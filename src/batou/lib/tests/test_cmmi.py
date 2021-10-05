@@ -1,15 +1,17 @@
-from io import BytesIO
-from batou.lib.cmmi import Build, Configure, Make
-from batou.lib.file import File
-from datetime import datetime
 import hashlib
-import mock
 import os.path
-import pytest
 import shutil
 import sys
 import tarfile
 import time
+from datetime import datetime
+from io import BytesIO
+
+import mock
+import pytest
+
+from batou.lib.cmmi import Build, Configure, Make
+from batou.lib.file import File
 
 
 def test_build_breadcrumb_shortens_url():
@@ -94,7 +96,7 @@ def cmmi_tar(tmpdir):
 
     tar.close()
 
-    fixture = type("Dummy", (object,), {})()
+    fixture = type("Dummy", (object, ), {})()
     fixture.path = tarpath
     with open(tarpath, "rb") as f:
         fixture.checksum = hashlib.md5(f.read()).hexdigest()

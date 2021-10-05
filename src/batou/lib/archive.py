@@ -1,12 +1,13 @@
-from batou.component import Component
-from batou.lib.file import Directory
-from batou.utils import cmd
-from zipfile import ZipFile
 import itertools
 import os
 import os.path
 import plistlib
 import shutil
+from zipfile import ZipFile
+
+from batou.component import Component
+from batou.lib.file import Directory
+from batou.utils import cmd
 
 
 class Extract(Component):
@@ -106,7 +107,7 @@ class Extractor(Component):
 
 class Unzip(Extractor):
 
-    suffixes = (".zip",)
+    suffixes = (".zip", )
 
     def get_names_from_archive(self):
         with ZipFile(self.archive) as f:
@@ -121,7 +122,7 @@ class Unzip(Extractor):
 class Untar(Extractor):
 
     suffixes = (".tar.gz", ".tar", ".tar.bz2", ".tgz", "tar.xz")
-    exclude = ("._*",)
+    exclude = ("._*", )
     _supports_strip = True
 
     def configure(self):
@@ -190,7 +191,7 @@ class DMGVolume(object):
 
 class DMGExtractor(Extractor):
 
-    suffixes = (".dmg",)
+    suffixes = (".dmg", )
 
     def __enter__(self):
         self.volume = DMGVolume(self.archive)

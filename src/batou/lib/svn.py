@@ -1,7 +1,8 @@
+import os.path
+
 from batou import UpdateNeeded
 from batou.component import Component
 from batou.lib.file import Directory
-import os.path
 
 
 class Checkout(Component):
