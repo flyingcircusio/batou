@@ -126,7 +126,8 @@ def resolve(host, port=0, resolve_override=resolve_override):
         output.annotate(
             'resolved (v4) `{}` to {}'.format(host, responses), debug=True)
         address = responses[0][4][0]
-        output.annotate('selected (v4) {}, {}'.format(host, address), debug=True)
+        output.annotate(
+            'selected (v4) {}, {}'.format(host, address), debug=True)
     return address
 
 
@@ -150,7 +151,8 @@ def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
             break
         if not address:
             raise ValueError('No valid address found for `{}`.'.format(host))
-        output.annotate('selected (v6) {}, {}'.format(host, address), debug=True)
+        output.annotate(
+            'selected (v6) {}, {}'.format(host, address), debug=True)
     return address
 
 

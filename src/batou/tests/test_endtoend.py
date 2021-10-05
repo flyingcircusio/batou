@@ -59,7 +59,7 @@ ERROR: Attribute override found both in environment and secrets
 ERROR: Secrets section for unknown component found
  Component: another-nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
-""")
+""")  # noqa: E501 line too long
 
 
 def test_example_errors_gpg_cannot_decrypt(monkeypatch):
@@ -105,7 +105,7 @@ ERROR: Superfluous section in environment configuration
 ERROR: Override section for unknown component found
  Component: nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
-""")
+""")  # noqa: E501 line too long
 
 
 def test_example_errors_late():
@@ -114,16 +114,13 @@ def test_example_errors_late():
 
     assert out == Ellipsis("""\
 batou/2... (cpython 3...)
-================================== Preparing =================================\
-==
+================================== Preparing ===================================
 main: Loading environment `errors`...
 main: Verifying repository ...
 main: Loading secrets ...
-================================ Connecting ... ==============================\
-==
+================================ Connecting ... ================================
 localhost: Connecting via local (1/1)
-============================ Configuring model ... ===========================\
-==
+============================ Configuring model ... =============================
 
 ERROR: Trying to access address family IPv6 which is not configured for localhost:22.
       Hint: Use `require_v6=True` when instantiating the Address object.
@@ -168,11 +165,9 @@ cycle2 depends on
         cycle1
 
 ERROR: 8 remaining unconfigured component(s)
-======================= 10 ERRORS - CONFIGURATION FAILED =====================\
-==
-===================== DEPLOYMENT FAILED (during configure) ===================\
-==
-""")  # NOQA
+======================= 10 ERRORS - CONFIGURATION FAILED =======================
+===================== DEPLOYMENT FAILED (during configure) =====================
+""")  # noqa: E501 line too long
 
 
 def test_example_errors_missing_environment():
@@ -180,15 +175,13 @@ def test_example_errors_missing_environment():
     out, _ = cmd("./batou deploy production", acceptable_returncodes=[1])
     assert out == Ellipsis("""\
 batou/2... (cpython 3...)
-================================== Preparing =================================\
-==
+================================== Preparing ===================================
 main: Loading environment `production`...
 
 ERROR: Missing environment
 Environment: production
-======================= DEPLOYMENT FAILED (during load) ======================\
-==
-""")  # NOQA
+======================= DEPLOYMENT FAILED (during load) ========================
+""")  # noqa: E501 line too long
 
 
 def test_example_ignores():
@@ -196,28 +189,22 @@ def test_example_ignores():
     out, _ = cmd("./batou deploy ignores")
     assert out == Ellipsis("""\
 batou/2... (cpython 3...)
-================================== Preparing =================================\
-==
+================================== Preparing ===================================
 main: Loading environment `ignores`...
 main: Verifying repository ...
 main: Loading secrets ...
-================================ Connecting ... ==============================\
-==
+================================ Connecting ... ================================
 localhost: Connecting via local (1/2)
 otherhost: Connection ignored (2/2)
-============================ Configuring model ... ===========================\
-==
-==================== Waiting for remaining connections ... ===================\
-==
-================================== Deploying =================================\
-==
+============================ Configuring model ... =============================
+==================== Waiting for remaining connections ... =====================
+================================== Deploying ===================================
 localhost: Scheduling component component1 ...
 localhost: Skipping component fail ... (Component ignored)
 otherhost: Skipping component fail2 ... (Host ignored)
 =================================== Summary ====================================
-============================= DEPLOYMENT FINISHED ============================\
-==
-""")
+============================= DEPLOYMENT FINISHED ==============================
+""")  # noqa: E501 line too long
 
 
 def test_example_async_sync_deployment():

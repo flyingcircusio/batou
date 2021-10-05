@@ -11,5 +11,5 @@ class Hello(Component):
         self.address = Address(self.host.aliases.my, port=443)
         self += File(
             'Hello',
-            content=
-            'Hello World! {{host.aliases.my}} = {{component.address.listen}} ')
+            content=('Hello World! {{host.aliases.my}} '
+                     '= {{component.address.listen}} '))

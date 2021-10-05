@@ -42,7 +42,7 @@ ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PRO
 
 RUN sudo -i fc-manage -c || true
 
-"""
+"""  # noqa: E501 line too long
 
 
 class Provisioner(object):
@@ -188,7 +188,9 @@ Host {container} {aliases}
 
         rsync_path = ''
         if host.environment.service_user:
-            rsync_path = f'--rsync-path="sudo -u {host.environment.service_user} rsync"'
+            rsync_path = (
+                f'--rsync-path="sudo -u {host.environment.service_user} '
+                f'rsync"')
         env = {
             'PROVISION_CONTAINER': container,
             'PROVISION_HOST': self.target_host,
@@ -247,6 +249,7 @@ Host {container} {aliases}
                 f.write(
                     SEED_TEMPLATE.format(
                         seed_script=seed_script,
+                        rsync_path=rsync_path,
                         ENV='\n'.join(
                             sorted('export {}="{}"'.format(k, v)
                                    for k, v in env.items()))))
@@ -263,7 +266,7 @@ Host {container} {aliases}
                 # The script includes secrets so we must be sure that we delete
                 # it.
                 if output.enable_debug:
-                    output.annotate(
-                        f"Not deleting provision script {f.name} in debug mode!",
-                        red=True)
+                    output.annotate((f'Not deleting provision script '
+                                     f'{f.name} in debug mode!'),
+                                    red=True)
                     os.unlink(f.name)
