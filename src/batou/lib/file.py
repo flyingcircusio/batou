@@ -10,9 +10,8 @@ import shutil
 import stat
 import tempfile
 
-import yaml
-
 import batou
+import yaml
 from batou import output
 from batou.component import Attribute, Component
 from batou.utils import dict_merge
@@ -100,7 +99,6 @@ class File(Component):
                     "Missing implicit template file {}. Or did you want "
                     "to create an empty file? Then use File('{}', content='')."
                     .format(guess_source, self._unmapped_path))
-
         if self.content or self.source:
             if self.template_args is None:
                 self.template_args = dict()
@@ -114,8 +112,7 @@ class File(Component):
                 template_args=self.template_args,
                 encoding=self.encoding,
                 content=self.content,
-                sensitive_data=self.sensitive_data,
-            )
+                sensitive_data=self.sensitive_data)
             self += content
             self.content = content.content
 
@@ -356,8 +353,7 @@ class ManagedContentBase(FileComponent):
         if self.source and getattr(self, self._content_source_attribute):
             raise ValueError(
                 'Only one of either "{}" or "source" are allowed.',
-                format(self._content_source_attribute),
-            )
+                format(self._content_source_attribute))
 
         if not getattr(self, self._content_source_attribute):
             if not self.source:
@@ -375,8 +371,7 @@ class ManagedContentBase(FileComponent):
                 with open(
                         self.source,
                         "r" if self.encoding else "rb",
-                        encoding=self.encoding,
-                ) as f:
+                        encoding=self.encoding) as f:
                     self.content = f.read()
             else:
                 if self._delayed:
