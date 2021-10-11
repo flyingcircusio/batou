@@ -192,7 +192,7 @@ Host-specific data
 
 *New in version 1.5.*
 
-Host-specifc data allows to set environment depentend data for a certain *host*. It looks like this in an environment configuration::
+Host-specific data allows to set environment dependent data for a certain *host*. It looks like this in an environment configuration::
 
     [host:myhost00]
     components = test
@@ -247,9 +247,150 @@ prepare, ``|=``, ``component._`` (TODO)
 workdir overriding (TODO)
 -------------------------
 
-batou.c (TODO)
---------------
+Importing components from different component.py
+------------------------------------------------
 
-ordered alphabetically (significant for imports)
+From a Python point of view, the configuration structure of the components are
+not modules and packages so it is not intended to be importable from a
+different ``component.py``.::
+
+    # This will not work
+    from components.nginx.component import MyAddress
+
+In some rare circumstances it *might* be necessary to have this kind of import.
+There are two options:
+
+1. Import from ``batou.c``.
+2. Create an extension module which can be imported.
+
+Import from ``batou.c``
++++++++++++++++++++++++
+
+There is a special module ``batou.c`` which is dynamically populated with all
+the classes in the present ``component.py``.
+
+Given the following tree:
+
+.. code-block:: console
+
+  $ tree
+  .
+  ├── batou
+  ├── components
+  │   └── myapp
+  │       └── component.py
+  │   └── myconfig
+  │       └── component.py
+  ├── environments
+  │   └── local.cfg
+  ├── requirements.lock
+  └── requirements.txt
+
+
+one possible import could be:
+
+.. code-block:: python
+
+    # myconfig/component.py
+    from batou.component import Component
+
+    class MyAddress(Component):
+        """Some custom address."""
+
+        ipv4 = "0.0.0.0"
+
+.. code-block:: python
+
+    # myapp/component.py
+    from batou.component import Component
+    import batou.c
+
+    class MyApp(Component):
+        """Some custom address."""
+
+        def configure(self):
+            """Configure MyApp."""
+            self.address = batou.c.myconfig.MyAddress(ipv4="127.0.0.1")
+            self += self.address
+            self.ip = self.address.ipv4
+
+
+This way, importing is only possible and reasonable inside methods of the
+component, which are executed after initial configuration such as ``configure
+()``. It cannot be used to create an attribute on a class or import a base
+class for the current component file.
+
+.. caution::
+
+    The components are loaded alphabetically, which can be an issue for the
+    import.
+
+
+Create an extension module
+++++++++++++++++++++++++++
+
+Another option to share code between different component files is to create a
+custom extension module. This can either be a separate repository like
+`batou_ext <https://github.com/flyingcircusio/batou_ext>`_ or `batou_scm
+<https://github.com/gocept/batou_scm>`_ but for the a small start it can be
+included in the deployment repository. Have a look at the ``setup.py`` and
+other files for inspiration.
+
+.. code-block:: console
+
+  $ tree
+  .
+  ├── batou
+  ├── batou_myapp
+  │   ├── setup.py
+  │   └── src
+  │    └── batou_myapp
+  │        └── utils.py
+  ├── components
+  │   └── myapp
+  │       └── component.py
+  ├── environments
+  │   └── local.cfg
+  ├── requirements.lock
+  └── requirements.txt
+
+
+.. code-block:: python
+
+    # batou_myapp/src/batou_myapp/utils.py
+    from batou.component import Component
+
+    class MyAddress(Component):
+        """Some custom address."""
+
+        ipv4 = "0.0.0.0"
+
+    class MyAppBase(Component):
+        """Base component for all apps."""
+
+.. code-block:: python
+
+    # myapp/component.py
+    from batou.component import Component
+    from batou_myapp.utils import MyAppBase
+    from batou_myapp.utils import MyAddress
+
+    class MyApp(MyAppBase):
+        """Some custom address."""
+
+        address = MyAddress(ipv4="127.0.0.1")
+
+        def configure(self):
+            """Configure MyApp."""
+            self.ip = self.address.ipv4
+
+The ``requirements.txt`` has to be adapted to include the new extension module
+as requirement to be installed directly from source.
+
+.. code-block:: cfg
+
+    # requirements.txt
+    batou==2.3b2
+    -e ./batou_myapp
 
 .. [#] On Python 3.6 you have to use ``from remote_pdb import set_trace; set_trace()``.
