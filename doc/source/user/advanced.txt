@@ -247,12 +247,10 @@ prepare, ``|=``, ``component._`` (TODO)
 workdir overriding (TODO)
 -------------------------
 
-Importing components from different component.py
-------------------------------------------------
+Importing components from a different component.py
+--------------------------------------------------
 
-From a Python point of view, the configuration structure of the components are
-not modules and packages so it is not intended to be importable from a
-different ``component.py``.::
+As the component configuration in the ``./components`` folder is not loaded as Python modules during setup, it is not possible to use imports from another file.::
 
     # This will not work
     from components.nginx.component import MyAddress
@@ -267,7 +265,7 @@ Import from ``batou.c``
 +++++++++++++++++++++++
 
 There is a special module ``batou.c`` which is dynamically populated with all
-the classes in the present ``component.py``.
+the classes in all ``component.py``.
 
 Given the following tree:
 
@@ -332,7 +330,7 @@ Create an extension module
 Another option to share code between different component files is to create a
 custom extension module. This can either be a separate repository like
 `batou_ext <https://github.com/flyingcircusio/batou_ext>`_ or `batou_scm
-<https://github.com/gocept/batou_scm>`_ but for the a small start it can be
+<https://github.com/gocept/batou_scm>`_ but for light weight start it can be
 included in the deployment repository. Have a look at the ``setup.py`` and
 other files for inspiration.
 
