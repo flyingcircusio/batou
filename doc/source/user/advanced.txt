@@ -250,7 +250,9 @@ workdir overriding (TODO)
 Importing components from a different component.py
 --------------------------------------------------
 
-As the component configuration in the ``./components`` folder is not loaded as Python modules during setup, it is not possible to use imports from another file.::
+The component configuration in the ``./components`` folder is not a Python
+package: it has no ``__init__.py`` and should not have one. That's why is not
+possible import a component into another one::
 
     # This will not work
     from components.nginx.component import MyAddress
@@ -265,7 +267,7 @@ Import from ``batou.c``
 +++++++++++++++++++++++
 
 There is a special module ``batou.c`` which is dynamically populated with all
-the classes in all ``component.py``.
+the classes in all ``component.py`` files.
 
 Given the following tree:
 
@@ -285,11 +287,10 @@ Given the following tree:
   └── requirements.txt
 
 
-one possible import could be:
+If ``myconfig/component.py`` looks like this:
 
 .. code-block:: python
 
-    # myconfig/component.py
     from batou.component import Component
 
     class MyAddress(Component):
@@ -297,9 +298,11 @@ one possible import could be:
 
         ipv4 = "0.0.0.0"
 
+
+``myapp/component.py`` could import ``MyAddress`` like this:
+
 .. code-block:: python
 
-    # myapp/component.py
     from batou.component import Component
     import batou.c
 
@@ -330,7 +333,7 @@ Create an extension module
 Another option to share code between different component files is to create a
 custom extension module. This can either be a separate repository like
 `batou_ext <https://github.com/flyingcircusio/batou_ext>`_ or `batou_scm
-<https://github.com/gocept/batou_scm>`_ but for light weight start it can be
+<https://github.com/gocept/batou_scm>`_ but for a light weight start it can be
 included in the deployment repository. Have a look at the ``setup.py`` and
 other files for inspiration.
 
