@@ -36,7 +36,7 @@ class CronTab(Component):
 
     crontab_template = os.path.join(
         os.path.dirname(__file__), "resources", "crontab")
-    mailto = Attribute(str, None)
+    mailto = Attribute(default=None)
     purge = False
 
     # Dict of additional environment variables

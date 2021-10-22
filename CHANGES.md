@@ -4,7 +4,10 @@
 2.3b3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+### Action needed
+
+- Require defaults to be explicitly declared for `Attribute`.
+  ([#237](https://github.com/flyingcircusio/batou/issues/237))
 
 
 2.3b2 (2021-10-05)
