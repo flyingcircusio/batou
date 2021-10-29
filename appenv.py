@@ -295,12 +295,9 @@ class AppEnv(object):
         #   for ones that are clean or rebuild if necessary
         os.chdir(self.base)
         if not os.path.exists('requirements.lock'):
-            print('Running unclean installation from requirements.txt')
-            env_dir = os.path.join(self.appenv_dir, 'unclean')
-            ensure_venv(env_dir)
-            print('Ensuring unclean install ...')
-            cmd('{env_dir}/bin/python -m pip install -r requirements.txt'
-                ' --upgrade'.format(env_dir=env_dir))
+            print('No requirements.lock found. Generate it using'
+                  ' ./appenv update-lockfile.')
+            sys.exit(67)
         else:
             hash_content = []
             requirements = open("requirements.lock", "rb").read()
