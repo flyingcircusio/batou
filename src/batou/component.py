@@ -1041,7 +1041,7 @@ class Attribute(object):
     :type conversion: str, callable
 
     :param default: The default value for the ``Attribute``. This is not
-     passed through the conversion function.
+     passed through the conversion function. expand or map is not applied.
     :type default: object
 
     :param str default_conf_string: An alternative default parameter for the
@@ -1059,6 +1059,7 @@ class Attribute(object):
 
     def __init__(self,
                  conversion=None,
+                 *,
                  default=ATTRIBUTE_NODEFAULT,
                  default_conf_string=ATTRIBUTE_NODEFAULT,
                  expand=True,

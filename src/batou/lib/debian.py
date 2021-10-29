@@ -20,7 +20,7 @@ class RebootCronjob(Component):
 # XXX can't use @platform since that's too late (see #12418)
 class Supervisor(batou.lib.supervisor.Supervisor):
 
-    pidfile = Attribute(str, "var/supervisord.pid", map=True)
+    pidfile = Attribute(default="var/supervisord.pid", map=True)
 
 
 class Logrotate(batou.lib.logrotate.Logrotate):

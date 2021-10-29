@@ -170,18 +170,18 @@ class Supervisor(Component):
     logdir = None
     loglevel = "info"
 
-    logrotate = Attribute("literal", False)
-    nagios = Attribute("literal", False)
+    logrotate = Attribute("literal", default=False)
+    nagios = Attribute("literal", default=False)
 
     # Allows turning "everything off" via environment configuration
-    enable = Attribute("literal", True)
+    enable = Attribute("literal", default=True)
     # Hot deployments: if supervisor is already running stuff - keep them
     # running
     # Cold deployments: if supervisor is already running: let it run
     # but shutdown all processes before continuing
-    deployment_mode = Attribute(str, "hot")
-    max_startup_delay = Attribute(int, 0)
-    wait_for_running = Attribute("literal", True)
+    deployment_mode = Attribute(str, default="hot")
+    max_startup_delay = Attribute(int, default=0)
+    wait_for_running = Attribute("literal", default=True)
     pidfile = Attribute(str, default_conf_string="supervisord.pid", map=True)
     socketpath = Attribute(
         str,
