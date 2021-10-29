@@ -141,7 +141,7 @@ def ensure_minimal_python():
     if not preferences:
         # We have no preferences defined, use the current python.
         print("Update lockfile with with {}.".format(current_python))
-        print("If you want to use a different version, set it as via")
+        print("If you want to use a different version, set it via")
         print(" `# appenv-python-preference:` in requirements.txt.")
         return
 
@@ -287,6 +287,28 @@ class AppEnv(object):
         os.chdir(self.original_cwd)
         os.execv(cmd, argv)
 
+    def _assert_requirements_lock(self):
+        if not os.path.exists('requirements.lock'):
+            print('No requirements.lock found. Generate it using'
+                  ' ./appenv update-lockfile')
+            sys.exit(67)
+
+        with open('requirements.lock') as f:
+            locked_hash = None
+            for line in f:
+                if line.startswith("# appenv-requirements-hash: "):
+                    locked_hash = line.split(':')[1].strip()
+                    break
+            if locked_hash != self._hash_requirements():
+                print('requirements.txt seems out of date (hash mismatch). '
+                      'Regenerate using ./appenv update-lockfile')
+                sys.exit(67)
+
+    def _hash_requirements(self):
+        with open('requirements.txt', 'rb') as f:
+            hash_content = f.read()
+        return hashlib.new("sha256", hash_content).hexdigest()
+
     def _prepare(self):
         # copy used requirements.txt into the target directory so we can use
         # that to check later
@@ -294,60 +316,54 @@ class AppEnv(object):
         # - enumerate the revisions and just copy the requirements.txt, check
         #   for ones that are clean or rebuild if necessary
         os.chdir(self.base)
-        if not os.path.exists('requirements.lock'):
-            print('No requirements.lock found. Generate it using'
-                  ' ./appenv update-lockfile.')
-            sys.exit(67)
-        else:
-            hash_content = []
-            requirements = open("requirements.lock", "rb").read()
-            hash_content.append(os.fsencode(os.path.realpath(sys.executable)))
-            hash_content.append(requirements)
-            hash_content.append(open(__file__, "rb").read())
-            env_hash = hashlib.new("sha256",
-                                   b"".join(hash_content)).hexdigest()[:8]
-            env_dir = os.path.join(self.appenv_dir, env_hash)
 
-            whitelist = set([
-                env_dir, os.path.join(self.appenv_dir, "unclean")])
-            for path in glob.glob(
-                    "{appenv_dir}/*".format(appenv_dir=self.appenv_dir)):
-                if path not in whitelist:
-                    print(
-                        "Removing expired path: {path} ...".format(path=path))
-                    if not os.path.isdir(path):
-                        os.unlink(path)
-                    else:
-                        shutil.rmtree(path)
-            if os.path.exists(env_dir):
-                # check whether the existing environment is OK, it might be
-                # nice to rebuild in a separate place if necessary to avoid
-                # interruptions to running services, but that isn't what we're
-                # using it for at the  moment
-                try:
-                    if not os.path.exists(
-                            "{env_dir}/appenv.ready".format(env_dir=env_dir)):
-                        raise Exception()
-                except Exception:
-                    print("Existing envdir not consistent, deleting")
-                    cmd("rm -rf {env_dir}".format(env_dir=env_dir))
+        self._assert_requirements_lock()
 
-            if not os.path.exists(env_dir):
-                ensure_venv(env_dir)
+        hash_content = []
+        requirements = open("requirements.lock", "rb").read()
+        hash_content.append(os.fsencode(os.path.realpath(sys.executable)))
+        hash_content.append(requirements)
+        hash_content.append(open(__file__, "rb").read())
+        env_hash = hashlib.new("sha256",
+                               b"".join(hash_content)).hexdigest()[:8]
+        env_dir = os.path.join(self.appenv_dir, env_hash)
 
-                with open(os.path.join(env_dir, "requirements.lock"),
-                          "wb") as f:
-                    f.write(requirements)
+        whitelist = set([env_dir, os.path.join(self.appenv_dir, "unclean")])
+        for path in glob.glob(
+                "{appenv_dir}/*".format(appenv_dir=self.appenv_dir)):
+            if path not in whitelist:
+                print("Removing expired path: {path} ...".format(path=path))
+                if not os.path.isdir(path):
+                    os.unlink(path)
+                else:
+                    shutil.rmtree(path)
+        if os.path.exists(env_dir):
+            # check whether the existing environment is OK, it might be
+            # nice to rebuild in a separate place if necessary to avoid
+            # interruptions to running services, but that isn't what we're
+            # using it for at the  moment
+            try:
+                if not os.path.exists(
+                        "{env_dir}/appenv.ready".format(env_dir=env_dir)):
+                    raise Exception()
+            except Exception:
+                print("Existing envdir not consistent, deleting")
+                cmd("rm -rf {env_dir}".format(env_dir=env_dir))
 
-                print("Installing ...")
-                cmd("{env_dir}/bin/python -m pip install --no-deps -r"
-                    " {env_dir}/requirements.lock".format(env_dir=env_dir))
+        if not os.path.exists(env_dir):
+            ensure_venv(env_dir)
 
-                cmd("{env_dir}/bin/python -m pip check".format(
-                    env_dir=env_dir))
+            with open(os.path.join(env_dir, "requirements.lock"), "wb") as f:
+                f.write(requirements)
 
-                with open(os.path.join(env_dir, "appenv.ready"), "w") as f:
-                    f.write("Ready or not, here I come, you can't hide\n")
+            print("Installing ...")
+            cmd("{env_dir}/bin/python -m pip install --no-deps -r"
+                " {env_dir}/requirements.lock".format(env_dir=env_dir))
+
+            cmd("{env_dir}/bin/python -m pip check".format(env_dir=env_dir))
+
+            with open(os.path.join(env_dir, "appenv.ready"), "w") as f:
+                f.write("Ready or not, here I come, you can't hide\n")
 
         self.env_dir = env_dir
 
@@ -465,6 +481,8 @@ class AppEnv(object):
         lines.extend(extra_specs)
         lines.sort()
         with open(os.path.join(self.base, "requirements.lock"), "w") as f:
+            f.write('# appenv-requirements-hash: {}\n'.format(
+                self._hash_requirements()))
             f.write('\n'.join(lines))
             f.write('\n')
         cmd("rm -rf {tmpdir}".format(tmpdir=tmpdir))
