@@ -2,6 +2,7 @@ import argparse
 import os
 import os.path
 import sys
+import textwrap
 
 import pkg_resources
 
@@ -78,21 +79,18 @@ def main():
     # SECRETS
     secrets = subparsers.add_parser(
         "secrets",
-        help="""\
-Manage encrypted secret files.
-
-        Relies on gpg being installed and configured correctly.
-""")
-
+        help=textwrap.dedent("""
+            Manage encrypted secret files. Relies on GPG being installed and
+            configured correctly. """))
     sp = secrets.add_subparsers()
 
     p = sp.add_parser(
         "edit",
-        help="""\
-Encrypted secrets file editor utility. Decrypts file,
-invokes the editor, and encrypts the file again. If called with a
-non-existent file name, a new encrypted file is created.
-""")
+        help=textwrap.dedent("""
+            Encrypted secrets file editor utility. Decrypts file,
+            invokes the editor, and encrypts the file again. If called with a
+            non-existent file name, a new encrypted file is created.
+        """))
     p.add_argument(
         "--editor",
         "-e",
@@ -110,16 +108,11 @@ non-existent file name, a new encrypted file is created.
     p.set_defaults(func=batou.secrets.edit.main)
 
     p = sp.add_parser(
-        "summary",
-        help="""\
-Give a summary of secret files and who has access.
-""")
+        "summary", help="Give a summary of secret files and who has access.")
     p.set_defaults(func=batou.secrets.manage.summary)
 
     p = sp.add_parser(
-        "add", help="""\
-Add a user's key to one or more secret files.
-""")
+        "add", help="Add a user's key to one or more secret files.")
     p.add_argument("keyid", help="The user's key ID or email address")
     p.add_argument(
         "--environments",
@@ -128,10 +121,7 @@ Add a user's key to one or more secret files.
     p.set_defaults(func=batou.secrets.manage.add_user)
 
     p = sp.add_parser(
-        "remove",
-        help="""\
-Remove a user's key from one or more secret files.
-""")
+        "remove", help="Remove a user's key from one or more secret files.")
     p.add_argument("keyid", help="The user's key ID or email address")
     p.add_argument(
         "--environments",
