@@ -48,8 +48,8 @@ def test_migrate__read_config__4(tmp_path):
 def migrations(tmp_path):
     """Create some simple migrations."""
     TEMPLATE = textwrap.dedent("""
-        def migrate():
-            print({})
+        def migrate(output):
+            pass
     """)
     os.chdir(tmp_path)
     package = (tmp_path / 'package')
@@ -66,19 +66,19 @@ def migrations(tmp_path):
     sys.path.pop()
 
 
-def test_migrate__migrate__1(migrations, capsys):
+def test_migrate__migrate__1(migrations, output):
     """It runs all migration steps starting from next after the ...
 
     given version.
     """
     assert migrate(2300) == 2411
-    assert '2301\n2411\n' == capsys.readouterr().out
+    assert '   Version: 2301\n   Version: 2411\n' == output.backend.output
 
 
-def test_migrate__migrate__2(migrations, capsys):
+def test_migrate__migrate__2(migrations, output):
     """It does nothing if we are already on the latest migration step."""
     assert migrate(2411) == 2411
-    assert '' == capsys.readouterr().out
+    assert '' == output.backend.output
 
 
 def test_migrate__write_config__1(tmp_path):
@@ -103,7 +103,13 @@ def test_migrate__main__1(tmp_path, migrations, capsys):
     It creates a configuration file.
     """
     main()
-    assert '2299\n2300\n2301\n2411\n' == capsys.readouterr().out
+    # We explicitly test the output to the TerminalBackend.
+    assert capsys.readouterr().out == """\
+   Version: 2299
+   Version: 2300
+   Version: 2301
+   Version: 2411
+"""
     assert (tmp_path / CONFIG_FILE_NAME).exists()
     assert read_config() == 2411
 
@@ -112,5 +118,6 @@ def test_migrate__main__2(tmp_path, migrations, capsys):
     """It runs no migrations if already at the latest migration step."""
     write_config(2411)
     main()
+    # We explicitly test the output to the TerminalBackend.
     assert '' == capsys.readouterr().out
     assert read_config() == 2411

@@ -68,7 +68,7 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        message = key.rjust(10) + separator + value
+        message = f'{key.rjust(10)}{separator}{value}'
         self.annotate(message, **kw)
 
     def section(self, title, debug=False, **format):

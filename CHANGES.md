@@ -82,7 +82,6 @@
 - Render an error message if `batou secrets summary` fails during decryption.
   ([#165](https://github.com/flyingcircusio/batou/issues/165))
 
-
 - Do not write secrets files without recipient.
   ([#184](https://github.com/flyingcircusio/batou/issues/184))
 

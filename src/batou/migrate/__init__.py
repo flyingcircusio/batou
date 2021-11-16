@@ -1,10 +1,20 @@
 import importlib
 import json
+import textwrap
 
 import pkg_resources
 
+from batou._output import TerminalBackend, output
+
 CONFIG_FILE_NAME = '.batou.json'
 MIGRATION_MODULE = 'batou.migrate'
+
+
+def output_migration_step(title: str, text: str) -> None:
+    """Print the information of migration step in a formatted way."""
+    output.section(title, red=True)
+    output.line(textwrap.dedent(text).replace('\n', ''))
+    output.line('')
 
 
 def read_config() -> int:
@@ -28,14 +38,15 @@ def migrate(base_version: int) -> int:
                                                      'migrations')
     migration_steps = sorted(
         int(x.partition('.')[0]) for x in migration_files
-        if not x.startswith('_'))
+        if not x.startswith(('_', 'tests')))
     steps = [x for x in migration_steps if x > base_version]
     if not steps:
         return base_version
     for step in steps:
         module = importlib.import_module(
             f'{MIGRATION_MODULE}.migrations.{step}')
-        module.migrate()
+        output.tabular('Version', step)
+        module.migrate(output_migration_step)
     return step
 
 
@@ -54,6 +65,7 @@ def main():
         base_version = read_config()
     except FileNotFoundError:
         base_version = 0
+    output.backend = TerminalBackend()
     new_version = migrate(base_version)
     if new_version != base_version:
         write_config(new_version)
