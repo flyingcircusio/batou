@@ -8,6 +8,7 @@ import pkg_resources
 
 import batou
 import batou.deploy
+import batou.migrate
 import batou.secrets.edit
 import batou.secrets.manage
 
@@ -128,6 +129,16 @@ def main():
         default="",
         help="The environments to update. Update all if not specified.")
     p.set_defaults(func=batou.secrets.manage.remove_user)
+
+    # migrate
+    migrate = subparsers.add_parser(
+        "migrate",
+        help=textwrap.dedent("""
+            Migrate the configuration to be compatible with the batou version
+            used. Requires to commit the changes afterwards. Might show some
+            additional upgrade steps which cannot be performed automatically.
+        """))
+    migrate.set_defaults(func=batou.migrate.main)
 
     args = parser.parse_args()
 

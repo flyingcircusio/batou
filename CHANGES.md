@@ -9,6 +9,12 @@
 - Require defaults to be explicitly declared for `Attribute`.
   ([#237](https://github.com/flyingcircusio/batou/issues/237))
 
+### Features
+
+- Add a migration framework. Automatic migrations can now be called using
+  `batou migrate`.
+  ([#185](https://github.com/flyingcircusio/batou/issues/185))
+
 
 2.3b2 (2021-10-05)
 ------------------
