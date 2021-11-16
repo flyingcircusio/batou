@@ -138,10 +138,21 @@ def test_migrate__main__1(tmp_path, migrations, capsys):
     assert read_config() == 2411
 
 
-def test_migrate__main__2(tmp_path, migrations, capsys):
+def test_migrate__main__2(migrations, capsys):
     """It runs no migrations if already at the latest migration step."""
     write_config(2411)
     main()
+    # We explicitly test the output to the TerminalBackend.
+    assert '' == capsys.readouterr().out
+    assert read_config() == 2411
+
+
+def test_migrate__main__3(migrations, capsys):
+    """It runs no migrations if `bootstrap` is `True` but ...
+
+    sets migration version to current.
+    """
+    main(bootstrap=True)
     # We explicitly test the output to the TerminalBackend.
     assert '' == capsys.readouterr().out
     assert read_config() == 2411

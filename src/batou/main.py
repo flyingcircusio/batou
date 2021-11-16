@@ -140,6 +140,11 @@ def main(args: Optional[list] = None) -> None:
             used. Requires to commit the changes afterwards. Might show some
             additional upgrade steps which cannot be performed automatically.
         """))
+    migrate.add_argument(
+        "--bootstrap",
+        default=False,
+        action="store_true",
+        help="Used internally when bootstrapping a new batou project.")
     migrate.set_defaults(func=batou.migrate.main)
 
     args = parser.parse_args(args)

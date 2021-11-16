@@ -89,8 +89,11 @@ def assert_up_to_date() -> bool:
     raise SystemExit(-153)
 
 
-def main() -> None:
+def main(*, bootstrap: bool = False) -> None:
     """Run the ``migrate`` batou subcommand."""
+    if bootstrap:
+        write_config(get_expected_version())
+        return
     output.backend = TerminalBackend()
     base_version = get_current_version()
     new_version = migrate(base_version)
