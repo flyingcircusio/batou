@@ -3,6 +3,7 @@ import os
 import os.path
 import sys
 import textwrap
+from typing import Optional
 
 import pkg_resources
 
@@ -11,9 +12,10 @@ import batou.deploy
 import batou.migrate
 import batou.secrets.edit
 import batou.secrets.manage
+from batou._output import TerminalBackend, output
 
 
-def main():
+def main(args: Optional[list] = None) -> None:
     os.chdir(os.environ["APPENV_BASEDIR"])
     version = pkg_resources.resource_string(__name__, "version.txt")
     version = version.decode("ascii").strip()
@@ -140,7 +142,7 @@ def main():
         """))
     migrate.set_defaults(func=batou.migrate.main)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     # Consume global arguments
     batou.output.enable_debug = args.debug
@@ -150,6 +152,10 @@ def main():
     if "func" not in func_args:
         parser.print_usage()
         sys.exit(1)
+
+    if args.func != batou.migrate.main:
+        output.backend = TerminalBackend()
+        batou.migrate.assert_up_to_date()
 
     del func_args["func"]
     del func_args["debug"]

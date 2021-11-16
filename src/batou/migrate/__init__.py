@@ -1,6 +1,7 @@
 import importlib
 import json
 import textwrap
+from typing import List
 
 import pkg_resources
 
@@ -29,17 +30,21 @@ def read_config() -> int:
         return int(json.load(f)['migration']['version'])
 
 
+def get_migration_steps() -> List[int]:
+    """Return the sorted list of all known migration steps."""
+    migration_files = pkg_resources.resource_listdir(MIGRATION_MODULE,
+                                                     'migrations')
+    return sorted(
+        int(x.partition('.')[0]) for x in migration_files
+        if not x.startswith(('_', 'tests')))
+
+
 def migrate(base_version: int) -> int:
     """Run the migration.
 
     Return the new migration version number.
     """
-    migration_files = pkg_resources.resource_listdir(MIGRATION_MODULE,
-                                                     'migrations')
-    migration_steps = sorted(
-        int(x.partition('.')[0]) for x in migration_files
-        if not x.startswith(('_', 'tests')))
-    steps = [x for x in migration_steps if x > base_version]
+    steps = [x for x in get_migration_steps() if x > base_version]
     if not steps:
         return base_version
     for step in steps:
@@ -59,13 +64,35 @@ def write_config(version: int) -> None:
         json.dump({'migration': {'version': version}}, f)
 
 
-def main():
-    """Run the ``migrate`` batou subcommand."""
+def get_current_version() -> int:
+    """Get the version number stored in the configuration file.
+
+    Return `0` if there is no configuration file.
+    """
     try:
-        base_version = read_config()
+        version = read_config()
     except FileNotFoundError:
-        base_version = 0
+        version = 0
+    return version
+
+
+def get_expected_version() -> int:
+    """Get the highest version number deduced from migration files."""
+    return get_migration_steps()[-1]
+
+
+def assert_up_to_date() -> bool:
+    """Assert that the current migration version matches the expected one."""
+    if get_current_version() == get_expected_version():
+        return True
+    output.error('Please run `./batou migrate` first.')
+    raise SystemExit(-153)
+
+
+def main() -> None:
+    """Run the ``migrate`` batou subcommand."""
     output.backend = TerminalBackend()
+    base_version = get_current_version()
     new_version = migrate(base_version)
     if new_version != base_version:
         write_config(new_version)

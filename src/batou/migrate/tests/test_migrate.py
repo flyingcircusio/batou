@@ -6,7 +6,14 @@ from unittest import mock
 
 import pytest
 
-from .. import CONFIG_FILE_NAME, main, migrate, read_config, write_config
+from .. import (
+    CONFIG_FILE_NAME,
+    assert_up_to_date,
+    main,
+    migrate,
+    read_config,
+    write_config,
+)
 
 
 def test_migrate__read_config__1(tmp_path):
@@ -95,6 +102,23 @@ def test_migrate__write_config__2(tmp_path):
     write_config(2300)
     write_config(2311)
     assert read_config() == 2311
+
+
+def test_migrate__assert_up_to_date__1(migrations):
+    """It returns `True` if the expected version matches the current one."""
+    write_config(2411)
+    assert assert_up_to_date()
+
+
+def test_migrate__assert_up_to_date__2(migrations, output):
+    """It stops the batou run if the expected version does not match ...
+
+    the current one.
+    """
+    with pytest.raises(SystemExit):
+        assert_up_to_date()
+    assert 'ERROR: Please run `./batou migrate` first.\n' \
+        == output.backend.output
 
 
 def test_migrate__main__1(tmp_path, migrations, capsys):
