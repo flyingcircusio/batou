@@ -2,6 +2,7 @@ import glob
 import json
 import os
 import os.path
+import pathlib
 import sys
 from configparser import RawConfigParser
 
@@ -19,7 +20,6 @@ from batou import (
     InvalidIPAddressError,
     MissingComponent,
     MissingEnvironment,
-    MultipleEnvironmentConfigs,
     NonConvergingWorkingSet,
     SuperfluousComponentSection,
     SuperfluousSection,
@@ -147,20 +147,11 @@ class Environment(object):
         batou.utils.resolve_override.clear()
         batou.utils.resolve_v6_override.clear()
 
-        existing_configs = []
-
-        for candidate in [
-                "environments/{}.cfg", "environments/{}/environment.cfg"]:
-            candidate = os.path.join(self.base_dir,
-                                     candidate.format(self.name))
-            if os.path.isfile(candidate):
-                existing_configs.append(candidate)
-
-        if not existing_configs:
+        config_file = (
+            pathlib.Path(self.base_dir) / 'environments' / self.name /
+            'environment.cfg')
+        if not config_file.exists():
             raise MissingEnvironment(self)
-        elif len(existing_configs) > 1:
-            raise MultipleEnvironmentConfigs(self, existing_configs)
-        config_file = existing_configs[0]
 
         mapping_file = self._environment_path('hostmap.json')
         if os.path.exists(mapping_file):

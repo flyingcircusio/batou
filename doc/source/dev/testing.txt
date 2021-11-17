@@ -18,3 +18,25 @@ Example::
 
     $ cd examples/errors
     $ GNUPGHOME=/home/user1/clones/batou/src/batou/secrets/tests/fixture/gnupg ./batou deploy errors
+
+
+Adding new migration steps
+--------------------------
+
+* Migration steps are Python modules inside ``src/batou/migrate/migrations``.
+* The name of a new migration step must be an integer number (plus ``.py``
+  extension) bigger than any existing one. The already existing ones suggest
+  that the first digit corresponds to batou's major version and the second one
+  to the minor version, so migration steps for batou 2.3 should be named
+  ``23xx.py``. Not each possible number has to be used.
+* The highest migration version already applied to a batou project is stored in
+  ``.batou.json``.
+* ``./batou migrate`` runs all migration steps in ascending order. with a
+  higher version number than the one stored in ``.batou.json``
+* Each migration step has to provide a ``migrate`` function which takes one
+  positional argument.
+* The migration steps' ``migrate`` function is called with a callable as
+  argument which takes two arguments: ``title`` and ``text``. The values they
+  given are rendered in the output to inform the user about changes done by the
+  migration step or changes which have to be applied manually. This function
+  can be called multiple times per migration step.
