@@ -8,7 +8,7 @@ def migrate(output):
         Each environment is now a directory containing all the configuration
         files: The unencrypted configuration is now in `environment.cfg` and
         the encrypted one is in `secrets.cfg`. The previous `secrets`
-        directory is no more additional encrypted files are now in the
+        directory is no more. Additional encrypted files are now in the
         directory of the environment they belong to. The names of additional
         encrypted files no longer have to be prefixed with the environment
         name they belong to. **Please note:** This migration step is done
