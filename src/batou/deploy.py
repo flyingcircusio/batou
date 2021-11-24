@@ -117,6 +117,7 @@ class Deployment(object):
     def _connections(self):
         self.environment.prepare_connect()
         hosts = sorted(self.environment.hosts)
+        sem = threading.Semaphore(5)
         for i, hostname in enumerate(hosts, 1):
             host = self.environment.hosts[hostname]
             if host.ignore:
@@ -131,7 +132,6 @@ class Deployment(object):
                 hostname, "Connecting via {} ({}/{})".format(
                     self.environment.connect_method, i,
                     len(self.environment.hosts)))
-            sem = threading.Semaphore(5)
             c = Connector(host, sem)
             c.start()
             yield c
