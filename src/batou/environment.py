@@ -288,11 +288,17 @@ class Environment(object):
         self._load_hosts_single_section(config)
         self._load_hosts_multi_section(config)
 
-        if self.hostname_mapping:
+        simplified_mapping = {
+            k: v
+            for k, v in self.hostname_mapping.items() if k != v}
+        mapping_file = self._environment_path('hostmap.json')
+        if simplified_mapping:
             self._ensure_environment_dir()
-            mapping_file = self._environment_path('hostmap.json')
             with open(mapping_file, 'w') as f:
                 json.dump(self.hostname_mapping, f)
+        else:
+            if os.path.exists(mapping_file):
+                os.unlink(mapping_file)
 
     def _load_hosts_single_section(self, config):
         for literal_hostname in config.get("hosts", {}):

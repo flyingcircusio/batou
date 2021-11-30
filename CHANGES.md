@@ -9,6 +9,13 @@
 - Require defaults to be explicitly declared for `Attribute`.
   ([#237](https://github.com/flyingcircusio/batou/issues/237))
 
+### Bug fixes
+
+- Ignore hostmap entries for hosts that have changed their dynamic hostname
+  settings to false.
+
+### Features
+
 - Automatically pick up `provision.sh` and/or `provision.nix`.
 
   You do not need to explicitly define a COPY command to copy the
