@@ -15,12 +15,17 @@
   `provision.nix` to the container, but if you do then we avoid doing it
   twice.
 
-* Warn if neither `provision.nix` nor provision.sh are given as that seems more
+- Warn if neither `provision.nix` nor provision.sh are given as that seems more
   of an accident (like misspelling the filenames).
 
-* Continue deployments on failure when running `fc-manage` during provisioning
+- Continue deployments on failure when running `fc-manage` during provisioning
   but be more explicit about errors and warn the user that something maybe be
   fishy in the deployment subsequently.
+
+- Use different colors for success depending on whether you ran a real
+  deployment, a consistency check, or a predition.
+  (https://github.com/flyingcircusio/batou/issues/209)
+
 
 2.3b2 (2021-10-05)
 ------------------
