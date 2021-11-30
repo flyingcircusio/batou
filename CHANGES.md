@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.3b3 (unreleased)
+2.3b3 (2021-11-30)
 ------------------
 
 ### Action needed
