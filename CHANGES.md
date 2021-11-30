@@ -9,6 +9,18 @@
 - Require defaults to be explicitly declared for `Attribute`.
   ([#237](https://github.com/flyingcircusio/batou/issues/237))
 
+- Automatically pick up `provision.sh` and/or `provision.nix`.
+
+  You do not need to explicitly define a COPY command to copy the
+  `provision.nix` to the container, but if you do then we avoid doing it
+  twice.
+
+* Warn if neither `provision.nix` nor provision.sh are given as that seems more
+  of an accident (like misspelling the filenames).
+
+* Continue deployments on failure when running `fc-manage` during provisioning
+  but be more explicit about errors and warn the user that something maybe be
+  fishy in the deployment subsequently.
 
 2.3b2 (2021-10-05)
 ------------------
