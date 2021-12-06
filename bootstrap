@@ -10,11 +10,11 @@ oops() {
 curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/appenv.py -o appenv || oops "failed to download appenv"
 chmod +x appenv
 ln -sf appenv batou
-# This code path also covers upgrading from batou 1.x but doesn't
-echo "batou>=2.0b12" >> requirements.txt
+echo "batou>=2.3b4" >> requirements.txt
 sed -e 's!.*batou_ext.*!batou_ext @ https://github.com/flyingcircusio/batou_ext/archive/f2d1ce75a15eeaf4701686bb64e6616c5c35e31c.zip#sha256=4242d65a4cb0721812a308d2cfa87d647ba78f3e03ae4d189f9d2ac78157df93!' requirements.txt > requirements.txt.new
 mv requirements.txt.new requirements.txt
 ./appenv update-lockfile
+./batou migrate --bootstrap
 ./batou --help
 if [ -d ".git" ]; then
 	echo '.appenv' >> .gitignore

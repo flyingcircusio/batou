@@ -4,7 +4,11 @@
 2.3b4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+### Features
+
+- Add a migration framework. Automatic migrations can now be called using
+  `batou migrate`.
+  ([#185](https://github.com/flyingcircusio/batou/issues/185))
 
 
 2.3b3 (2021-11-30)
@@ -105,7 +109,6 @@
 
 - Render an error message if `batou secrets summary` fails during decryption.
   ([#165](https://github.com/flyingcircusio/batou/issues/165))
-
 
 - Do not write secrets files without recipient.
   ([#184](https://github.com/flyingcircusio/batou/issues/184))

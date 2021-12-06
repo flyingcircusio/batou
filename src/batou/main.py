@@ -2,16 +2,20 @@ import argparse
 import os
 import os.path
 import sys
+import textwrap
+from typing import Optional
 
 import pkg_resources
 
 import batou
 import batou.deploy
+import batou.migrate
 import batou.secrets.edit
 import batou.secrets.manage
+from batou._output import TerminalBackend, output
 
 
-def main():
+def main(args: Optional[list] = None) -> None:
     os.chdir(os.environ["APPENV_BASEDIR"])
     version = pkg_resources.resource_string(__name__, "version.txt")
     version = version.decode("ascii").strip()
@@ -78,21 +82,18 @@ def main():
     # SECRETS
     secrets = subparsers.add_parser(
         "secrets",
-        help="""\
-Manage encrypted secret files.
-
-        Relies on gpg being installed and configured correctly.
-""")
-
+        help=textwrap.dedent("""
+            Manage encrypted secret files. Relies on GPG being installed and
+            configured correctly. """))
     sp = secrets.add_subparsers()
 
     p = sp.add_parser(
         "edit",
-        help="""\
-Encrypted secrets file editor utility. Decrypts file,
-invokes the editor, and encrypts the file again. If called with a
-non-existent file name, a new encrypted file is created.
-""")
+        help=textwrap.dedent("""
+            Encrypted secrets file editor utility. Decrypts file,
+            invokes the editor, and encrypts the file again. If called with a
+            non-existent file name, a new encrypted file is created.
+        """))
     p.add_argument(
         "--editor",
         "-e",
@@ -110,16 +111,11 @@ non-existent file name, a new encrypted file is created.
     p.set_defaults(func=batou.secrets.edit.main)
 
     p = sp.add_parser(
-        "summary",
-        help="""\
-Give a summary of secret files and who has access.
-""")
+        "summary", help="Give a summary of secret files and who has access.")
     p.set_defaults(func=batou.secrets.manage.summary)
 
     p = sp.add_parser(
-        "add", help="""\
-Add a user's key to one or more secret files.
-""")
+        "add", help="Add a user's key to one or more secret files.")
     p.add_argument("keyid", help="The user's key ID or email address")
     p.add_argument(
         "--environments",
@@ -128,10 +124,7 @@ Add a user's key to one or more secret files.
     p.set_defaults(func=batou.secrets.manage.add_user)
 
     p = sp.add_parser(
-        "remove",
-        help="""\
-Remove a user's key from one or more secret files.
-""")
+        "remove", help="Remove a user's key from one or more secret files.")
     p.add_argument("keyid", help="The user's key ID or email address")
     p.add_argument(
         "--environments",
@@ -139,7 +132,22 @@ Remove a user's key from one or more secret files.
         help="The environments to update. Update all if not specified.")
     p.set_defaults(func=batou.secrets.manage.remove_user)
 
-    args = parser.parse_args()
+    # migrate
+    migrate = subparsers.add_parser(
+        "migrate",
+        help=textwrap.dedent("""
+            Migrate the configuration to be compatible with the batou version
+            used. Requires to commit the changes afterwards. Might show some
+            additional upgrade steps which cannot be performed automatically.
+        """))
+    migrate.add_argument(
+        "--bootstrap",
+        default=False,
+        action="store_true",
+        help="Used internally when bootstrapping a new batou project.")
+    migrate.set_defaults(func=batou.migrate.main)
+
+    args = parser.parse_args(args)
 
     # Consume global arguments
     batou.output.enable_debug = args.debug
@@ -149,6 +157,10 @@ Remove a user's key from one or more secret files.
     if "func" not in func_args:
         parser.print_usage()
         sys.exit(1)
+
+    if args.func != batou.migrate.main:
+        output.backend = TerminalBackend()
+        batou.migrate.assert_up_to_date()
 
     del func_args["func"]
     del func_args["debug"]

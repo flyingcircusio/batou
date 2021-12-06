@@ -29,6 +29,7 @@ def root(tmpdir):
 
 @pytest.fixture(autouse=True)
 def ensure_workingdir(request):
+    """Make sure after each the test the current working directory is reset."""
     working_dir = os.getcwd()
     yield
     os.chdir(working_dir)
