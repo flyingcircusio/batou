@@ -19,6 +19,7 @@ class Buildout(Component):
     distribute = None
     setuptools = None
     wheel = None
+    pip = None
     version = None
 
     build_env = {}  # XXX not frozen. :/
@@ -57,6 +58,15 @@ class Buildout(Component):
 
         if self.wheel:
             venv += Package("wheel", version=self.wheel)
+
+        if self.pip:
+            venv = [
+                x for x in self.sub_components if isinstance(x, VirtualEnv)][0]
+            # Remove default `--ignore-installed` which breaks a possibly
+            # requested downgrade of pip as it omits deleting the previously
+            # installed version:
+            venv.venv.install_options = ()
+            venv += Package("pip", version=self.pip)
 
         # Install without dependencies (that's just setuptools anyway), since
         # that could cause pip to pull in the latest version of setuptools,

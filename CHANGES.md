@@ -10,6 +10,8 @@
   `batou migrate`.
   ([#185](https://github.com/flyingcircusio/batou/issues/185))
 
+- Allow to pin the `pip` version used in the `Buildout` component.
+
 
 2.3b3 (2021-11-30)
 ------------------
