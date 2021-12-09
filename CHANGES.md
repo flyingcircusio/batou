@@ -11,6 +11,7 @@
   ([#185](https://github.com/flyingcircusio/batou/issues/185))
 
 - Allow to pin the `pip` version used in the `Buildout` component.
+  ([#263](https://github.com/flyingcircusio/batou/issues/263))
 
 
 2.3b3 (2021-11-30)
