@@ -169,10 +169,11 @@ class Host(object):
 
     @property
     def name(self):
-        if not self.remap:
-            return self._name
         mapping = self.environment.hostname_mapping
-        if self._name not in mapping:
+        if not self.remap:
+            # Update the map in case it contained an old persisted entry.
+            mapping[self._name] = self._name
+        elif self._name not in mapping:
             mapping[self._name] = self.provisioner.suggest_name(self._name)
         return mapping[self._name]
 

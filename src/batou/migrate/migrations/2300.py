@@ -7,9 +7,9 @@ def migrate(output):
         occurrences of `Address` in you components and explicitly set
         `require_v6` and `require_v4`.""")
     output(
-        'Colliding attributes in environment and secrets',
-        'If an attribute exists in secrets and also in plain text'
-        ' environment config, batou fails. Delete it from plain text.')
+        'Colliding attributes in environment and secrets', """
+        If an attribute exists in secrets and also in plain text
+        environment config, batou fails. Delete it from plain text.""")
     output(
         '`Attribute` requires explicit default.', """
         Default values for `Attribute` have to be passed either with

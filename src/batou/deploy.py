@@ -117,6 +117,7 @@ class Deployment(object):
     def _connections(self):
         self.environment.prepare_connect()
         hosts = sorted(self.environment.hosts)
+        sem = threading.Semaphore(5)
         for i, hostname in enumerate(hosts, 1):
             host = self.environment.hosts[hostname]
             if host.ignore:
@@ -131,7 +132,6 @@ class Deployment(object):
                 hostname, "Connecting via {} ({}/{})".format(
                     self.environment.connect_method, i,
                     len(self.environment.hosts)))
-            sem = threading.Semaphore(5)
             c = Connector(host, sem)
             c.start()
             yield c
@@ -234,11 +234,14 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
         'load', 'provision', 'connect', 'configure', 'deploy', 'summarize']
     if consistency_only:
         ACTION = "CONSISTENCY CHECK"
+        SUCCESS_FORMAT = {'cyan': True}
         STEPS.remove('deploy')
     elif predict_only:
         ACTION = "DEPLOYMENT PREDICTION"
+        SUCCESS_FORMAT = {'purple': True}
     else:
         ACTION = "DEPLOYMENT"
+        SUCCESS_FORMAT = {'green': True}
     with locked(".batou-lock"):
         deployment = Deployment(environment, platform, timeout, dirty, jobs,
                                 predict_only, provision_rebuild)
@@ -285,5 +288,5 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
 
         finally:
             deployment.disconnect()
-        output.section("{} FINISHED".format(ACTION), green=True)
+        output.section("{} FINISHED".format(ACTION), **SUCCESS_FORMAT)
         notify("{} SUCCEEDED".format(ACTION), environment.name)

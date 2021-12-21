@@ -1,7 +1,21 @@
 ## Changelog
 
 
-2.3b3 (unreleased)
+2.3b4 (unreleased)
+------------------
+
+### Features
+
+- Add a migration framework. Automatic migrations can now be called using
+  `batou migrate`.
+  ([#185](https://github.com/flyingcircusio/batou/issues/185))
+
+- Automatically migrate environments and secrets to the new structure using
+  `./batou migrate`.
+  ([#185](https://github.com/flyingcircusio/batou/issues/185))
+
+
+2.3b3 (2021-11-30)
 ------------------
 
 ### Action needed
@@ -9,15 +23,29 @@
 - Require defaults to be explicitly declared for `Attribute`.
   ([#237](https://github.com/flyingcircusio/batou/issues/237))
 
+### Bug fixes
+
+- Ignore hostmap entries for hosts that have changed their dynamic hostname
+  settings to false.
+
 ### Features
 
-- Add a migration framework. Automatic migrations can now be called using
-  `./batou migrate`.
-  ([#185](https://github.com/flyingcircusio/batou/issues/185))
+- Automatically pick up `provision.sh` and/or `provision.nix`.
 
-- Automatically migrate environments and secrets to the new structure using
-  `./batou migrate`.
-  ([#185](https://github.com/flyingcircusio/batou/issues/185))
+  You do not need to explicitly define a COPY command to copy the
+  `provision.nix` to the container, but if you do then we avoid doing it
+  twice.
+
+- Warn if neither `provision.nix` nor provision.sh are given as that seems more
+  of an accident (like misspelling the filenames).
+
+- Continue deployments on failure when running `fc-manage` during provisioning
+  but be more explicit about errors and warn the user that something maybe be
+  fishy in the deployment subsequently.
+
+- Use different colors for success depending on whether you ran a real
+  deployment, a consistency check, or a predition.
+  (https://github.com/flyingcircusio/batou/issues/209)
 
 
 2.3b2 (2021-10-05)

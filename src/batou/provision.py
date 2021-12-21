@@ -11,7 +11,7 @@ from batou.utils import cmd
 
 SEED_TEMPLATE = """\
 #/bin/sh
-set -ex
+set -e
 
 {ENV}
 
@@ -40,7 +40,20 @@ ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PRO
 
 {seed_script}
 
-RUN sudo -i fc-manage -c || true
+# We experimented with hiding errors in this fc-manage run to allow
+# partially defective NixOS configurations to be repaired with subsequent
+# deployment actions, so we do have to continue here.
+# However, we need to show if something goes wrong so that users have an
+# indication that the cause might be here. Especially if provisioning
+# is half-baked. Unfortunately we cant' decide whether the error is caused
+# by the provisioning or the deployment step.
+
+set +e
+RUN sudo -i fc-manage -c
+result=$?
+if [ "$result" -ne "0" ]; then
+    echo "__FC_MANAGE_DEFECT_INDICATOR__"
+fi
 
 """  # noqa: E501 line too long
 
@@ -215,28 +228,51 @@ Host {container} {aliases}
                     continue
                 if isinstance(value, property):
                     continue
-                key = 'COMPONENT_{}_{}'.format(root_name, name)
+                key = f'COMPONENT_{root_name}_{name}'
                 key = key.upper()
                 env[key] = str(value)
             for name, value in host.environment.overrides.get(root_name,
                                                               {}).items():
-                key = 'COMPONENT_{}_{}'.format(root_name, name)
+                key = f'COMPONENT_{root_name}_{name}'
                 key = key.upper()
                 env[key] = str(value)
 
-        seed_script_file = 'environments/{}/provision.sh'.format(
-            host.environment.name)
+        seed_script = ''
+        seed_basedir = f'environments/{host.environment.name}'
+        seed_script_file = f'{seed_basedir}/provision.sh'
         if os.path.exists(seed_script_file):
-            seed_script = textwrap.dedent("""\
+            output.annotate(f'    Including {seed_script_file}')
+            seed_raw_script = open(seed_script_file).read()
+            seed_script += textwrap.dedent(f"""\
                 # BEGIN CUSTOM SEED SCRIPT
-                cd {basedir}
-                {script}
+                (
+                    cd {seed_basedir}
+                    {seed_raw_script}
+                )
                 # END CUSTOM SEED SCRIPT
-            """.format(
-                basedir=os.path.dirname(seed_script_file),
-                script=open(seed_script_file).read()))
-        else:
-            seed_script = ''
+                """)
+
+        seed_nixos_file = f'environments/{host.environment.name}/provision.nix'
+        if os.path.exists(
+                seed_nixos_file) and 'provision.nix' not in seed_script:
+            output.annotate(f'    Including {seed_nixos_file}')
+            seed_script = textwrap.dedent(f"""\
+                # BEGIN AUTOMATICALLY INCLUDED provision.nix
+                (
+                    cd {seed_basedir}
+                    COPY provision.nix /etc/local/nixos/provision-container.nix
+                )
+                # END AUTOMATICALLY INCLUDED provision.nix
+                """) + seed_script
+
+        seed_script = seed_script.strip()
+        if not seed_script:
+            output.annotate(
+                f'No provisioning code found in '
+                f'environments/{host.environment.name}/provision.nix or '
+                f'environments/{host.environment.name}/provision.sh. '
+                f'This might be unintentional.',
+                yellow=True)
 
         stdout = stderr = ''
         with tempfile.NamedTemporaryFile(
@@ -258,10 +294,25 @@ Host {container} {aliases}
             except Exception:
                 raise
             else:
-                output.line("STDOUT", debug=True)
-                output.annotate(stdout, debug=True)
-                output.line("STDERR", debug=True)
-                output.annotate(stderr, debug=True)
+                if '__FC_MANAGE_DEFECT_INDICATOR__' in stdout:
+                    stdout = stdout.replace('__FC_MANAGE_DEFECT_INDICATOR__',
+                                            '')
+                    output.section(
+                        'Errors detected during provisioning', red=True)
+                    output.line('STDOUT')
+                    output.annotate(stdout)
+                    output.line('STDERR')
+                    output.annotate(stderr)
+                    output.line(
+                        'WARNING: Continuing deployment optimistically '
+                        'despite provisioning errors. Check errors above this '
+                        'line first if encountering subsequent errors.',
+                        yellow=True)
+                else:
+                    output.line("STDOUT", debug=True)
+                    output.annotate(stdout, debug=True)
+                    output.line("STDERR", debug=True)
+                    output.annotate(stderr, debug=True)
             finally:
                 # The script includes secrets so we must be sure that we delete
                 # it.
