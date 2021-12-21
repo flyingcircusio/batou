@@ -1,7 +1,6 @@
 """Summarize status of secret files."""
 
-import glob
-import os.path
+import pathlib
 import sys
 
 from batou import GPGCallError
@@ -21,18 +20,17 @@ class UnknownEnvironmentError(ValueError):
 
 class Environment(object):
 
-    def __init__(self, path=None, name=None):
+    def __init__(self, path: pathlib.Path = None, name=None):
         if path:
             self.path = path
-            name = os.path.basename(path)
-            self.name = os.path.splitext(name)[0]
+            self.name = path.parent.name
         else:
             self.name = name
-            self.path = "secrets/{}.cfg".format(name)
+            self.path = pathlib.Path("environments" / name / "secrets.cfg")
 
         self.f = EncryptedConfigFile(
             self.path,
-            subfile_pattern="secrets/{}-*".format(self.name),
+            add_files_for_env=self.name,
             write_lock=True,
             quiet=True)
         self.f.__enter__()
@@ -45,9 +43,9 @@ class Environment(object):
 
     @classmethod
     def all(cls):
-        for e in glob.glob("environments/*.cfg"):
-            e = e.replace("environments/", "secrets/", 1)
-            yield Environment(path=e)
+        for path in pathlib.Path("environments").glob('*/environment.cfg'):
+            path = path.parent / 'secrets.cfg'
+            yield Environment(path=path)
 
     @classmethod
     def by_filter(cls, filter):
@@ -79,7 +77,8 @@ class Environment(object):
         if not members:
             print("\t\t(none)")
         print("\t secret files")
-        files = [f for f in self.f.files if f != self.path]
+        # Keys of self.f.files are strings, but self.path is pathlib.Path:
+        files = [f for f in self.f.files if f != str(self.path)]
         files = [
             f.replace('secrets/{}-'.format(self.name), '', 1) for f in files]
         for f in files:
@@ -130,9 +129,6 @@ def summary(**kw):
     ending up in the deployment repository.
 
     """
-    if not os.path.exists("secrets"):
-        print("No secrets.")
-
     try:
         for e in Environment.all():
             print(e.name)
@@ -150,9 +146,6 @@ def add_user(keyid, environments, **kw):
     to all environments.
 
     """
-    if not os.path.exists("secrets"):
-        print("No secrets.")
-
     for e in Environment.by_filter(environments):
         print(e.name)
         e.add_user(keyid)
@@ -166,9 +159,6 @@ def remove_user(keyid, environments, **kw):
     from all environments.
 
     """
-    if not os.path.exists("secrets"):
-        print("No secrets.")
-
     for e in Environment.by_filter(environments):
         print(e.name)
         e.remove_user(keyid)

@@ -1,10 +1,9 @@
 """Securely edit encrypted secret files."""
 import os
+import pathlib
 import subprocess
 import sys
 import tempfile
-
-from batou.lib.file import ensure_path_nonexistent
 
 from .encryption import EncryptedConfigFile
 
@@ -14,17 +13,18 @@ class Editor(object):
     def __init__(self, editor_cmd, environment, edit_file=None):
         self.editor_cmd = editor_cmd
         self.environment = environment
-        self.encrypted_configfile = "secrets/{}.cfg".format(environment)
+        environment_path = pathlib.Path("environments") / environment
+        self.encrypted_configfile = environment_path / "secrets.cfg"
 
         if edit_file is None:
             self.edit_file = self.encrypted_configfile
         else:
-            self.edit_file = "secrets/{}-{}".format(environment, edit_file)
+            self.edit_file = environment_path / edit_file
 
     def main(self):
         with EncryptedConfigFile(
                 self.encrypted_configfile,
-                subfile_pattern="secrets/{}-*".format(self.environment),
+                add_files_for_env=self.environment,
                 write_lock=True) as configfile:
             self.configfile = configfile
 
@@ -102,18 +102,12 @@ def main(editor, environment, edit_file=None, **kw):
     ending up in the deployment repository.
 
     """
-    if not any([
-            os.path.exists("environments/{}.cfg".format(environment)),
-            os.path.exists(
-                "environments/{}/environment.cfg".format(environment))]):
-        print("Environment '{}' does not exist. Typo?".format(environment))
+    environments_path = pathlib.Path("environments")
+    if not (environments_path / environment / "environment.cfg").exists():
+        print(f"Environment {environment!r} does not exist. Typo?")
         print("Existing environments:")
-        print("\n".join(os.listdir("environments")).replace(".cfg", ""))
+        print("\n".join(x.name for x in environments_path.iterdir()))
         sys.exit(1)
-
-    if not os.path.isdir("secrets"):
-        ensure_path_nonexistent("secrets")
-        os.mkdir("secrets")
 
     editor = Editor(editor, environment, edit_file)
     editor.main()

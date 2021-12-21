@@ -1,9 +1,10 @@
 import fcntl
-import glob
 import io
 import os
+import pathlib
 import subprocess
 import tempfile
+from typing import Generator, Optional
 
 from configupdater import ConfigUpdater
 
@@ -16,6 +17,15 @@ NEW_FILE_TEMPLATE = """\
 [batou]
 members =
 """
+
+
+def iter_other_secrets(
+        environment_name: str) -> Generator[pathlib.Path, None, None]:
+    """Iterate over the paths to additional encrypted files."""
+    environment = pathlib.Path("environments") / environment_name
+    for path in environment.iterdir():
+        if path.name.startswith('secret-'):
+            yield path
 
 
 class EncryptedFile(object):
@@ -138,10 +148,10 @@ class EncryptedConfigFile(object):
 
     def __init__(self,
                  encrypted_file,
-                 subfile_pattern=None,
+                 add_files_for_env: Optional[str] = None,
                  write_lock=False,
                  quiet=False):
-        self.subfile_pattern = subfile_pattern
+        self.add_files_for_env = add_files_for_env
         self.write_lock = write_lock
         self.quiet = quiet
         self.files = {}
@@ -149,9 +159,9 @@ class EncryptedConfigFile(object):
         self.main_file = self.add_file(encrypted_file)
 
         # Add all existing files to the session
-        if self.subfile_pattern:
-            for other_filename in glob.iglob(self.subfile_pattern):
-                self.add_file(other_filename)
+        if self.add_files_for_env:
+            for path in iter_other_secrets(self.add_files_for_env):
+                self.add_file(path)
 
     def add_file(self, filename):
         # Ensure compatibility with pathlib.

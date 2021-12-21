@@ -160,11 +160,12 @@ x = 1
     assert encrypted_file.read_bytes() == FIXTURE_ENCRYPTED_CONFIG.read_bytes()
 
 
-def test_secrets_override_without_interpolation(tmpdir):
-    (tmpdir / "secrets").mkdir()
+def test_secrets_override_without_interpolation(tmp_path):
+    environment = tmp_path / "environments" / "env"
+    environment.mkdir(parents=True)
     # `add_secrets_to_environment` assumes to be run in the batou root
-    os.chdir(tmpdir)
-    secret_file = tmpdir / "secrets" / "env.cfg"
+    os.chdir(tmp_path)
+    secret_file = environment / "secrets.cfg"
     encrypted = EncryptedConfigFile(secret_file, write_lock=True)
 
     with encrypted as secrets:
@@ -180,7 +181,7 @@ data-csdf = 3
 """
         secrets.read()
 
-        with encrypted.add_file(tmpdir / 'secrets' / 'env-asdf.txt') as f:
+        with encrypted.add_file(environment / 'secret-asdf.txt') as f:
             f.cleartext = 'hello to me!'
 
         secrets.write()

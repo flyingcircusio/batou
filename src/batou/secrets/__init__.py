@@ -2,35 +2,36 @@
 
 Each deployment environment has an associated set of secrets (ssh keys,
 database credentials, etc.). These are stored in encrypted form, in
-secrets/<environment>.cfg.pgp Each deployment environment needs its own secrets
-file. During the deployment process, the `secrets` feature decrypts the files
-and provides the secrets as an additional overlay to top-level components.
+environments/<name>/secrets.cfg Each deployment environment has its own
+secrets file. During the deployment process, the `secrets` feature decrypts the
+files and provides the secrets as an additional overlay to top-level
+components.
 
-The `secretsedit` program is provided to edit the secrets file in a
+The `secrets edit` program is provided to edit the secrets file in a
 convenient fashion::
 
-    secretsedit secrets/myenv.cfg
+    ./batou secrets edit myenv
 
-You need to have gpg configured with a default key and need to have all
+You need to have GPG configured with a default key and need to have all
 involved users' keys for an environment to encrypt again.
 
-`secretsedit` launches $EDITOR with the decrypted secrets file
+`secrets edit` launches $EDITOR with the decrypted secrets file
 and encrypts it afterwards. If the secrets file did not exist before, a
 new one is created.
 
 """
 
-import glob
-import os.path
+import pathlib
 
 from batou import DuplicateOverride, SuperfluousSecretsSection
 
-from .encryption import EncryptedConfigFile
+from .encryption import EncryptedConfigFile, iter_other_secrets
 
 
 def add_secrets_to_environment(environment):
-    secrets_file = "secrets/{}.cfg".format(environment.name)
-    if not os.path.exists(secrets_file):
+    secrets_file = pathlib.Path(
+        "environments") / environment.name / "secrets.cfg"
+    if not secrets_file.exists():
         return
     with EncryptedConfigFile(secrets_file) as config_file:
         for section_ in config_file.config.sections():
@@ -61,10 +62,9 @@ def add_secrets_to_environment(environment):
                         environment.secret_data.update(v.value.split())
 
         # additional_secrets
-        prefix = "secrets/{}-".format(environment.name)
-        for other_filename in glob.iglob(prefix + "*"):
-            secret_name = other_filename.replace(prefix, "", 1)
-            with config_file.add_file(other_filename) as other_file:
+        for path in iter_other_secrets(environment.name):
+            secret_name = path.name.replace('secret-', "", 1)
+            with config_file.add_file(path) as other_file:
                 other_file.read()
                 environment.secret_files[secret_name] = other_file.cleartext
                 for line in other_file.cleartext.splitlines():

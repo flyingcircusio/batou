@@ -10,6 +10,10 @@
   `batou migrate`.
   ([#185](https://github.com/flyingcircusio/batou/issues/185))
 
+- Automatically migrate environments and secrets to the new structure using
+  `./batou migrate`.
+  ([#185](https://github.com/flyingcircusio/batou/issues/185))
+
 
 2.3b3 (2021-11-30)
 ------------------

@@ -287,26 +287,6 @@ class MissingEnvironment(ConfigurationError):
         output.tabular("Environment", self.environment.name, red=True)
 
 
-class MultipleEnvironmentConfigs(ConfigurationError):
-    """The specified environment has multiple configurations.."""
-
-    sort_key = (0, )
-
-    def __init__(self, environment, configs):
-        self.environment = environment
-        self.configs
-
-    def __str__(self):
-        return 'Environment has multiple configs `{}`'.format(
-            self.environment.name)
-
-    def report(self):
-        output.error("Multiple configs for environment")
-        output.tabular("Environment", self.environment.name, red=True)
-        for config in self.configs:
-            output.tabular("Config", config, red=True)
-
-
 class ComponentLoadingError(ConfigurationError):
     """The specified component file failed to load."""
 
