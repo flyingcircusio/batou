@@ -6,5 +6,13 @@ alias encrypt="gpg --homedir ${base}/src/batou/secrets/tests/fixture/gnupg -e --
 cd ${base}/src/batou/secrets/tests/fixture
 encrypt -o encrypted.cfg cleartext.cfg
 
-cd ${base}/examples/errors/secrets
-encrypt -o errors.cfg errors.cfg.clear
+cd ${base}/examples/errors
+encrypt -o environments/errors/secrets.cfg secrets.cfg.clear
+
+cd ${base}/examples/errors2
+encrypt -o environments/errors/secrets.cfg secrets.cfg.clear
+
+cd ${base}/examples/tutorial-secrets
+encrypt -o environments/tutorial/secrets.cfg tutorial-secrets.cfg.clear
+encrypt -o environments/tutorial/secret-foobar.yaml tutorial-foobar.yaml.clear
+encrypt -o environments/gocept/secrets.cfg gocept-secrets.cfg.clear
