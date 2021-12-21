@@ -113,6 +113,7 @@ def test_address_netloc_attributes():
     assert "8080" == address.listen.port
     assert "localhost" == address.connect.host
     assert "8080" == address.connect.port
+    assert address.require_v4
 
 
 def test_netloc_ordering():
@@ -161,6 +162,7 @@ def test_address_v6_only(monkeypatch):
 
     address = Address(hostname, 1234, require_v4=False, require_v6=True)
     assert address.listen_v6.host == "::346"
+    assert address.require_v6
 
 
 def test_address_fails_when_name_cannot_be_looked_up_at_all():

@@ -178,6 +178,9 @@ class Address(object):
     #: This is a :py:class:`batou.utils.NetLoc` object.
     connect = None
 
+    require_v4 = False
+    require_v6 = False
+
     def __init__(self,
                  connect_address,
                  port=None,
@@ -197,9 +200,11 @@ class Address(object):
         if require_v4:
             address = resolve(connect, port)
             self.listen = NetLoc(address, str(port))
+            self.require_v4 = True
         if require_v6:
             address = resolve_v6(connect, port)
             self.listen_v6 = NetLoc(address, str(port))
+            self.require_v6 = True
 
     def __lt__(self, other):
         if isinstance(other, Address):

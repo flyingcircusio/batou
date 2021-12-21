@@ -14,6 +14,9 @@
   `./batou migrate`.
   ([#185](https://github.com/flyingcircusio/batou/issues/185))
 
+- Allow to check if an `Address` is configured for IPv4 resp. IPv6 using the
+  attributes `require_v4` resp. `require_v6`.
+
 
 2.3b3 (2021-11-30)
 ------------------
