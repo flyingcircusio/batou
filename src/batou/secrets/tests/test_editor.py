@@ -6,7 +6,8 @@ from batou.secrets.encryption import EncryptedConfigFile
 
 def test_edit(tmpdir):
     with EncryptedConfigFile(str(tmpdir / "asdf"), write_lock=True) as sf:
-        editor = Editor("true", sf)
+        editor = Editor(
+            "true", environment='none', edit_file=list(sf.files.keys())[0])
         editor.cleartext = "asdf"
         editor.edit()
         assert editor.cleartext == "asdf"
@@ -14,7 +15,8 @@ def test_edit(tmpdir):
 
 def test_edit_command_loop(tmpdir, capsys):
     with EncryptedConfigFile(str(tmpdir / "asdf"), write_lock=True) as sf:
-        editor = Editor("true", sf)
+        editor = Editor(
+            "true", environment='none', edit_file=list(sf.files.keys())[0])
         editor.cleartext = "asdf"
 
         with pytest.raises(ValueError):

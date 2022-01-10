@@ -101,9 +101,7 @@ def main(args: Optional[list] = None) -> None:
         default=os.environ.get("EDITOR", "vi"),
         help="Invoke EDITOR to edit (default: $EDITOR or vi)")
     p.add_argument(
-        "environment",
-        help="Environment to edit secrets for.",
-        type=lambda x: x.replace(".cfg", ""))
+        "environment", help="Environment to edit secrets for.", type=str)
     p.add_argument(
         "edit_file",
         nargs='?',

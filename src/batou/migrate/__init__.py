@@ -14,7 +14,7 @@ MIGRATION_MODULE = 'batou.migrate'
 def output_migration_step(title: str, text: str) -> None:
     """Print the information of migration step in a formatted way."""
     output.section(title, red=True)
-    output.line(textwrap.dedent(text).replace('\n', ''))
+    output.line(textwrap.dedent(text).replace('\n', ' '))
     output.line('')
 
 

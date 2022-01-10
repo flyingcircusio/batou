@@ -128,7 +128,7 @@ After having switched from batou 1.x to 2.x you might update to the latest
 Updating from 2.2 to 2.3
 ========================
 
-To define ``Attribute``s more explicitly the default value has to be passed in
+To define ``Attribute``\s more explicitly the default value has to be passed in
 one of two ways.
 
 * ``default`` allows to pass a final python value.

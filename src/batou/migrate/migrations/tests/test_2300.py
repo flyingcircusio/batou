@@ -1,13 +1,14 @@
-import os
+import importlib
 
-from batou.migrate import main
+import batou
+from batou.migrate import output_migration_step
+
+step_2300 = importlib.import_module('batou.migrate.migrations.2300')
 
 
-def test_2300__1(tmp_path, capsys):
+def test_2300__migrate__1():
     """It informs about changes in Attribute, Address and secrets."""
-    os.chdir(tmp_path)
-    main()
-    expected = ['Version: 2300', 'Attribute', 'Address', 'secrets']
-    output = capsys.readouterr().out
+    step_2300.migrate(output_migration_step)
+    expected = ['Attribute', 'Address', 'secrets']
     for term in expected:
-        assert term in output
+        assert term in batou.output.backend.output
