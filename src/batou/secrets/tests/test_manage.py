@@ -60,7 +60,8 @@ def test_manage__summary__2(capsys, monkeypatch):
     monkeypatch.setitem(os.environ, "GNUPGHOME", '')
     assert summary() == 1  # exit code
     out, err = capsys.readouterr()
-    expected = ('Exitcode 2 while calling:'
-                ' gpg -q --no-tty --batch --decrypt secrets/errors.cfg')
+    expected = (
+        'Exitcode 2 while calling:'
+        ' gpg -q --no-tty --batch --decrypt environments/errors/secrets.cfg')
     assert out == ''
     assert err.startswith(expected)
