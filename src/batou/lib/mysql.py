@@ -90,6 +90,12 @@ class User(Component):
     allow_from_hostname = "localhost"
     admin_password = None
 
+    SET_PASSWORD_QUERY = """
+SET PASSWORD FOR
+    '{{component.user}}'@'{{component.allow_from_hostname}}' =
+     '{{component.password}}';
+"""
+
     def configure(self):
 
         create = self.expand("""\
@@ -105,13 +111,9 @@ WHERE
 """)
         self += Command(
             create, unless=create_unless, admin_password=self.admin_password)
-
-        set_password = self.expand("""\
-SET PASSWORD FOR
-    '{{component.user}}'@'{{component.allow_from_hostname}}' =
-     PASSWORD('{{component.password}}');
-""")
-        self += Command(set_password, admin_password=self.admin_password)
+        self += Command(
+            self.expand(self.SET_PASSWORD_QUERY),
+            admin_password=self.admin_password)
 
 
 class Grant(Command):
