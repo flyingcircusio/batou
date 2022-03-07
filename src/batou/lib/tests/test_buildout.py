@@ -18,7 +18,8 @@ def buildout(**kw):
 
 def test_update_should_pass_config_file_name(root):
     b = buildout(
-        python="2.7", setuptools="1.0", config=File("myown.cfg", content=""))
+        python="2.7", setuptools="1.0", config=File("myown.cfg", content="")
+    )
     root.component += b
     b.update()
 
@@ -45,14 +46,19 @@ def test_runs_buildout_successfully(root):
         setuptools="44.1.1",
         config=File(
             "buildout.cfg",
-            source=pkg_resources.resource_filename(__name__,
-                                                   "buildout-example.cfg")))
+            source=pkg_resources.resource_filename(
+                __name__, "buildout-example.cfg"
+            ),
+        ),
+    )
     root.component += b
     root.component.deploy()
     assert os.path.isdir(
-        os.path.join(root.environment.workdir_base, "mycomponent/parts"))
+        os.path.join(root.environment.workdir_base, "mycomponent/parts")
+    )
     assert os.path.isfile(
-        os.path.join(root.environment.workdir_base, "mycomponent/bin/py"))
+        os.path.join(root.environment.workdir_base, "mycomponent/bin/py")
+    )
 
 
 @pytest.mark.slow
@@ -66,8 +72,11 @@ def test_runs_buildout3_successfully(root, output):
         pip="21.0.1",
         config=File(
             "buildout3.cfg",
-            source=pkg_resources.resource_filename(__name__,
-                                                   "buildout3-example.cfg")))
+            source=pkg_resources.resource_filename(
+                __name__, "buildout3-example.cfg"
+            ),
+        ),
+    )
     root.component += b
     try:
         root.component.deploy()
@@ -76,6 +85,8 @@ def test_runs_buildout3_successfully(root, output):
         print(output.backend.output)
         raise
     assert os.path.isdir(
-        os.path.join(root.environment.workdir_base, "mycomponent/parts"))
+        os.path.join(root.environment.workdir_base, "mycomponent/parts")
+    )
     assert os.path.isfile(
-        os.path.join(root.environment.workdir_base, "mycomponent/bin/py"))
+        os.path.join(root.environment.workdir_base, "mycomponent/bin/py")
+    )

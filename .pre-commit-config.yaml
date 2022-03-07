@@ -1,22 +1,32 @@
-exclude: '(components/component5/component.py|haproxy.cfg|encrypted.cfg|\.appenv|\.batou|lib/python|examples/.*/environments/.*/secret.*)'
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
     hooks:
-    -   id: check-yaml
-    -   id: end-of-file-fixer
     -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+        # These are non-anchored regular rexpressions
+        exclude: "(encrypted.cfg|secrets.cfg|secret-foobar.yaml)"
+    -   id: check-added-large-files
+    -   id: check-json
+    -   id: check-xml
+    -   id: check-toml
+    -   id: check-yaml
+        exclude: "examples/tutorial-secrets/environments/tutorial/secret-foobar.yaml"
+    -   id: detect-private-key
+        exclude: "src/batou/insecure-private.key"
+
 -   repo: https://github.com/pycqa/isort
     rev: 5.10.1
     hooks:
-    -   id: isort
+      - id: isort
         name: isort (python)
--   repo: https://github.com/pre-commit/mirrors-yapf
-    rev: 'v0.32.0'  # Use the sha / tag you want to point at
+        args: ["--profile", "black", "--filter-files"]
+
+-   repo: https://github.com/psf/black
+    rev: 21.12b0
     hooks:
-    -   id: yapf
-        args: [-i, -p]
--   repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
-    hooks:
-    -   id: flake8
+    -   id: black
+        exclude:
+            examples/errors/components/component5/component.py

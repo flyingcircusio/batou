@@ -20,7 +20,8 @@ class Clone(Component):
     def configure(self):
         if (not self.revision_or_branch) or (self.revision and self.branch):
             raise ValueError(
-                "Clone(%s) needs exactly one of revision or branch" % self.url)
+                "Clone(%s) needs exactly one of revision or branch" % self.url
+            )
         self.target = self.map(self.target)
         self += Directory(self.target)
 
@@ -35,14 +36,16 @@ class Clone(Component):
             if self.has_outgoing_changesets():
                 output.annotate(
                     "Hg clone at {} has outgoing changesets.".format(
-                        self.target),
+                        self.target
+                    ),
                     red=True,
                 )
 
             if self.has_changes():
                 output.annotate(
                     "Hg clone at {} is dirty, going to lose changes.".format(
-                        self.target),
+                        self.target
+                    ),
                     red=True,
                 )
                 raise UpdateNeeded()
@@ -51,8 +54,10 @@ class Clone(Component):
                 long_rev = len(self.revision) == 40
                 if self.current_revision(long_rev) != self.revision:
                     raise UpdateNeeded()
-            if self.branch and (self.current_branch() != self.branch
-                                or self.has_incoming_changesets()):
+            if self.branch and (
+                self.current_branch() != self.branch
+                or self.has_incoming_changesets()
+            ):
                 raise UpdateNeeded()
 
     @property
@@ -67,7 +72,8 @@ class Clone(Component):
                 "LANG=C hg --cwd {{component.target}} {{debug}} parent | "
                 "grep changeset:",
                 debug=debug,
-            ))
+            )
+        )
         match = self._revision_pattern.search(stdout)
         if not match:
             return None
@@ -105,16 +111,21 @@ class Clone(Component):
         with self.chdir(self.target):
             if not os.path.exists(".hg"):
                 self.cmd(
-                    self.expand("hg clone -u {{component.revision_or_branch}} "
-                                "{{component.url}} ."))
+                    self.expand(
+                        "hg clone -u {{component.revision_or_branch}} "
+                        "{{component.url}} ."
+                    )
+                )
                 return
             self.cmd(
-                self.expand("hg pull --rev {{component.revision_or_branch}}"))
+                self.expand("hg pull --rev {{component.revision_or_branch}}")
+            )
             for filepath in self.untracked_files():
                 os.unlink(os.path.join(self.target, filepath))
             self.cmd(
                 self.expand(
-                    "hg update --clean --rev {{component.revision_or_branch}}")
+                    "hg update --clean --rev {{component.revision_or_branch}}"
+                )
             )
 
     def untracked_files(self):
@@ -127,7 +138,8 @@ class Clone(Component):
             if not os.path.exists(".hg"):
                 return None
             stdout, stderr = self.cmd(
-                'hg log -r %s --template "{date|hgdate}\n"' %
-                self.current_revision())
+                'hg log -r %s --template "{date|hgdate}\n"'
+                % self.current_revision()
+            )
             timestamp, offset = stdout.split()
             return float(timestamp) - float(offset)

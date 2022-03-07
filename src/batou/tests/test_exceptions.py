@@ -26,14 +26,16 @@ def test_configurationerrors_can_be_sorted(root):
     errors = []
     errors.append(ConfigurationError("asdffdas", root.component))
     errors.append(
-        ConversionError(root.component, "testkey", "testvalue", str, "foobar"))
+        ConversionError(root.component, "testkey", "testvalue", str, "foobar")
+    )
     errors.append(MissingOverrideAttributes(root.component, ["asdf", "bsdfg"]))
 
     errors.append(
         DuplicateComponent(
             ComponentDefinition(root.component.__class__, "asdf.py"),
             ComponentDefinition(root.component.__class__, "bsdf.py"),
-        ))
+        )
+    )
 
     try:
         raise ValueError("asdf")
@@ -41,7 +43,8 @@ def test_configurationerrors_can_be_sorted(root):
         _, exc_value, exc_traceback = sys.exc_info()
 
     errors.append(
-        UnknownComponentConfigurationError(root, exc_value, exc_traceback))
+        UnknownComponentConfigurationError(root, exc_value, exc_traceback)
+    )
 
     errors.append(UnusedResources({"asdf": [(root.component, 1)]}))
 

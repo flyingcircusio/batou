@@ -28,7 +28,6 @@ def platform(name, component):
 
 
 def handle_event(event, scope):
-
     def wrapper(f):
         f._event = dict(event=event, scope=scope)
         return f
@@ -52,7 +51,6 @@ def check_event_scope(scope, source, target):
 
 
 class ComponentDefinition(object):
-
     def __init__(self, factory, filename=None, defdir=None):
         self.factory = factory
         self.name = factory.__name__.lower()
@@ -68,7 +66,8 @@ def load_components_from_file(filename):
     module_name = os.path.basename(defdir)
     module_path = "batou.c.{}".format(module_name)
     module = types.ModuleType(
-        module_name, "Component definition module for {}".format(filename))
+        module_name, "Component definition module for {}".format(filename)
+    )
     sys.modules[module_path] = module
     setattr(batou.c, module_name, module)
     with open(filename) as f:
@@ -77,8 +76,9 @@ def load_components_from_file(filename):
     for candidate in list(module.__dict__.values()):
         if candidate in [Component]:
             continue
-        if not (isinstance(candidate, type)
-                and issubclass(candidate, Component)):
+        if not (
+            isinstance(candidate, type) and issubclass(candidate, Component)
+        ):
             continue
         compdef = ComponentDefinition(candidate, filename, defdir)
         if compdef.name in components:
@@ -201,7 +201,8 @@ class Component(object):
             raise ValueError(
                 "The following arguments are unacceptable for this component "
                 "because they are either undefined or would override "
-                "methods: {}".format(", ".join(unacceptable_args)))
+                "methods: {}".format(", ".join(unacceptable_args))
+            )
 
         if self.namevar:
             if namevar is None:
@@ -330,13 +331,14 @@ class Component(object):
             os.makedirs(self.workdir)
         with self.chdir(self.workdir), self:
             try:
-                with batou.utils.Timer("{} verify()".format(
-                        self._breadcrumbs)):
+                with batou.utils.Timer("{} verify()".format(self._breadcrumbs)):
                     call_with_optional_args(
-                        self.verify, predicting=predict_only)
+                        self.verify, predicting=predict_only
+                    )
             except AssertionError:
                 self.__trigger_event__(
-                    "before-update", predict_only=predict_only)
+                    "before-update", predict_only=predict_only
+                )
                 output.flush_buffer()
                 if not predict_only:
                     self.update()
@@ -458,12 +460,14 @@ class Component(object):
         # We notify all components that belong to the same root.
         for target in self.root.component.recursive_sub_components:
             for handler in target._event_handlers.get(event, []):
-                if not check_event_scope(handler._event["scope"], self,
-                                         target):
+                if not check_event_scope(handler._event["scope"], self, target):
                     continue
                 if predict_only:
-                    output.annotate("Trigger {}: {}.{}".format(
-                        event, handler.__self__, handler.__name__))
+                    output.annotate(
+                        "Trigger {}: {}.{}".format(
+                            event, handler.__self__, handler.__name__
+                        )
+                    )
                     continue
                 handler(self)
 
@@ -522,12 +526,12 @@ class Component(object):
     def provide(self, key, value):
         """Provide a resource.
 
-       :param str key: They key under which the resource is provided.
-       :param object value: The value of the resource.
+        :param str key: They key under which the resource is provided.
+        :param object value: The value of the resource.
 
-        Resource values can be of any type. Typically you can pass around
-        component objects or individual configuration values, like network
-        addresses, or similar.
+         Resource values can be of any type. Typically you can pass around
+         component objects or individual configuration values, like network
+         addresses, or similar.
 
         """
         self.environment.resources.provide(self.root, key, value)
@@ -566,15 +570,13 @@ class Component(object):
             causing ``require`` to complete successfully.
 
         """
-        return self.environment.resources.require(self.root, key, host, strict,
-                                                  reverse, dirty)
+        return self.environment.resources.require(
+            self.root, key, host, strict, reverse, dirty
+        )
 
-    def require_one(self,
-                    key,
-                    host=None,
-                    strict=True,
-                    reverse=False,
-                    dirty=False):
+    def require_one(
+        self, key, host=None, strict=True, reverse=False, dirty=False
+    ):
         """Require a resource, returning a scalar.
 
         For the parameters, see :py:meth:`require`.
@@ -591,8 +593,10 @@ class Component(object):
         resources = self.require(key, host, strict, reverse, dirty)
         if len(resources) > 1:
             raise KeyError(
-                "Expected only one result, got multiple for (key={}, host={})".
-                format(key, host))
+                "Expected only one result, got multiple for (key={}, host={})".format(
+                    key, host
+                )
+            )
         elif len(resources) == 0:
             raise SilentConfigurationError()
         return resources[0]
@@ -638,7 +642,8 @@ class Component(object):
         reference = Presence(reference)
         self |= reference
         reference.assert_component_is_current(
-            [Presence(r) for r in requirements], **kw)
+            [Presence(r) for r in requirements], **kw
+        )
 
     def assert_component_is_current(self, requirements=[], **kw):
         """Assert that this component has been updated more recently
@@ -669,8 +674,10 @@ class Component(object):
         if reference is None:
             output.annotate(
                 "assert_component_is_current({}, ...): No reference".format(
-                    self._breadcrumb),
-                debug=True)
+                    self._breadcrumb
+                ),
+                debug=True,
+            )
             raise batou.UpdateNeeded()
         for requirement in requirements:
             self |= requirement
@@ -680,9 +687,13 @@ class Component(object):
             if reference < required:
                 output.annotate(
                     "assert_component_is_current({}, {}): {} < {}".format(
-                        self._breadcrumb, requirement._breadcrumb, reference,
-                        required),
-                    debug=True)
+                        self._breadcrumb,
+                        requirement._breadcrumb,
+                        reference,
+                        required,
+                    ),
+                    debug=True,
+                )
                 raise batou.UpdateNeeded()
 
     def assert_no_subcomponent_changes(self):
@@ -729,13 +740,15 @@ class Component(object):
             raise batou.UpdateNeeded()
         self.assert_no_subcomponent_changes()
 
-    def cmd(self,
-            cmd,
-            silent=False,
-            ignore_returncode=False,
-            communicate=True,
-            env=None,
-            expand=True):
+    def cmd(
+        self,
+        cmd,
+        silent=False,
+        ignore_returncode=False,
+        communicate=True,
+        env=None,
+        expand=True,
+    ):
         """Perform a (shell) command.
 
         Use this to interact with the target system during ``verify``,
@@ -776,8 +789,7 @@ class Component(object):
         """
         if expand:
             cmd = self.expand(cmd)
-        return batou.utils.cmd(cmd, silent, ignore_returncode, communicate,
-                               env)
+        return batou.utils.cmd(cmd, silent, ignore_returncode, communicate, env)
 
     def map(self, path):
         """Perform a VFS mapping on the given path.
@@ -871,8 +883,9 @@ class Component(object):
 
         """
         engine = batou.template.Jinja2Engine()
-        return engine.template(filename,
-                               self._template_args(component=component))
+        return engine.template(
+            filename, self._template_args(component=component)
+        )
 
     def _template_args(self, component=None, **kw):
         if component is None:
@@ -880,7 +893,8 @@ class Component(object):
         args = dict(
             host=component.host,
             environment=component.environment,
-            component=component)
+            component=component,
+        )
         args.update(kw)
         return args
 
@@ -958,16 +972,18 @@ class RootComponent(object):
     ignore = False
     _logs = None
 
-    def __init__(self,
-                 name,
-                 environment,
-                 host,
-                 features,
-                 ignore,
-                 factory,
-                 defdir,
-                 workdir,
-                 overrides=None):
+    def __init__(
+        self,
+        name,
+        environment,
+        host,
+        features,
+        ignore,
+        factory,
+        defdir,
+        workdir,
+        overrides=None,
+    ):
         self.name = name
         self.environment = environment
         self.host = host
@@ -1057,22 +1073,28 @@ class Attribute(object):
 
     """
 
-    def __init__(self,
-                 conversion=None,
-                 *,
-                 default=ATTRIBUTE_NODEFAULT,
-                 default_conf_string=ATTRIBUTE_NODEFAULT,
-                 expand=True,
-                 map=False):
+    def __init__(
+        self,
+        conversion=None,
+        *,
+        default=ATTRIBUTE_NODEFAULT,
+        default_conf_string=ATTRIBUTE_NODEFAULT,
+        expand=True,
+        map=False,
+    ):
         if isinstance(conversion, str):
             conversion = getattr(self, "convert_{}".format(conversion))
         self.conversion = conversion
 
-        if (default is not ATTRIBUTE_NODEFAULT
-                and default_conf_string is not ATTRIBUTE_NODEFAULT):
+        if (
+            default is not ATTRIBUTE_NODEFAULT
+            and default_conf_string is not ATTRIBUTE_NODEFAULT
+        ):
             raise batou.ConfigurationError(
-                'Attributes only support one of those parameters:'
-                ' either `default` or `default_conf_string`.', self)
+                "Attributes only support one of those parameters:"
+                " either `default` or `default_conf_string`.",
+                self,
+            )
         self.default = default
         self.default_conf_string = default_conf_string
         self.expand = expand
@@ -1119,8 +1141,9 @@ class Attribute(object):
                     if getattr(obj.__class__, k, None) is self:
                         name = k
                         break
-                raise batou.ConversionError(obj, name, value, self.conversion,
-                                            e)
+                raise batou.ConversionError(
+                    obj, name, value, self.conversion, e
+                )
         return value
 
     def __set__(self, obj, value):

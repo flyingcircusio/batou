@@ -10,7 +10,8 @@ from batou.utils import cmd
 def test_service_early_resource():
     env = Environment(
         "dev",
-        basedir=os.path.dirname(__file__) + "/fixture/service_early_resource")
+        basedir=os.path.dirname(__file__) + "/fixture/service_early_resource",
+    )
     env.load()
     env.configure()
     assert env.resources.get("zeo") == ["127.0.0.1:9000"]
@@ -19,7 +20,8 @@ def test_service_early_resource():
 def test_example_errors_early():
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
-    assert out == Ellipsis("""\
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 main: Loading environment `errors`...
@@ -59,14 +61,16 @@ ERROR: Attribute override found both in environment and secrets
 ERROR: Secrets section for unknown component found
  Component: another-nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
-""")  # noqa: E501 line too long
+"""
+    )  # noqa: E501 line too long
 
 
 def test_example_errors_gpg_cannot_decrypt(monkeypatch):
-    monkeypatch.setitem(os.environ, "GNUPGHOME", '')
+    monkeypatch.setitem(os.environ, "GNUPGHOME", "")
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
-    assert out == Ellipsis("""\
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 main: Loading environment `errors`...
@@ -105,14 +109,16 @@ ERROR: Superfluous section in environment configuration
 ERROR: Override section for unknown component found
  Component: nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
-""")  # noqa: E501 line too long
+"""
+    )  # noqa: E501 line too long
 
 
 def test_example_errors_late():
     os.chdir("examples/errors2")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
 
-    assert out == Ellipsis("""\
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 main: Loading environment `errors`...
@@ -167,13 +173,15 @@ cycle2 depends on
 ERROR: 8 remaining unconfigured component(s)
 ======================= 10 ERRORS - CONFIGURATION FAILED =======================
 ===================== DEPLOYMENT FAILED (during configure) =====================
-""")  # noqa: E501 line too long
+"""
+    )  # noqa: E501 line too long
 
 
 def test_example_errors_missing_environment():
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy production", acceptable_returncodes=[1])
-    assert out == Ellipsis("""\
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 main: Loading environment `production`...
@@ -181,13 +189,15 @@ main: Loading environment `production`...
 ERROR: Missing environment
 Environment: production
 ======================= DEPLOYMENT FAILED (during load) ========================
-""")  # noqa: E501 line too long
+"""
+    )  # noqa: E501 line too long
 
 
 def test_example_ignores():
     os.chdir("examples/ignores")
     out, _ = cmd("./batou deploy ignores")
-    assert out == Ellipsis("""\
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 main: Loading environment `ignores`...
@@ -204,7 +214,8 @@ localhost: Skipping component fail ... (Component ignored)
 otherhost: Skipping component fail2 ... (Host ignored)
 =================================== Summary ====================================
 ============================= DEPLOYMENT FINISHED ==============================
-""")  # noqa: E501 line too long
+"""
+    )  # noqa: E501 line too long
 
 
 def test_example_async_sync_deployment():
@@ -252,14 +263,15 @@ def test_diff_is_not_shown_for_keys_in_secrets(tmp_path, monkeypatch, capsys):
     Secrets might be in the config file in secrets/ or additional encrypted
     files belonging to the environment.
     """
-    monkeypatch.chdir('examples/tutorial-secrets')
-    if os.path.exists('work'):
-        shutil.rmtree('work')
+    monkeypatch.chdir("examples/tutorial-secrets")
+    if os.path.exists("work"):
+        shutil.rmtree("work")
     try:
         out, _ = cmd("./batou deploy tutorial")
     finally:
-        shutil.rmtree('work')
-    assert out == Ellipsis("""\
+        shutil.rmtree("work")
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 main: Loading environment `tutorial`...
@@ -281,4 +293,5 @@ Not showing diff as it contains sensitive data,
 see ...diff for the diff.
 =================================== Summary ====================================
 ============================= DEPLOYMENT FINISHED ==============================
-""")  # noqa: E501 line too long
+"""
+    )  # noqa: E501 line too long

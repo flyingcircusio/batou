@@ -12,51 +12,43 @@ from batou.host import Host
 
 
 class Provider(Component):
-
     def configure(self):
         self.provide("the-answer", 42)
 
 
 class Consumer(Component):
-
     def configure(self):
         self.the_answer = self.require("the-answer")
 
 
 class AggressiveConsumer(Component):
-
     def configure(self):
         self.the_answer = self.require("the-answer")[0]
 
 
 class SameHostConsumer(Component):
-
     def configure(self):
         self.the_answer = self.require("the-answer", self.host)
 
 
 class Broken(Component):
-
     def configure(self):
         raise KeyError("foobar")
 
 
 class Circular1(Component):
-
     def configure(self):
         self.asdf = self.require("asdf")
         self.provide("bsdf", self)
 
 
 class Circular2(Component):
-
     def configure(self):
         self.bsdf = self.require("bsdf")
         self.provide("asdf", self)
 
 
 class DirtySingularCircularReverse(Component):
-
     def configure(self):
         self.bsdf = self.require("bsdf", reverse=True, dirty=True)
         self.provide("asdf", self)
@@ -148,7 +140,8 @@ def test_consumer_retrieves_value_from_provider_with_same_host(env):
         consumer: {provider},
         provider: set(),
         consumer2: {provider2},
-        provider2: set()}
+        provider2: set(),
+    }
 
 
 def test_components_are_ordered_over_multiple_hosts(env):
@@ -161,7 +154,8 @@ def test_components_are_ordered_over_multiple_hosts(env):
         consumer1: {provider1, provider2},
         provider1: set(),
         consumer2: {provider1, provider2},
-        provider2: set()}
+        provider2: set(),
+    }
 
 
 def test_circular_depending_component(env):

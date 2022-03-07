@@ -38,12 +38,16 @@ def mock_remote_core(monkeypatch):
 
 
 def test_update_code_existing_target(mock_remote_core, tmpdir):
-    remote_core.cmd.side_effect = [("", ""), ("", ""), ("", ""),
-                                   ('[{"id": "12345"}]', "")]
+    remote_core.cmd.side_effect = [
+        ("", ""),
+        ("", ""),
+        ("", ""),
+        ('[{"id": "12345"}]', ""),
+    ]
 
     remote_core.ensure_repository(str(tmpdir), "hg-pull")
     remote_core.hg_pull_code("http://bitbucket.org/flyingcircus/batou")
-    assert '12345' == remote_core.hg_update_working_copy("default")
+    assert "12345" == remote_core.hg_update_working_copy("default")
 
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
     assert next(calls).startswith("hg init /")
@@ -54,11 +58,15 @@ def test_update_code_existing_target(mock_remote_core, tmpdir):
 
 
 def test_update_code_new_target(mock_remote_core, tmpdir):
-    remote_core.cmd.side_effect = [("", ""), ("", ""), ("", ""),
-                                   ('[{"id": "12345"}]', "")]
+    remote_core.cmd.side_effect = [
+        ("", ""),
+        ("", ""),
+        ("", ""),
+        ('[{"id": "12345"}]', ""),
+    ]
     remote_core.ensure_repository(str(tmpdir) + "/foo", "hg-bundle")
     remote_core.hg_pull_code("http://bitbucket.org/flyingcircus/batou")
-    assert '12345' == remote_core.hg_update_working_copy("default")
+    assert "12345" == remote_core.hg_update_working_copy("default")
 
     assert remote_core.cmd.call_count == 4
     calls = iter(x[1][0] for x in remote_core.cmd.mock_calls)
@@ -75,7 +83,8 @@ def test_hg_bundle_shipping(mock_remote_core, tmpdir):
         (b'[{"node": "revision-a"},{"node": "revision-b"}]', None),
         (b"", b""),
         (b"", b""),
-        (b'[{"id": "revision-b"}]', b""), ]
+        (b'[{"id": "revision-b"}]', b""),
+    ]
     heads = remote_core.hg_current_heads()
     assert heads == ["revision-a", "revision-b"]
     remote_core.hg_unbundle_code()
@@ -185,7 +194,7 @@ def test_channelexec_already_closed(remote_core_mod):
 
 def test_channelexec_echo_cmd(remote_core_mod):
     channel, run = remote_core_mod
-    channel.receivequeue.append(("cmd", ('echo "asdf"', ), {}))
+    channel.receivequeue.append(("cmd", ('echo "asdf"',), {}))
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
@@ -194,19 +203,20 @@ def test_channelexec_echo_cmd(remote_core_mod):
 
 def test_channelexec_multiple_echo_cmds(remote_core_mod):
     channel, run = remote_core_mod
-    channel.receivequeue.append(("cmd", ('echo "asdf1"', ), {}))
-    channel.receivequeue.append(("cmd", ('echo "asdf2"', ), {}))
+    channel.receivequeue.append(("cmd", ('echo "asdf1"',), {}))
+    channel.receivequeue.append(("cmd", ('echo "asdf2"',), {}))
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
     assert channel.sendqueue == [
         ("batou-result", (b"asdf1\n", b"")),
-        ("batou-result", (b"asdf2\n", b"")), ]
+        ("batou-result", (b"asdf2\n", b"")),
+    ]
 
 
 def test_channelexec_handle_exception(remote_core_mod):
     channel, run = remote_core_mod
-    channel.receivequeue.append(("cmd", ("fdjkahfkjdasbfda", ), {}))
+    channel.receivequeue.append(("cmd", ("fdjkahfkjdasbfda",), {}))
     run()
     assert channel.isclosed()
     assert channel.receivequeue == []
@@ -215,36 +225,31 @@ def test_channelexec_handle_exception(remote_core_mod):
     assert next(response) == (
         "batou-output",
         "line",
-        ("ERROR: fdjkahfkjdasbfda", ),
-        {
-            "bold": True,
-            "red": True},
+        ("ERROR: fdjkahfkjdasbfda",),
+        {"bold": True, "red": True},
     )
 
     assert next(response) == (
         "batou-output",
         "line",
-        ("Return code: 127", ),
-        {
-            "red": True},
+        ("Return code: 127",),
+        {"red": True},
     )
 
     assert next(response) == (
         "batou-output",
         "line",
-        ("STDOUT", ),
-        {
-            "red": True},
+        ("STDOUT",),
+        {"red": True},
     )
 
-    assert next(response) == ("batou-output", "line", ("", ), {})
+    assert next(response) == ("batou-output", "line", ("",), {})
 
     assert next(response) == (
         "batou-output",
         "line",
-        ("STDERR", ),
-        {
-            "red": True},
+        ("STDERR",),
+        {"red": True},
     )
 
     # Different /bin/sh versions have different error reporting
@@ -266,8 +271,9 @@ def test_git_remote_init_bundle(tmpdir):
         source.join("foo.txt").write("bar")
         remote_core.cmd("git add foo.txt")
         remote_core.cmd("git commit -m bar")
-        remote_core.cmd("git bundle create {} master ".format(
-            dest.join("batou-bundle.git")))
+        remote_core.cmd(
+            "git bundle create {} master ".format(dest.join("batou-bundle.git"))
+        )
 
     remote_core.ensure_repository(str(dest), "git-bundle")
     remote_core.git_unbundle_code()
@@ -297,21 +303,21 @@ def test_Deployment_sets_os_environ_on_load(monkeypatch):
 
     when the ``load()`` method is called.
     """
-    monkeypatch.chdir('examples/tutorial-helloworld')
+    monkeypatch.chdir("examples/tutorial-helloworld")
 
-    assert 'MY_ENV_VAR' not in os.environ
+    assert "MY_ENV_VAR" not in os.environ
 
     dep = remote_core.Deployment(
-        env_name='tutorial',
-        host_name='localhost',
+        env_name="tutorial",
+        host_name="localhost",
         overrides={},
         secret_files=None,
         secret_data=None,
         host_data={},
         timeout=None,
         platform=None,
-        os_env={'MY_ENV_VAR': 'MY-VALUE'},
+        os_env={"MY_ENV_VAR": "MY-VALUE"},
     )
     dep.load()
 
-    assert os.environ['MY_ENV_VAR'] == 'MY-VALUE'
+    assert os.environ["MY_ENV_VAR"] == "MY-VALUE"

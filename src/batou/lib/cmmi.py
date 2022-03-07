@@ -20,14 +20,17 @@ class Configure(Component):
     def verify(self):
         # This is guesswork. Unfortunately CMMI doesn't work any better.
         self.assert_file_is_current(self.path + "/config.status")
-        self.assert_file_is_current(self.path + "/.batou.config.success",
-                                    [self.path + "/configure"])
+        self.assert_file_is_current(
+            self.path + "/.batou.config.success", [self.path + "/configure"]
+        )
 
     def update(self):
         with self.chdir(self.path):
             self.cmd(
-                self.expand("./configure --prefix={{component.prefix}} "
-                            "{{component.args}}"),
+                self.expand(
+                    "./configure --prefix={{component.prefix}} "
+                    "{{component.args}}"
+                ),
                 env=self.build_environment,
             )
             self.touch(".batou.config.success")
@@ -39,8 +42,9 @@ class Make(Component):
     build_environment = None
 
     def verify(self):
-        self.assert_file_is_current(self.path + "/.batou.make.success",
-                                    [self.path + "/Makefile"])
+        self.assert_file_is_current(
+            self.path + "/.batou.make.success", [self.path + "/Makefile"]
+        )
 
     def update(self):
         with self.chdir(self.path):

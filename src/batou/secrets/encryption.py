@@ -20,11 +20,12 @@ members =
 
 
 def iter_other_secrets(
-        environment_name: str) -> Generator[pathlib.Path, None, None]:
+    environment_name: str,
+) -> Generator[pathlib.Path, None, None]:
     """Iterate over the paths to additional encrypted files."""
     environment = pathlib.Path("environments") / environment_name
     for path in environment.iterdir():
-        if path.name.startswith('secret-'):
+        if path.name.startswith("secret-"):
             yield path
 
 
@@ -63,17 +64,19 @@ class EncryptedFile(object):
         with tempfile.TemporaryFile() as null:
             for gpg in self.GPG_BINARY_CANDIDATES:
                 try:
-                    subprocess.check_call([gpg, "--version"],
-                                          stdout=null,
-                                          stderr=null)
+                    subprocess.check_call(
+                        [gpg, "--version"], stdout=null, stderr=null
+                    )
                 except (subprocess.CalledProcessError, OSError):
                     pass
                 else:
                     return gpg
-        raise RuntimeError("Could not find gpg binary."
-                           " Is GPG installed? I tried looking for: {}".format(
-                               ", ".join("`{}`".format(x)
-                                         for x in self.GPG_BINARY_CANDIDATES)))
+        raise RuntimeError(
+            "Could not find gpg binary."
+            " Is GPG installed? I tried looking for: {}".format(
+                ", ".join("`{}`".format(x) for x in self.GPG_BINARY_CANDIDATES)
+            )
+        )
 
     def read(self):
         """Read encrypted data into cleartext - if not read already."""
@@ -81,7 +84,7 @@ class EncryptedFile(object):
             if os.path.exists(self.encrypted_filename):
                 self.cleartext = self._decrypt()
             else:
-                self.cleartext = ''
+                self.cleartext = ""
         return self.cleartext
 
     def write(self):
@@ -91,26 +94,28 @@ class EncryptedFile(object):
         self._encrypt(self.cleartext)
 
     def _lock(self):
-        self.lockfd = open(self.encrypted_filename,
-                           "a+" if self.write_lock else "r+")
+        self.lockfd = open(
+            self.encrypted_filename, "a+" if self.write_lock else "r+"
+        )
         try:
             fcntl.lockf(
-                self.lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB |
-                (fcntl.LOCK_EX if self.write_lock else fcntl.LOCK_SH))
+                self.lockfd,
+                fcntl.LOCK_EX
+                | fcntl.LOCK_NB
+                | (fcntl.LOCK_EX if self.write_lock else fcntl.LOCK_SH),
+            )
         except BlockingIOError:
             raise FileLockedError(self.encrypted_filename)
 
     def _decrypt(self):
         args = [self.gpg()]
         if self.quiet:
-            args += ['-q', '--no-tty', '--batch']
-        args += ['--decrypt', self.encrypted_filename]
+            args += ["-q", "--no-tty", "--batch"]
+        args += ["--decrypt", self.encrypted_filename]
         try:
             result = subprocess.run(
-                args,
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
         except subprocess.CalledProcessError as e:
             raise GPGCallError(args, e.returncode, e.stderr) from e
         else:
@@ -119,20 +124,20 @@ class EncryptedFile(object):
     def _encrypt(self, data):
         if not self.recipients:
             raise ValueError(
-                'Need at least one recipient. Quitting will delete the file.')
+                "Need at least one recipient. Quitting will delete the file."
+            )
         os.rename(self.encrypted_filename, self.encrypted_filename + ".old")
-        args = [self.gpg(), '--encrypt']
+        args = [self.gpg(), "--encrypt"]
         for r in self.recipients:
-            args.extend(['-r', r.strip()])
-        args.extend(['-o', self.encrypted_filename])
+            args.extend(["-r", r.strip()])
+        args.extend(["-o", self.encrypted_filename])
         try:
             gpg = subprocess.Popen(args, stdin=subprocess.PIPE)
             gpg.communicate(data.encode("utf-8"))
             if gpg.returncode != 0:
                 raise RuntimeError("GPG returned non-zero exit code.")
         except Exception:
-            os.rename(self.encrypted_filename + ".old",
-                      self.encrypted_filename)
+            os.rename(self.encrypted_filename + ".old", self.encrypted_filename)
             raise
         else:
             os.unlink(self.encrypted_filename + ".old")
@@ -146,11 +151,13 @@ class EncryptedConfigFile(object):
 
     """
 
-    def __init__(self,
-                 encrypted_file,
-                 add_files_for_env: Optional[str] = None,
-                 write_lock=False,
-                 quiet=False):
+    def __init__(
+        self,
+        encrypted_file,
+        add_files_for_env: Optional[str] = None,
+        write_lock=False,
+        quiet=False,
+    ):
         self.add_files_for_env = add_files_for_env
         self.write_lock = write_lock
         self.quiet = quiet
@@ -167,8 +174,9 @@ class EncryptedConfigFile(object):
         # Ensure compatibility with pathlib.
         filename = str(filename)
         if filename not in self.files:
-            self.files[filename] = f = EncryptedFile(filename, self.write_lock,
-                                                     self.quiet)
+            self.files[filename] = f = EncryptedFile(
+                filename, self.write_lock, self.quiet
+            )
             f.read()
         return self.files[filename]
 
@@ -200,8 +208,8 @@ class EncryptedConfigFile(object):
             file.write()
 
     def get_members(self):
-        if 'batou' not in self.config:
-            self.config.add_section('batou')
+        if "batou" not in self.config:
+            self.config.add_section("batou")
         try:
             members = self.config.get("batou", "members").value.split(",")
         except Exception:

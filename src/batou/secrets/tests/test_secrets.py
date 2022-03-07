@@ -31,11 +31,12 @@ def encrypted_file(tmpdir):
 def cleanup_gpg_sockets():
     yield
     for path in [
-            "S.dirmngr",
-            "S.gpg-agent",
-            "S.gpg-agent.browser",
-            "S.gpg-agent.extra",
-            "S.gpg-agent.ssh", ]:
+        "S.dirmngr",
+        "S.gpg-agent",
+        "S.gpg-agent.browser",
+        "S.gpg-agent.extra",
+        "S.gpg-agent.ssh",
+    ]:
         try:
             (FIXTURE / "gnupg" / path).unlink()
         except OSError:
@@ -49,14 +50,16 @@ def test_error_message_no_gpg_found(encrypted_file):
         c.gpg()
     assert e.value.args[0] == (
         "Could not find gpg binary. Is GPG installed? I tried looking for: "
-        "`foobarasdf-54875982`")
+        "`foobarasdf-54875982`"
+    )
 
 
 def test_decrypt(encrypted_file):
     with EncryptedConfigFile(encrypted_file) as secrets:
         with open(cleartext_file) as cleartext:
-            assert (cleartext.read().strip() ==
-                    secrets.main_file.cleartext.strip())
+            assert (
+                cleartext.read().strip() == secrets.main_file.cleartext.strip()
+            )
 
 
 def test_caches_cleartext(encrypted_file):
@@ -67,7 +70,7 @@ def test_caches_cleartext(encrypted_file):
 
 
 def test_decrypt_missing_key(monkeypatch, encrypted_file):
-    monkeypatch.setitem(os.environ, "GNUPGHOME", '/tmp')
+    monkeypatch.setitem(os.environ, "GNUPGHOME", "/tmp")
 
     with pytest.raises(batou.GPGCallError):
         EncryptedConfigFile(encrypted_file)
@@ -141,11 +144,10 @@ x = 1
         with pytest.raises(ValueError) as exc:
             secrets.write()
 
-        assert str(exc.value).startswith('Need at least one recipient.')
+        assert str(exc.value).startswith("Need at least one recipient.")
 
 
-def test_write_fails_if_recipient_key_is_missing_keeps_old_file(
-        encrypted_file):
+def test_write_fails_if_recipient_key_is_missing_keeps_old_file(encrypted_file):
     encrypted = EncryptedConfigFile(encrypted_file, write_lock=True)
     with encrypted as secrets:
         secrets.main_file.cleartext = """\
@@ -181,8 +183,8 @@ data-csdf = 3
 """
         secrets.read()
 
-        with encrypted.add_file(environment / 'secret-asdf.txt') as f:
-            f.cleartext = 'hello to me!'
+        with encrypted.add_file(environment / "secret-asdf.txt") as f:
+            f.cleartext = "hello to me!"
 
         secrets.write()
 
@@ -200,5 +202,5 @@ data-csdf = 3
 
     assert env.overrides == {"asdf": {"x": "asdf%asdf%"}}
     assert host.data == {"asdf": "2", "bsdf": "1", "csdf": "3"}
-    assert env.secret_files['asdf.txt'] == 'hello to me!'
-    assert env.secret_data == {'asdf%asdf%', 'hello', 'me!'}
+    assert env.secret_files["asdf.txt"] == "hello to me!"
+    assert env.secret_data == {"asdf%asdf%", "hello", "me!"}

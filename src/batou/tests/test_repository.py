@@ -18,7 +18,7 @@ def test_repository_hg_norepo(tmpdir):
     with pytest.raises(batou.utils.CmdExecutionError):
         MercurialRepository(environment)
 
-    subprocess.check_call(['hg', 'init'])
+    subprocess.check_call(["hg", "init"])
     MercurialRepository(environment)
 
 
@@ -28,32 +28,36 @@ def test_repository_hg_show_upstream(tmpdir):
     environment.root = tmpdir
     environment.base_dir = tmpdir
     os.chdir(tmpdir)
-    subprocess.check_call(['hg', 'init'])
+    subprocess.check_call(["hg", "init"])
 
     repository = MercurialRepository(environment)
-    environment.repository_url = 'asdf'
-    assert repository.upstream == 'asdf'
+    environment.repository_url = "asdf"
+    assert repository.upstream == "asdf"
     repository._upstream = None
 
     environment.repository_url = None
     with pytest.raises(batou.utils.CmdExecutionError):
         repository.upstream
 
-    with open('.hg/hgrc', 'w') as f:
-        f.write("""\
+    with open(".hg/hgrc", "w") as f:
+        f.write(
+            """\
 [paths]
 foobar = 1234
-""")
+"""
+        )
 
     with pytest.raises(AssertionError):
         repository.upstream
 
-    with open('.hg/hgrc', 'w') as f:
-        f.write("""\
+    with open(".hg/hgrc", "w") as f:
+        f.write(
+            """\
 [paths]
 foobar = 1234
 default = ssh://test@example.com/repos
-""")
+"""
+        )
 
     assert repository.upstream == "ssh://test@example.com/repos"
     # Trigger cached access
@@ -69,29 +73,33 @@ def test_repository_hg_verify(tmpdir):
 
     os.chdir(tmpdir)
 
-    subprocess.check_call(['hg', 'init'])
+    subprocess.check_call(["hg", "init"])
 
-    subprocess.check_call(['hg', 'init', 'remote'])
+    subprocess.check_call(["hg", "init", "remote"])
 
     # Create a second repo as target
-    with open('.hg/hgrc', 'w') as f:
-        f.write("""\
+    with open(".hg/hgrc", "w") as f:
+        f.write(
+            """\
 [paths]
 default = file:///{}/remote
-""".format(tmpdir))
+""".format(
+                tmpdir
+            )
+        )
 
     repository = MercurialRepository(environment)
     # Clean repositories are fine
     repository.verify()
 
-    with open('asdf', 'w') as f:
-        f.write('foobar!')
+    with open("asdf", "w") as f:
+        f.write("foobar!")
 
     with pytest.raises(batou.utils.DeploymentError) as e:
         repository.verify()
     assert e.value.args[0] == "Uncommitted changes"
 
-    subprocess.check_call(['hg', 'commit', '-A', '-m', 'test'])
+    subprocess.check_call(["hg", "commit", "-A", "-m", "test"])
 
     with pytest.raises(batou.utils.DeploymentError) as e:
         repository.verify()
@@ -102,7 +110,7 @@ default = file:///{}/remote
     repository.verify()
     environment.deployment.dirty = False
 
-    subprocess.check_call(['hg', 'push'])
+    subprocess.check_call(["hg", "push"])
     repository.verify()
 
 
@@ -114,7 +122,7 @@ def test_repository_hg_ship_verify_after_ship(tmpdir):
     environment.deployment.dirty = False
 
     os.chdir(tmpdir)
-    subprocess.check_call(['hg', 'init'])
+    subprocess.check_call(["hg", "init"])
 
     repository = MercurialRepository(environment)
 
@@ -126,12 +134,13 @@ def test_repository_hg_ship_verify_after_ship(tmpdir):
 
     host = mock.Mock()
     host.rpc.hg_update_working_copy.return_value = (
-        '0000000000000000000000000000000000000000')
+        "0000000000000000000000000000000000000000"
+    )
     repository.update(host)
 
-    with open('asdf', 'w') as f:
-        f.write('foobar')
-    subprocess.check_call(['hg', 'add', 'asdf'])
+    with open("asdf", "w") as f:
+        f.write("foobar")
+    subprocess.check_call(["hg", "add", "asdf"])
     with pytest.raises(batou.RepositoryDifferentError):
         repository.update(host)
 

@@ -13,8 +13,7 @@ Server = collections.namedtuple("Server", ["name", "address"])
 sample_dict = dict(
     host=mock.Mock(),
     config=dict(),
-    servers=[Server("s1", "1.2.3.4"),
-             Server("s2", "2.3.4.5")],
+    servers=[Server("s1", "1.2.3.4"), Server("s2", "2.3.4.5")],
     hello="world",
     hello2="wörld",
 )
@@ -38,8 +37,9 @@ def test_abstract_engine():
 def test_jinja2_template_str():
     tmpl = TemplateEngine.get("jinja2")
     assert "hello world" == tmpl.expand("hello {{hello}}", sample_dict)
-    assert "hello world\n\n   " == tmpl.expand("hello {{hello}}\n\n   ",
-                                               sample_dict)
+    assert "hello world\n\n   " == tmpl.expand(
+        "hello {{hello}}\n\n   ", sample_dict
+    )
 
 
 def test_jinja2_template_keep_trailing_newline():
@@ -68,12 +68,15 @@ def test_jinja2_large_template_str(output):
 
     log = "\n".join(c[0][0].strip() for c in output.call_args_list)
 
-    assert ("""\
+    assert (
+        """\
 ERROR: You are trying to render a template that is bigger than 100KiB we've \
 seen that Jinja can crash at large templates and suggest you find \
 alternatives for this. The affected template starts with:
 hello {{hello}}hello {{hello}}hello {{hello}}hello {{hello}}hello \
-{{hello}}hello {{hello}}hello {{he""" == log)
+{{hello}}hello {{hello}}hello {{he"""
+        == log
+    )
 
 
 def test_jinja2_unknown_variable_should_fail():

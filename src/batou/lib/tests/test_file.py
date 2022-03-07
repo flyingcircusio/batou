@@ -390,10 +390,11 @@ def test_content_source_unclear(root):
     p = File(path)
     with pytest.raises(ValueError) as e:
         root.component += p
-    assert str(e.value) == ("Missing implicit template file {}/path. "
-                            "Or did you want to create an empty file? "
-                            "Then use File('path', content='').".format(
-                                root.defdir))
+    assert str(e.value) == (
+        "Missing implicit template file {}/path. "
+        "Or did you want to create an empty file? "
+        "Then use File('path', content='').".format(root.defdir)
+    )
 
 
 def test_content_passed_by_file_using_path_as_default(root):
@@ -487,13 +488,21 @@ def test_content_large_diff_logged(output, root):
     root.component.deploy()
     log = os.listdir(p.diff_dir)[0]
     with open(os.path.join(p.diff_dir, log)) as f:
-        assert (f.read() == """\
+        assert (
+            f.read()
+            == """\
 ---
 +++
 @@ -1,21 +1,21 @@
-""" + "\n".join(["-bsdf"] * 21) + "\n" + "\n".join(["+asdf"] * 21) + "\n")
+"""
+            + "\n".join(["-bsdf"] * 21)
+            + "\n"
+            + "\n".join(["+asdf"] * 21)
+            + "\n"
+        )
 
-    assert output.backend.output == Ellipsis("""\
+    assert output.backend.output == Ellipsis(
+        """\
 localhost > MyComponent > Content('work/mycomponent/path')
 More than 20 lines of diff. Showing first and last 5 lines.
 see ... for the full diff.
@@ -508,17 +517,21 @@ see ... for the full diff.
   path +asdf
   path +asdf
   path +asdf
-""")
+"""
+    )
 
 
 def test_json_content_data_given(root):
     p = JSONContent("target.json", data={"asdf": 1})
     root.component += p
     root.component.deploy()
-    assert (p.content == b"""\
+    assert (
+        p.content
+        == b"""\
 {
     "asdf": 1
-}""")
+}"""
+    )
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -533,7 +546,8 @@ def test_json_diff(output, root):
 
     p.deploy()
 
-    assert output.backend.output == Ellipsis("""\
+    assert output.backend.output == Ellipsis(
+        """\
 localhost > MyComponent > JSONContent('work/mycomponent/target.json')
   target.json ---
   target.json +++
@@ -542,14 +556,14 @@ localhost > MyComponent > JSONContent('work/mycomponent/target.json')
   target.json +    "asdf": 1,
   target.json      "bsdf": 2
   target.json  }
-""")
+"""
+    )
 
 
 def test_json_diff_not_for_sensitive(output, root):
     p = JSONContent(
-        "target.json", data={
-            "asdf": 1,
-            "bsdf": 2}, sensitive_data=True)
+        "target.json", data={"asdf": 1, "bsdf": 2}, sensitive_data=True
+    )
     root.component += p
 
     with open(p.path, "w") as f:
@@ -557,10 +571,12 @@ def test_json_diff_not_for_sensitive(output, root):
 
     p.deploy()
 
-    assert output.backend.output == Ellipsis("""\
+    assert output.backend.output == Ellipsis(
+        """\
 localhost > MyComponent > JSONContent('work/mycomponent/target.json')
 Not showing diff as it contains sensitive data.
-""")
+"""
+    )
 
 
 def test_json_content_data_given_compact(root):
@@ -580,13 +596,16 @@ def test_json_content_source_given(root):
     p = JSONContent("target.json", source="source.json")
     root.component += p
     root.component.deploy()
-    assert (p.content == b"""\
+    assert (
+        p.content
+        == b"""\
 [
     1,
     2,
     3,
     4
-]""")
+]"""
+    )
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -600,13 +619,16 @@ def test_json_content_delayed_source_given(root):
         f.write(json.dumps([1, 2, 3, 4]))
 
     root.component.deploy()
-    assert (p.content == b"""\
+    assert (
+        p.content
+        == b"""\
 [
     1,
     2,
     3,
     4
-]""")
+]"""
+    )
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -622,16 +644,15 @@ def test_json_content_delayed_source_causes_predicting_verify_to_raise(root):
 def test_json_content_source_with_override(root):
     with open(root.defdir + "/source.json", "w", encoding="utf-8") as f:
         f.write(
-            json.dumps({
-                "database": {
-                    "address": "localhost",
-                    "password": "topsecret"}}))
+            json.dumps(
+                {"database": {"address": "localhost", "password": "topsecret"}}
+            )
+        )
 
     p = JSONContent(
         "target.json",
         source="source.json",
-        override={"database": {
-            "password": "realpassword"}},
+        override={"database": {"password": "realpassword"}},
     )
 
     root.component += p
@@ -687,9 +708,12 @@ def test_yaml_content_data_given(root):
     p = YAMLContent("target.yaml", data={"asdf": 1})
     root.component += p
     root.component.deploy()
-    assert (p.content == b"""\
+    assert (
+        p.content
+        == b"""\
 asdf: 1
-""")
+"""
+    )
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -721,9 +745,8 @@ localhost > MyComponent > YAMLContent(\'work/mycomponent/target.yaml\')
 
 def test_yaml_diff_not_for_sensitive(output, root):
     p = YAMLContent(
-        "target.yaml", data={
-            "asdf": 1,
-            "bsdf": 2}, sensitive_data=True)
+        "target.yaml", data={"asdf": 1, "bsdf": 2}, sensitive_data=True
+    )
     root.component += p
 
     with open(p.path, "w") as f:
@@ -731,10 +754,12 @@ def test_yaml_diff_not_for_sensitive(output, root):
 
     p.deploy()
 
-    assert output.backend.output == Ellipsis("""\
+    assert output.backend.output == Ellipsis(
+        """\
 localhost > MyComponent > YAMLContent('work/mycomponent/target.yaml')
 Not showing diff as it contains sensitive data.
-""")
+"""
+    )
 
 
 def test_yaml_content_source_given(root):
@@ -788,16 +813,15 @@ def test_yaml_content_delayed_source_causes_predicting_verify_to_raise(root):
 def test_yaml_content_source_with_override(root):
     with open(root.defdir + "/source.yaml", "w", encoding="utf-8") as f:
         f.write(
-            yaml.safe_dump({
-                "database": {
-                    "address": "localhost",
-                    "password": "topsecret"}}))
+            yaml.safe_dump(
+                {"database": {"address": "localhost", "password": "topsecret"}}
+            )
+        )
 
     p = YAMLContent(
         "target.yaml",
         source="source.yaml",
-        override={"database": {
-            "password": "realpassword"}},
+        override={"database": {"password": "realpassword"}},
     )
 
     root.component += p
@@ -852,8 +876,12 @@ def test_mode_verifies_for_nonexistent_file(root):
         mode.verify()
 
 
-@pytest.mark.parametrize('input,expected', [
-    (0o777, 0o777), ])
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        (0o777, 0o777),
+    ],
+)
 def test_mode_ensures_mode_for_files(root, input, expected):
     path = "path"
     open("work/mycomponent/" + path, "w").close()
@@ -878,14 +906,15 @@ def test_mode_converts_to_numeric(root):
     with pytest.raises(batou.ConfigurationError) as e:
         mode = Mode(path)
         root.component += mode
-    assert str(
-        e.value) == '`mode` is required and `None` is not a valid value.`'
+    assert (
+        str(e.value) == "`mode` is required and `None` is not a valid value.`"
+    )
 
-    mode = Mode(path, mode='rwx------')
+    mode = Mode(path, mode="rwx------")
     root.component += mode
     assert mode.mode == 0o700
 
-    mode = Mode(path, mode='500')
+    mode = Mode(path, mode="500")
     root.component += mode
     assert mode.mode == 0o500
 
@@ -1010,8 +1039,10 @@ def test_directory_last_updated_reflects_file_changes(root):
     d = Directory("target", source="source")
     root.component += d
     root.component.deploy()
-    assert (d.last_updated() == os.stat(
-        os.path.join(root.workdir, "target", "two")).st_mtime)
+    assert (
+        d.last_updated()
+        == os.stat(os.path.join(root.workdir, "target", "two")).st_mtime
+    )
 
 
 @pytest.mark.slow
@@ -1019,7 +1050,7 @@ def test_directory_does_not_copy_excluded_files(root):
     os.mkdir("source")
     open("source/one", "w").close()
     open("source/two", "w").close()
-    p = Directory("target", source="source", exclude=("two", ))
+    p = Directory("target", source="source", exclude=("two",))
     root.component += p
     root.component.deploy()
     assert len(os.listdir("work/mycomponent/target")) == 1

@@ -17,10 +17,11 @@ class CronJob(HookComponent):
     def format(self):
         if self.timing is None:
             raise ValueError(
-                "Required timing value missing from cron job %r." %
-                self.command)
+                "Required timing value missing from cron job %r." % self.command
+            )
         line = self.expand(
-            "{{component.timing}} {{component.command}} {{component.args}}")
+            "{{component.timing}} {{component.command}} {{component.args}}"
+        )
         if self.logger:
             line += self.expand(" 2>&1 | logger -t {{component.logger}}")
         return line
@@ -35,7 +36,8 @@ def ignore_comments(data):
 class CronTab(Component):
 
     crontab_template = os.path.join(
-        os.path.dirname(__file__), "resources", "crontab")
+        os.path.dirname(__file__), "resources", "crontab"
+    )
     mailto = Attribute(default=None)
     purge = False
 
@@ -46,7 +48,8 @@ class CronTab(Component):
         self.jobs = self.require(CronJob.key, host=self.host, strict=False)
         if self.purge and self.jobs:
             raise ConfigurationError(
-                "Found cron jobs, but expecting an empty crontab.")
+                "Found cron jobs, but expecting an empty crontab."
+            )
         elif not self.purge and not self.jobs:
             raise ConfigurationError("No cron jobs found.", self)
         self.jobs.sort(key=lambda job: job.command + " " + job.args)
@@ -55,13 +58,11 @@ class CronTab(Component):
 
 
 class PurgeCronTab(Component):
-
     def configure(self):
         self += CronTab(purge=True)
 
 
 class InstallCrontab(Component):
-
     def configure(self):
         self.crontab = self.parent.crontab
 

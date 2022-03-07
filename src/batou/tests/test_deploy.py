@@ -12,20 +12,22 @@ def test_main_with_errors(capsys):
 
     with pytest.raises(SystemExit) as r:
         main(
-            environment='errors',
+            environment="errors",
             platform=None,
             timeout=None,
             dirty=False,
             consistency_only=False,
             predict_only=False,
             jobs=None,
-            provision_rebuild=False)
+            provision_rebuild=False,
+        )
 
     assert r.value.code == 1
 
     out, err = capsys.readouterr()
-    assert err == ''
-    assert out == Ellipsis("""\
+    assert err == ""
+    assert out == Ellipsis(
+        """\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 main: Loading environment `errors`...
@@ -65,4 +67,5 @@ ERROR: Attribute override found both in environment and secrets
 ERROR: Secrets section for unknown component found
  Component: another-nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
-""")  # noqa: E501 line too long
+"""
+    )  # noqa: E501 line too long
