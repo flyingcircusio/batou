@@ -103,7 +103,8 @@ files makes it necessary. A typical usage example:
 
 .. code-block:: python
 
-    self += Buildout(python='2.7', version='2.2', setuptools='1.0',
+    self += Buildout(python='3.7', version='2.2', setuptools='1.0',
+                     pip='21.1',
                      additional_config=[Directory('profiles', source='profiles')])
 
 .. py:class:: batou.lib.buildout.Buildout()
@@ -128,6 +129,11 @@ files makes it necessary. A typical usage example:
     Version of setuptools to install into the virtualenv (must be appropriate
     to the buildout version, e.g. since 2.2 buildout requires setuptools, but
     some versions before that required distribute) (**required**)
+
+.. py:attribute:: pip
+
+    Version of pip to install into the virtualenv (must be appropriate
+    to the buildout version).
 
 .. py:attribute:: distribute
 

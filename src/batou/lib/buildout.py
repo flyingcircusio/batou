@@ -19,6 +19,7 @@ class Buildout(Component):
     distribute = None
     setuptools = None
     wheel = None
+    pip = None
     version = None
 
     build_env = {}  # XXX not frozen. :/
@@ -57,6 +58,9 @@ class Buildout(Component):
 
         if self.wheel:
             venv += Package("wheel", version=self.wheel)
+
+        if self.pip:
+            venv += Package("pip", version=self.pip)
 
         # Install without dependencies (that's just setuptools anyway), since
         # that could cause pip to pull in the latest version of setuptools,
