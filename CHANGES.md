@@ -10,6 +10,9 @@
   `batou migrate`.
   ([#185](https://github.com/flyingcircusio/batou/issues/185))
 
+- Allow to pin the `pip` version used in the `Buildout` component.
+  ([#263](https://github.com/flyingcircusio/batou/issues/263))
+
 - Automatically migrate environments and secrets to the new structure using
   `./batou migrate`.
   ([#185](https://github.com/flyingcircusio/batou/issues/185))
