@@ -4,4 +4,5 @@ set -x
 mkdir myproject
 cd myproject
 git init
-curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
+# Extract current bootstrap command from the docs.
+grep  "bootstrap | sh" doc/source/user/install.txt | sed -e  's/\$//' | sh
