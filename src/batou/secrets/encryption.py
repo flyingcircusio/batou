@@ -215,5 +215,7 @@ class EncryptedConfigFile(object):
         # The whitespace here is exactly what
         # "members = " looks like in the config file so we get
         # proper indentation.
-        members = ",\n      ".join(members)
+        members = ",\n".join(members)
+        # Work around multi-line handling in configupdater
+        members = members.split("\n")
         self.config.set("batou", "members", members)

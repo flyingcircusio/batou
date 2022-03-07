@@ -13,7 +13,9 @@ setup(
     version=version,
     install_requires=[
         "ConfigUpdater",
-        "Jinja2",
+        # As long as we support 3.6 we're stuck here, to avoid
+        # https://stackoverflow.com/questions/67659135/flask-token-object-has-no-attribute-test-render-template-error
+        "Jinja2==3.0.1",
         "requests",
         # ConfigUpdater does not manage its minimum requirements correctly.
         "setuptools>=38.3",
