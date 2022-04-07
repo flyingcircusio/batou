@@ -23,6 +23,12 @@
 - Allow to check if an `Address` is configured for IPv4 resp. IPv6 using the
   attributes `require_v4` resp. `require_v6`.
 
+
+### Bug fixes
+
+- Check python venvs for functional `pip`.
+
+
 2.3b3 (2021-11-30)
 ------------------
 

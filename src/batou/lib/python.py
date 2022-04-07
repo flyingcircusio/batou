@@ -61,6 +61,7 @@ class VirtualEnvPyBase(Component):
         # Is this Python (still) functional 'enough'
         # from a setuptools/distribute perspective?
         self.assert_cmd('bin/python -c "import pkg_resources"')
+        self.assert_cmd('bin/python -c "import pip"')
 
     def update(self):
         self.cmd("chmod -R u+w bin/ lib/ include/ .Python || true")
