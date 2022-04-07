@@ -19,7 +19,6 @@ class UnknownEnvironmentError(ValueError):
 
 
 class Environment(object):
-
     def __init__(self, path: pathlib.Path = None, name=None):
         if path:
             self.path = path
@@ -29,10 +28,8 @@ class Environment(object):
             self.path = pathlib.Path("environments" / name / "secrets.cfg")
 
         self.f = EncryptedConfigFile(
-            self.path,
-            add_files_for_env=self.name,
-            write_lock=True,
-            quiet=True)
+            self.path, add_files_for_env=self.name, write_lock=True, quiet=True
+        )
         self.f.__enter__()
 
     def __del__(self):
@@ -43,8 +40,8 @@ class Environment(object):
 
     @classmethod
     def all(cls):
-        for path in pathlib.Path("environments").glob('*/environment.cfg'):
-            path = path.parent / 'secrets.cfg'
+        for path in pathlib.Path("environments").glob("*/environment.cfg"):
+            path = path.parent / "secrets.cfg"
             yield Environment(path=path)
 
     @classmethod
@@ -71,7 +68,7 @@ class Environment(object):
             return
         print("\t members")
         members = self.f.config.get("batou", "members")
-        for m in members.value.split(','):
+        for m in members.value.split(","):
             m = m.strip()
             print("\t\t-", m)
         if not members:
@@ -80,7 +77,8 @@ class Environment(object):
         # Keys of self.f.files are strings, but self.path is pathlib.Path:
         files = [f for f in self.f.files if f != str(self.path)]
         files = [
-            f.replace('secrets/{}-'.format(self.name), '', 1) for f in files]
+            f.replace("secrets/{}-".format(self.name), "", 1) for f in files
+        ]
         for f in files:
             print("\t\t-", f)
         if not files:

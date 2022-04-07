@@ -43,7 +43,6 @@ def self_id():
 
 
 class MultiFile(object):
-
     def __init__(self, files):
         self.files = files
 
@@ -63,8 +62,7 @@ def locked(filename):
         try:
             fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
-            print(
-                "Could not acquire lock {}".format(filename), file=sys.stderr)
+            print("Could not acquire lock {}".format(filename), file=sys.stderr)
             raise RuntimeError(
                 'cannot create lock "%s": more than one instance running '
                 "concurrently?" % lockfile,
@@ -89,11 +87,15 @@ def notify_send(title, description):
 
 
 def notify_macosx(title, description):
-    subprocess.call([
-        "osascript",
-        "-e",
-        'display notification "{}" with title "{}"'.format(description, title),
-    ])
+    subprocess.call(
+        [
+            "osascript",
+            "-e",
+            'display notification "{}" with title "{}"'.format(
+                description, title
+            ),
+        ]
+    )
 
 
 def notify_none(title, description):
@@ -105,8 +107,9 @@ try:
     notify = notify_macosx
 except (subprocess.CalledProcessError, OSError):
     try:
-        subprocess.check_output(["which", "notify-send"],
-                                stderr=subprocess.STDOUT)
+        subprocess.check_output(
+            ["which", "notify-send"], stderr=subprocess.STDOUT
+        )
         notify = notify_send
     except (subprocess.CalledProcessError, OSError):
         notify = notify_none
@@ -119,16 +122,19 @@ def resolve(host, port=0, resolve_override=resolve_override):
     if host in resolve_override:
         address = resolve_override[host]
         output.annotate(
-            'resolved (v4) `{}` to {} (override)'.format(host, address),
-            debug=True)
+            "resolved (v4) `{}` to {} (override)".format(host, address),
+            debug=True,
+        )
     else:
-        output.annotate('resolving (v4) `{}`'.format(host), debug=True)
+        output.annotate("resolving (v4) `{}`".format(host), debug=True)
         responses = socket.getaddrinfo(host, int(port), socket.AF_INET)
         output.annotate(
-            'resolved (v4) `{}` to {}'.format(host, responses), debug=True)
+            "resolved (v4) `{}` to {}".format(host, responses), debug=True
+        )
         address = responses[0][4][0]
         output.annotate(
-            'selected (v4) {}, {}'.format(host, address), debug=True)
+            "selected (v4) {}, {}".format(host, address), debug=True
+        )
     return address
 
 
@@ -136,24 +142,27 @@ def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
     if host in resolve_override:
         address = resolve_override[host]
         output.annotate(
-            'resolved (v6) `{}` to {} (override)'.format(host, address),
-            debug=True)
+            "resolved (v6) `{}` to {} (override)".format(host, address),
+            debug=True,
+        )
     else:
-        output.annotate('resolving (v6) `{}`'.format(host), debug=True)
+        output.annotate("resolving (v6) `{}`".format(host), debug=True)
         responses = socket.getaddrinfo(host, int(port), socket.AF_INET6)
         output.annotate(
-            'resolved (v6) `{}` to {}'.format(host, responses), debug=True)
+            "resolved (v6) `{}` to {}".format(host, responses), debug=True
+        )
         address = None
         for _, _, _, _, sockaddr in responses:
             addr, _, _, _ = sockaddr
-            if addr.startswith('fe80:'):
+            if addr.startswith("fe80:"):
                 continue
             address = addr
             break
         if not address:
-            raise ValueError('No valid address found for `{}`.'.format(host))
+            raise ValueError("No valid address found for `{}`.".format(host))
         output.annotate(
-            'selected (v6) {}, {}'.format(host, address), debug=True)
+            "selected (v6) {}, {}".format(host, address), debug=True
+        )
     return address
 
 
@@ -181,15 +190,14 @@ class Address(object):
     require_v4 = False
     require_v6 = False
 
-    def __init__(self,
-                 connect_address,
-                 port=None,
-                 require_v4=True,
-                 require_v6=False):
+    def __init__(
+        self, connect_address, port=None, require_v4=True, require_v6=False
+    ):
         if not require_v4 and not require_v6:
             raise ValueError(
                 "At least one of `require_v4` or `require_v6` is required. "
-                "None were selected.")
+                "None were selected."
+            )
         if ":" in connect_address:
             connect, port = connect_address.split(":")
         else:
@@ -222,9 +230,9 @@ class Address(object):
     @property
     def listen(self):
         """The IPv4 listen (or bind) address as it should be used when
-           configuring servers. This is a :py:class:`batou.utils.NetLoc`
-           object. It raises an :py:class:`batou.IPAddressConfigurationError`
-           if used unconfigured.
+        configuring servers. This is a :py:class:`batou.utils.NetLoc`
+        object. It raises an :py:class:`batou.IPAddressConfigurationError`
+        if used unconfigured.
         """
         try:
             return self._listen
@@ -238,9 +246,9 @@ class Address(object):
     @property
     def listen_v6(self):
         """The IPv6 listen (or bind) address as it should be used when
-           configuring servers. This is a :py:class:`batou.utils.NetLoc`
-           object. It raises an :py:class:`batou.IPAddressConfigurationError`
-           if used unconfigured.
+        configuring servers. This is a :py:class:`batou.utils.NetLoc`
+        object. It raises an :py:class:`batou.IPAddressConfigurationError`
+        if used unconfigured.
         """
         try:
             return self._listen_v6
@@ -330,7 +338,6 @@ def ensure_graph_data(graph):
 
 
 class CycleError(ValueError):
-
     def __str__(self):
         message = []
         components = list(self.args[0].items())
@@ -361,7 +368,8 @@ def topological_sort(graph):
     sorted = []
     reverse_graph = revert_graph(graph)
     roots = [
-        node for node, incoming in list(reverse_graph.items()) if not incoming]
+        node for node, incoming in list(reverse_graph.items()) if not incoming
+    ]
     while roots:
         root = roots.pop()
         sorted.append(root)
@@ -378,7 +386,6 @@ def topological_sort(graph):
 
 
 class CmdExecutionError(DeploymentError, RuntimeError):
-
     def __init__(self, cmd, returncode, stdout, stderr):
         self.cmd = cmd
         self.returncode = returncode
@@ -395,13 +402,15 @@ class CmdExecutionError(DeploymentError, RuntimeError):
         output.annotate(self.stderr)
 
 
-def cmd(cmd,
-        silent=False,
-        ignore_returncode=False,
-        communicate=True,
-        env=None,
-        acceptable_returncodes=[0],
-        encoding="utf-8"):
+def cmd(
+    cmd,
+    silent=False,
+    ignore_returncode=False,
+    communicate=True,
+    env=None,
+    acceptable_returncodes=[0],
+    encoding="utf-8",
+):
     if not isinstance(cmd, str):
         # We use `shell=True`, so the command needs to be a single string and
         # we need to pay attention to shell quoting.
@@ -423,7 +432,8 @@ def cmd(cmd,
         stderr=subprocess.PIPE,
         stdin=subprocess.PIPE,
         shell=True,
-        env=env)
+        env=env,
+    )
     if not communicate:
         # XXX See #12550
         return process
@@ -438,7 +448,6 @@ def cmd(cmd,
 
 
 class Timer(object):
-
     def __init__(self, note):
         self.duration = 0
         self.note = note

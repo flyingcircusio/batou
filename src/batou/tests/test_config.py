@@ -18,7 +18,8 @@ def test_parse_nonexisting_environment_raises_error(tmpdir):
 @pytest.fixture
 def env():
     environment = Environment(
-        "dev", basedir=os.path.dirname(__file__) + "/fixture/basic_service")
+        "dev", basedir=os.path.dirname(__file__) + "/fixture/basic_service"
+    )
     environment.load()
     return environment
 
@@ -27,7 +28,8 @@ def env():
 def env_prod():
     environment = Environment(
         "production",
-        basedir=os.path.dirname(__file__) + "/fixture/basic_service")
+        basedir=os.path.dirname(__file__) + "/fixture/basic_service",
+    )
     environment.load()
     return environment
 
@@ -48,14 +50,16 @@ def test_production_environment_is_loaded(env_prod):
     assert sorted(env_prod.hosts) == [
         "host1",
         "host2",
-        "host3", ]
+        "host3",
+    ]
 
     host1 = env_prod.hosts["host1"]
     assert host1.name == "host1"
     assert host1.fqdn == "host1.example.com"
     assert host1.service_user == "alice"
     host1_components = [
-        x.name for x in env_prod.root_components if x.host is host1]
+        x.name for x in env_prod.root_components if x.host is host1
+    ]
     assert host1_components == ["zope"]
 
 
@@ -67,8 +71,9 @@ def test_dev_environment_is_loaded(env):
     localhost = env.hosts["localhost"]
     assert localhost.name == "localhost"
     assert localhost.fqdn == "localhost"
-    root_components = set([
-        x.name for x in env.root_components if x.host is localhost])
+    root_components = set(
+        [x.name for x in env.root_components if x.host is localhost]
+    )
     assert root_components == set(["zeo", "zope"])
 
     zeo = env.get_root("zeo", env.hosts["localhost"])
@@ -98,7 +103,7 @@ def test_load_environment_with_overrides(env):
 
 def test_config_exceptions_orderable(env):
     env.configure()
-    c = env.get_root("zeo", env.hosts['localhost']).component
+    c = env.get_root("zeo", env.hosts["localhost"]).component
 
     import sys
 
@@ -127,7 +132,8 @@ def test_config_exceptions_orderable(env):
         batou.DuplicateHostMapping("host", "map1", "map2"),
         batou.RepositoryDifferentError("asdf", "bsdf"),
         batou.DuplicateHostError("localhost"),
-        batou.InvalidIPAddressError("asdf"), ]
+        batou.InvalidIPAddressError("asdf"),
+    ]
 
     # Ensure all exceptions can be compared
     for x in exceptions:

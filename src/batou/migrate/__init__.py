@@ -7,15 +7,15 @@ import pkg_resources
 
 from batou._output import TerminalBackend, output
 
-CONFIG_FILE_NAME = '.batou.json'
-MIGRATION_MODULE = 'batou.migrate'
+CONFIG_FILE_NAME = ".batou.json"
+MIGRATION_MODULE = "batou.migrate"
 
 
 def output_migration_step(title: str, text: str) -> None:
     """Print the information of migration step in a formatted way."""
     output.section(title, red=True)
-    output.line(textwrap.dedent(text).replace('\n', ' '))
-    output.line('')
+    output.line(textwrap.dedent(text).replace("\n", " "))
+    output.line("")
 
 
 def read_config() -> int:
@@ -27,16 +27,19 @@ def read_config() -> int:
     Raise KeyError if data structure of configuration file is not as expected.
     """
     with open(CONFIG_FILE_NAME) as f:
-        return int(json.load(f)['migration']['version'])
+        return int(json.load(f)["migration"]["version"])
 
 
 def get_migration_steps() -> List[int]:
     """Return the sorted list of all known migration steps."""
-    migration_files = pkg_resources.resource_listdir(MIGRATION_MODULE,
-                                                     'migrations')
+    migration_files = pkg_resources.resource_listdir(
+        MIGRATION_MODULE, "migrations"
+    )
     return sorted(
-        int(x.partition('.')[0]) for x in migration_files
-        if not x.startswith(('_', 'tests')))
+        int(x.partition(".")[0])
+        for x in migration_files
+        if not x.startswith(("_", "tests"))
+    )
 
 
 def migrate(base_version: int) -> int:
@@ -49,8 +52,9 @@ def migrate(base_version: int) -> int:
         return base_version
     for step in steps:
         module = importlib.import_module(
-            f'{MIGRATION_MODULE}.migrations.{step}')
-        output.tabular('Version', step)
+            f"{MIGRATION_MODULE}.migrations.{step}"
+        )
+        output.tabular("Version", step)
         module.migrate(output_migration_step)
     return step
 
@@ -60,8 +64,8 @@ def write_config(version: int) -> None:
 
     Overwrites already existing configuration file.
     """
-    with open(CONFIG_FILE_NAME, 'w') as f:
-        json.dump({'migration': {'version': version}}, f)
+    with open(CONFIG_FILE_NAME, "w") as f:
+        json.dump({"migration": {"version": version}}, f)
 
 
 def get_current_version() -> int:
@@ -85,7 +89,7 @@ def assert_up_to_date() -> bool:
     """Assert that the current migration version matches the expected one."""
     if get_current_version() == get_expected_version():
         return True
-    output.error('Please run `./batou migrate` first.')
+    output.error("Please run `./batou migrate` first.")
     raise SystemExit(-153)
 
 

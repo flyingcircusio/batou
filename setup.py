@@ -23,14 +23,17 @@ setup(
         "importlib_metadata",
         "py",
         "pyyaml",
-        'remote-pdb', ],
+        "remote-pdb",
+    ],
     extras_require={
         "test": [
             "mock",
             "pytest",
             "pytest-coverage",
             "pytest-instafail",
-            "pytest-timeout", ]},
+            "pytest-timeout",
+        ]
+    },
     entry_points="""
         [console_scripts]
             batou = batou.main:main
@@ -57,7 +60,11 @@ Programming Language :: Python :: 3.7
 Programming Language :: Python :: 3.8
 Programming Language :: Python :: 3.9
 Programming Language :: Python :: 3 :: Only
-"""[:-1].split("\n"),
+"""[
+        :-1
+    ].split(
+        "\n"
+    ),
     description=__doc__.strip(),
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -66,4 +73,5 @@ Programming Language :: Python :: 3 :: Only
     include_package_data=True,
     zip_safe=False,
     test_suite="batou.tests",
-    python_requires=">=3.6")
+    python_requires=">=3.6",
+)

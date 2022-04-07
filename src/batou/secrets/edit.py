@@ -9,7 +9,6 @@ from .encryption import EncryptedConfigFile
 
 
 class Editor(object):
-
     def __init__(self, editor_cmd, environment, edit_file=None):
         self.editor_cmd = editor_cmd
         self.environment = environment
@@ -23,9 +22,10 @@ class Editor(object):
 
     def main(self):
         with EncryptedConfigFile(
-                self.encrypted_configfile,
-                add_files_for_env=self.environment,
-                write_lock=True) as configfile:
+            self.encrypted_configfile,
+            add_files_for_env=self.environment,
+            write_lock=True,
+        ) as configfile:
             self.configfile = configfile
 
             # Add the requested file to edit to the session, this might be
@@ -83,13 +83,14 @@ class Editor(object):
     def edit(self):
         _, suffix = os.path.splitext(self.edit_file)
         with tempfile.NamedTemporaryFile(
-                prefix="edit", suffix=suffix, mode="w+",
-                encoding="utf-8") as clearfile:
+            prefix="edit", suffix=suffix, mode="w+", encoding="utf-8"
+        ) as clearfile:
             clearfile.write(self.cleartext)
             clearfile.flush()
 
-            subprocess.check_call([self.editor_cmd + " " + clearfile.name],
-                                  shell=True)
+            subprocess.check_call(
+                [self.editor_cmd + " " + clearfile.name], shell=True
+            )
 
             with open(clearfile.name, "r") as new_clearfile:
                 self.cleartext = new_clearfile.read()

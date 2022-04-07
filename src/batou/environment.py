@@ -39,7 +39,6 @@ from .secrets import add_secrets_to_environment
 
 
 class ConfigSection(dict):
-
     def as_list(self, option):
         result = self[option]
         if "," in result:
@@ -53,7 +52,6 @@ class ConfigSection(dict):
 
 
 class Config(object):
-
     def __init__(self, path):
         config = RawConfigParser()
         config.optionxform = lambda s: s
@@ -67,8 +65,10 @@ class Config(object):
     def __getitem__(self, section):
         if section not in self:
             raise KeyError(section)
-        return ConfigSection((x, self.config.get(section, x))
-                             for x in self.config.options(section))
+        return ConfigSection(
+            (x, self.config.get(section, x))
+            for x in self.config.options(section)
+        )
 
     def __iter__(self):
         return iter(self.config.sections())
@@ -103,12 +103,14 @@ class Environment(object):
 
     host_factory = Host
 
-    def __init__(self,
-                 name,
-                 timeout=None,
-                 platform=None,
-                 basedir=".",
-                 provision_rebuild=False):
+    def __init__(
+        self,
+        name,
+        timeout=None,
+        platform=None,
+        basedir=".",
+        provision_rebuild=False,
+    ):
         self.name = name
         self.hosts = {}
         self.resources = Resources()
@@ -135,9 +137,10 @@ class Environment(object):
 
         self.provisioners = {}
 
-    def _environment_path(self, path='.'):
+    def _environment_path(self, path="."):
         return os.path.abspath(
-            os.path.join(self.base_dir, 'environments', self.name, path))
+            os.path.join(self.base_dir, "environments", self.name, path)
+        )
 
     def _ensure_environment_dir(self):
         if not os.path.isdir(self._environment_path()):
@@ -148,24 +151,28 @@ class Environment(object):
         batou.utils.resolve_v6_override.clear()
 
         config_file = (
-            pathlib.Path(self.base_dir) / 'environments' / self.name /
-            'environment.cfg')
+            pathlib.Path(self.base_dir)
+            / "environments"
+            / self.name
+            / "environment.cfg"
+        )
         if not config_file.exists():
             raise MissingEnvironment(self)
 
-        mapping_file = self._environment_path('hostmap.json')
+        mapping_file = self._environment_path("hostmap.json")
         if os.path.exists(mapping_file):
-            with open(mapping_file, 'r') as f:
+            with open(mapping_file, "r") as f:
                 for k, v in json.load(f).items():
                     if k in self.hostname_mapping:
-                        raise DuplicateHostMapping(k, v,
-                                                   self.hostname_mapping[k])
+                        raise DuplicateHostMapping(
+                            k, v, self.hostname_mapping[k]
+                        )
                     self.hostname_mapping[k] = v
 
         # Scan all components
         for filename in sorted(
-                glob.glob(
-                    os.path.join(self.base_dir, "components/*/component.py"))):
+            glob.glob(os.path.join(self.base_dir, "components/*/component.py"))
+        ):
             try:
                 self.components.update(load_components_from_file(filename))
             except Exception as e:
@@ -182,7 +189,7 @@ class Environment(object):
         for section in config:
             if section.startswith("host:"):
                 continue
-            if section.startswith('provisioner:'):
+            if section.startswith("provisioner:"):
                 continue
             if not section.startswith("component:"):
                 if section not in ["hosts", "environment", "vfs", "resolver"]:
@@ -203,8 +210,9 @@ class Environment(object):
         if self.connect_method == "local":
             self.target_directory = self.repository.root
 
-        self.deployment_base = os.path.relpath(self.base_dir,
-                                               self.repository.root)
+        self.deployment_base = os.path.relpath(
+            self.base_dir, self.repository.root
+        )
 
     def load_secrets(self):
         add_secrets_to_environment(self)
@@ -212,17 +220,18 @@ class Environment(object):
     def load_environment(self, config):
         environment = config.get("environment", {})
         for key in [
-                "service_user",
-                "host_domain",
-                "target_directory",
-                "connect_method",
-                "update_method",
-                "branch",
-                "platform",
-                "timeout",
-                "repository_url",
-                "repository_root",
-                "jobs", ]:
+            "service_user",
+            "host_domain",
+            "target_directory",
+            "connect_method",
+            "update_method",
+            "branch",
+            "platform",
+            "timeout",
+            "repository_url",
+            "repository_root",
+            "jobs",
+        ]:
             if key not in environment:
                 continue
             if getattr(self, key) is not None:
@@ -266,11 +275,11 @@ class Environment(object):
     def load_provisioners(self, config):
         self.provisioners = {}
         for section in config:
-            if not section.startswith('provisioner:'):
+            if not section.startswith("provisioner:"):
                 continue
-            name = section.replace('provisioner:', '')
-            method = config[section]['method']
-            factory = entry_points(group='batou.provisioners')[method].load()
+            name = section.replace("provisioner:", "")
+            method = config[section]["method"]
+            factory = entry_points(group="batou.provisioners")[method].load()
             provisioner = factory.from_config_section(name, config[section])
             provisioner.rebuild = self.provision_rebuild
             self.provisioners[name] = provisioner
@@ -280,12 +289,12 @@ class Environment(object):
         self._load_hosts_multi_section(config)
 
         simplified_mapping = {
-            k: v
-            for k, v in self.hostname_mapping.items() if k != v}
-        mapping_file = self._environment_path('hostmap.json')
+            k: v for k, v in self.hostname_mapping.items() if k != v
+        }
+        mapping_file = self._environment_path("hostmap.json")
         if simplified_mapping:
             self._ensure_environment_dir()
-            with open(mapping_file, 'w') as f:
+            with open(mapping_file, "w") as f:
                 json.dump(self.hostname_mapping, f)
         else:
             if os.path.exists(mapping_file):
@@ -298,11 +307,15 @@ class Environment(object):
                 hostname,
                 self,
                 config={
-                    'ignore':
-                    'True' if literal_hostname.startswith("!") else 'False'})
+                    "ignore": "True"
+                    if literal_hostname.startswith("!")
+                    else "False"
+                },
+            )
             self.hosts[host.name] = host
             self._load_host_components(
-                host, config["hosts"].as_list(literal_hostname))
+                host, config["hosts"].as_list(literal_hostname)
+            )
 
     def _load_hosts_multi_section(self, config):
         for section in config:
@@ -318,15 +331,17 @@ class Environment(object):
 
             self.hosts[host.name] = host
 
-            self._load_host_components(host,
-                                       config[section].as_list("components"))
+            self._load_host_components(
+                host, config[section].as_list("components")
+            )
 
     def _load_host_components(self, host, component_list):
         components = parse_host_components(component_list)
         for component, settings in list(components.items()):
             try:
-                self.add_root(component, host, settings["features"],
-                              settings["ignore"])
+                self.add_root(
+                    component, host, settings["features"], settings["ignore"]
+                )
             except KeyError:
                 self.exceptions.append(MissingComponent(component, host.name))
 
@@ -362,7 +377,8 @@ class Environment(object):
             ignore=ignore,
             factory=compdef.factory,
             defdir=compdef.defdir,
-            workdir=os.path.join(self.workdir_base, compdef.name))
+            workdir=os.path.join(self.workdir_base, compdef.name),
+        )
         self.root_components.append(root)
         return root
 
@@ -370,8 +386,11 @@ class Environment(object):
         for root in self.root_components:
             if root.host == host and root.name == component_name:
                 return root
-        raise KeyError("Component {} not configured for host {}".format(
-            component_name, host.name))
+        raise KeyError(
+            "Component {} not configured for host {}".format(
+                component_name, host.name
+            )
+        )
 
     def prepare_connect(self):
         if self.connect_method == "vagrant":
@@ -382,8 +401,11 @@ class Environment(object):
             for fqdn in self.hosts:
                 cmd("kitchen create {}".format(fqdn))
             if "BATOU_POST_KITCHEN_CREATE_CMD" in os.environ:
-                cmd("kitchen exec -c '{}'".format(
-                    os.environ["BATOU_POST_KITCHEN_CREATE_CMD"]))
+                cmd(
+                    "kitchen exec -c '{}'".format(
+                        os.environ["BATOU_POST_KITCHEN_CREATE_CMD"]
+                    )
+                )
 
     # Deployment API (implements the configure-verify-update cycle)
 
@@ -421,7 +443,8 @@ class Environment(object):
                     # to report gracefully.
                     ex_type, ex, tb = sys.exc_info()
                     exceptions.append(
-                        UnknownComponentConfigurationError(root, e, tb))
+                        UnknownComponentConfigurationError(root, e, tb)
+                    )
                     retry.add(root)
 
             retry.update(self.resources.dirty_dependencies)
@@ -433,7 +456,8 @@ class Environment(object):
             root_dependencies = self.root_dependencies()
             try:
                 order = batou.utils.topological_sort(
-                    batou.utils.revert_graph(root_dependencies))
+                    batou.utils.revert_graph(root_dependencies)
+                )
             except CycleError as e:
                 exceptions.append(CycleErrorDetected(e))
 
@@ -443,7 +467,9 @@ class Environment(object):
                 if self.resources.unsatisfied:
                     exceptions.append(
                         UnsatisfiedResources(
-                            self.resources.unsatisfied_keys_and_components))
+                            self.resources.unsatisfied_keys_and_components
+                        )
+                    )
 
                 # We did not manage to improve on our last working set, so we
                 # give up.

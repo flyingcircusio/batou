@@ -4,11 +4,11 @@ from batou.lib.service import Service
 
 
 class Supervisor(Component):
-
     def configure(self):
         self.programs = self.require("programs", self.host)
         self += Buildout(
-            "supervisor", version="2.2", setuptools="0.9.8", python="2.7")
+            "supervisor", version="2.2", setuptools="0.9.8", python="2.7"
+        )
         self += Service("bin/supervisord", pidfile="var/supervisord.pid")
 
     def verify(self):

@@ -39,7 +39,8 @@ templates_path = ["_templates"]
 source_suffix = {
     ".rst": "restructuredtext",
     ".txt": "restructuredtext",
-    ".md": "markdown", }
+    ".md": "markdown",
+}
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
@@ -147,13 +148,16 @@ html_sidebars = {
         "sidebarintro.html",
         "localtoc.html",
         "sourcelink.html",
-        "searchbox.html", ],
+        "searchbox.html",
+    ],
     "**": [
         "sidebarlogo.html",
         "localtoc.html",
         "relations.html",
         "sourcelink.html",
-        "searchbox.html", ], }
+        "searchbox.html",
+    ],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -203,8 +207,9 @@ latex_elements = {}
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
-latex_documents = [("index2", "batou.tex", "batou Documentation",
-                    "Christian Theune", "manual")]
+latex_documents = [
+    ("index2", "batou.tex", "batou Documentation", "Christian Theune", "manual")
+]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -231,7 +236,8 @@ latex_documents = [("index2", "batou.tex", "batou Documentation",
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ("index2", "batou", "batou Documentation", ["Christian Theune"], 1)]
+    ("index2", "batou", "batou Documentation", ["Christian Theune"], 1)
+]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -241,15 +247,17 @@ man_pages = [
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
-texinfo_documents = [(
-    "index2",
-    "batou",
-    "batou Documentation",
-    "Christian Theune",
-    "batou",
-    "Automated application deployment.",
-    "Miscellaneous",
-)]
+texinfo_documents = [
+    (
+        "index2",
+        "batou",
+        "batou Documentation",
+        "Christian Theune",
+        "batou",
+        "Automated application deployment.",
+        "Miscellaneous",
+    )
+]
 
 # Documents to append as an appendix to all manuals.
 # texinfo_appendices = []

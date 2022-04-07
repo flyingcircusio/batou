@@ -30,8 +30,7 @@ class TemplateEngine(object):
         raise NotImplementedError("template engine not known", enginename)
 
     def template(self, sourcefile, args):
-        """Render template from `sourcefile` and return the value.
-        """
+        """Render template from `sourcefile` and return the value."""
         return self._render_template_file(sourcefile, args).getvalue()
 
     def _render_template_file(self, sourcefile, args):
@@ -44,7 +43,6 @@ class TemplateEngine(object):
 
 
 class Jinja2Engine(TemplateEngine):
-
     def __init__(self, *args, **kwargs):
         super(Jinja2Engine, self).__init__(*args, **kwargs)
         self.env = jinja2.Environment(
@@ -67,7 +65,8 @@ class Jinja2Engine(TemplateEngine):
                 "You are trying to render a template that is bigger than "
                 "100KiB we've seen that Jinja can crash at large templates "
                 "and suggest you find alternatives for this. The affected "
-                "template starts with:")
+                "template starts with:"
+            )
             output.annotate(templatestr[:100])
         tmpl = self.env.from_string(templatestr)
         tmpl.filename = identifier

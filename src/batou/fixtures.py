@@ -54,5 +54,5 @@ def output(monkeypatch):
     from batou._output import TestBackend
 
     backend = TestBackend()
-    monkeypatch.setattr(output, 'backend', backend)
+    monkeypatch.setattr(output, "backend", backend)
     return output

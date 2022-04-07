@@ -6,4 +6,5 @@ class Component7(Component):
     # component1/component.py as missing
 
     only_one_default = Attribute(
-        "literal", default=False, default_conf_string="False")
+        "literal", default=False, default_conf_string="False"
+    )

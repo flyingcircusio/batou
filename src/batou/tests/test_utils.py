@@ -28,15 +28,14 @@ from batou.utils import (
 )
 
 RESOLVER_ERRORS = [
-    '[Errno -2] Name or service not known',  # Linux
-    '[Errno 8] nodename nor servname provided, or not known',  # MacOS
+    "[Errno -2] Name or service not known",  # Linux
+    "[Errno 8] nodename nor servname provided, or not known",  # MacOS
 ]
 
 
 @mock.patch("socket.getaddrinfo")
 def test_host_without_port_resolves(ghbn):
-    ghbn.return_value = [
-        (None, None, None, None, ('127.0.0.1', 0, None, None))]
+    ghbn.return_value = [(None, None, None, None, ("127.0.0.1", 0, None, None))]
     assert resolve("localhost") == "127.0.0.1"
 
 
@@ -68,30 +67,47 @@ def test_resolve_v6_does_not_return_link_local_addresses(output, monkeypatch):
     output.enable_debug = True
 
     def link_local_addrinfo(*args, **kw):
-        return [(None, None, None, None, ('fe80::feaa:14ff:fe8f:94ba', 80,
-                                          None, None))]
+        return [
+            (
+                None,
+                None,
+                None,
+                None,
+                ("fe80::feaa:14ff:fe8f:94ba", 80, None, None),
+            )
+        ]
 
-    monkeypatch.setattr(socket, 'getaddrinfo', link_local_addrinfo)
+    monkeypatch.setattr(socket, "getaddrinfo", link_local_addrinfo)
 
     with pytest.raises(ValueError) as err:
         resolve_v6("foo.example.com", 80)
-    assert 'No valid address found for `foo.example.com`.' == str(err.value)
+    assert "No valid address found for `foo.example.com`." == str(err.value)
 
     def link_local_addrinfo(*args, **kw):
-        return [(None, None, None, None, ('fe80::feaa:14ff:fe8f:94ba', 80,
-                                          None, None)),
-                (None, None, None, None, ('2a02::1', 80, None, None))]
+        return [
+            (
+                None,
+                None,
+                None,
+                None,
+                ("fe80::feaa:14ff:fe8f:94ba", 80, None, None),
+            ),
+            (None, None, None, None, ("2a02::1", 80, None, None)),
+        ]
 
-    monkeypatch.setattr(socket, 'getaddrinfo', link_local_addrinfo)
+    monkeypatch.setattr(socket, "getaddrinfo", link_local_addrinfo)
 
-    output.backend.output = ''
-    assert resolve_v6('foo.example.com', 80) == '2a02::1'
+    output.backend.output = ""
+    assert resolve_v6("foo.example.com", 80) == "2a02::1"
 
-    assert """\
+    assert (
+        """\
 resolving (v6) `foo.example.com`
 resolved (v6) `foo.example.com` to [(None, None, None, None, ('fe80::feaa:14ff:fe8f:94ba', 80, None, None)), (None, None, None, None, ('2a02::1', 80, None, None))]
 selected (v6) foo.example.com, 2a02::1
-""" == output.backend.output  # noqa: E501 line too long
+"""
+        == output.backend.output
+    )  # noqa: E501 line too long
 
 
 def test_address_without_implicit_or_explicit_port_fails():
@@ -142,15 +158,18 @@ def test_address_ordering():
 def test_address_neither_v4_v6_invalid():
     with pytest.raises(ValueError) as f:
         Address("asdf", require_v4=False, require_v6=False)
-    assert ("At least one of `require_v4` or `require_v6` is required. "
-            "None were selected." == str(f.value))
+    assert (
+        "At least one of `require_v4` or `require_v6` is required. "
+        "None were selected." == str(f.value)
+    )
 
 
 def test_address_v6_only(monkeypatch):
-    hostname = 'v6only.example.com'
+    hostname = "v6only.example.com"
 
     from batou.utils import resolve_v6_override
-    monkeypatch.setitem(resolve_v6_override, hostname, '::346')
+
+    monkeypatch.setitem(resolve_v6_override, hostname, "::346")
 
     with pytest.raises(socket.gaierror) as f:
         Address(hostname, 1234)
@@ -172,16 +191,14 @@ def test_address_fails_when_name_cannot_be_looked_up_at_all():
 
     with pytest.raises(socket.gaierror) as f:
         Address(
-            "does-not-exist.example.com:1234",
-            require_v4=False,
-            require_v6=True)
+            "does-not-exist.example.com:1234", require_v4=False, require_v6=True
+        )
     assert str(f.value) in RESOLVER_ERRORS
 
     with pytest.raises(socket.gaierror) as f:
         Address(
-            "does-not-exist.example.com:1234",
-            require_v4=True,
-            require_v6=True)
+            "does-not-exist.example.com:1234", require_v4=True, require_v6=True
+        )
     assert str(f.value) in RESOLVER_ERRORS
 
 
@@ -201,8 +218,10 @@ def test_address_prevents_access_to_unconfigured_IPv4_netloc():
     address = Address("localhost", 22, require_v4=False, require_v6=True)
     with pytest.raises(batou.IPAddressConfigurationError) as err:
         address.listen
-    assert ('Trying to access address family IPv4 which is not configured for'
-            ' localhost:22.' == str(err.value))
+    assert (
+        "Trying to access address family IPv4 which is not configured for"
+        " localhost:22." == str(err.value)
+    )
 
 
 def test_address_prevents_access_to_unconfigured_IPv6_netloc():
@@ -210,8 +229,10 @@ def test_address_prevents_access_to_unconfigured_IPv6_netloc():
     address = Address("localhost", 22, require_v4=True, require_v6=False)
     with pytest.raises(batou.IPAddressConfigurationError) as err:
         address.listen_v6
-    assert ('Trying to access address family IPv6 which is not configured for'
-            ' localhost:22.' == str(err.value))
+    assert (
+        "Trying to access address family IPv6 which is not configured for"
+        " localhost:22." == str(err.value)
+    )
 
 
 def test_netloc_str_should_brace_ipv6_addresses():
@@ -227,7 +248,6 @@ def test_flatten():
 
 
 class MultiFileTests(unittest.TestCase):
-
     def test_write_and_flush_propation(self):
         file1 = StringIO()
         file2 = StringIO()
@@ -249,7 +269,6 @@ def fake_lock(lockfile, options):
 
 
 class LockfileContextManagerTests(unittest.TestCase):
-
     def setUp(self):
         self.files = []
 
@@ -346,11 +365,13 @@ def test_graph_remove_leafs():
 class Checksum(unittest.TestCase):
 
     fixture = os.path.join(
-        os.path.dirname(__file__), "fixture", "component", "haproxy.cfg")
+        os.path.dirname(__file__), "fixture", "component", "haproxy.cfg"
+    )
 
     def test_hash_md5(self):
-        self.assertEqual("ce0324fa445475e76182c0d114615c7b",
-                         hash(self.fixture, "md5"))
+        self.assertEqual(
+            "ce0324fa445475e76182c0d114615c7b", hash(self.fixture, "md5")
+        )
 
     def test_hash_sha1(self):
         self.assertEqual(
@@ -364,7 +385,7 @@ def test_cmd_joins_list_args(popen):
     popen().communicate.return_value = (b"", b"")
     popen().returncode = 0
     cmd(["cat", "foo", "bar"])
-    assert popen.call_args[0] == ("cat foo bar", )
+    assert popen.call_args[0] == ("cat foo bar",)
 
 
 @mock.patch("subprocess.Popen")
@@ -372,9 +393,9 @@ def test_cmd_quotes_spacey_args(popen):
     popen().communicate.return_value = (b"", b"")
     popen().returncode = 0
     cmd(["cat", "foo", "bar bz baz"])
-    assert popen.call_args[0] == ("cat foo 'bar bz baz'", )
+    assert popen.call_args[0] == ("cat foo 'bar bz baz'",)
     cmd(["cat", "foo", "bar 'bz baz"])
-    assert popen.call_args[0] == (r"cat foo 'bar \'bz baz'", )
+    assert popen.call_args[0] == (r"cat foo 'bar \'bz baz'",)
 
 
 @mock.patch("subprocess.Popen")
@@ -396,7 +417,6 @@ def test_cmd_returns_process_if_no_communicate(popen):
 
 
 def test_call_with_optional_args():
-
     def foo():
         return 1
 

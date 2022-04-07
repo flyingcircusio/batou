@@ -27,7 +27,8 @@ def test_missing_archive_predicts_change(root):
 
 def test_untar_extracts_archive_to_target_directory(root):
     extract = Extract(
-        resource_filename(__name__, "example.tar.gz"), target="example")
+        resource_filename(__name__, "example.tar.gz"), target="example"
+    )
     root.component += extract
     root.component.deploy()
     assert os.listdir(str(extract.target)) == ["foo"]
@@ -59,9 +60,8 @@ def test_ignores_ctime_for_directories(root):
 
 def test_untar_can_strip_paths_off_archived_files(root):
     extract = Extract(
-        resource_filename(__name__, "example.tar.gz"),
-        target="example",
-        strip=1)
+        resource_filename(__name__, "example.tar.gz"), target="example", strip=1
+    )
     root.component += extract
     root.component.deploy()
     assert os.listdir(str(extract.target)) == ["bar"]
@@ -69,7 +69,8 @@ def test_untar_can_strip_paths_off_archived_files(root):
 
 def test_zip_extracts_archive_to_target_directory(root):
     extract = Extract(
-        resource_filename(__name__, "example.zip"), target="example")
+        resource_filename(__name__, "example.zip"), target="example"
+    )
     root.component += extract
     root.component.deploy()
     assert os.listdir(str(extract.target)) == ["foo"]
@@ -77,7 +78,8 @@ def test_zip_extracts_archive_to_target_directory(root):
 
 def test_zip_overwrites_existing_files(root):
     extract = Extract(
-        resource_filename(__name__, "example.zip"), target="example")
+        resource_filename(__name__, "example.zip"), target="example"
+    )
     root.component += extract
 
     target = "%s/mycomponent/example/foo/bar" % root.environment.workdir_base
@@ -96,14 +98,16 @@ def test_zip_overwrites_existing_files(root):
 @pytest.mark.skipif(sys.platform != "darwin", reason="only runs on OS X")
 def test_dmg_extracts_archive_to_target_directory(root):
     extract = Extract(
-        resource_filename(__name__, "example.dmg"), target="example")
+        resource_filename(__name__, "example.dmg"), target="example"
+    )
     root.component += extract
     root.component.deploy()
 
     assert sorted(os.listdir(str(extract.target))) == [
         " ",
         "a\u0308sdf.txt",
-        "example.app", ]
+        "example.app",
+    ]
 
     # ' ' is a symlink which stays one after copying:
     assert os.path.islink(extract.target + "/ ")
@@ -114,7 +118,8 @@ def test_dmg_extracts_archive_to_target_directory(root):
 
 def test_dmg_does_not_support_strip(root):
     extract = Extract(
-        resource_filename(__name__, "example.dmg"), strip=1, target="example")
+        resource_filename(__name__, "example.dmg"), strip=1, target="example"
+    )
     with pytest.raises(ValueError) as e:
         root.component += extract
         assert e.value.args[0] == "Strip is not supported by DMGExtractor"

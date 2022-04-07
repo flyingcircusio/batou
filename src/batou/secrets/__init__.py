@@ -29,8 +29,9 @@ from .encryption import EncryptedConfigFile, iter_other_secrets
 
 
 def add_secrets_to_environment(environment):
-    secrets_file = pathlib.Path(
-        "environments") / environment.name / "secrets.cfg"
+    secrets_file = (
+        pathlib.Path("environments") / environment.name / "secrets.cfg"
+    )
     if not secrets_file.exists():
         return
     with EncryptedConfigFile(secrets_file) as config_file:
@@ -41,7 +42,8 @@ def add_secrets_to_environment(environment):
                 hostname = section_.replace("host:", "", 1)
                 if hostname not in environment.hosts:
                     raise ValueError(
-                        "Secret for unknown host: {}".format(hostname))
+                        "Secret for unknown host: {}".format(hostname)
+                    )
                 host = environment.hosts[hostname]
                 for key, option in config_file.config.items(section_):
                     if key.startswith("data-"):
@@ -51,25 +53,25 @@ def add_secrets_to_environment(environment):
                 component = section_.replace("component:", "")
                 if component not in environment.components:
                     environment.exceptions.append(
-                        SuperfluousSecretsSection(component))
+                        SuperfluousSecretsSection(component)
+                    )
                 overrides = environment.overrides.setdefault(component, {})
                 for k, v in config_file.config.items(section_):
                     if k in overrides:
                         environment.exceptions.append(
-                            DuplicateOverride(component, k))
+                            DuplicateOverride(component, k)
+                        )
                     else:
                         overrides[k] = v.value
                         environment.secret_data.update(v.value.split())
 
         # additional_secrets
         for path in iter_other_secrets(environment.name):
-            secret_name = path.name.replace('secret-', "", 1)
+            secret_name = path.name.replace("secret-", "", 1)
             with config_file.add_file(path) as other_file:
                 other_file.read()
                 environment.secret_files[secret_name] = other_file.cleartext
                 for line in other_file.cleartext.splitlines():
                     environment.secret_data.update(line.split())
     # Omit too short snippets which might accidentally be part of a file:
-    environment.secret_data = {
-        x
-        for x in environment.secret_data if len(x) > 2}
+    environment.secret_data = {x for x in environment.secret_data if len(x) > 2}

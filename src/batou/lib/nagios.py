@@ -66,7 +66,8 @@ class NagiosServer(Component):
     """
 
     nagios_cfg = os.path.join(
-        os.path.dirname(__file__), "resources", "nagios.cfg")
+        os.path.dirname(__file__), "resources", "nagios.cfg"
+    )
 
     # Additional static content that will be appended to the generated file.
     static = ""
@@ -90,13 +91,14 @@ class NRPEHost(Component):
 
     def configure(self):
         self.services = [
-            service for service in self.require(Service.key, host=self.host)
-            if isinstance(service, NRPEService)]
+            service
+            for service in self.require(Service.key, host=self.host)
+            if isinstance(service, NRPEService)
+        ]
         self.services.sort(key=lambda x: x.name)
 
         self += File(
-            self.expand("/etc/nagios/nrpe/local/"
-                        "{{host.service_user}}.cfg"),
+            self.expand("/etc/nagios/nrpe/local/" "{{host.service_user}}.cfg"),
             source=self.nrpe_cfg,
             mode=0o644,
         )

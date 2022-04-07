@@ -7,7 +7,8 @@ from batou.secrets.encryption import EncryptedConfigFile
 def test_edit(tmpdir):
     with EncryptedConfigFile(str(tmpdir / "asdf"), write_lock=True) as sf:
         editor = Editor(
-            "true", environment='none', edit_file=list(sf.files.keys())[0])
+            "true", environment="none", edit_file=list(sf.files.keys())[0]
+        )
         editor.cleartext = "asdf"
         editor.edit()
         assert editor.cleartext == "asdf"
@@ -16,19 +17,20 @@ def test_edit(tmpdir):
 def test_edit_command_loop(tmpdir, capsys):
     with EncryptedConfigFile(str(tmpdir / "asdf"), write_lock=True) as sf:
         editor = Editor(
-            "true", environment='none', edit_file=list(sf.files.keys())[0])
+            "true", environment="none", edit_file=list(sf.files.keys())[0]
+        )
         editor.cleartext = "asdf"
 
         with pytest.raises(ValueError):
-            editor.process_cmd('asdf')
+            editor.process_cmd("asdf")
 
         def broken_cmd():
-            raise RuntimeError('gpg is broken')
+            raise RuntimeError("gpg is broken")
 
         editor.edit = broken_cmd
         editor.encrypt = broken_cmd
 
-        cmds = ['edit', 'asdf', 'encrypt', 'quit']
+        cmds = ["edit", "asdf", "encrypt", "quit"]
 
         def _input():
             return cmds.pop(0)
@@ -37,8 +39,10 @@ def test_edit_command_loop(tmpdir, capsys):
         editor.interact()
 
     out, err = capsys.readouterr()
-    assert err == ''
-    assert out == """\
+    assert err == ""
+    assert (
+        out
+        == """\
 
 
 An error occurred: gpg is broken
@@ -72,3 +76,4 @@ Your changes are still available. You can try:
 \tencrypt    -- tries to encrypt current data again
 \tquit       -- quits and loses your changes
 """
+    )

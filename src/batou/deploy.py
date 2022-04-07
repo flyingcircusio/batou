@@ -14,7 +14,6 @@ from .utils import locked, notify, self_id
 
 
 class Connector(threading.Thread):
-
     def __init__(self, host, sem):
         self.host = host
         self.sem = sem
@@ -36,7 +35,7 @@ class Connector(threading.Thread):
                     return
             finally:
                 self.sem.release()
-            time.sleep(random.randint(1, 2**(tries + 1)))
+            time.sleep(random.randint(1, 2 ** (tries + 1)))
 
         try:
             self.host.start()
@@ -54,20 +53,20 @@ class Deployment(object):
 
     _upstream = None
 
-    def __init__(self,
-                 environment,
-                 platform,
-                 timeout,
-                 dirty,
-                 jobs,
-                 predict_only=False,
-                 provision_rebuild=False):
+    def __init__(
+        self,
+        environment,
+        platform,
+        timeout,
+        dirty,
+        jobs,
+        predict_only=False,
+        provision_rebuild=False,
+    ):
 
         self.environment = Environment(
-            environment,
-            timeout,
-            platform,
-            provision_rebuild=provision_rebuild)
+            environment, timeout, platform, provision_rebuild=provision_rebuild
+        )
         self.environment.deployment = self
 
         self.dirty = dirty
@@ -78,8 +77,8 @@ class Deployment(object):
         output.section("Preparing")
 
         output.step(
-            "main",
-            "Loading environment `{}`...".format(self.environment.name))
+            "main", "Loading environment `{}`...".format(self.environment.name)
+        )
         self.environment.load()
 
         if self.jobs is not None:
@@ -105,9 +104,12 @@ class Deployment(object):
         for host in self.environment.hosts.values():
             if host.provisioner:
                 output.step(
-                    host.name, "Provisioning with `{}` provisioner. {}".format(
+                    host.name,
+                    "Provisioning with `{}` provisioner. {}".format(
                         host.provisioner.name,
-                        "(Rebuild)" if host.provisioner.rebuild else ""))
+                        "(Rebuild)" if host.provisioner.rebuild else "",
+                    ),
+                )
                 host.provisioner.provision(host)
 
     def configure(self):
@@ -124,14 +126,20 @@ class Deployment(object):
                 output.step(
                     hostname,
                     "Connection ignored ({}/{})".format(
-                        i, len(self.environment.hosts)),
+                        i, len(self.environment.hosts)
+                    ),
                     bold=False,
-                    red=True)
+                    red=True,
+                )
                 continue
             output.step(
-                hostname, "Connecting via {} ({}/{})".format(
-                    self.environment.connect_method, i,
-                    len(self.environment.hosts)))
+                hostname,
+                "Connecting via {} ({}/{})".format(
+                    self.environment.connect_method,
+                    i,
+                    len(self.environment.hosts),
+                ),
+            )
             c = Connector(host, sem)
             c.start()
             yield c
@@ -155,18 +163,23 @@ class Deployment(object):
             output.step(
                 hostname,
                 "Skipping component {} ... (Host ignored)".format(component),
-                red=True)
+                red=True,
+            )
         elif info["ignore"]:
             output.step(
                 hostname,
                 "Skipping component {} ... (Component ignored)".format(
-                    component),
-                red=True)
+                    component
+                ),
+                red=True,
+            )
         else:
-            output.step(hostname,
-                        "Scheduling component {} ...".format(component))
-            await self.loop.run_in_executor(None, host.deploy_component,
-                                            component, self.predict_only)
+            output.step(
+                hostname, "Scheduling component {} ...".format(component)
+            )
+            await self.loop.run_in_executor(
+                None, host.deploy_component, component, self.predict_only
+            )
 
         # Clear dependency from todolist
         for other_component in todolist.values():
@@ -189,8 +202,8 @@ class Deployment(object):
         # Pick a reference remote (the last we initialised) that will pass us
         # the order we should be deploying components in.
         reference_node = [
-            h for h in list(self.environment.hosts.values())
-            if not h.ignore][0]
+            h for h in list(self.environment.hosts.values()) if not h.ignore
+        ][0]
 
         self.loop = asyncio.get_event_loop()
         self.taskpool = ThreadPoolExecutor(self.jobs)
@@ -226,25 +239,39 @@ class Deployment(object):
             node.disconnect()
 
 
-def main(environment, platform, timeout, dirty, consistency_only, predict_only,
-         jobs, provision_rebuild):
+def main(
+    environment,
+    platform,
+    timeout,
+    dirty,
+    consistency_only,
+    predict_only,
+    jobs,
+    provision_rebuild,
+):
     output.backend = TerminalBackend()
     output.line(self_id())
-    STEPS = [
-        'load', 'provision', 'connect', 'configure', 'deploy', 'summarize']
+    STEPS = ["load", "provision", "connect", "configure", "deploy", "summarize"]
     if consistency_only:
         ACTION = "CONSISTENCY CHECK"
-        SUCCESS_FORMAT = {'cyan': True}
-        STEPS.remove('deploy')
+        SUCCESS_FORMAT = {"cyan": True}
+        STEPS.remove("deploy")
     elif predict_only:
         ACTION = "DEPLOYMENT PREDICTION"
-        SUCCESS_FORMAT = {'purple': True}
+        SUCCESS_FORMAT = {"purple": True}
     else:
         ACTION = "DEPLOYMENT"
-        SUCCESS_FORMAT = {'green': True}
+        SUCCESS_FORMAT = {"green": True}
     with locked(".batou-lock"):
-        deployment = Deployment(environment, platform, timeout, dirty, jobs,
-                                predict_only, provision_rebuild)
+        deployment = Deployment(
+            environment,
+            platform,
+            timeout,
+            dirty,
+            jobs,
+            predict_only,
+            provision_rebuild,
+        )
         environment = deployment.environment
         try:
             for step in STEPS:
@@ -262,23 +289,27 @@ def main(environment, platform, timeout, dirty, consistency_only, predict_only,
                 environment.exceptions = list(
                     filter(
                         lambda e: not isinstance(e, SilentConfigurationError),
-                        environment.exceptions))
+                        environment.exceptions,
+                    )
+                )
 
                 environment.exceptions.sort(
-                    key=lambda x: getattr(x, 'sort_key', (-99, )))
+                    key=lambda x: getattr(x, "sort_key", (-99,))
+                )
 
-                exception = ''
+                exception = ""
                 for exception in environment.exceptions:
                     if isinstance(exception, ReportingException):
-                        output.line('')
+                        output.line("")
                         exception.report()
                     else:
-                        output.line('')
+                        output.line("")
                         output.error("Unexpected exception")
                         tb = traceback.TracebackException.from_exception(
-                            exception)
+                            exception
+                        )
                         for line in tb.format():
-                            output.line('\t' + line.strip(), red=True)
+                            output.line("\t" + line.strip(), red=True)
 
                 summary = "{} FAILED (during {})".format(ACTION, step)
                 output.section(summary, red=True)

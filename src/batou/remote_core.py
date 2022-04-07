@@ -68,7 +68,7 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        message = f'{key.rjust(10)}{separator}{value}'
+        message = f"{key.rjust(10)}{separator}{value}"
         self.annotate(message, **kw)
 
     def section(self, title, debug=False, **format):
@@ -108,7 +108,6 @@ class Output(object):
 
 
 class ChannelBackend(object):
-
     def __init__(self, channel):
         self.channel = channel
 
@@ -129,16 +128,18 @@ class Deployment(object):
 
     environment = None
 
-    def __init__(self,
-                 env_name,
-                 host_name,
-                 overrides,
-                 secret_files,
-                 secret_data,
-                 host_data,
-                 timeout,
-                 platform,
-                 os_env=None):
+    def __init__(
+        self,
+        env_name,
+        host_name,
+        overrides,
+        secret_files,
+        secret_data,
+        host_data,
+        timeout,
+        platform,
+        os_env=None,
+    ):
         self.env_name = env_name
         self.host_name = host_name
         self.overrides = overrides
@@ -154,8 +155,9 @@ class Deployment(object):
 
         if self.os_env:
             os.environ.update(self.os_env)
-        self.environment = Environment(self.env_name, self.timeout,
-                                       self.platform)
+        self.environment = Environment(
+            self.env_name, self.timeout, self.platform
+        )
         self.environment.deployment = self
         self.environment.load()
         self.environment.overrides = self.overrides
@@ -177,7 +179,6 @@ def lock():
 
 
 class CmdError(Exception):
-
     def __init__(self, cmd, returncode, stdout, stderr):
         self.cmd = cmd
         self.returncode = returncode
@@ -194,11 +195,13 @@ class CmdError(Exception):
 
 
 def cmd(c, acceptable_returncodes=[0]):
-    process = subprocess.Popen(["LANG=C LC_ALL=C LANGUAGE=C {}".format(c)],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               stdin=subprocess.PIPE,
-                               shell=True)
+    process = subprocess.Popen(
+        ["LANG=C LC_ALL=C LANGUAGE=C {}".format(c)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        shell=True,
+    )
     stdout, stderr = process.communicate()
     # We do not have enough knowledge here to decode so we keep
     # stdout and stderr as byte strings for now.
@@ -242,7 +245,7 @@ def ensure_base(base):
 def _hg_current_id():
     output, _ = cmd("hg id -Tjson")
     output = json.loads(output)
-    return output[0]['id']
+    return output[0]["id"]
 
 
 def hg_current_heads():
@@ -253,7 +256,7 @@ def hg_current_heads():
         return [id]
     heads, _ = cmd("hg heads -Tjson")
     heads = json.loads(heads)
-    return [x['node'] for x in heads]
+    return [x["node"] for x in heads]
 
 
 def hg_pull_code(upstream):
@@ -288,7 +291,7 @@ git_origin = "batou-bundle"
 def git_current_head():
     target = target_directory
     os.chdir(target)
-    id, err = cmd('git rev-parse HEAD', acceptable_returncodes=[0, 128])
+    id, err = cmd("git rev-parse HEAD", acceptable_returncodes=[0, 128])
     id = id.strip()
     return id if b"unknown revision" not in err else None
 
@@ -312,8 +315,11 @@ def git_pull_code(upstream, branch):
         # The batou-pull remote is correctly configured.
         break
     else:
-        cmd("git remote add {origin} {upstream}".format(
-            origin=git_origin, upstream=upstream))
+        cmd(
+            "git remote add {origin} {upstream}".format(
+                origin=git_origin, upstream=upstream
+            )
+        )
     cmd("git fetch batou-pull")
 
 
@@ -322,14 +328,18 @@ def git_unbundle_code():
     os.chdir(target)
     out, err = cmd("git remote -v")
     if b"batou-bundle" not in out:
-        cmd("git remote add {origin} batou-bundle.git".format(
-            origin=git_origin))
+        cmd(
+            "git remote add {origin} batou-bundle.git".format(origin=git_origin)
+        )
     cmd("git fetch {origin}".format(origin=git_origin))
 
 
 def git_update_working_copy(branch):
-    cmd("git reset --hard {origin}/{branch}".format(
-        origin=git_origin, branch=branch))
+    cmd(
+        "git reset --hard {origin}/{branch}".format(
+            origin=git_origin, branch=branch
+        )
+    )
     id, _ = cmd("git rev-parse HEAD")
     return id.strip().decode("ascii")
 
@@ -357,7 +367,8 @@ def root_dependencies():
         key = (root.host.name, root.name)
         deps[key] = {
             "dependencies": [(r.host.name, r.name) for r in dependencies],
-            "ignore": root.ignore}
+            "ignore": root.ignore,
+        }
     return deps
 
 
@@ -389,38 +400,45 @@ if __name__ == "__channelexec__":
         try:
             result = locals()[task](*args, **kw)
             channel.send(("batou-result", result))
-        except getattr(batou, "ConfigurationError",
-                       DummyException) as exception:
-            SilentConfigurationError = getattr(batou,
-                                               "SilentConfigurationError",
-                                               DummyException)
-            ReportingException = getattr(batou, "ReportingException",
-                                         DummyException)
+        except getattr(
+            batou, "ConfigurationError", DummyException
+        ) as exception:
+            SilentConfigurationError = getattr(
+                batou, "SilentConfigurationError", DummyException
+            )
+            ReportingException = getattr(
+                batou, "ReportingException", DummyException
+            )
 
             environment = deployment.environment
             if exception not in environment.exceptions:
                 environment.exceptions.append(exception)
 
             environment.exceptions = list(
-                filter(lambda e: not isinstance(e, SilentConfigurationError),
-                       environment.exceptions))
+                filter(
+                    lambda e: not isinstance(e, SilentConfigurationError),
+                    environment.exceptions,
+                )
+            )
             deployment.environment.exceptions.sort(key=lambda x: x.sort_key)
 
             for exception in deployment.environment.exceptions:
                 if isinstance(exception, ReportingException):
-                    output.line('')
+                    output.line("")
                     exception.report()
                 else:
-                    output.line('')
+                    output.line("")
                     output.error("Unexpected exception")
                     tb = traceback.TracebackException.from_exception(exception)
                     for line in tb.format():
-                        output.line('\t' + line.strip(), red=True)
+                        output.line("\t" + line.strip(), red=True)
 
             batou.output.section(
                 "{} ERRORS - CONFIGURATION FAILED".format(
-                    len(deployment.environment.exceptions)),
-                red=True)
+                    len(deployment.environment.exceptions)
+                ),
+                red=True,
+            )
             channel.send(("batou-configuration-error", None))
         except getattr(batou, "DeploymentError", DummyException) as e:
             e.report()

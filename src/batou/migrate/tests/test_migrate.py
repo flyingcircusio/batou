@@ -19,8 +19,8 @@ from .. import (
 def test_migrate__read_config__1(tmp_path):
     """It returns the migration configuration version from ``.batou.json.``."""
     (tmp_path / CONFIG_FILE_NAME).write_text(
-        json.dumps({'migration': {
-            'version': 2300}}))
+        json.dumps({"migration": {"version": 2300}})
+    )
     os.chdir(tmp_path)
     assert read_config() == 2300
 
@@ -36,7 +36,7 @@ def test_migrate__read_config__3(tmp_path):
 
     right structure.
     """
-    (tmp_path / CONFIG_FILE_NAME).write_text(json.dumps({'version': 2300}))
+    (tmp_path / CONFIG_FILE_NAME).write_text(json.dumps({"version": 2300}))
     os.chdir(tmp_path)
     with pytest.raises(KeyError):
         assert read_config()
@@ -45,30 +45,32 @@ def test_migrate__read_config__3(tmp_path):
 def test_migrate__read_config__4(tmp_path):
     """It converts the migration version number to an integer."""
     (tmp_path / CONFIG_FILE_NAME).write_text(
-        json.dumps({'migration': {
-            'version': "2411"}}))
+        json.dumps({"migration": {"version": "2411"}})
+    )
     os.chdir(tmp_path)
     assert read_config() == 2411
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def migrations(tmp_path):
     """Create some simple migrations."""
-    TEMPLATE = textwrap.dedent("""
+    TEMPLATE = textwrap.dedent(
+        """
         def migrate(output):
             pass
-    """)
+    """
+    )
     os.chdir(tmp_path)
-    package = (tmp_path / 'package')
+    package = tmp_path / "package"
     package.mkdir()
-    (package / '__init__.py').touch()
-    migrations = (package / 'migrations')
+    (package / "__init__.py").touch()
+    migrations = package / "migrations"
     migrations.mkdir()
-    (migrations / '__init__.py').touch()
+    (migrations / "__init__.py").touch()
     for step in (2411, 2301, 2300, 2299):
-        (migrations / f'{step}.py').write_text(TEMPLATE.format(step))
+        (migrations / f"{step}.py").write_text(TEMPLATE.format(step))
     sys.path.insert(0, str(tmp_path))
-    with mock.patch('batou.migrate.MIGRATION_MODULE', new='package'):
+    with mock.patch("batou.migrate.MIGRATION_MODULE", new="package"):
         yield
     sys.path.pop()
 
@@ -79,13 +81,13 @@ def test_migrate__migrate__1(migrations, output):
     given version.
     """
     assert migrate(2300) == 2411
-    assert '   Version: 2301\n   Version: 2411\n' == output.backend.output
+    assert "   Version: 2301\n   Version: 2411\n" == output.backend.output
 
 
 def test_migrate__migrate__2(migrations, output):
     """It does nothing if we are already on the latest migration step."""
     assert migrate(2411) == 2411
-    assert '' == output.backend.output
+    assert "" == output.backend.output
 
 
 def test_migrate__write_config__1(tmp_path):
@@ -117,8 +119,9 @@ def test_migrate__assert_up_to_date__2(migrations, output):
     """
     with pytest.raises(SystemExit):
         assert_up_to_date()
-    assert 'ERROR: Please run `./batou migrate` first.\n' \
-        == output.backend.output
+    assert (
+        "ERROR: Please run `./batou migrate` first.\n" == output.backend.output
+    )
 
 
 def test_migrate__main__1(tmp_path, migrations, capsys):
@@ -128,12 +131,15 @@ def test_migrate__main__1(tmp_path, migrations, capsys):
     """
     main()
     # We explicitly test the output to the TerminalBackend.
-    assert capsys.readouterr().out == """\
+    assert (
+        capsys.readouterr().out
+        == """\
    Version: 2299
    Version: 2300
    Version: 2301
    Version: 2411
 """
+    )
     assert (tmp_path / CONFIG_FILE_NAME).exists()
     assert read_config() == 2411
 
@@ -143,7 +149,7 @@ def test_migrate__main__2(migrations, capsys):
     write_config(2411)
     main()
     # We explicitly test the output to the TerminalBackend.
-    assert '' == capsys.readouterr().out
+    assert "" == capsys.readouterr().out
     assert read_config() == 2411
 
 
@@ -154,5 +160,5 @@ def test_migrate__main__3(migrations, capsys):
     """
     main(bootstrap=True)
     # We explicitly test the output to the TerminalBackend.
-    assert '' == capsys.readouterr().out
+    assert "" == capsys.readouterr().out
     assert read_config() == 2411

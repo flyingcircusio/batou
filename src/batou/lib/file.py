@@ -64,12 +64,15 @@ class File(Component):
             self += Presence(self.path, leading=self.leading)
         elif self.ensure == "directory":
             self += Directory(
-                self.path, leading=self.leading, source=self.source)
+                self.path, leading=self.leading, source=self.source
+            )
         elif self.ensure == "symlink":
             self += Symlink(self.path, source=self.link_to)
         else:
-            raise ValueError("Ensure must be one of: file, directory, "
-                             "symlink not %s" % self.ensure)
+            raise ValueError(
+                "Ensure must be one of: file, directory, "
+                "symlink not %s" % self.ensure
+            )
         # variation: content or source explicitly given
 
         # The mode needs to be set early to allow batou to get out of
@@ -98,8 +101,10 @@ class File(Component):
                 # (have an empty file)
                 raise ValueError(
                     "Missing implicit template file {}. Or did you want "
-                    "to create an empty file? Then use File('{}', content='')."
-                    .format(guess_source, self._unmapped_path))
+                    "to create an empty file? Then use File('{}', content='').".format(
+                        guess_source, self._unmapped_path
+                    )
+                )
         if self.content or self.source:
             if self.template_args is None:
                 self.template_args = dict()
@@ -113,7 +118,8 @@ class File(Component):
                 template_args=self.template_args,
                 encoding=self.encoding,
                 content=self.content,
-                sensitive_data=self.sensitive_data)
+                sensitive_data=self.sensitive_data,
+            )
             self += content
             self.content = content.content
 
@@ -188,7 +194,8 @@ class SyncDirectory(Component):
     def configure(self):
         self.path = self.map(self.path)
         self.source = os.path.normpath(
-            os.path.join(self.root.defdir, self.source))
+            os.path.join(self.root.defdir, self.source)
+        )
 
     @property
     def exclude_arg(self):
@@ -197,8 +204,11 @@ class SyncDirectory(Component):
         return " ".join("--exclude '{}'".format(x) for x in self.exclude) + " "
 
     def verify(self):
-        stdout, stderr = self.cmd("rsync {} {}{}/ {}".format(
-            self.verify_opts, self.exclude_arg, self.source, self.path))
+        stdout, stderr = self.cmd(
+            "rsync {} {}{}/ {}".format(
+                self.verify_opts, self.exclude_arg, self.source, self.path
+            )
+        )
 
         # In case of we see non-convergent rsync runs
         output.annotate("rsync result:", debug=True)
@@ -208,8 +218,11 @@ class SyncDirectory(Component):
             raise batou.UpdateNeeded()
 
     def update(self):
-        self.cmd("rsync {} {}{}/ {}".format(self.sync_opts, self.exclude_arg,
-                                            self.source, self.path))
+        self.cmd(
+            "rsync {} {}{}/ {}".format(
+                self.sync_opts, self.exclude_arg, self.source, self.path
+            )
+        )
 
     @property
     def namevar_for_breadcrumb(self):
@@ -233,7 +246,8 @@ class Directory(Component):
         if self.source:
             # XXX The ordering is wrong. SyncDirectory should run *after*.
             self += SyncDirectory(
-                self.path, source=self.source, exclude=self.exclude)
+                self.path, source=self.source, exclude=self.exclude
+            )
 
     def verify(self):
         assert os.path.isdir(self.path)
@@ -345,8 +359,9 @@ class ManagedContentBase(FileComponent):
     def configure(self):
         super(ManagedContentBase, self).configure()
 
-        self.diff_dir = os.path.join(self.environment.workdir_base,
-                                     ".batou-diffs")
+        self.diff_dir = os.path.join(
+            self.environment.workdir_base, ".batou-diffs"
+        )
         # Step 1: Determine content attribute:
         # - it might be given directly (content='...'),
         # - we might have been passed a filename (source='...'), or
@@ -354,7 +369,8 @@ class ManagedContentBase(FileComponent):
         if self.source and getattr(self, self._content_source_attribute):
             raise ValueError(
                 'Only one of either "{}" or "source" are allowed.',
-                format(self._content_source_attribute))
+                format(self._content_source_attribute),
+            )
 
         if not getattr(self, self._content_source_attribute):
             if not self.source:
@@ -370,21 +386,22 @@ class ManagedContentBase(FileComponent):
         if self.source:
             if os.path.exists(self.source):
                 with open(
-                        self.source,
-                        "r" if self.encoding else "rb",
-                        encoding=self.encoding) as f:
+                    self.source,
+                    "r" if self.encoding else "rb",
+                    encoding=self.encoding,
+                ) as f:
                     self.content = f.read()
             else:
                 if self._delayed:
                     raise FileNotFoundError(
-                        "Could not find source file {}".format(self.source))
+                        "Could not find source file {}".format(self.source)
+                    )
                 # We need to try rendering again later.
                 self._delayed = True
                 return
 
         # Phase 2: Decode, if we have an encoding.
-        if self.content and self.encoding and not isinstance(
-                self.content, str):
+        if self.content and self.encoding and not isinstance(self.content, str):
             self.content = self.content.decode(self.encoding)
 
         # Phase 3: We have the source content, now allow a subclass
@@ -428,38 +445,45 @@ class ManagedContentBase(FileComponent):
             output.annotate("Not showing diff for binary data.", yellow=True)
         elif self.sensitive_data:
             output.annotate(
-                "Not showing diff as it contains sensitive data.", red=True)
+                "Not showing diff as it contains sensitive data.", red=True
+            )
         else:
             current_lines = current_text.splitlines()
             wanted_lines = wanted_text.splitlines()
             words = set(
-                itertools.chain(*(x.split() for x in current_lines),
-                                *(x.split() for x in wanted_lines)))
+                itertools.chain(
+                    *(x.split() for x in current_lines),
+                    *(x.split() for x in wanted_lines),
+                )
+            )
             contains_secrets = bool(
-                self.environment.secret_data.intersection(words))
+                self.environment.secret_data.intersection(words)
+            )
 
             diff = difflib.unified_diff(current_lines, wanted_lines)
             if not os.path.exists(self.diff_dir):
                 os.makedirs(self.diff_dir)
             diff, diff_too_long, diff_log = limited_buffer(
-                diff,
-                self._max_diff,
-                self._max_diff_lead,
-                logdir=self.diff_dir)
+                diff, self._max_diff, self._max_diff_lead, logdir=self.diff_dir
+            )
 
             if diff_too_long:
                 output.line(
                     f"More than {self._max_diff} lines of diff. Showing first "
                     f"and last {self._max_diff_lead} lines.",
-                    yellow=True)
+                    yellow=True,
+                )
                 output.line(
-                    f"see {diff_log} for the full diff.".format(), yellow=True)
+                    f"see {diff_log} for the full diff.".format(), yellow=True
+                )
             if contains_secrets:
                 output.line(
                     "Not showing diff as it contains sensitive data,",
-                    yellow=True)
+                    yellow=True,
+                )
                 output.line(
-                    f"see {diff_log} for the diff.".format(), yellow=True)
+                    f"see {diff_log} for the diff.".format(), yellow=True
+                )
             else:
                 for line in diff:
                     line = line.replace("\n", "")
@@ -468,7 +492,8 @@ class ManagedContentBase(FileComponent):
                     output.annotate(
                         f"  {os.path.basename(self.path)} {line}",
                         red=line.startswith("-"),
-                        green=line.startswith("+"))
+                        green=line.startswith("+"),
+                    )
         raise batou.UpdateNeeded()
 
     def update(self):
@@ -491,7 +516,8 @@ class Content(ManagedContentBase):
         if not self.template_context:
             self.template_context = self.parent
         self.content = self.expand(
-            self.content, self.template_context, args=self.template_args)
+            self.content, self.template_context, args=self.template_args
+        )
 
 
 class JSONContent(ManagedContentBase):
@@ -519,7 +545,8 @@ class JSONContent(ManagedContentBase):
             self.data = dict_merge(self.data, self.override)
 
         self.content_compact = json.dumps(
-            self.data, sort_keys=True, separators=(",", ":"))
+            self.data, sort_keys=True, separators=(",", ":")
+        )
         self.content_readable = json.dumps(self.data, sort_keys=True, indent=4)
 
         if self.human_readable:
@@ -580,7 +607,7 @@ class Group(FileComponent):
 def convert_mode(string: str) -> int:
     """Convert ls-string representation to bitmask."""
     pattern = re.compile(
-        r'''^ # ensure length
+        r"""^ # ensure length
         (?P<o400>r|-) # Use groups as octal values.
         (?P<o200>w|-)
         (?P<o100>x|-)
@@ -590,18 +617,21 @@ def convert_mode(string: str) -> int:
         (?P<o004>r|-)
         (?P<o002>w|-)
         (?P<o001>x|-)
-        $ # ensure length''',
+        $ # ensure length""",
         re.VERBOSE,
     )
     match = pattern.match(string)
     if match:
         return sum(
-            int(f'0{key}', base=8) for key, value in match.groupdict().items()
-            if value != '-')
+            int(f"0{key}", base=8)
+            for key, value in match.groupdict().items()
+            if value != "-"
+        )
     else:
         # No match, treat it as wrong syntax
         raise SyntaxError(
-            'Mode-string should be between `---------` and `rwxrwxrwx`.')
+            "Mode-string should be between `---------` and `rwxrwxrwx`."
+        )
 
 
 class Mode(FileComponent):
@@ -618,14 +648,15 @@ class Mode(FileComponent):
                 try:
                     self.mode = convert_mode(self.mode)
                 except Exception as e:
-                    raise batou.ConversionError(self, 'mode', self.mode,
-                                                convert_mode, e)
+                    raise batou.ConversionError(
+                        self, "mode", self.mode, convert_mode, e
+                    )
 
         elif isinstance(self.mode, int):
             pass
         else:
             raise batou.ConfigurationError(
-                f'`mode` is required and `{self.mode!r}` is not a valid value.`'
+                f"`mode` is required and `{self.mode!r}` is not a valid value.`"
             )
 
     def verify(self):

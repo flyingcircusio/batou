@@ -6,18 +6,13 @@ import sys
 import execnet.gateway_io
 import yaml
 
-from batou import (
-    DeploymentError,
-    SilentConfigurationError,
-    output,
-    remote_core,
-)
+from batou import DeploymentError, SilentConfigurationError, output, remote_core
 from batou.utils import BagOfAttributes
 
 # Keys in os.environ which get propagated to the remote side:
 REMOTE_OS_ENV_KEYS = (
-    'REMOTE_PDB_HOST',
-    'REMOTE_PDB_PORT',
+    "REMOTE_PDB_HOST",
+    "REMOTE_PDB_PORT",
 )
 
 
@@ -26,14 +21,19 @@ REMOTE_OS_ENV_KEYS = (
 def get_kitchen_ssh_connection_info(name):
     cmd = "kitchen", "diagnose", "--log-level=error", name
     info = yaml.load(subprocess.check_output(cmd))
-    (instance, ) = list(info["instances"].values())
+    (instance,) = list(info["instances"].values())
     state = instance["state_file"]
     return [
-        "-o", "StrictHostKeyChecking=no",
-        "-i", state["ssh_key"],
-        "-p", state["port"],
-        "-l", state["username"],
-        state["hostname"]]  # yapf: disable
+        "-o",
+        "StrictHostKeyChecking=no",
+        "-i",
+        state["ssh_key"],
+        "-p",
+        state["port"],
+        "-l",
+        state["username"],
+        state["hostname"],
+    ]
 
 
 def new_ssh_args(spec):
@@ -63,22 +63,22 @@ execnet.gateway_io.ssh_args = new_ssh_args
 
 
 class RPCWrapper(object):
-
     def __init__(self, host):
         self.host = host
 
     def __getattr__(self, name):
-
         def call(*args, **kw):
             output.annotate(
                 "rpc {}: {}(*{}, **{})".format(self.host.fqdn, name, args, kw),
-                debug=True)
+                debug=True,
+            )
             self.host.channel.send((name, args, kw))
             while True:
                 message = self.host.channel.receive()
                 output.annotate(
                     "{}: message: {}".format(self.host.fqdn, message),
-                    debug=True)
+                    debug=True,
+                )
                 type = message[0]
                 if type == "batou-result":
                     return message[1]
@@ -93,15 +93,22 @@ class RPCWrapper(object):
                     output.error(message[1])
                     raise RuntimeError(
                         "{}: Remote exception encountered.".format(
-                            self.host.fqdn))
+                            self.host.fqdn
+                        )
+                    )
                 elif type == "batou-error":
                     # Remote put out the details already.
                     raise RuntimeError(
                         "{}: Remote exception encountered.".format(
-                            self.host.fqdn))
+                            self.host.fqdn
+                        )
+                    )
                 else:
-                    raise RuntimeError("{}: Unknown message type {}".format(
-                        self.host.fqdn, type))
+                    raise RuntimeError(
+                        "{}: Unknown message type {}".format(
+                            self.host.fqdn, type
+                        )
+                    )
 
         return call
 
@@ -134,11 +141,11 @@ class Host(object):
         self.ignore = ast.literal_eval(config.get("ignore", "False"))
 
         self.platform = config.get("platform", environment.platform)
-        self.service_user = config.get("service_user",
-                                       environment.service_user)
+        self.service_user = config.get("service_user", environment.service_user)
 
         self.remap = ast.literal_eval(
-            config.get("provision-dynamic-hostname", "False"))
+            config.get("provision-dynamic-hostname", "False")
+        )
         self._provisioner = config.get("provisioner")
         if self.provisioner:
             self.provisioner.configure_host(self, config)
@@ -150,12 +157,12 @@ class Host(object):
 
     @property
     def provisioner(self):
-        if self._provisioner == 'none':
+        if self._provisioner == "none":
             # Provisioning explicitly disabled for this host
             return
         elif not self._provisioner:
             # Default provisionier (if available)
-            return self.environment.provisioners.get('default')
+            return self.environment.provisioners.get("default")
         return self.environment.provisioners[self._provisioner]
 
     # These are internal aliases to allow having an explicit name
@@ -200,10 +207,10 @@ class Host(object):
 
 
 class LocalHost(Host):
-
     def connect(self):
-        self.gateway = execnet.makegateway("popen//python={}".format(
-            sys.executable))
+        self.gateway = execnet.makegateway(
+            "popen//python={}".format(sys.executable)
+        )
         self.channel = self.gateway.remote_exec(remote_core)
 
     def start(self):
@@ -217,14 +224,22 @@ class LocalHost(Host):
         env = self.environment
 
         self.remote_repository = self.rpc.ensure_repository(
-            env.target_directory, "local")
+            env.target_directory, "local"
+        )
 
         self.remote_base = self.rpc.ensure_base(env.deployment_base)
 
         # XXX the cwd isn't right.
-        self.rpc.setup_deployment(env.name, self.name, env.overrides,
-                                  env.secret_files, env.secret_data,
-                                  env._host_data(), env.timeout, env.platform)
+        self.rpc.setup_deployment(
+            env.name,
+            self.name,
+            env.overrides,
+            env.secret_files,
+            env.secret_data,
+            env._host_data(),
+            env.timeout,
+            env.platform,
+        )
 
     def disconnect(self):
         if hasattr(self, "gateway"):
@@ -250,15 +265,20 @@ class RemoteHost(Host):
 if [ -n "$ZSH_VERSION" ]; then setopt SH_WORD_SPLIT; fi;
 if [ \"$USER\" = \"{user}\" ]; then \
 pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
-""".format(user=self.service_user)
+""".format(
+            user=self.service_user
+        )
 
         spec = "ssh={fqdn}//python={sudo} {interpreter}//type={method}".format(
             fqdn=self.fqdn,
             sudo=CONDITIONAL_SUDO,
             interpreter=interpreter,
-            method=self.environment.connect_method)
+            method=self.environment.connect_method,
+        )
         ssh_configs = [
-            'ssh_config_{}'.format(self.environment.name), 'ssh_config']
+            "ssh_config_{}".format(self.environment.name),
+            "ssh_config",
+        ]
         for ssh_config in ssh_configs:
             if os.path.exists(ssh_config):
                 spec += "//ssh_config={}".format(ssh_config)
@@ -270,7 +290,9 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
             raise RuntimeError(
                 "Could not start batou on host `{}`. "
                 "The output above may contain more information. ".format(
-                    self.fqdn))
+                    self.fqdn
+                )
+            )
 
         output.annotate("Connected ...", debug=True)
 
@@ -280,7 +302,8 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         env = self.environment
 
         self.remote_repository = self.rpc.ensure_repository(
-            env.target_directory, env.update_method)
+            env.target_directory, env.update_method
+        )
         self.remote_base = self.rpc.ensure_base(env.deployment_base)
 
         output.step(self.name, "Updating repository ...", debug=True)
@@ -298,7 +321,8 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         # Reinit after reconnect ...
         self.rpc.lock()
         self.remote_repository = self.rpc.ensure_repository(
-            env.target_directory, env.update_method)
+            env.target_directory, env.update_method
+        )
         self.remote_base = self.rpc.ensure_base(env.deployment_base)
 
         # Since we reconnected, any state on the remote side has been lost,
@@ -317,7 +341,9 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
             env.platform,
             {
                 key: os.environ.get(key)
-                for key in REMOTE_OS_ENV_KEYS if os.environ.get(key)},
+                for key in REMOTE_OS_ENV_KEYS
+                if os.environ.get(key)
+            },
         )
 
     def disconnect(self):

@@ -32,7 +32,8 @@ class Clone(Component):
     def configure(self):
         if (not self.revision_or_branch) or (self.revision and self.branch):
             raise ValueError(
-                "Clone(%s) needs exactly one of revision or branch" % self.url)
+                "Clone(%s) needs exactly one of revision or branch" % self.url
+            )
         self.target = self.map(self.target)
         self += Directory(self.target)
 
@@ -58,20 +59,25 @@ class Clone(Component):
             if self.has_outgoing_changesets():
                 output.annotate(
                     "Git clone at {} has outgoing changesets.".format(
-                        self.target))
+                        self.target
+                    )
+                )
 
             if self.has_changes():
                 output.annotate(
                     "Git clone at {} is dirty, going to lose changes.".format(
-                        self.target),
+                        self.target
+                    ),
                     red=True,
                 )
                 raise UpdateNeeded()
 
             if self.revision and self.current_revision() != self.revision:
                 raise UpdateNeeded()
-            if self.branch and (self.current_branch() != self.branch
-                                or self.has_incoming_changesets()):
+            if self.branch and (
+                self.current_branch() != self.branch
+                or self.has_incoming_changesets()
+            ):
                 raise UpdateNeeded()
 
     @property
@@ -116,8 +122,8 @@ class Clone(Component):
         if self._force_clone:
             ensure_empty_directory(self.target)
             self.cmd(
-                self.expand(
-                    "git clone {{component.url}} {{component.target}}"))
+                self.expand("git clone {{component.url}} {{component.target}}")
+            )
             just_cloned = True
         with self.chdir(self.target):
             for filepath in self.untracked_files():
@@ -126,11 +132,10 @@ class Clone(Component):
                 self.cmd("git fetch")
             if self.branch:
                 self.cmd(
-                    self.expand(
-                        "git reset --hard origin/{{component.branch}}"))
+                    self.expand("git reset --hard origin/{{component.branch}}")
+                )
             else:
-                self.cmd(
-                    self.expand("git reset --hard {{component.revision}}"))
+                self.cmd(self.expand("git reset --hard {{component.revision}}"))
 
             # XXX We should re-think submodule support; e.g. which revision
             # shall the submodules be updated to?
@@ -138,7 +143,8 @@ class Clone(Component):
 
     def untracked_files(self):
         stdout, stderr = self.cmd(
-            "git status --porcelain --untracked-files=all")
+            "git status --porcelain --untracked-files=all"
+        )
         items = (line.split(None, 1) for line in stdout.splitlines())
         return [filepath for status, filepath in items if status == "??"]
 

@@ -14,9 +14,11 @@ def test_simple_appenv(root):
 
     assert os.path.exists(os.path.join(root.component.workdir, "bin"))
     assert os.path.exists(
-        os.path.join(root.component.workdir, "bin", "python3"))
+        os.path.join(root.component.workdir, "bin", "python3")
+    )
     assert os.path.exists(
-        os.path.join(root.component.workdir, ".appenv", "current"))
+        os.path.join(root.component.workdir, ".appenv", "current")
+    )
 
     hashes = os.listdir(os.path.join(root.component.workdir, ".appenv"))
     assert len(hashes) == 2
@@ -28,9 +30,11 @@ def test_simple_appenv(root):
 
     assert os.path.exists(os.path.join(root.component.workdir, "bin"))
     assert os.path.exists(
-        os.path.join(root.component.workdir, "bin", "python3"))
+        os.path.join(root.component.workdir, "bin", "python3")
+    )
     assert os.path.exists(
-        os.path.join(root.component.workdir, ".appenv", "current"))
+        os.path.join(root.component.workdir, ".appenv", "current")
+    )
 
     hashes2 = os.listdir(os.path.join(root.component.workdir, ".appenv"))
     assert hashes2 == hashes
@@ -45,9 +49,11 @@ def test_simple_appenv(root):
 
     assert os.path.exists(os.path.join(root.component.workdir, "bin"))
     assert os.path.exists(
-        os.path.join(root.component.workdir, "bin", "python3"))
+        os.path.join(root.component.workdir, "bin", "python3")
+    )
     assert os.path.exists(
-        os.path.join(root.component.workdir, ".appenv", "current"))
+        os.path.join(root.component.workdir, ".appenv", "current")
+    )
 
     hashes3 = os.listdir(os.path.join(root.component.workdir, ".appenv"))
     assert hashes3 != hashes
@@ -74,7 +80,7 @@ def test_simple_appenv(root):
 
 
 def test_appenv_custom_pip_version(root):
-    pip_version = '20.1.1'
+    pip_version = "20.1.1"
     with open("requirements.lock", "w") as f:
         # I hate using a real package and a real index here ...
         f.write("six==1.14.0\n")
@@ -83,6 +89,8 @@ def test_appenv_custom_pip_version(root):
     root.component += appenv
     root.component.deploy()
     pip = appenv.cmd(
-        os.path.join(root.component.workdir,
-                     '{{component.env_dir}}/bin/pip --version'))
-    assert f'pip {pip_version}' in pip[0]
+        os.path.join(
+            root.component.workdir, "{{component.env_dir}}/bin/pip --version"
+        )
+    )
+    assert f"pip {pip_version}" in pip[0]

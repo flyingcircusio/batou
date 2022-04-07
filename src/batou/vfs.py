@@ -2,7 +2,6 @@ import os.path
 
 
 class Developer(object):
-
     def __init__(self, environment, config):
         self.environment = environment
 
@@ -20,7 +19,6 @@ class Developer(object):
 
 
 class Map(object):
-
     def __init__(self, environment, config):
         self._map = []
         for key, value in list(config.items()):
