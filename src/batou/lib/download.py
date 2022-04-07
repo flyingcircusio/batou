@@ -66,7 +66,7 @@ got: %s""" % (
         r.raise_for_status()
 
         with open(self.target, "wb") as fd:
-            for chunk in r.iter_content(4 * 1024 ** 2):
+            for chunk in r.iter_content(4 * 1024**2):
                 fd.write(chunk)
 
     def _update_urllib(self):
