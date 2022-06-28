@@ -4,7 +4,7 @@
 2.3b6 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Allow mysql authentication via sudo.
 
 
 2.3b5 (2022-09-21)
