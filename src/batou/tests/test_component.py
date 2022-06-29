@@ -654,3 +654,51 @@ def test_event_handler_before_update_with_changes_precursor(root):
     root.component += Foo("2")
     root.component.deploy()
     assert log == [("2", "1")]
+
+
+def test_checksum_returns_even_when_never_a_value_was_passed():
+    c = SampleComponent()
+    assert (
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        == c.checksum()
+    )
+
+
+def test_checksum_updates_and_returns():
+    c = SampleComponent()
+    assert (
+        "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+        == c.checksum(b"foo")
+    )
+
+
+def test_checksum_depends_on_order():
+    c = SampleComponent()
+    c.checksum(b"foo")
+    c.checksum(b"bar")
+    assert (
+        "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"
+        == c.checksum()
+    )
+
+    c = SampleComponent()
+    c.checksum(b"bar")
+    c.checksum(b"foo")
+    assert (
+        "88ecde925da3c6f8ec3d140683da9d2a422f26c1ae1d9212da1e5a53416dcc88"
+        == c.checksum()
+    )
+
+
+def test_checksum_multiple_calls_do_not_change_checksum():
+    c = SampleComponent()
+    c.checksum(b"foo")
+    c.checksum(b"bar")
+    assert (
+        "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"
+        == c.checksum()
+    )
+    assert (
+        "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"
+        == c.checksum()
+    )

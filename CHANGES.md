@@ -8,6 +8,9 @@
   specifying that a git clone may clobber the target directory.
   ([#298](https://github.com/flyingcircusio/batou/issues/298))
 
+- Add `checksum(value)` method to `Component` to easily compute sha256
+  checksums.
+
 
 2.3b4 (2022-08-22)
 ------------------
@@ -36,7 +39,6 @@
   to simplify the mechanics and make migration errors easier to understand.
 
 - Output usage strings for subcommands, instead of just the main command.
-
 
 ### Bug fixes
 

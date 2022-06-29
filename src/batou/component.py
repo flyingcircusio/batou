@@ -1,5 +1,6 @@
 import ast
 import contextlib
+import hashlib
 import inspect
 import os
 import os.path
@@ -951,6 +952,13 @@ class Component(object):
         if self.namevar is None:
             return None
         return getattr(self, self.namevar, None)
+
+    def checksum(self, value=None):
+        if getattr(self, "_checksum", None) is None:
+            self._checksum = hashlib.new("sha256")
+        if value is not None:
+            self._checksum.update(value)
+        return self._checksum.hexdigest()
 
 
 class HookComponent(Component):
