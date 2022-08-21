@@ -12,7 +12,7 @@ Getting started with a new project is easy:
 mkdir myproject
 cd myproject
 git init
-curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
+curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/main/bootstrap | sh
 git commit -m "Start a batou project."
 ```
 

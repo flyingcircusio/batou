@@ -22,7 +22,7 @@ To upgrade your project to this schema, follow those steps:
 .. code-block:: console
 
 
-  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/appenv.py -o appenv
+  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/main/appenv.py -o appenv
   $ chmod +x appenv
   $ rm batou
   $ ln -sf appenv batou
@@ -77,7 +77,7 @@ and it is your current working directory.
 
 .. code-block:: console
 
-	$ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
+	$ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/main/bootstrap | sh
 
 The generated lockfile `requirements.lock` might not pick up all versions of all
 packages correctly (for example packages taken directly from source control will
