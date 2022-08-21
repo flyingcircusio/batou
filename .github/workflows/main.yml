@@ -16,7 +16,7 @@ jobs:
   build:
     strategy:
       matrix:
-        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10.0-beta.1' ]
+        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10' ]
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
