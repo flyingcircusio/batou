@@ -3,7 +3,7 @@ import os.path
 import time
 
 from batou import UpdateNeeded, output
-from batou.component import Attribute, Component, handle_event
+from batou.component import Attribute, Component, ConfigString, handle_event
 from batou.lib.buildout import Buildout
 from batou.lib.file import Directory, File
 from batou.lib.logrotate import RotatedLogfile
@@ -168,7 +168,7 @@ process_name={{component.name}}
 
 class Supervisor(Component):
 
-    address = Attribute(Address, default_conf_string="localhost:9001")
+    address = Attribute(Address, default=ConfigString("localhost:9001"))
     buildout_cfg = os.path.join(
         os.path.dirname(__file__), "resources", "supervisor.buildout.cfg"
     )
@@ -192,10 +192,10 @@ class Supervisor(Component):
     deployment_mode = Attribute(str, default="hot")
     max_startup_delay = Attribute(int, default=0)
     wait_for_running = Attribute("literal", default=True)
-    pidfile = Attribute(str, default_conf_string="supervisord.pid", map=True)
+    pidfile = Attribute(str, default=ConfigString("supervisord.pid"), map=True)
     socketpath = Attribute(
         str,
-        default_conf_string="{{component.workdir}}/supervisor.sock",
+        default=ConfigString("{{component.workdir}}/supervisor.sock"),
         map=True,
     )
     check_contact_groups = None

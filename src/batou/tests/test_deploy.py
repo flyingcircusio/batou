@@ -42,14 +42,6 @@ ERROR: Failed loading component file
       File: .../examples/errors/components/component6/component.py
  Exception: No module named 'asdf'
 
-ERROR: Failed loading component file
-      File: .../examples/errors/components/component7/component.py
- Exception: Attributes only support one of those parameters: either `default` or `default_conf_string`.
-
-ERROR: Missing component
- Component: component7
-      Host: localhost
-
 ERROR: Missing component
  Component: missingcomponent
       Host: localhost

@@ -9,6 +9,7 @@ from batou import SilentConfigurationError, UpdateNeeded
 from batou.component import (
     Attribute,
     Component,
+    ConfigString,
     RootComponent,
     handle_event,
     platform,
@@ -556,23 +557,23 @@ def test_root_overrides_existing_attribute(root):
 
 
 @pytest.mark.parametrize(
-    "conv_func,conf_string,expected",
+    "conv_func,conf_value,expected",
     [
-        ("list", "", []),
-        ("list", "1,2", ["1", "2"]),
-        ("list", "3", ["3"]),
-        ("list", "  3, 3,", ["3", "3"]),
+        ("list", ConfigString(""), []),
+        ("list", ConfigString("1,2"), ["1", "2"]),
+        ("list", ConfigString("3"), ["3"]),
+        ("list", ConfigString("  3, 3,"), ["3", "3"]),
         ("list", [], []),
-        ("literal", "[3,3]", [3, 3]),
-        ("literal", "True", True),
-        ("literal", "False", False),
+        ("literal", ConfigString("[3,3]"), [3, 3]),
+        ("literal", ConfigString("True"), True),
+        ("literal", ConfigString("False"), False),
     ],
 )
-def test_attribute_conversion_functions(conv_func, conf_string, expected, root):
+def test_attribute_conversion_functions(conv_func, conf_value, expected, root):
     """It converts config strings with conversion functions."""
 
     class Foo(Component):
-        a = Attribute(conv_func, default_conf_string=conf_string)
+        a = Attribute(conv_func, default=conf_value)
 
     f = Foo()
     root.component += f
