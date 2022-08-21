@@ -11,6 +11,7 @@ importlib-metadata==4.8.3
 py==1.11.0
 remote-pdb==2.1.0
 requests==2.27.1
+six==1.16.0
 typing_extensions==4.1.1
 urllib3==1.26.11
 zipp==3.6.0
