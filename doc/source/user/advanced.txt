@@ -80,7 +80,8 @@ You can use additional Python packages by adding a  `requirements.txt` file to y
   │   └── myapp
   │       └── component.py
   ├── environments
-  │   └── local.cfg
+  │   └── local
+  │       └── environment.cfg
   └── requirements.txt
 
 .. code-block:: text
@@ -282,7 +283,8 @@ Given the following tree:
   │   └── myconfig
   │       └── component.py
   ├── environments
-  │   └── local.cfg
+  │   └── local
+  │       └── environment.cfg
   ├── requirements.lock
   └── requirements.txt
 
@@ -351,7 +353,8 @@ other files for inspiration.
   │   └── myapp
   │       └── component.py
   ├── environments
-  │   └── local.cfg
+  │   └── local
+  │       └── environment.cfg
   ├── requirements.lock
   └── requirements.txt
 
