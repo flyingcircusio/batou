@@ -1,11 +1,11 @@
-from batou.component import Attribute, Component
+from batou.component import Attribute, Component, ConfigString
 from batou.utils import Address
 
 
 class DNSProblem(Component):
 
     attribute_with_problem = Attribute(
-        Address, default_conf_string="isnotahostname"
+        Address, default=ConfigString("isnotahostname")
     )
 
     def configure(self):

@@ -1030,7 +1030,11 @@ class RootComponent(object):
 
 # Overridable component attributes
 
-ATTRIBUTE_NODEFAULT = object()
+
+class ConfigString(str):
+    """A string value that will be handled as if it was
+    was read from a config file.
+    """
 
 
 class Attribute(object):
@@ -1056,29 +1060,23 @@ class Attribute(object):
      is used for strings from config files.
     :type conversion: str, callable
 
-    :param default: The default value for the ``Attribute``. This is not
-     passed through the conversion function. expand or map is not applied.
-    :type default: object
-
-    :param str default_conf_string: An alternative default parameter for the
-     ``Attribute``. This is treated like a string from config file
-     (expand, map, conversion) and thus can serve as documentation or as input
-     value for a more complex callable.
+    :param default: The default value for the ``Attribute``. When a
+    ``ConfigString`` value is passed then it will expanded, mapped,
+    and passed through the conversion function, depending on the other
+    arguments.
+    :type default: None
 
     :param bool expand: Expand the config string in the context of this
      component.
 
     :param bool map: Perform a VFS mapping on the config string.
 
-
     """
 
     def __init__(
         self,
-        conversion=None,
-        *,
-        default=ATTRIBUTE_NODEFAULT,
-        default_conf_string=ATTRIBUTE_NODEFAULT,
+        conversion=str,
+        default=None,
         expand=True,
         map=False,
     ):
@@ -1086,17 +1084,7 @@ class Attribute(object):
             conversion = getattr(self, "convert_{}".format(conversion))
         self.conversion = conversion
 
-        if (
-            default is not ATTRIBUTE_NODEFAULT
-            and default_conf_string is not ATTRIBUTE_NODEFAULT
-        ):
-            raise batou.ConfigurationError(
-                "Attributes only support one of those parameters:"
-                " either `default` or `default_conf_string`.",
-                self,
-            )
         self.default = default
-        self.default_conf_string = default_conf_string
         self.expand = expand
         self.map = map
         self.instances = weakref.WeakKeyDictionary()
@@ -1106,13 +1094,9 @@ class Attribute(object):
             # We're being accessed as a class attribute.
             return self
         if obj not in self.instances:
-            if self.default is not ATTRIBUTE_NODEFAULT:
-                value = self.default
-            elif self.default_conf_string is not ATTRIBUTE_NODEFAULT:
-                value = self.from_config_string(obj, self.default_conf_string)
-            else:
-                # No defaults present
-                raise AttributeError()
+            value = self.default
+            if isinstance(self.default, ConfigString):
+                value = self.from_config_string(obj, value)
             self.__set__(obj, value)
         return self.instances[obj]
 
@@ -1126,24 +1110,20 @@ class Attribute(object):
         #     value = attribute.from_config_string(self, value)
         # setattr(self, key, value)
         #
-
-        if isinstance(value, str) and self.expand:
+        if self.expand:
             value = obj.expand(value)
-        if isinstance(value, str) and self.map:
+        if self.map:
             value = obj.map(value)
-        if isinstance(value, str) and self.conversion:
-            try:
-                value = self.conversion(value)
-            except Exception as e:
-                # Try to detect our own name.
-                name = "<unknown>"
-                for k in dir(obj):
-                    if getattr(obj.__class__, k, None) is self:
-                        name = k
-                        break
-                raise batou.ConversionError(
-                    obj, name, value, self.conversion, e
-                )
+        try:
+            value = self.conversion(value)
+        except Exception as e:
+            # Try to detect our own name.
+            name = "<unknown>"
+            for k in dir(obj):
+                if getattr(obj.__class__, k, None) is self:
+                    name = k
+                    break
+            raise batou.ConversionError(obj, name, value, self.conversion, e)
         return value
 
     def __set__(self, obj, value):

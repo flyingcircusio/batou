@@ -1,7 +1,13 @@
 import os
 
 from batou import ConfigurationError, UpdateNeeded
-from batou.component import Attribute, Component, HookComponent, platform
+from batou.component import (
+    Attribute,
+    Component,
+    ConfigString,
+    HookComponent,
+    platform,
+)
 from batou.lib.file import File
 
 
@@ -42,7 +48,7 @@ class CronTab(Component):
     purge = False
 
     # Dict of additional environment variables
-    env = Attribute("literal", default_conf_string="{}")
+    env = Attribute("literal", default=ConfigString("{}"))
 
     def configure(self):
         self.jobs = self.require(CronJob.key, host=self.host, strict=False)

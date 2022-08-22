@@ -23,6 +23,9 @@
 - Allow to check if an `Address` is configured for IPv4 resp. IPv6 using the
   attributes `require_v4` resp. `require_v6`.
 
+- The behaviour to specify `Attribute` defaults as either Python native objects
+  or strings that will be expanded, mapped and converted has been changed again
+  to simplify the mechanics and make migration errors easier to understand.
 
 ### Bug fixes
 

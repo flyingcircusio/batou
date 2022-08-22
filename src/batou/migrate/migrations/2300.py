@@ -14,10 +14,3 @@ def migrate(output):
         If an attribute exists in secrets and also in plain text
         environment config, batou fails. Delete it from plain text.""",
     )
-    output(
-        "`Attribute` requires explicit default.",
-        """
-        Default values for `Attribute` have to be passed either with
-        `default` or `default_conf_string` as keyword argument. If you use
-        `batou_ext`, update to a current version.""",
-    )
