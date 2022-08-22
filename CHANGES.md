@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.3b4 (unreleased)
+2.3b4 (2022-08-22)
 ------------------
 
 ### Features
