@@ -39,7 +39,7 @@ And here's a minimal environment:
 
 ```console
 $ mkdir environments
-$ cat > environments/dev.cfg
+$ cat > environments/dev/environment.cfg
 [environment]
 connect_method = local
 
