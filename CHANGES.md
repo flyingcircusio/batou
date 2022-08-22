@@ -33,6 +33,9 @@
   or strings that will be expanded, mapped and converted has been changed again
   to simplify the mechanics and make migration errors easier to understand.
 
+- Output usage strings for subcommands, instead of just the main command.
+
+
 ### Bug fixes
 
 - Check python venvs for functional `pip`.
