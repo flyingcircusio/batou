@@ -447,6 +447,11 @@ def cmd(
     return stdout, stderr
 
 
+def get_output(command, default=None):
+    stdout, stderr = cmd(command, ignore_returncode=True)
+    return stdout or default
+
+
 class Timer(object):
     def __init__(self, note):
         self.duration = 0

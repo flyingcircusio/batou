@@ -11,10 +11,19 @@ CONFIG_FILE_NAME = ".batou.json"
 MIGRATION_MODULE = "batou.migrate"
 
 
-def output_migration_step(title: str, text: str) -> None:
+def output_migration_step(
+    title: str, text: str, status: str = "manual"
+) -> None:
     """Print the information of migration step in a formatted way."""
-    output.section(title, red=True)
-    output.line(textwrap.dedent(text).replace("\n", " "))
+    if status == "manual":
+        label = "🔧"
+        args = {"yellow": True}
+    elif status == "automatic":
+        label = "✅"
+        args = {"green": True}
+    output.annotate(f"{label} {title}", **args)
+    output.line("")
+    output.line(textwrap.dedent(text).strip())
     output.line("")
 
 
@@ -54,7 +63,8 @@ def migrate(base_version: int) -> int:
         module = importlib.import_module(
             f"{MIGRATION_MODULE}.migrations.{step}"
         )
-        output.tabular("Version", step)
+        output.annotate(f"Version: {step}", bold=True)
+        output.line("")
         module.migrate(output_migration_step)
     return step
 
@@ -100,6 +110,8 @@ def main(*, bootstrap: bool = False) -> None:
         return
     output.backend = TerminalBackend()
     base_version = get_current_version()
+    output.annotate(f"Current version: {base_version}", bold=True)
     new_version = migrate(base_version)
     if new_version != base_version:
         write_config(new_version)
+    output.annotate(f"Reached version: {new_version}", bold=True, green=True)

@@ -1,16 +1,35 @@
+from batou.utils import get_output
+
+
 def migrate(output):
     """Manual upgrade steps for 2.3."""
-    output(
-        "Change Address init parameters",
-        """
-        The new default DNS resolve scheme will resolve IPv4 by default. If
-        you want IPv6 you have to set that explicitly. Please adapt all
-        occurrences of `Address` in you components and explicitly set
-        `require_v6` and `require_v4`.""",
+    candidates = get_output(
+        'grep "Adddress" * -nIr | egrep -v "import"', "<no candidates found>"
     )
+    output(
+        "Address objects now only resolve IPv4 addresses by default",
+        f"""
+
+If you use IPv6 then you have to enable it explicitly by setting
+`require_v6=True`.
+
+Candidates:
+
+{candidates}
+        """,
+        "manual",
+    )
+
     output(
         "Colliding attributes in environment and secrets",
         """
-        If an attribute exists in secrets and also in plain text
-        environment config, batou fails. Delete it from plain text.""",
+
+batou will now fail explicitly if an attribute exists both as an environment
+override as well as a secret.
+
+You will usually want to delete it from the environment config as that was
+being used previously.
+
+        """,
+        "manual",
     )
