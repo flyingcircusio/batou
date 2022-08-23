@@ -159,9 +159,62 @@ def test_clean_clone_updates_on_incoming_changes(root, repos_path):
 
 
 @pytest.mark.slow
-def test_changes_lost_on_update_with_incoming(root, repos_path):
+def test_no_clobber_changes_protected_on_update_with_incoming(root, repos_path):
     root.component += batou.lib.git.Clone(
         repos_path, target="clone", branch="master"
+    )
+    root.component.deploy()
+    cmd(
+        'cd {dir}; touch bar; git add .; git commit -m "commit"'.format(
+            dir=repos_path
+        )
+    )
+    cmd("cd {dir}/clone; echo foobar >foo".format(dir=root.workdir))
+    with pytest.raises(RuntimeError) as e:
+        root.component.deploy()
+    assert e.value.args[0] == "Refusing to clobber dirty work directory."
+    with open(root.component.map("clone/foo")) as f:
+        assert f.read() == "foobar\n"
+
+
+@pytest.mark.slow
+def test_no_clobber_changes_protected_on_update_without_incoming(
+    root, repos_path
+):
+    root.component += batou.lib.git.Clone(
+        repos_path, target="clone", branch="master"
+    )
+    root.component.deploy()
+    cmd("cd {dir}/clone; echo foobar >foo".format(dir=root.workdir))
+    with pytest.raises(RuntimeError) as e:
+        root.component.deploy()
+    assert e.value.args[0] == "Refusing to clobber dirty work directory."
+    with open(root.component.map("clone/foo")) as f:
+        assert f.read() == "foobar\n"
+
+
+@pytest.mark.slow
+def test_no_clobber_untracked_files_are_kept_on_update(root, repos_path):
+    root.component += batou.lib.git.Clone(
+        repos_path, target="clone", branch="master"
+    )
+    root.component.deploy()
+    cmd(
+        "cd {dir}/clone; mkdir bar; echo foobar >bar/baz".format(
+            dir=root.workdir
+        )
+    )
+    with pytest.raises(RuntimeError) as e:
+        root.component.deploy()
+    assert e.value.args[0] == "Refusing to clobber dirty work directory."
+    with open(root.component.map("clone/bar/baz")) as f:
+        assert f.read() == "foobar\n"
+
+
+@pytest.mark.slow
+def test_clobber_changes_lost_on_update_with_incoming(root, repos_path):
+    root.component += batou.lib.git.Clone(
+        repos_path, target="clone", branch="master", clobber=True
     )
     root.component.deploy()
     cmd(
@@ -177,9 +230,9 @@ def test_changes_lost_on_update_with_incoming(root, repos_path):
 
 
 @pytest.mark.slow
-def test_changes_lost_on_update_without_incoming(root, repos_path):
+def test_clobber_changes_lost_on_update_without_incoming(root, repos_path):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master"
+        repos_path, target="clone", branch="master", clobber=True
     )
     root.component.deploy()
     cmd("cd {dir}/clone; echo foobar >foo".format(dir=root.workdir))
@@ -189,9 +242,9 @@ def test_changes_lost_on_update_without_incoming(root, repos_path):
 
 
 @pytest.mark.slow
-def test_untracked_files_are_removed_on_update(root, repos_path):
+def test_clobber_untracked_files_are_removed_on_update(root, repos_path):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master"
+        repos_path, target="clone", branch="master", clobber=True
     )
     root.component.deploy()
     cmd(
