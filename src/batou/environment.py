@@ -505,11 +505,6 @@ class Environment(object):
             root.log_finish_configure()
 
         self.exceptions.extend(exceptions)
-        if self.exceptions:
-            # We just raise here to support a reasonable flow
-            # for our caller. We expect him to look at our exceptions
-            # attribute anyway.
-            raise self.exceptions[0]
 
     def root_dependencies(self, host=None):
         """Return all roots (host/component) with their direct dependencies.

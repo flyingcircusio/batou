@@ -38,7 +38,7 @@ class Connector(threading.Thread):
             time.sleep(random.randint(1, 2 ** (tries + 1)))
 
         try:
-            self.host.start()
+            self.errors = self.host.start()
         except Exception:
             self.exc_info = sys.exc_info()
 
@@ -112,10 +112,6 @@ class Deployment(object):
                 )
                 host.provisioner.provision(host)
 
-    def configure(self):
-        output.section("Configuring model ...")
-        self.connections[0].join()
-
     def _connections(self):
         self.environment.prepare_connect()
         hosts = sorted(self.environment.hosts)
@@ -145,9 +141,15 @@ class Deployment(object):
             yield c
 
     def connect(self):
-        output.section("Connecting ...")
-        # Consume the connection iterator to establish remaining connections.
+        output.section("Connecting hosts and configuring model ...")
+        # Consume the connection iterator to start all remaining connections
+        # but do not wait for them to be joined.
         self.connections = list(self._connections())
+        [c.join() for c in self.connections]
+        for c in self.connections:
+            # XXX errors auswerten, siehe reporting-code den ich aus dem
+            # __channelexec__ block entfernt habe
+            pass
 
     def _launch_components(self, todolist):
         for key, info in list(todolist.items()):
@@ -190,10 +192,6 @@ class Deployment(object):
         self._launch_components(todolist)
 
     def deploy(self):
-        # Wait for all connections to finish
-        output.section("Waiting for remaining connections ...")
-        [c.join() for c in self.connections]
-
         if self.predict_only:
             output.section("Predicting deployment actions")
         else:
@@ -251,7 +249,7 @@ def main(
 ):
     output.backend = TerminalBackend()
     output.line(self_id())
-    STEPS = ["load", "provision", "connect", "configure", "deploy", "summarize"]
+    STEPS = ["load", "provision", "connect", "deploy", "summarize"]
     if consistency_only:
         ACTION = "CONSISTENCY CHECK"
         SUCCESS_FORMAT = {"cyan": True}

@@ -85,19 +85,8 @@ class RPCWrapper(object):
                 elif type == "batou-output":
                     _, output_cmd, args, kw = message
                     getattr(output, output_cmd)(*args, **kw)
-                elif type == "batou-configuration-error":
-                    raise SilentConfigurationError()
-                elif type == "batou-deployment-error":
-                    raise DeploymentError()
                 elif type == "batou-unknown-error":
                     output.error(message[1])
-                    raise RuntimeError(
-                        "{}: Remote exception encountered.".format(
-                            self.host.fqdn
-                        )
-                    )
-                elif type == "batou-error":
-                    # Remote put out the details already.
                     raise RuntimeError(
                         "{}: Remote exception encountered.".format(
                             self.host.fqdn
@@ -330,7 +319,7 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
         # know about locally)
         self.rpc.setup_output(output.enable_debug)
 
-        self.rpc.setup_deployment(
+        return self.rpc.setup_deployment(
             env.name,
             self.name,
             env.overrides,
