@@ -50,7 +50,7 @@ simple application:
       def configure(self):
           self += File(
               'tick.sh',
-              mode=0o755,
+              mode="rwxr-xr-x", # note: you can also pass an octal number, e.g. 0o755
               content="""\
   #!/bin/bash
   while true; do
@@ -394,7 +394,7 @@ class:
       def configure(self):
           self += File(
               'tick.sh',
-              mode=0o755,
+              mode="rwxr-xr-x",
               content="""\
   #!/bin/bash
   while true; do
@@ -479,7 +479,7 @@ relative to the directory that the ``component.py`` is placed in:
       def configure(self):
           self += File(
               'tick.sh',
-              mode=0o755,
+              mode="rwxr-xr-x",
               source='tick.sh')
 
 Also, templating with Python format strings is very limited. batou thus
@@ -512,7 +512,7 @@ work directory:
       sleep = Attribute(int, 1)
 
       def configure(self):
-          self += File('tick.sh', mode=0o755)
+          self += File('tick.sh', mode="rwxr-xr-x")
 
 To disable templating and encoding handling, you can use the ``BinaryFile``
 component:
@@ -562,7 +562,7 @@ To start managing a secret, first add a new override attribute
       sleep = Attribute(int, 1)
 
       def configure(self):
-          self += File('tick.sh', mode=0o755)
+          self += File('tick.sh', mode="rwxr-xr-x")
 
 .. code-block:: bash
   :caption: components/myapp/tick.sh (v2)
@@ -751,7 +751,7 @@ To use those secret files, you can simply retrieve them from the environment obj
       def configure(self):
           self += File(
             'secrets.yaml',
-            mode=0600,
+            mode="rwxr-xr-x",
             content=self.environment.secret_files['secretdata.yaml'])
 
 
@@ -1079,7 +1079,7 @@ a program component:
       sleep = Attribute(int, 1)
 
       def configure(self):
-          self += File('tick.sh', mode=0o755)
+          self += File('tick.sh', mode="rwxr-xr-x")
           self += Program('tick', command='tick.sh')
 
 Deploying it enables supervisor in its own virtualenv and starts the

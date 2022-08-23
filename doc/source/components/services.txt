@@ -32,7 +32,7 @@ Alternatively to using Supervisor you can register each program as a system-wide
     class Tick(Component):
 
         def configure(self):
-            self += File('tick.sh', mode=0o755)
+            self += File('tick.sh', mode="rwxr-xr-x")
 
             self += Service('tick.sh',
                 systemd=dict(Type='simple',
