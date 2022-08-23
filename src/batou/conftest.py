@@ -2,6 +2,8 @@ import os.path
 
 import pytest
 
+import batou.utils
+
 
 @pytest.fixture(autouse=True)
 def ensure_gpg_homedir(monkeypatch):
@@ -9,3 +11,10 @@ def ensure_gpg_homedir(monkeypatch):
         os.path.dirname(__file__), "secrets", "tests", "fixture", "gnupg"
     )
     monkeypatch.setitem(os.environ, "GNUPGHOME", home)
+
+
+@pytest.fixture(autouse=True)
+def reset_address_defaults():
+    v4, v6 = batou.utils.Address.require_v4, batou.utils.Address.require_v6
+    yield
+    batou.utils.Address.require_v4, batou.utils.Address.require_v6 = v4, v6

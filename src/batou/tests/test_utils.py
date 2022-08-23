@@ -172,11 +172,9 @@ def test_address_v6_only(monkeypatch):
     monkeypatch.setitem(resolve_v6_override, hostname, "::346")
 
     with pytest.raises(socket.gaierror) as f:
-        Address(hostname, 1234)
-    assert str(f.value) in RESOLVER_ERRORS
+        a = Address(hostname, 1234)
+        a.listen
 
-    with pytest.raises(socket.gaierror) as f:
-        Address(hostname, 1234, require_v6=True)
     assert str(f.value) in RESOLVER_ERRORS
 
     address = Address(hostname, 1234, require_v4=False, require_v6=True)
@@ -186,20 +184,52 @@ def test_address_v6_only(monkeypatch):
 
 def test_address_fails_when_name_cannot_be_looked_up_at_all():
     with pytest.raises(socket.gaierror) as f:
-        Address("does-not-exist.example.com:1234")
+        a = Address("does-not-exist.example.com:1234")
+        a.listen
     assert str(f.value) in RESOLVER_ERRORS
 
     with pytest.raises(socket.gaierror) as f:
-        Address(
+        a = Address(
             "does-not-exist.example.com:1234", require_v4=False, require_v6=True
         )
+        a.listen_v6
     assert str(f.value) in RESOLVER_ERRORS
 
     with pytest.raises(socket.gaierror) as f:
-        Address(
+        a = Address(
             "does-not-exist.example.com:1234", require_v4=True, require_v6=True
         )
+        a.listen
+    with pytest.raises(socket.gaierror) as f:
+        a = Address(
+            "does-not-exist.example.com:1234", require_v4=True, require_v6=True
+        )
+        a.listen_v6
     assert str(f.value) in RESOLVER_ERRORS
+
+
+def test_address_optional_when_name_cannot_be_looked_up_at_all():
+    a = Address(
+        "does-not-exist.example.com:1234",
+        require_v4="optional",
+        require_v6="optional",
+    )
+    assert a.listen is None
+    assert a.listen_v6 is None
+
+
+def test_address_required_false_prohibited_to_use():
+    a = Address(
+        "does-not-exist.example.com:1234", require_v4=True, require_v6=False
+    )
+    with pytest.raises(batou.IPAddressConfigurationError):
+        a.listen_v6
+
+    a = Address(
+        "does-not-exist.example.com:1234", require_v4=False, require_v6=True
+    )
+    with pytest.raises(batou.IPAddressConfigurationError):
+        a.listen
 
 
 def test_address_format_with_port():
