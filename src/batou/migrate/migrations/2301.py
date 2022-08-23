@@ -4,16 +4,24 @@ from pathlib import Path
 def migrate(output):
     """Move secrets to environments."""
     output(
-        "New environments structure",
+        "Environments have separate directories now",
         """
-        Each environment is now a directory containing all the configuration
-        files: The unencrypted configuration is now stored in `environment.cfg`
-        whereas the encrypted one is stored in `secrets.cfg`. The previous
-        `secrets` directory is no more. Additional encrypted files are now in
-        the directory of the environment they belong to. Their names are now
-        prefixed with `secret-` instead of the name of the environment they
-        belong to. **Please note:** This migration step is done automatically.
-        You just have to check-in the changes to the version control system.""",
+
+Each environment has been turned into a separate directory containing all the
+configuration files:
+
+* unencrypted configuration is now stored in
+  `environments/<env>/environment.cfg`
+* encrypted configuration is now stored in `environments/<env>/secrets.cfg`
+* additional encrypted files are stored in `environments/<env>/secret-*`
+
+The old `secrets` directory is now gone.
+
+All data was migrated automatically for you, but you will need to commit those
+changes manually.
+
+        """,
+        "automatic",
     )
     environments = _get_environment_names()
     for name in environments:
