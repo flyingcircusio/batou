@@ -105,7 +105,7 @@ class File(Component):
                         guess_source, self._unmapped_path
                     )
                 )
-        if self.content or self.source:
+        if self.ensure == "file" and (self.content or self.source):
             if self.template_args is None:
                 self.template_args = dict()
             if not self.template_context:

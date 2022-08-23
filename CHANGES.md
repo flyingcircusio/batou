@@ -42,6 +42,8 @@
 
 - Check python venvs for functional `pip`.
 
+- Fix use of `File` to sync a directory.
+
 
 2.3b3 (2021-11-30)
 ------------------
