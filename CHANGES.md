@@ -4,12 +4,16 @@
 2.3b5 (unreleased)
 ------------------
 
+- Revise the new Address require_v4/require_v6 to allow environment-based
+  customization that can be used to revert back to the old settings.
+  ([#270](https://github.com/flyingcircusio/batou/issues/270))
+
 - Do not clobber git clones by default. Add new option `clobber` to allow
   specifying that a git clone may clobber the target directory.
   ([#298](https://github.com/flyingcircusio/batou/issues/298))
 
 - Add `checksum(value)` method to `Component` to easily compute sha256
-  checksums.
+  checksums. ([#232](https://github.com/flyingcircusio/batou/issues/232))
 
 
 2.3b4 (2022-08-22)

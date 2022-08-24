@@ -1,3 +1,4 @@
+import ast
 import glob
 import json
 import os
@@ -95,6 +96,9 @@ class Environment(object):
     timeout = None
     target_directory = None
     jobs = None
+
+    require_v4 = True
+    require_v6 = False
 
     repository_url = None
     repository_root = None
@@ -246,6 +250,19 @@ class Environment(object):
             sandbox = config["vfs"]["sandbox"]
             sandbox = getattr(batou.vfs, sandbox)(self, config["vfs"])
             self.vfs_sandbox = sandbox
+
+        def parse_addr_option(value):
+            if value == "optional":
+                return value
+            return bool(ast.literal_eval(value))
+
+        for attr in ["require_v4", "require_v6"]:
+            if attr not in environment:
+                continue
+            setattr(self, attr, parse_addr_option(environment[attr]))
+
+        batou.utils.Address.require_v4 = self.require_v4
+        batou.utils.Address.require_v6 = self.require_v6
 
         if self.connect_method == "local":
             self.host_factory = LocalHost
