@@ -92,6 +92,13 @@ class RPCWrapper(object):
                             self.host.fqdn
                         )
                     )
+                elif type == "batou-error":
+                    # Remote put out the details already.
+                    raise RuntimeError(
+                        "{}: Remote exception encountered.".format(
+                            self.host.fqdn
+                        )
+                    )
                 else:
                     raise RuntimeError(
                         "{}: Unknown message type {}".format(
@@ -219,7 +226,7 @@ class LocalHost(Host):
         self.remote_base = self.rpc.ensure_base(env.deployment_base)
 
         # XXX the cwd isn't right.
-        self.rpc.setup_deployment(
+        return self.rpc.setup_deployment(
             env.name,
             self.name,
             env.overrides,

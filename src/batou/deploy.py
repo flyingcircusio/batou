@@ -1,4 +1,5 @@
 import asyncio
+import pickle
 import random
 import sys
 import threading
@@ -47,6 +48,53 @@ class Connector(threading.Thread):
         if self.exc_info:
             exc_type, exc_value, exc_tb = self.exc_info
             raise exc_value.with_traceback(exc_tb)
+
+
+class ConfigureErrors(ReportingException):
+    def __init__(self, errors, all_reporting_hostnames):
+        self.errors = errors  # in the format of [(set[reporting_hostnames], set[affected_hostnames], error)]
+        self.all_reporting_hostnames = all_reporting_hostnames
+
+    def report(self):
+        for reporting_hostnames, affected_hostnames, error in self.errors:
+            # if it's a SilentConfigurationError, we don't want to report it
+            if isinstance(error, SilentConfigurationError):
+                continue
+            output.line("")
+            # if error is reportable, report otherwise, print traceback
+            if hasattr(error, "report"):
+                error.report()
+            else:
+                output.error("Unexpected error:")
+                tb = traceback.TracebackException.from_exception(error)
+                for line in tb.format():
+                    output.line("\t" + line.strip(), red=True)
+            if affected_hostnames:
+                output.tabular(
+                    "Affected hosts", ", ".join(affected_hostnames), red=True
+                )
+            # if some hosts are not reporting, we want to show them
+            if reporting_hostnames != self.all_reporting_hostnames:
+                output.tabular(
+                    "Reporting hosts", ", ".join(reporting_hostnames), red=True
+                )
+                output.tabular(
+                    "Not reporting",
+                    ", ".join(
+                        self.all_reporting_hostnames - reporting_hostnames
+                    ),
+                    red=True,
+                )
+
+        output.section(
+            "{} ERRORS - CONFIGURATION FAILED".format(len(self.errors)),
+            red=True,
+        )
+
+    def __str__(self):
+        return "{} DeploymentError(s): {}".format(
+            len(self.errors), ", ".join(str(e) for e in self.errors)
+        )
 
 
 class Deployment(object):
@@ -146,10 +194,49 @@ class Deployment(object):
         # but do not wait for them to be joined.
         self.connections = list(self._connections())
         [c.join() for c in self.connections]
+        all_errors = []
+        all_reporting_hostnames = set()
         for c in self.connections:
-            # XXX errors auswerten, siehe reporting-code den ich aus dem
-            # __channelexec__ block entfernt habe
-            pass
+            errors = pickle.loads(c.errors)
+            reporting_hostname = c.host.name
+            all_reporting_hostnames.add(reporting_hostname)
+            all_errors.extend([(reporting_hostname, e) for e in errors])
+            # collects all errors into (reporting_hostname, error) tuples
+        # if there are no errors, we're done
+        if not all_errors:
+            return
+        # collect with .should_merge
+        errors_by_equivalence_class = []
+        for hostname, error in all_errors:
+            # check wether it fits into an existing equivalence class
+            for equivalence_class in errors_by_equivalence_class:
+                # they are non-empty
+                if error.should_merge(equivalence_class[0][1]):
+                    equivalence_class.append((hostname, error))
+                    break
+            else:
+                # no existing equivalence class fits, create a new one
+                errors_by_equivalence_class.append([(hostname, error)])
+        # now we have a list of equivalence classes of errors
+        # we can merge them into a list of (reporting_hostname, affected_hostnames, error) tuples
+        merged_errors = []
+        for equivalence_class in errors_by_equivalence_class:
+            reporting_hostnames = set(
+                hostname for hostname, _ in equivalence_class
+            )
+            merged_error, affected_hostnames = type(
+                equivalence_class[0][1]
+            ).merge([e for _, e in equivalence_class])
+            merged_errors.append(
+                (
+                    reporting_hostnames,
+                    affected_hostnames,
+                    merged_error,
+                )
+            )
+
+        merged_errors.sort(key=lambda e: getattr(e[2], "sort_key", (-99,)))
+        raise ConfigureErrors(merged_errors, all_reporting_hostnames)
 
     def _launch_components(self, todolist):
         for key, info in list(todolist.items()):
@@ -297,7 +384,9 @@ def main(
 
                 exception = ""
                 for exception in environment.exceptions:
-                    if isinstance(exception, ReportingException):
+                    # if isinstance(exception, ReportingException):
+                    # since at least one or two exceptions have to be duck typed:
+                    if hasattr(exception, "report"):
                         output.line("")
                         exception.report()
                     else:

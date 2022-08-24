@@ -22,6 +22,7 @@ from batou import (
     MissingComponent,
     MissingEnvironment,
     NonConvergingWorkingSet,
+    SilentConfigurationError,
     SuperfluousComponentSection,
     SuperfluousSection,
     UnknownComponentConfigurationError,
@@ -161,14 +162,14 @@ class Environment(object):
             / "environment.cfg"
         )
         if not config_file.exists():
-            raise MissingEnvironment(self)
+            raise MissingEnvironment.from_context(self)
 
         mapping_file = self._environment_path("hostmap.json")
         if os.path.exists(mapping_file):
             with open(mapping_file, "r") as f:
                 for k, v in json.load(f).items():
                     if k in self.hostname_mapping:
-                        raise DuplicateHostMapping(
+                        raise DuplicateHostMapping.from_context(
                             k, v, self.hostname_mapping[k]
                         )
                     self.hostname_mapping[k] = v
@@ -180,7 +181,9 @@ class Environment(object):
             try:
                 self.components.update(load_components_from_file(filename))
             except Exception as e:
-                self.exceptions.append(ComponentLoadingError(filename, e))
+                self.exceptions.append(
+                    ComponentLoadingError.from_context(filename, e)
+                )
 
         config = Config(config_file)
 
@@ -197,11 +200,15 @@ class Environment(object):
                 continue
             if not section.startswith("component:"):
                 if section not in ["hosts", "environment", "vfs", "resolver"]:
-                    self.exceptions.append(SuperfluousSection(section))
+                    self.exceptions.append(
+                        SuperfluousSection.from_context(section)
+                    )
                 continue
             root_name = section.replace("component:", "")
             if root_name not in self.components:
-                self.exceptions.append(SuperfluousComponentSection(root_name))
+                self.exceptions.append(
+                    SuperfluousComponentSection.from_context(root_name)
+                )
                 continue
             self.overrides.setdefault(root_name, {})
             self.overrides[root_name].update(config[section])
@@ -284,7 +291,9 @@ class Environment(object):
                 elif ":" in ip:
                     v6[key] = ip
                 else:
-                    self.exceptions.append(InvalidIPAddressError(ip))
+                    self.exceptions.append(
+                        InvalidIPAddressError.from_context(ip)
+                    )
 
         batou.utils.resolve_override.update(v4)
         batou.utils.resolve_v6_override.update(v6)
@@ -344,7 +353,9 @@ class Environment(object):
 
             # The name can now have been remapped.
             if host.name in self.hosts:
-                self.exceptions.append(DuplicateHostError(host.name))
+                self.exceptions.append(
+                    DuplicateHostError.from_context(host.name)
+                )
 
             self.hosts[host.name] = host
 
@@ -360,7 +371,9 @@ class Environment(object):
                     component, host, settings["features"], settings["ignore"]
                 )
             except KeyError:
-                self.exceptions.append(MissingComponent(component, host.name))
+                self.exceptions.append(
+                    MissingComponent.from_context(component, host.name)
+                )
 
     def _set_defaults(self):
         if self.update_method is None:
@@ -454,15 +467,23 @@ class Environment(object):
                 except ConfigurationError as e:
                     # A known exception which we can report gracefully later.
                     exceptions.append(e)
-                    retry.add(root)
+                except SilentConfigurationError as e:
+                    # A silent exception which we can ignore.
+                    pass
                 except Exception as e:
                     # An unknown exception which we have to work harder
                     # to report gracefully.
                     ex_type, ex, tb = sys.exc_info()
                     exceptions.append(
-                        UnknownComponentConfigurationError(root, e, tb)
+                        UnknownComponentConfigurationError.from_context(
+                            root, e, tb
+                        )
                     )
-                    retry.add(root)
+                else:
+                    # configured this component successfully
+                    # we won't have to retry it later
+                    continue
+                retry.add(root)
 
             retry.update(self.resources.dirty_dependencies)
             retry.update(self.resources.unsatisfied_components)
@@ -476,21 +497,21 @@ class Environment(object):
                     batou.utils.revert_graph(root_dependencies)
                 )
             except CycleError as e:
-                exceptions.append(CycleErrorDetected(e))
+                exceptions.append(CycleErrorDetected.from_context(e))
 
             if retry in previous_working_sets:
                 # If any resources were required, now is the time to report
                 # them.
                 if self.resources.unsatisfied:
                     exceptions.append(
-                        UnsatisfiedResources(
+                        UnsatisfiedResources.from_context(
                             self.resources.unsatisfied_keys_and_components
                         )
                     )
 
                 # We did not manage to improve on our last working set, so we
                 # give up.
-                exceptions.append(NonConvergingWorkingSet(retry))
+                exceptions.append(NonConvergingWorkingSet.from_context(retry))
                 break
 
             working_set = retry
@@ -499,12 +520,16 @@ class Environment(object):
         # provided but never used. We're rather picky here and report this as
         # an error.
         if self.resources.unused:
-            exceptions.append(UnusedResources(self.resources.unused))
+            exceptions.append(
+                UnusedResources.from_context(self.resources.unused)
+            )
 
         for root in order:
             root.log_finish_configure()
 
         self.exceptions.extend(exceptions)
+
+        return self.exceptions
 
     def root_dependencies(self, host=None):
         """Return all roots (host/component) with their direct dependencies.

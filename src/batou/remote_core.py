@@ -1,6 +1,7 @@
 import json
 import os
 import os.path
+import pickle
 import pwd
 import subprocess
 import traceback
@@ -68,7 +69,7 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        message = f"{key.rjust(10)}{separator}{value}"
+        message = f"{key.rjust(15)}{separator}{value}"
         self.annotate(message, **kw)
 
     def section(self, title, debug=False, **format):
@@ -169,9 +170,7 @@ class Deployment(object):
             self.environment.hosts[hostname].data.update(data)
         self.environment.secret_files = self.secret_files
         self.environment.secret_data = self.secret_data
-        self.environment.configure()
-
-        return self.environment.exceptions
+        return self.environment.configure()
 
     def deploy(self, root, predict_only):
         host = self.environment.get_host(self.host_name)
@@ -359,7 +358,8 @@ def setup_deployment(*args):
     os.chdir(deployment_base)
     global deployment
     deployment = Deployment(*args)
-    return deployment.load()
+    errors = deployment.load()
+    return pickle.dumps(errors)
 
 
 def deploy(root, predict_only=False):
@@ -401,6 +401,12 @@ if __name__ == "__channelexec__":
         try:
             result = locals()[task](*args, **kw)
             channel.send(("batou-result", result))
-        except Exception:
-            tb = traceback.format_exc()
-            channel.send(("batou-unknown-error", tb))
+        except Exception as e:
+            # I voted for duck-typing here as we may be running in the
+            # bootstrapping phase and don't have access to all classes yet.
+            if hasattr(e, "report"):
+                e.report()
+                channel.send(("batou-error", None))
+            else:
+                tb = traceback.format_exc()
+                channel.send(("batou-unknown-error", tb))

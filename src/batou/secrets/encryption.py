@@ -105,7 +105,7 @@ class EncryptedFile(object):
                 | (fcntl.LOCK_EX if self.write_lock else fcntl.LOCK_SH),
             )
         except BlockingIOError:
-            raise FileLockedError(self.encrypted_filename)
+            raise FileLockedError.from_context(self.encrypted_filename)
 
     def _decrypt(self):
         args = [self.gpg()]
@@ -117,7 +117,7 @@ class EncryptedFile(object):
                 args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
         except subprocess.CalledProcessError as e:
-            raise GPGCallError(args, e.returncode, e.stderr) from e
+            raise GPGCallError.from_context(args, e.returncode, e.stderr) from e
         else:
             return result.stdout.decode("utf-8")
 
