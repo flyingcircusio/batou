@@ -24,14 +24,20 @@ from batou.component import ComponentDefinition
 
 def test_configurationerrors_can_be_sorted(root):
     errors = []
-    errors.append(ConfigurationError("asdffdas", root.component))
+    errors.append(ConfigurationError.from_context("asdffdas", root.component))
     errors.append(
-        ConversionError(root.component, "testkey", "testvalue", str, "foobar")
+        ConversionError.from_context(
+            root.component, "testkey", "testvalue", str, "foobar"
+        )
     )
-    errors.append(MissingOverrideAttributes(root.component, ["asdf", "bsdfg"]))
+    errors.append(
+        MissingOverrideAttributes.from_context(
+            root.component, ["asdf", "bsdfg"]
+        )
+    )
 
     errors.append(
-        DuplicateComponent(
+        DuplicateComponent.from_context(
             ComponentDefinition(root.component.__class__, "asdf.py"),
             ComponentDefinition(root.component.__class__, "bsdf.py"),
         )
@@ -43,31 +49,35 @@ def test_configurationerrors_can_be_sorted(root):
         _, exc_value, exc_traceback = sys.exc_info()
 
     errors.append(
-        UnknownComponentConfigurationError(root, exc_value, exc_traceback)
+        UnknownComponentConfigurationError.from_context(
+            root, exc_value, exc_traceback
+        )
     )
 
-    errors.append(UnusedResources({"asdf": [(root.component, 1)]}))
+    errors.append(UnusedResources.from_context({"asdf": {root: 1}}))
 
-    errors.append(UnsatisfiedResources({"asdf": [root]}))
+    errors.append(UnsatisfiedResources.from_context({"asdf": [root]}))
 
-    errors.append(MissingEnvironment(root.environment))
+    errors.append(MissingEnvironment.from_context(root.environment))
 
-    errors.append(ComponentLoadingError("asdf.py", ValueError("asdf")))
+    errors.append(
+        ComponentLoadingError.from_context("asdf.py", ValueError("asdf"))
+    )
 
-    errors.append(MissingComponent("component", "hostname"))
+    errors.append(MissingComponent.from_context("component", "hostname"))
 
-    errors.append(SuperfluousSection("asdf"))
+    errors.append(SuperfluousSection.from_context("asdf"))
 
-    errors.append(SuperfluousComponentSection("asdf"))
+    errors.append(SuperfluousComponentSection.from_context("asdf"))
 
-    errors.append(SuperfluousSecretsSection("asdf"))
+    errors.append(SuperfluousSecretsSection.from_context("asdf"))
 
-    errors.append(CycleErrorDetected("foo"))
+    errors.append(CycleErrorDetected.from_context("foo"))
 
-    errors.append(NonConvergingWorkingSet([root]))
+    errors.append(NonConvergingWorkingSet.from_context([root]))
 
-    errors.append(DuplicateHostError("asdf"))
+    errors.append(DuplicateHostError.from_context("asdf"))
 
-    errors.append(InvalidIPAddressError(("127.0.0.256/24")))
+    errors.append(InvalidIPAddressError.from_context(("127.0.0.256/24")))
 
     errors.sort(key=lambda x: x.sort_key)

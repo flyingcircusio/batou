@@ -2,6 +2,7 @@ import pytest
 
 from batou import (
     CycleErrorDetected,
+    NonConvergingWorkingSet,
     UnknownComponentConfigurationError,
     UnsatisfiedResources,
     UnusedResources,
@@ -68,8 +69,9 @@ def env():
 
 def test_provider_without_consumer_raises_error(env):
     env.add_root("provider", Host("host", env))
-    with pytest.raises(UnusedResources):
-        env.configure()
+    errors = env.configure()
+    assert len(errors) == 1
+    assert isinstance(errors[0], UnusedResources)
 
 
 def test_consumer_retrieves_value_from_provider_order1(env):
@@ -83,8 +85,9 @@ def test_consumer_retrieves_value_from_provider_order1(env):
 def test_provider_with_consumer_limited_by_host_raises_error(env):
     env.add_root("provider", Host("test2", env))
     env.add_root("samehostconsumer", Host("test", env))
-    with pytest.raises(UnusedResources):
-        env.configure()
+    errors = env.configure()
+    assert len(errors) == 1
+    assert isinstance(errors[0], UnusedResources)
 
 
 def test_consumer_retrieves_value_from_provider_order2(env):
@@ -97,11 +100,12 @@ def test_consumer_retrieves_value_from_provider_order2(env):
 
 def test_consumer_without_provider_raises_error(env):
     env.add_root("consumer", Host("host", env))
-    with pytest.raises(Exception):
-        env.configure()
+    assert len(env.configure()) > 0
     for exc in env.exceptions:
         if isinstance(exc, UnsatisfiedResources):
-            assert set(["the-answer"]) == set(exc.resources)
+            assert set(["the-answer"]) == set(
+                [key for key, _ in exc.unsatisfied_resources]
+            )
             break
     else:
         assert False, "Did not find exception"
@@ -109,20 +113,25 @@ def test_consumer_without_provider_raises_error(env):
 
 def test_aggressive_consumer_raises_unsatisfiedrequirement(env):
     env.add_root("aggressiveconsumer", Host("host", env))
-    with pytest.raises(Exception):
-        env.configure()
+    assert len(env.configure()) > 0
     for exc in env.exceptions:
         if isinstance(exc, UnsatisfiedResources):
-            assert set(["the-answer"]) == set(exc.resources)
+            assert set(["the-answer"]) == set(
+                [key for key, _ in exc.unsatisfied_resources]
+            )
             break
     else:
         assert False, "Did not find expected exception."
 
 
 def test_broken_component_logs_real_exception(env):
-    env.add_root("broken", "host")
-    with pytest.raises(UnknownComponentConfigurationError):
-        env.configure()
+    env.add_root("broken", Host("host", env))
+    errors = env.configure()
+    assert len(errors) == 2
+    # could be either one of the two exceptions
+    error_types = (UnknownComponentConfigurationError, NonConvergingWorkingSet)
+    assert isinstance(errors[0], error_types)
+    assert isinstance(errors[1], error_types)
 
 
 def test_consumer_retrieves_value_from_provider_with_same_host(env):
@@ -161,8 +170,11 @@ def test_components_are_ordered_over_multiple_hosts(env):
 def test_circular_depending_component(env):
     env.add_root("circular1", Host("test", env))
     env.add_root("circular2", Host("test", env))
-    with pytest.raises(CycleErrorDetected):
-        env.configure()
+    errors = env.configure()
+    assert len(errors) == 2
+    error_types = (CycleErrorDetected, NonConvergingWorkingSet)
+    assert isinstance(errors[0], error_types)
+    assert isinstance(errors[1], error_types)
 
 
 def test_dirty_dependency_for_one_time_retrieval(env, capsys):

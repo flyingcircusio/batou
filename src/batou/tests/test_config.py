@@ -113,26 +113,28 @@ def test_config_exceptions_orderable(env):
         exc_type, ex, tb = sys.exc_info()
 
     exceptions = [
-        batou.ConfigurationError("test", None),
-        batou.ConfigurationError("test", c),
-        batou.ConversionError(c, "key", 123, int, "invalid int"),
-        batou.MissingOverrideAttributes(c, ["sadf"]),
-        batou.DuplicateComponent(c.root, c.root),
-        batou.UnknownComponentConfigurationError(c.root, ex, tb),
-        batou.UnusedResources({"asdf": [(c.root, 1)]}),
-        batou.UnsatisfiedResources({"asdf": [c.root]}),
-        batou.MissingEnvironment(env),
-        batou.MissingComponent("asdf", "localhost"),
-        batou.SuperfluousSection("asdf"),
-        batou.SuperfluousComponentSection("asdf"),
-        batou.SuperfluousSecretsSection("asdf"),
-        batou.CycleErrorDetected(ValueError()),
-        batou.NonConvergingWorkingSet([c]),
+        batou.ConfigurationError.from_context("test", None),
+        batou.ConfigurationError.from_context("test", c),
+        batou.ConversionError.from_context(c, "key", 123, int, "invalid int"),
+        batou.MissingOverrideAttributes.from_context(c, ["sadf"]),
+        batou.DuplicateComponent.from_context(
+            env.components["zeo"], env.components["zeo"]
+        ),
+        batou.UnknownComponentConfigurationError.from_context(c.root, ex, tb),
+        batou.UnusedResources.from_context({"asdf": {c.root: 1}}),
+        batou.UnsatisfiedResources.from_context({"asdf": [c.root]}),
+        batou.MissingEnvironment.from_context(env),
+        batou.MissingComponent.from_context("asdf", "localhost"),
+        batou.SuperfluousSection.from_context("asdf"),
+        batou.SuperfluousComponentSection.from_context("asdf"),
+        batou.SuperfluousSecretsSection.from_context("asdf"),
+        batou.CycleErrorDetected.from_context(ValueError()),
+        batou.NonConvergingWorkingSet.from_context([c]),
         batou.DeploymentError(),
-        batou.DuplicateHostMapping("host", "map1", "map2"),
-        batou.RepositoryDifferentError("asdf", "bsdf"),
-        batou.DuplicateHostError("localhost"),
-        batou.InvalidIPAddressError("asdf"),
+        batou.DuplicateHostMapping.from_context("host", "map1", "map2"),
+        batou.RepositoryDifferentError.from_context("asdf", "bsdf"),
+        batou.DuplicateHostError.from_context("localhost"),
+        batou.InvalidIPAddressError.from_context("asdf"),
     ]
 
     # Ensure all exceptions can be compared
