@@ -1045,6 +1045,9 @@ class ConfigString(str):
     """
 
 
+NO_DEFAULT = object()
+
+
 class Attribute(object):
     """An attribute descriptor is used to provide:
 
@@ -1084,7 +1087,7 @@ class Attribute(object):
     def __init__(
         self,
         conversion=str,
-        default=None,
+        default=NO_DEFAULT,
         expand=True,
         map=False,
     ):
@@ -1105,6 +1108,8 @@ class Attribute(object):
             value = self.default
             if isinstance(self.default, ConfigString):
                 value = self.from_config_string(obj, value)
+            elif value is NO_DEFAULT:
+                raise AttributeError("No override and no default given.")
             self.__set__(obj, value)
         return self.instances[obj]
 

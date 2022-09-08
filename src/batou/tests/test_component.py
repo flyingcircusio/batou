@@ -577,8 +577,21 @@ def test_attribute_conversion_functions(conv_func, conf_value, expected, root):
 
     f = Foo()
     root.component += f
-    root.prepare()
     assert f.a == expected
+
+
+def test_attribute_missing_override_and_default(root):
+    class Foo(Component):
+        a = Attribute(str)
+
+        def configure(self):
+            self.a
+
+    f = Foo()
+    with pytest.raises(AttributeError) as e:
+        root.component += f
+
+    assert e.value.args[0] == "No override and no default given."
 
 
 @pytest.mark.parametrize(
@@ -597,7 +610,6 @@ def test_attribute_conversion_default(default, expected, root):
 
     f = Foo()
     root.component += f
-    root.prepare()
     assert f.a == expected
 
 
