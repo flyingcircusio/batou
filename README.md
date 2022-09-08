@@ -82,7 +82,7 @@ The project is licensed under the 2-clause BSD license.
 * Run `./develop.sh` to create a local virtualenv with everything set up.
 * Run the test suite using: `bin/tox`
 * Build the documentation using: `cd doc; make`
-
+* Set up GPG for the examples with `export GNUPGHOME=<DIRECTORY OF BATOU HERE>/src/batou/secrets/tests/fixture/gnupg`
 ## Changelog
 
 See [CHANGES.md](./CHANGES.md).
