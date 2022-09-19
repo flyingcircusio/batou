@@ -174,6 +174,7 @@ class ConversionError(ConfigurationError):
         )
         # TODO provide traceback in debug output
         # provide file, line number, excerpt of attribute definition
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class SilentConfigurationError(Exception):
@@ -400,6 +401,7 @@ class ComponentLoadingError(ConfigurationError):
         output.tabular("File", self.filename, red=True)
         output.tabular("Exception", self.exception_str, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class MissingComponent(ConfigurationError):
@@ -441,6 +443,7 @@ class SuperfluousSection(ConfigurationError):
         output.error("Superfluous section in environment configuration")
         output.tabular("Section", self.section, red=True)
         # TODO provide location and context in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class SuperfluousComponentSection(ConfigurationError):
@@ -465,6 +468,7 @@ class SuperfluousComponentSection(ConfigurationError):
         output.error("Override section for unknown component found")
         output.tabular("Component", self.component_name, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class SuperfluousSecretsSection(ConfigurationError):
@@ -489,6 +493,7 @@ class SuperfluousSecretsSection(ConfigurationError):
         output.error("Secrets section for unknown component found")
         output.tabular("Component", self.component_name, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class DuplicateOverride(ConfigurationError):
@@ -515,6 +520,7 @@ class DuplicateOverride(ConfigurationError):
         output.tabular("Component", self.component_name, red=True)
         output.tabular("Attribute", self.attribute, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class CycleErrorDetected(ConfigurationError):
@@ -532,6 +538,7 @@ class CycleErrorDetected(ConfigurationError):
         output.error("Found dependency cycle")
         output.annotate(self.error_str, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
     def __str__(self):
         return "Found dependency cycle: " + self.error_str
@@ -663,3 +670,4 @@ class IPAddressConfigurationError(ConfigurationError):
         )
 
         # TODO provide traceback/line numbers/excerpt
+        # see: https://github.com/flyingcircusio/batou/issues/316
