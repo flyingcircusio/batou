@@ -1,6 +1,7 @@
 import json
 import os
 import os.path
+import pickle
 import pwd
 import subprocess
 import traceback
@@ -68,7 +69,7 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        message = f"{key.rjust(10)}{separator}{value}"
+        message = f"{key.rjust(15)}{separator}{value}"
         self.annotate(message, **kw)
 
     def section(self, title, debug=False, **format):
@@ -125,6 +126,10 @@ class ChannelBackend(object):
 
 
 class Deployment(object):
+    """Thin layer to represent a deployment on an agent without
+    using the actual deployment class.
+
+    """
 
     environment = None
 
@@ -165,7 +170,7 @@ class Deployment(object):
             self.environment.hosts[hostname].data.update(data)
         self.environment.secret_files = self.secret_files
         self.environment.secret_data = self.secret_data
-        self.environment.configure()
+        return self.environment.configure()
 
     def deploy(self, root, predict_only):
         host = self.environment.get_host(self.host_name)
@@ -353,7 +358,8 @@ def setup_deployment(*args):
     os.chdir(deployment_base)
     global deployment
     deployment = Deployment(*args)
-    deployment.load()
+    errors = deployment.load()
+    return pickle.dumps(errors)
 
 
 def deploy(root, predict_only=False):
@@ -383,11 +389,6 @@ def setup_output(debug):
     output.enable_debug = debug
 
 
-class DummyException(Exception):
-    # Support bootstrapping.
-    pass
-
-
 if __name__ == "__channelexec__":
     output = Output(ChannelBackend(channel))
     while not channel.isclosed():
@@ -400,49 +401,6 @@ if __name__ == "__channelexec__":
         try:
             result = locals()[task](*args, **kw)
             channel.send(("batou-result", result))
-        except getattr(
-            batou, "ConfigurationError", DummyException
-        ) as exception:
-            SilentConfigurationError = getattr(
-                batou, "SilentConfigurationError", DummyException
-            )
-            ReportingException = getattr(
-                batou, "ReportingException", DummyException
-            )
-
-            environment = deployment.environment
-            if exception not in environment.exceptions:
-                environment.exceptions.append(exception)
-
-            environment.exceptions = list(
-                filter(
-                    lambda e: not isinstance(e, SilentConfigurationError),
-                    environment.exceptions,
-                )
-            )
-            deployment.environment.exceptions.sort(key=lambda x: x.sort_key)
-
-            for exception in deployment.environment.exceptions:
-                if isinstance(exception, ReportingException):
-                    output.line("")
-                    exception.report()
-                else:
-                    output.line("")
-                    output.error("Unexpected exception")
-                    tb = traceback.TracebackException.from_exception(exception)
-                    for line in tb.format():
-                        output.line("\t" + line.strip(), red=True)
-
-            batou.output.section(
-                "{} ERRORS - CONFIGURATION FAILED".format(
-                    len(deployment.environment.exceptions)
-                ),
-                red=True,
-            )
-            channel.send(("batou-configuration-error", None))
-        except getattr(batou, "DeploymentError", DummyException) as e:
-            e.report()
-            channel.send(("batou-deployment-error", None))
         except Exception as e:
             # I voted for duck-typing here as we may be running in the
             # bootstrapping phase and don't have access to all classes yet.

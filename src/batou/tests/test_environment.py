@@ -202,7 +202,7 @@ components = bar
     )
     e.load_hosts(config)
     assert e.exceptions
-    assert "foo" == e.exceptions[0].hostname
+    assert "foo" == e.exceptions[0].affected_hostname
 
 
 @mock.patch("batou.environment.Environment.add_root")
@@ -328,6 +328,6 @@ def test_resolver_overrides_invalid_address(sample_service):
     e = Environment("test-resolver-invalid")
     e.load()
 
-    with pytest.raises(batou.InvalidIPAddressError) as err:
-        e.configure()
-    assert "thisisinvalid" == err.value.address
+    errors = e.configure()
+    assert len(errors) == 1
+    assert "thisisinvalid" == errors[0].address

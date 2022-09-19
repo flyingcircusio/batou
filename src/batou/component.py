@@ -83,7 +83,9 @@ def load_components_from_file(filename):
             continue
         compdef = ComponentDefinition(candidate, filename, defdir)
         if compdef.name in components:
-            raise DuplicateComponent(compdef, components[compdef.name])
+            raise DuplicateComponent.from_context(
+                compdef, components[compdef.name]
+            )
         components[compdef.name] = compdef
 
     return components
@@ -262,7 +264,7 @@ class Component(object):
                 value = attribute.from_config_string(self, value)
             setattr(self, key, value)
         if missing:
-            raise batou.MissingOverrideAttributes(self, missing)
+            raise batou.MissingOverrideAttributes.from_context(self, missing)
 
     def configure(self):
         """Configure the component by computing target state and declaring
@@ -331,12 +333,17 @@ class Component(object):
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         with self.chdir(self.workdir), self:
+            require_update = False
             try:
                 with batou.utils.Timer("{} verify()".format(self._breadcrumbs)):
                     call_with_optional_args(
                         self.verify, predicting=predict_only
                     )
             except AssertionError:
+                # avoid nested exception messages, when running `update()` in except block
+                require_update = True
+
+            if require_update:
                 self.__trigger_event__(
                     "before-update", predict_only=predict_only
                 )
@@ -1136,7 +1143,9 @@ class Attribute(object):
                 if getattr(obj.__class__, k, None) is self:
                     name = k
                     break
-            raise batou.ConversionError(obj, name, value, self.conversion, e)
+            raise batou.ConversionError.from_context(
+                obj, name, value, self.conversion, e
+            )
         return value
 
     def __set__(self, obj, value):

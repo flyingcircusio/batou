@@ -249,7 +249,7 @@ class Address(object):
         if used unconfigured.
         """
         if not self.require_v4:
-            raise IPAddressConfigurationError(self, 4)
+            raise IPAddressConfigurationError.from_context(self, 4)
 
         if not hasattr(self, "_listen_v4"):
             try:
@@ -275,7 +275,7 @@ class Address(object):
         if used unconfigured.
         """
         if not self.require_v6:
-            raise IPAddressConfigurationError(self, 6)
+            raise IPAddressConfigurationError.from_context(self, 6)
 
         if not hasattr(self, "_listen_v6"):
             try:
