@@ -1,6 +1,12 @@
 ## Changelog
 
 
+2.3b6 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.3b5 (2022-09-21)
 ------------------
 
