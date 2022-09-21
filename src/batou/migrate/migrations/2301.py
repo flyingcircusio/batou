@@ -26,7 +26,7 @@ changes manually.
     environments = _get_environment_names()
     # sort environments by length to ensure that we migrate the most specific
     # environments first
-    environments.sort(key=lambda x: -len(x))
+    environments.sort(key=len, reverse=True)
     for name in environments:
         _migrate_environment(name)
 
