@@ -4,6 +4,10 @@ import tempfile
 from batou import UpdateNeeded
 from batou.component import Component
 
+# Pass `USE_SUDO` as `admin_password` to use sudo for authorisation, like we
+# have on FC platform.
+USE_SUDO = object()
+
 
 class Command(Component):
 
@@ -28,10 +32,17 @@ class Command(Component):
         with open(self.tmp, "w") as f:
             f.write(cmd + "\n")
 
-        command = [
-            "mysql -Bs -u{{component.admin_user}}",
-            "-p{{component.admin_password}}",
-        ]
+        command = []
+
+        if self.admin_password is USE_SUDO:
+            command.append("sudo -u mysql")
+
+        command.append("mysql -Bs")
+
+        if self.admin_password is not USE_SUDO:
+            command.append("-u{{component.admin_user}}")
+            command.append("-p{{component.admin_password}}")
+
         if self.hostname:
             command.append("-h {{component.hostname}}")
         if self.port:
