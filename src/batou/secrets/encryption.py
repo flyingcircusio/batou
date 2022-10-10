@@ -37,6 +37,8 @@ class EncryptedFile(object):
     lockfd = None
     cleartext = None
 
+    is_new = None
+
     GPG_BINARY_CANDIDATES = ["gpg", "gpg2"]
 
     def __init__(self, encrypted_filename, write_lock=False, quiet=False):
@@ -105,11 +107,15 @@ EncryptedFile.__init__(
         """Encrypt cleartext and write into destination file file. ."""
         if not self.write_lock:
             raise RuntimeError("write() needs a write lock")
+        self.is_new = False
         self._encrypt(self.cleartext)
 
     def _lock(self):
         if debug:
             print(f"Locking {self.encrypted_filename}")
+        # if the file doesn't exist, we set is_new
+        if self.is_new is None:
+            self.is_new = not os.path.exists(self.encrypted_filename)
         self.lockfd = open(
             self.encrypted_filename, "a+" if self.write_lock else "r+"
         )
