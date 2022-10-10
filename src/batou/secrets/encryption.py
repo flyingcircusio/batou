@@ -10,6 +10,8 @@ from configupdater import ConfigUpdater
 
 from batou import FileLockedError, GPGCallError
 
+debug = False
+
 # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
 NULL = tempfile.TemporaryFile()
 
@@ -47,6 +49,16 @@ class EncryptedFile(object):
         `write_lock` must be set True if a modification of the file is
         intended.
         """
+        if debug:
+            print(
+                f"""\
+EncryptedFile.__init__(
+    self,
+    encrypted_filename={encrypted_filename},
+    write_lock={write_lock},
+    quiet={quiet},
+)"""
+            )
         # Ensure compatibility with pathlib.
         self.encrypted_filename = str(encrypted_filename)
         self.write_lock = write_lock
@@ -64,6 +76,8 @@ class EncryptedFile(object):
         with tempfile.TemporaryFile() as null:
             for gpg in self.GPG_BINARY_CANDIDATES:
                 try:
+                    if debug:
+                        print(f'Trying "{gpg} --version"')
                     subprocess.check_call(
                         [gpg, "--version"], stdout=null, stderr=null
                     )
@@ -94,6 +108,8 @@ class EncryptedFile(object):
         self._encrypt(self.cleartext)
 
     def _lock(self):
+        if debug:
+            print(f"Locking {self.encrypted_filename}")
         self.lockfd = open(
             self.encrypted_filename, "a+" if self.write_lock else "r+"
         )
@@ -113,6 +129,8 @@ class EncryptedFile(object):
             args += ["-q", "--no-tty", "--batch"]
         args += ["--decrypt", self.encrypted_filename]
         try:
+            if debug:
+                print(f"Decrypting with: {args}")
             result = subprocess.run(
                 args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
@@ -132,6 +150,8 @@ class EncryptedFile(object):
             args.extend(["-r", r.strip()])
         args.extend(["-o", self.encrypted_filename])
         try:
+            if debug:
+                print(f"Encrypting with: {args}")
             gpg = subprocess.Popen(args, stdin=subprocess.PIPE)
             gpg.communicate(data.encode("utf-8"))
             if gpg.returncode != 0:
@@ -158,6 +178,16 @@ class EncryptedConfigFile(object):
         write_lock=False,
         quiet=False,
     ):
+        if debug:
+            print(
+                f"""\
+EncryptedConfigFile.__init__(
+    self,
+    encrypted_file={encrypted_file},
+    add_files_for_env={add_files_for_env},
+    write_lock={write_lock},
+    quiet={quiet})"""
+            )
         self.add_files_for_env = add_files_for_env
         self.write_lock = write_lock
         self.quiet = quiet
@@ -171,6 +201,8 @@ class EncryptedConfigFile(object):
                 self.add_file(path)
 
     def add_file(self, filename):
+        if debug:
+            print(f"add_file: {filename}")
         # Ensure compatibility with pathlib.
         filename = str(filename)
         if filename not in self.files:
@@ -220,6 +252,8 @@ class EncryptedConfigFile(object):
         return members
 
     def set_members(self, members):
+        if debug:
+            print(f"set_members: {members}")
         # The whitespace here is exactly what
         # "members = " looks like in the config file so we get
         # proper indentation.
