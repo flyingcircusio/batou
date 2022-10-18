@@ -91,3 +91,19 @@ def test_edit_file_has_secret_prefix(tmpdir, encrypted_file):
         assert editor.edit_file == pathlib.Path("environments") / "none" / (
             f"secret-{filename}"
         )
+
+
+def test_blank_edit(tmpdir, encrypted_file):
+    c = EncryptedConfigFile(encrypted_file, write_lock=True)
+    with c as configfile:
+        editor = Editor("true", environment="none", edit_file="asdf")
+        editor.configfile = configfile
+        editor.editing = configfile.add_file(tmpdir / "asdf")
+        with editor.editing as f:
+            f.read()
+            editor.cleartext = editor.original_cleartext = f.cleartext
+        editor.edit()
+        assert editor.cleartext == ""
+        editor.encrypt()
+        with open(tmpdir / "asdf", "rb") as f:
+            assert f.read() != b""
