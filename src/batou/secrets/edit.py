@@ -18,7 +18,7 @@ class Editor(object):
         if edit_file is None:
             self.edit_file = self.encrypted_configfile
         else:
-            self.edit_file = environment_path / edit_file
+            self.edit_file = environment_path / f"secret-{edit_file}"
 
     def main(self):
         with EncryptedConfigFile(
