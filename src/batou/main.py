@@ -11,6 +11,7 @@ import batou
 import batou.deploy
 import batou.migrate
 import batou.secrets.edit
+import batou.secrets.encryption
 import batou.secrets.manage
 from batou._output import TerminalBackend, output
 
@@ -189,6 +190,7 @@ def main(args: Optional[list] = None) -> None:
 
     # Consume global arguments
     batou.output.enable_debug = args.debug
+    batou.secrets.encryption.debug = args.debug
 
     # Pass over to function
     if args.func.__name__ == "print_usage":
