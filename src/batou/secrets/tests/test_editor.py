@@ -1,7 +1,11 @@
+import pathlib
+
 import pytest
 
 from batou.secrets.edit import Editor
 from batou.secrets.encryption import EncryptedConfigFile
+
+from .test_secrets import encrypted_file
 
 
 def test_edit(tmpdir):
@@ -77,3 +81,13 @@ Your changes are still available. You can try:
 \tquit       -- quits and loses your changes
 """
     )
+
+
+def test_edit_file_has_secret_prefix(tmpdir, encrypted_file):
+    filename = "asdf123"
+    c = EncryptedConfigFile(encrypted_file, write_lock=True)
+    with c as _:
+        editor = Editor("true", environment="none", edit_file=filename)
+        assert editor.edit_file == pathlib.Path("environments") / "none" / (
+            f"secret-{filename}"
+        )
