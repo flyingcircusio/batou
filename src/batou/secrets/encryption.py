@@ -8,7 +8,7 @@ from typing import Generator, Optional
 
 from configupdater import ConfigUpdater
 
-from batou import FileLockedError, GPGCallError
+from batou import AgeCallError, FileLockedError, GPGCallError
 
 debug = False
 
@@ -21,14 +21,77 @@ members =
 """
 
 
-def iter_other_secrets(
+def get_secrets_type(environment_name: str) -> str:
+    """Return the secrets type for the given environment."""
+    environment = pathlib.Path("environments") / environment_name
+    if (environment / "secrets.cfg.age").exists():
+        return "age"
+    elif (environment / "secrets.cfg").exists():
+        return "gpg"
+    else:
+        # fallback to gpg for now
+        return "gpg"
+
+
+def get_secret_config_from_environment_name(
     environment_name: str,
+) -> pathlib.Path:
+    secrets_type = get_secrets_type(environment_name)
+    if secrets_type == "age":
+        secrets_file = (
+            pathlib.Path("environments") / environment_name / "secrets.cfg.age"
+        )
+    elif secrets_type == "gpg":
+        secrets_file = (
+            pathlib.Path("environments") / environment_name / "secrets.cfg"
+        )
+    else:
+        raise ValueError("Unknown secrets type")
+    if not secrets_file.exists():
+        raise ValueError("No secrets file found for environment")
+    return secrets_file
+
+
+def iter_other_secrets(
+    environment_name: str, secrets_type: Optional[str] = None
 ) -> Generator[pathlib.Path, None, None]:
     """Iterate over the paths to additional encrypted files."""
     environment = pathlib.Path("environments") / environment_name
+    secrets_type = secrets_type or get_secrets_type(environment_name)
     for path in environment.iterdir():
-        if path.name.startswith("secret-"):
-            yield path
+        if secrets_type == "age":
+            if path.name.startswith("secret-") and path.name.endswith(".age"):
+                yield path
+        elif secrets_type == "gpg":
+            if path.name.startswith("secret-"):
+                yield path
+        else:
+            raise ValueError("Unknown secrets type")
+
+
+def secret_name_from_path(
+    path: pathlib.Path, secrets_type: Optional[str] = None
+) -> str:
+    """Return the secret name from the path."""
+    secrets_type = secrets_type or get_secrets_type(path.parent.name)
+    if secrets_type == "age":
+        return path.name.replace("secret-", "", 1).replace(".age", "")
+    elif secrets_type == "gpg":
+        return path.name.replace("secret-", "", 1)
+    else:
+        raise ValueError("Unknown secrets type")
+
+
+def get_age_identities():
+    """Return a list of age identities."""
+    # candidates are ~/.ssh/id_ed25519 and ~/.ssh/id_rsa
+    candidates = ["~/.ssh/id_ed25519", "~/.ssh/id_rsa"]
+    identities = []
+    for candidate in candidates:
+        candidate = pathlib.Path(candidate).expanduser()
+        if candidate.exists():
+            identities.append(candidate)
+    return identities
 
 
 class EncryptedFile(object):
@@ -40,8 +103,15 @@ class EncryptedFile(object):
     is_new = None
 
     GPG_BINARY_CANDIDATES = ["gpg", "gpg2"]
+    AGE_BINARY_CANDIDATES = ["age", "rage"]
 
-    def __init__(self, encrypted_filename, write_lock=False, quiet=False):
+    def __init__(
+        self,
+        encrypted_filename,
+        write_lock=False,
+        quiet=False,
+        secrets_type=None,
+    ):
         """Context manager that opens an encrypted file.
 
         Use the read() and write() methods in the subordinate "with"
@@ -65,6 +135,7 @@ EncryptedFile.__init__(
         self.encrypted_filename = str(encrypted_filename)
         self.write_lock = write_lock
         self.quiet = quiet
+        self.secrets_type = secrets_type or "gpg"  # fallback to gpg for now
         self.recipients = []
 
     def __enter__(self):
@@ -91,6 +162,26 @@ EncryptedFile.__init__(
             "Could not find gpg binary."
             " Is GPG installed? I tried looking for: {}".format(
                 ", ".join("`{}`".format(x) for x in self.GPG_BINARY_CANDIDATES)
+            )
+        )
+
+    def age(self):
+        with tempfile.TemporaryFile() as null:
+            for age in self.AGE_BINARY_CANDIDATES:
+                try:
+                    if debug:
+                        print(f'Trying "{age} --version"')
+                    subprocess.check_call(
+                        [age, "--version"], stdout=null, stderr=null
+                    )
+                except (subprocess.CalledProcessError, OSError):
+                    pass
+                else:
+                    return age
+        raise RuntimeError(
+            "Could not find age binary."
+            " Is age installed? I tried looking for: {}".format(
+                ", ".join("`{}`".format(x) for x in self.AGE_BINARY_CANDIDATES)
             )
         )
 
@@ -130,10 +221,17 @@ EncryptedFile.__init__(
             raise FileLockedError.from_context(self.encrypted_filename)
 
     def _decrypt(self):
-        args = [self.gpg()]
-        if self.quiet:
-            args += ["-q", "--no-tty", "--batch"]
-        args += ["--decrypt", self.encrypted_filename]
+        if self.secrets_type == "gpg":
+            args = [self.gpg()]
+            if self.quiet:
+                args += ["-q", "--no-tty", "--batch"]
+            args += ["--decrypt", self.encrypted_filename]
+        elif self.secrets_type == "age":
+            args = [self.age()]
+            age += ["--decrypt"]
+            for identity in get_age_identities():
+                age += ["-i", str(identity)]
+            age += [self.encrypted_filename]
         try:
             if debug:
                 print(f"Decrypting with: {args}")
@@ -141,7 +239,16 @@ EncryptedFile.__init__(
                 args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
         except subprocess.CalledProcessError as e:
-            raise GPGCallError.from_context(args, e.returncode, e.stderr) from e
+            if self.secrets_type == "gpg":
+                raise GPGCallError.from_context(
+                    args, e.returncode, e.stderr
+                ) from e
+            elif self.secrets_type == "age":
+                raise AgeCallError.from_context(
+                    args, e.returncode, e.stderr
+                ) from e
+            else:
+                raise RuntimeError("Unknown secrets type")
         else:
             return result.stdout.decode("utf-8")
 
@@ -151,17 +258,31 @@ EncryptedFile.__init__(
                 "Need at least one recipient. Quitting will delete the file."
             )
         os.rename(self.encrypted_filename, self.encrypted_filename + ".old")
-        args = [self.gpg(), "--encrypt"]
-        for r in self.recipients:
-            args.extend(["-r", r.strip()])
-        args.extend(["-o", self.encrypted_filename])
+        if self.secrets_type == "gpg":
+            args = [self.gpg(), "--encrypt"]
+            for r in self.recipients:
+                args.extend(["-r", r.strip()])
+            args.extend(["-o", self.encrypted_filename])
+        elif self.secrets_type == "age":
+            args = [self.age(), "--encrypt"]
+            for r in self.recipients:
+                args.extend(["-r", r.strip()])
+            args.extend(["-o", self.encrypted_filename])
         try:
             if debug:
                 print(f"Encrypting with: {args}")
-            gpg = subprocess.Popen(args, stdin=subprocess.PIPE)
-            gpg.communicate(data.encode("utf-8"))
-            if gpg.returncode != 0:
-                raise RuntimeError("GPG returned non-zero exit code.")
+            if self.secrets_type == "gpg":
+                gpg = subprocess.Popen(args, stdin=subprocess.PIPE)
+                gpg.communicate(data.encode("utf-8"))
+                if gpg.returncode != 0:
+                    raise RuntimeError("GPG returned non-zero exit code.")
+            elif self.secrets_type == "age":
+                age = subprocess.Popen(args, stdin=subprocess.PIPE)
+                age.communicate(data.encode("utf-8"))
+                if age.returncode != 0:
+                    raise RuntimeError("age returned non-zero exit code.")
+            else:
+                raise RuntimeError("Unknown secrets type")
         except Exception:
             os.rename(self.encrypted_filename + ".old", self.encrypted_filename)
             raise
@@ -183,6 +304,7 @@ class EncryptedConfigFile(object):
         add_files_for_env: Optional[str] = None,
         write_lock=False,
         quiet=False,
+        secrets_type=None,
     ):
         if debug:
             print(
@@ -192,11 +314,13 @@ EncryptedConfigFile.__init__(
     encrypted_file={encrypted_file},
     add_files_for_env={add_files_for_env},
     write_lock={write_lock},
-    quiet={quiet})"""
+    quiet={quiet},
+    secrets_type={secrets_type})"""
             )
         self.add_files_for_env = add_files_for_env
         self.write_lock = write_lock
         self.quiet = quiet
+        self.secrets_type = secrets_type or "gpg"  # fallback to gpg
         self.files = {}
 
         self.main_file = self.add_file(encrypted_file)
@@ -213,7 +337,7 @@ EncryptedConfigFile.__init__(
         filename = str(filename)
         if filename not in self.files:
             self.files[filename] = f = EncryptedFile(
-                filename, self.write_lock, self.quiet
+                filename, self.write_lock, self.quiet, self.secrets_type
             )
             f.read()
         return self.files[filename]
@@ -255,6 +379,7 @@ EncryptedConfigFile.__init__(
         members = [x.strip() for x in members]
         members = [_f for _f in members if _f]
         members.sort()
+        # elikoga TODO: KeyHandling
         return members
 
     def set_members(self, members):

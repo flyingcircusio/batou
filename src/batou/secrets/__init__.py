@@ -2,10 +2,10 @@
 
 Each deployment environment has an associated set of secrets (ssh keys,
 database credentials, etc.). These are stored in encrypted form, in
-environments/<name>/secrets.cfg Each deployment environment has its own
-secrets file. During the deployment process, the `secrets` feature decrypts the
-files and provides the secrets as an additional overlay to top-level
-components.
+environments/<name>/secrets.cfg or in environments/<name>/secrets.cfg.age
+Each deployment environment has its own secrets file. During the deployment
+process, the `secrets` feature decrypts the files and provides the secrets
+as an additional overlay to top-level components.
 
 The `secrets edit` program is provided to edit the secrets file in a
 convenient fashion::
@@ -25,16 +25,23 @@ import pathlib
 
 from batou import DuplicateOverride, SuperfluousSecretsSection
 
-from .encryption import EncryptedConfigFile, iter_other_secrets
+from .encryption import (
+    EncryptedConfigFile,
+    get_secret_config_from_environment_name,
+    get_secrets_type,
+    iter_other_secrets,
+    secret_name_from_path,
+)
 
 
 def add_secrets_to_environment(environment):
-    secrets_file = (
-        pathlib.Path("environments") / environment.name / "secrets.cfg"
-    )
+    secrets_type = get_secrets_type(environment.name)
+    secrets_file = get_secret_config_from_environment_name(environment.name)
     if not secrets_file.exists():
         return
-    with EncryptedConfigFile(secrets_file) as config_file:
+    with EncryptedConfigFile(
+        secrets_file, secrets_type=secrets_type
+    ) as config_file:
         for section_ in config_file.config.sections():
             if section_ == "batou":
                 continue
@@ -66,8 +73,8 @@ def add_secrets_to_environment(environment):
                         environment.secret_data.update(v.value.split())
 
         # additional_secrets
-        for path in iter_other_secrets(environment.name):
-            secret_name = path.name.replace("secret-", "", 1)
+        for path in iter_other_secrets(environment.name, secrets_type):
+            secret_name = secret_name_from_path(path)
             with config_file.add_file(path) as other_file:
                 other_file.read()
                 environment.secret_files[secret_name] = other_file.cleartext

@@ -3,9 +3,13 @@
 import pathlib
 import sys
 
-from batou import GPGCallError
+from batou import AgeCallError, GPGCallError
 
-from .encryption import EncryptedConfigFile
+from .encryption import (
+    EncryptedConfigFile,
+    get_secret_config_from_environment_name,
+    get_secrets_type,
+)
 
 
 class UnknownEnvironmentError(ValueError):
@@ -25,10 +29,16 @@ class Environment(object):
             self.name = path.parent.name
         else:
             self.name = name
-            self.path = pathlib.Path("environments" / name / "secrets.cfg")
+            self.path = get_secret_config_from_environment_name(name)
+
+        secrets_type = get_secrets_type(name)
 
         self.f = EncryptedConfigFile(
-            self.path, add_files_for_env=self.name, write_lock=True, quiet=True
+            self.path,
+            add_files_for_env=self.name,
+            write_lock=True,
+            quiet=True,
+            secrets_type=secrets_type,
         )
         self.f.__enter__()
 
@@ -41,8 +51,8 @@ class Environment(object):
     @classmethod
     def all(cls):
         for path in pathlib.Path("environments").glob("*/environment.cfg"):
-            path = path.parent / "secrets.cfg"
-            yield Environment(path=path)
+            name = path.parent.name
+            yield Environment(name=name)
 
     @classmethod
     def by_filter(cls, filter):
@@ -135,6 +145,10 @@ def summary(**kw):
         print(e, file=sys.stderr)
         print(e.output, file=sys.stderr)
         return 1  # exit code
+    except AgeCallError as e:
+        print(e, file=sys.stderr)
+        print(e.output, file=sys.stderr)
+        return 1
 
 
 def add_user(keyid, environments, **kw):

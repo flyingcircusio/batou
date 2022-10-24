@@ -101,6 +101,30 @@ class GPGCallError(ReportingException):
         output.tabular("message", self.output, separator=":\n")
 
 
+class AgeCallError(ReportingException):
+    """There was an error calling age on encrypted file."""
+
+    @classmethod
+    def from_context(cls, command, exitcode, output):
+        self = cls()
+        self.command = " ".join(command)
+        self.exitcode = str(exitcode)
+        self.output = output.decode("ascii", errors="replace")
+        return self
+
+    def __str__(self):
+        return (
+            f"Exitcode {self.exitcode} while calling: "
+            f"{self.command}\n{self.output}"
+        )
+
+    def report(self):
+        output.error("Error while calling age")
+        output.tabular("command", self.command, red=True)
+        output.tabular("exit code", self.exitcode)
+        output.tabular("message", self.output, separator=":\n")
+
+
 class UpdateNeeded(AssertionError):
     """A component requires an update."""
 

@@ -5,20 +5,35 @@ import subprocess
 import sys
 import tempfile
 
-from .encryption import EncryptedConfigFile
+from .encryption import (
+    EncryptedConfigFile,
+    get_secret_config_from_environment_name,
+    get_secrets_type,
+)
 
 
 class Editor(object):
-    def __init__(self, editor_cmd, environment, edit_file=None):
+    def __init__(
+        self, editor_cmd, environment, edit_file=None, secrets_type=None
+    ):
         self.editor_cmd = editor_cmd
         self.environment = environment
         environment_path = pathlib.Path("environments") / environment
-        self.encrypted_configfile = environment_path / "secrets.cfg"
+        self.encrypted_configfile = get_secret_config_from_environment_name()
+
+        secrets_type = secrets_type or get_secrets_type(environment)
 
         if edit_file is None:
             self.edit_file = self.encrypted_configfile
         else:
-            self.edit_file = environment_path / f"secret-{edit_file}"
+            if secrets_type == "gpg":
+                self.edit_file = environment_path / f"secret-{edit_file}"
+            elif secrets_type == "age":
+                self.edit_file = environment_path / f"secret-{edit_file}.age"
+            else:
+                raise ValueError(
+                    "Unknown secrets type: {}".format(secrets_type)
+                )
 
     def main(self):
         with EncryptedConfigFile(
