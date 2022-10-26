@@ -19,7 +19,9 @@ class Editor(object):
         self.editor_cmd = editor_cmd
         self.environment = environment
         environment_path = pathlib.Path("environments") / environment
-        self.encrypted_configfile = get_secret_config_from_environment_name()
+        self.encrypted_configfile = get_secret_config_from_environment_name(
+            environment
+        )
 
         secrets_type = secrets_type or get_secrets_type(environment)
 
