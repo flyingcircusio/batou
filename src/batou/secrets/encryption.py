@@ -47,8 +47,10 @@ def get_secret_config_from_environment_name(
         )
     else:
         raise ValueError("Unknown secrets type")
-    if not secrets_file.exists():
-        raise ValueError("No secrets file found for environment")
+    # if not secrets_file.exists():
+    #     raise ValueError("No secrets file found for environment")
+    # we don't want to raise an error here, because we want to be able to
+    # create new secrets files
     return secrets_file
 
 
