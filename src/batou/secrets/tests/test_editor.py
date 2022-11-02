@@ -11,7 +11,10 @@ from .test_secrets import encrypted_file
 def test_edit(tmpdir):
     with EncryptedConfigFile(str(tmpdir / "asdf"), write_lock=True) as sf:
         editor = Editor(
-            "true", environment="none", edit_file=list(sf.files.keys())[0]
+            "true",
+            environment="none",
+            edit_file=list(sf.files.keys())[0],
+            secrets_type=sf.secrets_type,
         )
         editor.cleartext = "asdf"
         editor.edit()
@@ -21,7 +24,10 @@ def test_edit(tmpdir):
 def test_edit_command_loop(tmpdir, capsys):
     with EncryptedConfigFile(str(tmpdir / "asdf"), write_lock=True) as sf:
         editor = Editor(
-            "true", environment="none", edit_file=list(sf.files.keys())[0]
+            "true",
+            environment="none",
+            edit_file=list(sf.files.keys())[0],
+            secrets_type=sf.secrets_type,
         )
         editor.cleartext = "asdf"
 
@@ -86,8 +92,13 @@ Your changes are still available. You can try:
 def test_edit_file_has_secret_prefix(tmpdir, encrypted_file):
     filename = "asdf123"
     c = EncryptedConfigFile(encrypted_file, write_lock=True)
-    with c as _:
-        editor = Editor("true", environment="none", edit_file=filename)
+    with c as sf:
+        editor = Editor(
+            "true",
+            environment="none",
+            edit_file=filename,
+            secrets_type=sf.secrets_type,
+        )
         assert editor.edit_file == pathlib.Path("environments") / "none" / (
             f"secret-{filename}"
         )
@@ -96,7 +107,12 @@ def test_edit_file_has_secret_prefix(tmpdir, encrypted_file):
 def test_blank_edit(tmpdir, encrypted_file):
     c = EncryptedConfigFile(encrypted_file, write_lock=True)
     with c as configfile:
-        editor = Editor("true", environment="none", edit_file="asdf")
+        editor = Editor(
+            "true",
+            environment="none",
+            edit_file="asdf",
+            secrets_type=configfile.secrets_type,
+        )
         editor.configfile = configfile
         editor.editing = configfile.add_file(tmpdir / "asdf")
         with editor.editing as f:

@@ -21,22 +21,37 @@ members =
 """
 
 
-def get_secrets_type(environment_name: str) -> str:
+def get_secrets_type(environment_name: str) -> Optional[str]:
     """Return the secrets type for the given environment."""
     environment = pathlib.Path("environments") / environment_name
     if (environment / "secrets.cfg.age").exists():
+        if debug:
+            print(
+                f"""\
+get_secrets_type({environment_name}) -> "age" (secrets.cfg.age exists)"""
+            )
         return "age"
     elif (environment / "secrets.cfg").exists():
+        if debug:
+            print(
+                f"""\
+get_secrets_type({environment_name}) -> "gpg" (secrets.cfg exists)"""
+            )
         return "gpg"
     else:
-        # fallback to gpg for now
         return "gpg"
 
 
 def get_secret_config_from_environment_name(
     environment_name: str,
+    secrets_type: Optional[str] = None,
 ) -> pathlib.Path:
-    secrets_type = get_secrets_type(environment_name)
+    if debug:
+        print(
+            f"""\
+get_secret_config_from_environment_name({environment_name}, {secrets_type})"""
+        )
+    secrets_type = secrets_type or get_secrets_type(environment_name)
     if secrets_type == "age":
         secrets_file = (
             pathlib.Path("environments") / environment_name / "secrets.cfg.age"
@@ -131,6 +146,7 @@ EncryptedFile.__init__(
     encrypted_filename={encrypted_filename},
     write_lock={write_lock},
     quiet={quiet},
+    secrets_type={secrets_type},
 )"""
             )
         # Ensure compatibility with pathlib.
@@ -230,10 +246,10 @@ EncryptedFile.__init__(
             args += ["--decrypt", self.encrypted_filename]
         elif self.secrets_type == "age":
             args = [self.age()]
-            age += ["--decrypt"]
+            args += ["--decrypt"]
             for identity in get_age_identities():
-                age += ["-i", str(identity)]
-            age += [self.encrypted_filename]
+                args += ["-i", str(identity)]
+            args += [self.encrypted_filename]
         try:
             if debug:
                 print(f"Decrypting with: {args}")
@@ -329,7 +345,9 @@ EncryptedConfigFile.__init__(
 
         # Add all existing files to the session
         if self.add_files_for_env:
-            for path in iter_other_secrets(self.add_files_for_env):
+            for path in iter_other_secrets(
+                self.add_files_for_env, self.secrets_type
+            ):
                 self.add_file(path)
 
     def add_file(self, filename):

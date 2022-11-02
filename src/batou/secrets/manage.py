@@ -11,6 +11,8 @@ from .encryption import (
     get_secrets_type,
 )
 
+debug = None
+
 
 class UnknownEnvironmentError(ValueError):
     """There is/are no environment(s) for this name(s)."""
@@ -23,15 +25,26 @@ class UnknownEnvironmentError(ValueError):
 
 
 class Environment(object):
-    def __init__(self, path: pathlib.Path = None, name=None):
+    def __init__(self, path: pathlib.Path = None, name=None, secrets_type=None):
+        if debug:
+            print(
+                f"""\
+Environment.__init__(
+    path={path},
+    name={name},
+    secrets_type={secrets_type}
+)"""
+            )
         if path:
             self.path = path
             self.name = path.parent.name
+            secrets_type = secrets_type or get_secrets_type(self.name)
         else:
             self.name = name
-            self.path = get_secret_config_from_environment_name(name)
-
-        secrets_type = get_secrets_type(name)
+            secrets_type = secrets_type or get_secrets_type(name)
+            self.path = get_secret_config_from_environment_name(
+                name, secrets_type
+            )
 
         self.f = EncryptedConfigFile(
             self.path,
@@ -49,23 +62,33 @@ class Environment(object):
             pass
 
     @classmethod
-    def all(cls):
+    def all(cls, secrets_type=None):
+        if debug:
+            print(
+                f"""\
+Environment.all(
+    secrets_type={secrets_type}
+)"""
+            )
         for path in pathlib.Path("environments").glob("*/environment.cfg"):
             name = path.parent.name
-            yield Environment(name=name)
+            secrets_type_this = secrets_type or get_secrets_type(name)
+            if debug:
+                print(
+                    f"""\
+In Environment.all(): secrets_type={secrets_type}"""
+                )
+            yield Environment(name=name, secrets_type=secrets_type_this)
 
     @classmethod
-    def by_filter(cls, filter):
+    def by_filter(cls, filter, secrets_type=None):
         if filter:
             filter = filter.split(",")
         environments = []
-        for e in cls.all():
-            if filter:
-                if e.name in filter:
-                    filter.remove(e.name)
-                else:
-                    continue
-            environments.append(e)
+        for e in cls.all(secrets_type=secrets_type):
+            if filter and e.name in filter:
+                filter.remove(e.name)
+                environments.append(e)
         if filter:
             raise UnknownEnvironmentError(filter)
         return environments
@@ -130,7 +153,7 @@ class Environment(object):
         self.summary()
 
 
-def summary(**kw):
+def summary(secrets_type=None, **kw):
     """Secrets editor console script.
 
     The main focus here is to avoid having unencrypted files accidentally
@@ -138,7 +161,7 @@ def summary(**kw):
 
     """
     try:
-        for e in Environment.all():
+        for e in Environment.all(secrets_type=secrets_type):
             print(e.name)
             e.summary()
     except GPGCallError as e:
@@ -151,14 +174,23 @@ def summary(**kw):
         return 1
 
 
-def add_user(keyid, environments, **kw):
+def add_user(keyid, environments, secrets_type=None, **kw):
     """Add a user to a given environment.
 
     If environments is not given, a user is added
     to all environments.
 
     """
-    for e in Environment.by_filter(environments):
+    if debug:
+        print(
+            f"""\
+add_user(
+    keyid={keyid},
+    environments={environments},
+    secrets_type={secrets_type}
+)"""
+        )
+    for e in Environment.by_filter(environments, secrets_type=secrets_type):
         print(e.name)
         e.add_user(keyid)
         print()

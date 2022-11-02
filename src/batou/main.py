@@ -106,6 +106,14 @@ def main(args: Optional[list] = None) -> None:
     )
     secrets.set_defaults(func=secrets.print_usage)
 
+    secrets.add_argument(
+        "--secrets-type",
+        choices=["gpg", "age"],
+        default="gpg",
+        required=False,
+        help="Encryption format to use.",
+    )
+
     sp = secrets.add_subparsers()
 
     p = sp.add_parser(
@@ -191,6 +199,7 @@ def main(args: Optional[list] = None) -> None:
     # Consume global arguments
     batou.output.enable_debug = args.debug
     batou.secrets.encryption.debug = args.debug
+    batou.secrets.manage.debug = args.debug
 
     # Pass over to function
     if args.func.__name__ == "print_usage":

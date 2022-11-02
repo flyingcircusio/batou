@@ -20,21 +20,22 @@ class Editor(object):
         self.environment = environment
         environment_path = pathlib.Path("environments") / environment
         self.encrypted_configfile = get_secret_config_from_environment_name(
-            environment
+            environment,
+            secrets_type=secrets_type,
         )
 
-        secrets_type = secrets_type or get_secrets_type(environment)
+        self.secrets_type = secrets_type or get_secrets_type(environment)
 
         if edit_file is None:
             self.edit_file = self.encrypted_configfile
         else:
-            if secrets_type == "gpg":
+            if self.secrets_type == "gpg":
                 self.edit_file = environment_path / f"secret-{edit_file}"
-            elif secrets_type == "age":
+            elif self.secrets_type == "age":
                 self.edit_file = environment_path / f"secret-{edit_file}.age"
             else:
                 raise ValueError(
-                    "Unknown secrets type: {}".format(secrets_type)
+                    "Unknown secrets type: {}".format(self.secrets_type)
                 )
 
     def main(self):
@@ -42,6 +43,7 @@ class Editor(object):
             self.encrypted_configfile,
             add_files_for_env=self.environment,
             write_lock=True,
+            secrets_type=self.secrets_type,
         ) as configfile:
             self.configfile = configfile
 
@@ -116,7 +118,7 @@ class Editor(object):
                 self.cleartext = new_clearfile.read()
 
 
-def main(editor, environment, edit_file=None, **kw):
+def main(editor, environment, edit_file=None, secrets_type=None, **kw):
     """Secrets editor console script.
 
     The main focus here is to avoid having unencrypted files accidentally
@@ -130,5 +132,7 @@ def main(editor, environment, edit_file=None, **kw):
         print("\n".join(x.name for x in environments_path.iterdir()))
         sys.exit(1)
 
-    editor = Editor(editor, environment, edit_file)
+    secrets_type = secrets_type or get_secrets_type(environment)
+
+    editor = Editor(editor, environment, edit_file, secrets_type)
     editor.main()

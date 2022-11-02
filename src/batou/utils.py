@@ -438,6 +438,9 @@ class CmdExecutionError(DeploymentError, RuntimeError):
         output.line("STDERR", red=True)
         output.annotate(self.stderr)
 
+    def __str__(self):
+        return f"Command {self.cmd} failed with return code {self.returncode}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
+
 
 def cmd(
     cmd,
