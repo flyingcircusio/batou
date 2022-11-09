@@ -4,6 +4,7 @@ import os
 import pathlib
 import subprocess
 import tempfile
+import urllib.request
 from typing import Generator, Optional
 
 from configupdater import ConfigUpdater
@@ -109,6 +110,60 @@ def get_age_identities():
         if candidate.exists():
             identities.append(candidate)
     return identities
+
+
+def process_age_recipients(members, environment_path):
+    """Process the recipients list."""
+    key_meta_file_path = os.path.join(
+        environment_path,
+        "age_keys.txt",
+    )
+    key_meta_file_content = ""
+    new_members = []
+    for key in members:
+        key = key.strip()
+        if key.startswith("ssh-"):
+            # it's a plain ssh public key and we can simply add it
+            new_members.append(key)
+            key_meta_file_content += f"# plain ssh public key\n{key}\n"
+        elif key.startswith("age1"):
+            # it's a plain age public key and we can simply add it
+            new_members.append(key)
+            key_meta_file_content += f"# plain age public key\n{key}\n"
+        elif key.startswith("https://") or key.startswith("http://"):
+            # it's a url to a key file, so we need to download it
+            # and add it to the key meta file
+            if key.startswith("http://"):
+                print("WARNING: Downloading public keys over http is insecure!")
+            key_meta_file_content += f"# ssh key file from {key}\n"
+            key_file = urllib.request.urlopen(key)
+            key_file_content = key_file.read().decode("utf-8")
+            for line in key_file_content.splitlines():
+                if line.startswith("ssh-"):
+                    new_members.append(line)
+                    key_meta_file_content += f"{line}\n"
+        else:
+            # unknown key type
+            print(f"WARNING: Unknown key type for {key}\nWill be ignored!")
+    # compare key_meta_file_content and the old one
+    # if they differ, we will warn
+    if os.path.exists(key_meta_file_path):
+        with open(key_meta_file_path, "r") as f:
+            old_key_meta_file_content = f.read()
+        if old_key_meta_file_content != key_meta_file_content:
+            print(
+                "WARNING: The key meta file has changed!\n"
+                "Please make sure that the new keys are correct!"
+            )
+    else:
+        print(
+            "WARNING: The key meta file does not exist!\n"
+            "Please make sure that the new keys are correct!"
+        )
+    # write the new key meta file
+    with open(key_meta_file_path, "w") as f:
+        f.write(key_meta_file_content)
+    return new_members
 
 
 class EncryptedFile(object):
@@ -386,7 +441,15 @@ EncryptedConfigFile.__init__(
         self.config.write(s)
         self.main_file.cleartext = s.getvalue()
         for file in self.files.values():
-            file.recipients = self.get_members()
+            if self.secrets_type == "gpg":
+                file.recipients = self.get_members()
+            elif self.secrets_type == "age":
+                file.recipients = process_age_recipients(
+                    self.get_members(),
+                    os.path.dirname(self.main_file.encrypted_filename),
+                )
+            else:
+                raise RuntimeError("Unknown secrets type")
             file.write()
 
     def get_members(self):
@@ -399,7 +462,6 @@ EncryptedConfigFile.__init__(
         members = [x.strip() for x in members]
         members = [_f for _f in members if _f]
         members.sort()
-        # elikoga TODO: KeyHandling
         return members
 
     def set_members(self, members):
