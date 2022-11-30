@@ -11,6 +11,7 @@ import batou
 import batou.deploy
 import batou.migrate
 import batou.secrets.edit
+import batou.secrets.encryption
 import batou.secrets.manage
 from batou._output import TerminalBackend, output
 
@@ -26,6 +27,8 @@ def main(args: Optional[list] = None) -> None:
         ).format(version),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
+    parser.set_defaults(func=parser.print_usage)
+
     parser.add_argument(
         "-d", "--debug", action="store_true", help="Enable debug mode."
     )
@@ -34,6 +37,8 @@ def main(args: Optional[list] = None) -> None:
 
     # Deploy
     p = subparsers.add_parser("deploy", help="Deploy an environment.")
+    p.set_defaults(func=p.print_usage)
+
     p.add_argument(
         "-p",
         "--platform",
@@ -99,6 +104,8 @@ def main(args: Optional[list] = None) -> None:
             configured correctly. """
         ),
     )
+    secrets.set_defaults(func=secrets.print_usage)
+
     sp = secrets.add_subparsers()
 
     p = sp.add_parser(
@@ -111,6 +118,8 @@ def main(args: Optional[list] = None) -> None:
         """
         ),
     )
+    p.set_defaults(func=p.print_usage)
+
     p.add_argument(
         "--editor",
         "-e",
@@ -136,6 +145,7 @@ def main(args: Optional[list] = None) -> None:
     p = sp.add_parser(
         "add", help="Add a user's key to one or more secret files."
     )
+    p.set_defaults(func=p.print_usage)
     p.add_argument("keyid", help="The user's key ID or email address")
     p.add_argument(
         "--environments",
@@ -147,6 +157,7 @@ def main(args: Optional[list] = None) -> None:
     p = sp.add_parser(
         "remove", help="Remove a user's key from one or more secret files."
     )
+    p.set_defaults(func=p.print_usage)
     p.add_argument("keyid", help="The user's key ID or email address")
     p.add_argument(
         "--environments",
@@ -166,6 +177,7 @@ def main(args: Optional[list] = None) -> None:
         """
         ),
     )
+    migrate.set_defaults(func=migrate.print_usage)
     migrate.add_argument(
         "--bootstrap",
         default=False,
@@ -178,17 +190,18 @@ def main(args: Optional[list] = None) -> None:
 
     # Consume global arguments
     batou.output.enable_debug = args.debug
+    batou.secrets.encryption.debug = args.debug
 
     # Pass over to function
-    func_args = dict(args._get_kwargs())
-    if "func" not in func_args:
-        parser.print_usage()
+    if args.func.__name__ == "print_usage":
+        args.func()
         sys.exit(1)
 
     if args.func != batou.migrate.main:
         output.backend = TerminalBackend()
         batou.migrate.assert_up_to_date()
 
+    func_args = dict(args._get_kwargs())
     del func_args["func"]
     del func_args["debug"]
     try:

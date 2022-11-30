@@ -9,6 +9,7 @@ from batou import SilentConfigurationError, UpdateNeeded
 from batou.component import (
     Attribute,
     Component,
+    ConfigString,
     RootComponent,
     handle_event,
     platform,
@@ -556,28 +557,41 @@ def test_root_overrides_existing_attribute(root):
 
 
 @pytest.mark.parametrize(
-    "conv_func,conf_string,expected",
+    "conv_func,conf_value,expected",
     [
-        ("list", "", []),
-        ("list", "1,2", ["1", "2"]),
-        ("list", "3", ["3"]),
-        ("list", "  3, 3,", ["3", "3"]),
+        ("list", ConfigString(""), []),
+        ("list", ConfigString("1,2"), ["1", "2"]),
+        ("list", ConfigString("3"), ["3"]),
+        ("list", ConfigString("  3, 3,"), ["3", "3"]),
         ("list", [], []),
-        ("literal", "[3,3]", [3, 3]),
-        ("literal", "True", True),
-        ("literal", "False", False),
+        ("literal", ConfigString("[3,3]"), [3, 3]),
+        ("literal", ConfigString("True"), True),
+        ("literal", ConfigString("False"), False),
     ],
 )
-def test_attribute_conversion_functions(conv_func, conf_string, expected, root):
+def test_attribute_conversion_functions(conv_func, conf_value, expected, root):
     """It converts config strings with conversion functions."""
 
     class Foo(Component):
-        a = Attribute(conv_func, default_conf_string=conf_string)
+        a = Attribute(conv_func, default=conf_value)
 
     f = Foo()
     root.component += f
-    root.prepare()
     assert f.a == expected
+
+
+def test_attribute_missing_override_and_default(root):
+    class Foo(Component):
+        a = Attribute(str)
+
+        def configure(self):
+            self.a
+
+    f = Foo()
+    with pytest.raises(AttributeError) as e:
+        root.component += f
+
+    assert e.value.args[0] == "No override and no default given."
 
 
 @pytest.mark.parametrize(
@@ -596,7 +610,6 @@ def test_attribute_conversion_default(default, expected, root):
 
     f = Foo()
     root.component += f
-    root.prepare()
     assert f.a == expected
 
 
@@ -653,3 +666,51 @@ def test_event_handler_before_update_with_changes_precursor(root):
     root.component += Foo("2")
     root.component.deploy()
     assert log == [("2", "1")]
+
+
+def test_checksum_returns_even_when_never_a_value_was_passed():
+    c = SampleComponent()
+    assert (
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        == c.checksum()
+    )
+
+
+def test_checksum_updates_and_returns():
+    c = SampleComponent()
+    assert (
+        "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+        == c.checksum(b"foo")
+    )
+
+
+def test_checksum_depends_on_order():
+    c = SampleComponent()
+    c.checksum(b"foo")
+    c.checksum(b"bar")
+    assert (
+        "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"
+        == c.checksum()
+    )
+
+    c = SampleComponent()
+    c.checksum(b"bar")
+    c.checksum(b"foo")
+    assert (
+        "88ecde925da3c6f8ec3d140683da9d2a422f26c1ae1d9212da1e5a53416dcc88"
+        == c.checksum()
+    )
+
+
+def test_checksum_multiple_calls_do_not_change_checksum():
+    c = SampleComponent()
+    c.checksum(b"foo")
+    c.checksum(b"bar")
+    assert (
+        "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"
+        == c.checksum()
+    )
+    assert (
+        "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"
+        == c.checksum()
+    )

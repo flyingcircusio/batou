@@ -28,6 +28,7 @@ class Clone(Component):
     revision = None
     branch = None
     vcs_update = True
+    clobber = False
 
     def configure(self):
         if (not self.revision_or_branch) or (self.revision and self.branch):
@@ -64,13 +65,25 @@ class Clone(Component):
                 )
 
             if self.has_changes():
-                output.annotate(
-                    "Git clone at {} is dirty, going to lose changes.".format(
-                        self.target
-                    ),
-                    red=True,
-                )
-                raise UpdateNeeded()
+                if self.clobber:
+                    output.annotate(
+                        "Git clone at {} is dirty, going to lose changes.".format(
+                            self.target
+                        ),
+                        red=True,
+                    )
+                    raise UpdateNeeded()
+                else:
+                    output.annotate(
+                        "Git clone at {} is dirty - refusing to clobber. "
+                        "Use `clobber=True` if this is intentional .".format(
+                            self.target
+                        ),
+                        red=True,
+                    )
+                    raise RuntimeError(
+                        "Refusing to clobber dirty work directory."
+                    )
 
             if self.revision and self.current_revision() != self.revision:
                 raise UpdateNeeded()

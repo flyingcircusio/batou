@@ -145,7 +145,7 @@ class MercurialRepository(Repository):
         if self.environment.deployment.dirty:
             local_id = local_id.replace("+", "")
         if remote_id != local_id:
-            raise RepositoryDifferentError(local_id, remote_id)
+            raise RepositoryDifferentError.from_context(local_id, remote_id)
 
     def verify(self):
         # Safety belt that we're acting on a clean repository.
@@ -262,7 +262,7 @@ class GitRepository(Repository):
         local_id, _ = cmd("git rev-parse HEAD")
         local_id = local_id.strip()
         if remote_id != local_id:
-            raise RepositoryDifferentError(local_id, remote_id)
+            raise RepositoryDifferentError.from_context(local_id, remote_id)
 
     def verify(self):
         # Safety belt that we're acting on a clean repository.
@@ -343,6 +343,10 @@ class GitBundleRepository(GitRepository):
         if "create empty bundle" in err:
             return
         change_size = os.stat(bundle_file).st_size
+        if change_size == 0:
+            output.error("Created invalid bundle (0 bytes):")
+            output.annotate(err, red=True)
+            raise DeploymentError()
         output.annotate(
             "Sending {} bytes of changes".format(change_size), debug=True
         )

@@ -35,37 +35,28 @@ main: Verifying repository ...
 main: Loading secrets ...
 
 ERROR: Failed loading component file
-      File: .../examples/errors/components/component5/component.py
- Exception: invalid syntax (component.py, line 1)
+           File: .../examples/errors/components/component5/component.py
+      Exception: invalid syntax (component.py, line 1)
 
 ERROR: Failed loading component file
-      File: .../examples/errors/components/component6/component.py
- Exception: No module named 'asdf'
-
-ERROR: Failed loading component file
-      File: .../examples/errors/components/component7/component.py
- Exception: Attributes only support one of those parameters: either `default` or `default_conf_string`.
+           File: .../examples/errors/components/component6/component.py
+      Exception: No module named 'asdf'
 
 ERROR: Missing component
- Component: component7
-      Host: localhost
-
-ERROR: Missing component
- Component: missingcomponent
-      Host: localhost
+      Component: missingcomponent
 
 ERROR: Superfluous section in environment configuration
-   Section: superfluoussection
+        Section: superfluoussection
 
 ERROR: Override section for unknown component found
- Component: nonexisting-component-section
+      Component: nonexisting-component-section
 
 ERROR: Attribute override found both in environment and secrets
- Component: component1
- Attribute: my_attribute
+      Component: component1
+      Attribute: my_attribute
 
 ERROR: Secrets section for unknown component found
- Component: another-nonexisting-component-section
+      Component: another-nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
 """
     )  # noqa: E501 line too long

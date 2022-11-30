@@ -232,7 +232,7 @@ def test_channelexec_handle_exception(remote_core_mod):
     assert next(response) == (
         "batou-output",
         "line",
-        ("Return code: 127",),
+        ("    Return code: 127",),
         {"red": True},
     )
 

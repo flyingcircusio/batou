@@ -1,8 +1,8 @@
-from batou.component import Attribute, Component
+from batou.component import Attribute, Component, ConfigString
 
 
 class ZEO(Component):
 
-    port = Attribute(int, default_conf_string="9001")
+    port = Attribute(int, default=ConfigString("9001"))
 
     features = ["test", "test2"]

@@ -53,13 +53,13 @@ def add_secrets_to_environment(environment):
                 component = section_.replace("component:", "")
                 if component not in environment.components:
                     environment.exceptions.append(
-                        SuperfluousSecretsSection(component)
+                        SuperfluousSecretsSection.from_context(component)
                     )
                 overrides = environment.overrides.setdefault(component, {})
                 for k, v in config_file.config.items(section_):
                     if k in overrides:
                         environment.exceptions.append(
-                            DuplicateOverride(component, k)
+                            DuplicateOverride.from_context(component, k)
                         )
                     else:
                         overrides[k] = v.value

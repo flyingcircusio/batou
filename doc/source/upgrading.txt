@@ -22,7 +22,7 @@ To upgrade your project to this schema, follow those steps:
 .. code-block:: console
 
 
-  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/appenv.py -o appenv
+  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/main/appenv.py -o appenv
   $ chmod +x appenv
   $ rm batou
   $ ln -sf appenv batou
@@ -77,7 +77,7 @@ and it is your current working directory.
 
 .. code-block:: console
 
-	$ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
+	$ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/main/bootstrap | sh
 
 The generated lockfile `requirements.lock` might not pick up all versions of all
 packages correctly (for example packages taken directly from source control will
@@ -131,14 +131,8 @@ Updating from 2.2 to 2.3
 To define ``Attribute``\s more explicitly the default value has to be passed in
 one of two ways.
 
-* ``default`` allows to pass a final python value.
-* ``default_conf_string`` allows to run the conversion of the ``Attribute`` on
-  a default value. This can be used for more concise format (e.g. ``Address``)
-  or for documentation of the format for ``environment.cfg``. This way
-  ``expand`` and ``map`` of the string will also be done.
-
-To ensure that default is passed the right way through conversion, both
-arguments are keyword arguments only, they have to be added explicitly. If the
-code is not yet ported, you might experience the following error::
-
-  Exception: __init__() takes from 1 to 2 positional arguments but 3 were given
+* ``default`` allows to pass a final python value or use a `ConfigString` value
+  to trigger the conversion of the ``Attribute`` on a default value. This can
+  be used for more concise code (e.g. ``Address``) or for documentation of the
+  format for ``environment.cfg``. This way ``expand`` and ``map`` of the string
+  will also be done.

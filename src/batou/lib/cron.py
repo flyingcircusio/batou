@@ -1,7 +1,13 @@
 import os
 
 from batou import ConfigurationError, UpdateNeeded
-from batou.component import Attribute, Component, HookComponent, platform
+from batou.component import (
+    Attribute,
+    Component,
+    ConfigString,
+    HookComponent,
+    platform,
+)
 from batou.lib.file import File
 
 
@@ -42,16 +48,16 @@ class CronTab(Component):
     purge = False
 
     # Dict of additional environment variables
-    env = Attribute("literal", default_conf_string="{}")
+    env = Attribute("literal", default=ConfigString("{}"))
 
     def configure(self):
         self.jobs = self.require(CronJob.key, host=self.host, strict=False)
         if self.purge and self.jobs:
-            raise ConfigurationError(
+            raise ConfigurationError.from_context(
                 "Found cron jobs, but expecting an empty crontab."
             )
         elif not self.purge and not self.jobs:
-            raise ConfigurationError("No cron jobs found.", self)
+            raise ConfigurationError.from_context("No cron jobs found.", self)
         self.jobs.sort(key=lambda job: job.command + " " + job.args)
         self.crontab = File("crontab", source=self.crontab_template)
         self += self.crontab

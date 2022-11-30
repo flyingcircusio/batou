@@ -1,7 +1,52 @@
 ## Changelog
 
 
-2.3b4 (unreleased)
+2.3b6 (unreleased)
+------------------
+
+- Allow mysql authentication via sudo.
+
+
+2.3b5 (2022-09-21)
+------------------
+
+### Features
+
+- Do not clobber git clones by default. Add new option `clobber` to allow
+  specifying that a git clone may clobber the target directory.
+  ([#298](https://github.com/flyingcircusio/batou/issues/298))
+
+- Add `checksum(value)` method to `Component` to easily compute sha256
+  checksums. ([#232](https://github.com/flyingcircusio/batou/issues/232))
+
+
+### Improvements
+
+- Clean up migrations and make the output easier to read.
+
+- Output usage strings for subcommands, instead of just the main command.
+
+- Revise the new Address require_v4/require_v6 to allow environment-based
+  customization that can be used to revert back to the old settings.
+  ([#270](https://github.com/flyingcircusio/batou/issues/270))
+
+- Improve the error output by suppressing certain errors and grouping
+  them properly to indicate which hosts see which errors in the model.
+   ([#272](https://github.com/flyingcircusio/batou/issues/272))
+
+
+### Bug fixes
+
+- Check python venvs for a functional `pip` and rebuild if necessary.
+
+- Fix use of `File` for syncing directories.
+  ([#270](https://github.com/flyingcircusio/batou/issues/270))
+
+- Fix incorrect handling of of missing Attribute defaults.
+  ([#318](https://github.com/flyingcircusio/batou/issues/318))
+
+
+2.3b4 (2022-08-22)
 ------------------
 
 ### Features
@@ -23,10 +68,12 @@
 - Allow to check if an `Address` is configured for IPv4 resp. IPv6 using the
   attributes `require_v4` resp. `require_v6`.
 
+- The behaviour to specify `Attribute` defaults as either Python native objects
+  or strings that will be expanded, mapped and converted has been changed again
+  to simplify the mechanics and make migration errors easier to understand.
 
-### Bug fixes
 
-- Check python venvs for functional `pip`.
+
 
 
 2.3b3 (2021-11-30)

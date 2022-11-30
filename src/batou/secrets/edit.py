@@ -18,7 +18,7 @@ class Editor(object):
         if edit_file is None:
             self.edit_file = self.encrypted_configfile
         else:
-            self.edit_file = environment_path / edit_file
+            self.edit_file = environment_path / f"secret-{edit_file}"
 
     def main(self):
         with EncryptedConfigFile(
@@ -68,7 +68,10 @@ class Editor(object):
             raise ValueError("unknown command `{}`".format(cmd))
 
     def encrypt(self):
-        if self.cleartext == self.original_cleartext:
+        if (
+            self.cleartext == self.original_cleartext
+            and not self.editing.is_new
+        ):
             print("No changes from original cleartext. Not updating.")
             return
         self.editing.cleartext = self.cleartext

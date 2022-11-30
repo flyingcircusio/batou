@@ -25,12 +25,50 @@ class ReportingException(Exception):
     def report(self):
         raise NotImplementedError()
 
+    def should_merge(self, other):
+        """
+        checks, wether two exceptions have the same type as well as data
+        and as such, should be merged into one exception.
+        """
+        # generic check:
+        # the other class should have: the same class as self, in both directions
+        if type(other) != type(self):
+            return False
+        # now both should have the same attributes
+        # compare by all attributes except: .affected_hostname
+        dict_self = self.__dict__.copy()
+        dict_self.pop("affected_hostname", None)
+        dict_other = other.__dict__.copy()
+        dict_other.pop("affected_hostname", None)
+        return dict_self == dict_other
+
+    @classmethod
+    def merge(cls, selfs):
+        """Merge multiple instances of this exception."""
+        # remove and collect .affected_hostname from all exceptions
+        if hasattr(selfs[0], "affected_hostname"):
+            hostnames = set()
+            for self in selfs:
+                hostnames.add(self.affected_hostname)
+        else:
+            hostnames = None
+        # create a new exception with the merged attributes
+        first_self_dict = selfs[0].__dict__.copy()
+        first_self_dict.pop("affected_hostname", None)
+        new_exception = cls()
+        new_exception.__dict__.update(first_self_dict)
+        new_exception.affected_hostname = "<HOSTNAME>"
+        return (new_exception, hostnames)
+
 
 class FileLockedError(ReportingException):
     """A file is already locked and we do not want to block."""
 
-    def __init__(self, filename):
+    @classmethod
+    def from_context(cls, filename):
+        self = cls()
         self.filename = filename
+        return self
 
     def __str__(self):
         return "File already locked: {}".format(self.filename)
@@ -42,10 +80,13 @@ class FileLockedError(ReportingException):
 class GPGCallError(ReportingException):
     """There was an error calling GPG on encrypted file."""
 
-    def __init__(self, command, exitcode, output):
+    @classmethod
+    def from_context(cls, command, exitcode, output):
+        self = cls()
         self.command = " ".join(command)
         self.exitcode = str(exitcode)
         self.output = output.decode("ascii", errors="replace")
+        return self
 
     def __str__(self):
         return (
@@ -71,18 +112,24 @@ class ConfigurationError(ReportingException):
     def sort_key(self):
         return (0, self.message)
 
-    def __init__(self, message, component=None):
+    @classmethod
+    def from_context(cls, message, component=None):
+        self = cls()
         self.message = message
-        self.component = component
+        self.has_component = component is not None
+        self.component_root_name = component.root.name if component else None
+        self.affected_hostname = component.root.host.name if component else None
+        return self
 
     def __str__(self):
         return str(self.message)
 
     def report(self):
         message = self.message
-        if self.component:
-            message = "{}@{}: {}".format(
-                self.component.root.name, self.component.root.host.name, message
+        if self.has_component:
+            message = "{}: {}".format(
+                self.component_root_name,
+                message,
             )
         output.error(message)
 
@@ -94,36 +141,40 @@ class ConversionError(ConfigurationError):
     def sort_key(self):
         return (
             1,
-            self.component.root.host.name,
-            self.component._breadcrumbs,
+            self.affected_hostname,
+            self.component_breadcrumbs,
             self.key,
         )
 
-    def __init__(self, component, key, value, conversion, error):
-        self.component = component
+    @classmethod
+    def from_context(cls, component, key, value, conversion, error):
+        self = cls()
+        self.affected_hostname = component.root.host.name
+        self.component_breadcrumbs = component._breadcrumbs
+        self.conversion_name = conversion.__name__
+        self.value_repr = repr(value)
+        self.error_str = str(error)
         self.key = key
-        self.value = value
-        self.conversion = conversion
-        self.error = error
+        return self
 
     def __str__(self):
-        return self.error
+        return self.error_str
 
     def report(self):
-        output.error("Failed override attribute conversion")
-        output.tabular("Host", self.component.root.host.name, red=True)
+        output.error(self.error_str)
         output.tabular(
             "Attribute",
-            "{}.{}".format(self.component._breadcrumbs, self.key),
+            "{}.{}".format(self.component_breadcrumbs, self.key),
             red=True,
         )
         output.tabular(
             "Conversion",
-            "{}({})".format(self.conversion.__name__, repr(self.value)),
+            "{}({})".format(self.conversion_name, self.value_repr),
             red=True,
         )
         # TODO provide traceback in debug output
-        output.tabular("Error", str(self.error), red=True)
+        # provide file, line number, excerpt of attribute definition
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class SilentConfigurationError(Exception):
@@ -138,19 +189,22 @@ class SilentConfigurationError(Exception):
 class MissingOverrideAttributes(ConfigurationError):
     @property
     def sort_key(self):
-        return (3, self.component.root.host.name, self.component._breadcrumbs)
+        return (3, self.affected_hostname, self.component_breadcrumbs)
 
-    def __init__(self, component, attributes):
-        self.component = component
+    @classmethod
+    def from_context(cls, component, attributes):
+        self = cls()
+        self.affected_hostname = component.root.host.name
+        self.component_breadcrumbs = component._breadcrumbs
         self.attributes = attributes
+        return self
 
     def __str__(self):
         return "Overrides for undefined attributes " + ",".join(self.attributes)
 
     def report(self):
         output.error("Overrides for undefined attributes")
-        output.tabular("Host", self.component.root.host.name, red=True)
-        output.tabular("Component", self.component._breadcrumbs, red=True)
+        output.tabular("Component", self.component_breadcrumbs, red=True)
         output.tabular("Attributes", ", ".join(self.attributes), red=True)
 
         # TODO point to specific line in secrets or environments
@@ -160,36 +214,45 @@ class MissingOverrideAttributes(ConfigurationError):
 class DuplicateComponent(ConfigurationError):
     @property
     def sort_key(self):
-        return (2, self.a.name)
+        return (2, self.a_name)
 
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
+    @classmethod
+    def from_context(cls, a, b):
+        self = cls()
+        self.a_name = a.name
+        self.a_filename = a.filename
+        self.b_filename = b.filename
+        return self
 
     def __str__(self):
-        return "Duplicate component: " + self.a
+        return "Duplicate component: " + self.a_name
 
     def report(self):
-        output.error('Duplicate component "{}"'.format(self.a.name))
-        output.tabular("Occurrence", self.a.filename)
-        output.tabular("Occurrence", self.b.filename)
+        output.error('Duplicate component "{}"'.format(self.a_name))
+        output.tabular("Occurrence", self.a_filename)
+        output.tabular("Occurrence", self.b_filename)
 
 
 class DuplicateHostMapping(ConfigurationError):
     @property
     def sort_key(self):
-        return (3, self.hostname, self.a, self.b)
+        return (3, self.affected_hostname, self.a, self.b)
 
-    def __init__(self, hostname, a, b):
-        self.hostname = hostname
+    @classmethod
+    def from_context(cls, hostname, a, b):
+        self = cls()
+        self.affected_hostname = hostname
         self.a = a
         self.b = b
+        return self
 
     def __str__(self):
-        return "Duplicate host mapping: " + self.hostname
+        return "Duplicate host mapping: " + self.affected_hostname
 
     def report(self):
-        output.error('Duplicate host mapping "{}"'.format(self.hostname))
+        output.error(
+            'Duplicate host mapping "{}"'.format(self.affected_hostname)
+        )
         output.tabular("Mapping 1: ", self.a)
         output.tabular("Mapping 2: ", self.b)
 
@@ -199,11 +262,14 @@ class UnknownComponentConfigurationError(ConfigurationError):
 
     @property
     def sort_key(self):
-        return (4, self.root.host.name, 2)
+        return (4, self.root_host_name, 2)
 
-    def __init__(self, root, exception, tb):
-        self.root = root
-        self.exception = exception
+    @classmethod
+    def from_context(cls, root, exception, tb):
+        self = cls()
+        self.root_name = root.name
+        self.root_host_name = root.host.name
+        self.exception_repr = repr(exception)
         stack = traceback.extract_tb(tb)
         from batou import component, environment
 
@@ -220,18 +286,19 @@ class UnknownComponentConfigurationError(ConfigurationError):
             stack.insert(0, line)
             break
         self.traceback = "".join(traceback.format_list(stack))
+        return self
 
     def __str__(self):
-        return repr(self.exception)
+        return self.exception_repr
 
     def report(self):
-        output.error(repr(self.exception))
+        output.error(self.exception_repr)
         output.annotate(
             "This /might/ be a batou bug. Please consider reporting it.\n",
             red=True,
         )
-        output.tabular("Host", self.root.host.name, red=True)
-        output.tabular("Component", self.root.name + "\n", red=True)
+        output.tabular("Host", self.root_host_name, red=True)
+        output.tabular("Component", self.root_name + "\n", red=True)
         output.annotate(
             "Traceback (simplified, most recent call last):", red=True
         )
@@ -243,22 +310,27 @@ class UnusedResources(ConfigurationError):
 
     sort_key = (5, "unused")
 
-    def __init__(self, resources):
-        self.resources = resources
+    @classmethod
+    def from_context(cls, resources):
+        self = cls()
+        self.unused_resources = []
+        for key in sorted(resources):
+            for component, value in resources[key].items():
+                self.unused_resources.append((key, component.name, str(value)))
+        return self
 
     def __str__(self):
         return "Unused provided resources"
 
     def report(self):
         output.error("Unused provided resources")
-        for key in sorted(self.resources):
-            for component, value in list(self.resources[key].items()):
-                output.line(
-                    '    Resource "{}" provided by {} with value {}'.format(
-                        key, component.name, value
-                    ),
-                    red=True,
-                )
+        for key, component, value in self.unused_resources:
+            output.line(
+                '    Resource "{}" provided by {} with value {}'.format(
+                    key, component, value
+                ),
+                red=True,
+            )
 
 
 class UnsatisfiedResources(ConfigurationError):
@@ -266,18 +338,25 @@ class UnsatisfiedResources(ConfigurationError):
 
     sort_key = (6, "unsatisfied")
 
-    def __init__(self, resources):
-        self.resources = resources
+    @classmethod
+    def from_context(cls, resources):
+        self = cls()
+        self.unsatisfied_resources = []
+        for key in sorted(resources):
+            self.unsatisfied_resources.append(
+                (key, [r.name for r in resources[key]])
+            )
+        return self
 
     def __str__(self):
         return "Unsatisfied resource requirements"
 
     def report(self):
         output.error("Unsatisfied resource requirements")
-        for key in sorted(self.resources):
+        for key, resources in self.unsatisfied_resources:
             output.line(
                 '    Resource "{}" required by {}'.format(
-                    key, ",".join(r.name for r in self.resources[key])
+                    key, ",".join(resources)
                 ),
                 red=True,
             )
@@ -288,15 +367,18 @@ class MissingEnvironment(ConfigurationError):
 
     sort_key = (0,)
 
-    def __init__(self, environment):
-        self.environment = environment
+    @classmethod
+    def from_context(cls, environment):
+        self = cls()
+        self.environment_name = environment.name
+        return self
 
     def __str__(self):
-        return "Missing environment `{}`".format(self.environment.name)
+        return "Missing environment `{}`".format(self.environment_name)
 
     def report(self):
         output.error("Missing environment")
-        output.tabular("Environment", self.environment.name, red=True)
+        output.tabular("Environment", self.environment_name, red=True)
 
 
 class ComponentLoadingError(ConfigurationError):
@@ -304,9 +386,12 @@ class ComponentLoadingError(ConfigurationError):
 
     sort_key = (0,)
 
-    def __init__(self, filename, exception):
+    @classmethod
+    def from_context(cls, filename, exception):
+        self = cls()
         self.filename = filename
-        self.exception = exception
+        self.exception_str = str(exception)
+        return self
 
     def __str__(self):
         return "Failed loading component file " + self.filename
@@ -314,8 +399,9 @@ class ComponentLoadingError(ConfigurationError):
     def report(self):
         output.error("Failed loading component file")
         output.tabular("File", self.filename, red=True)
-        output.tabular("Exception", str(self.exception), red=True)
+        output.tabular("Exception", self.exception_str, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class MissingComponent(ConfigurationError):
@@ -323,17 +409,19 @@ class MissingComponent(ConfigurationError):
 
     sort_key = (0,)
 
-    def __init__(self, component, hostname):
-        self.component = component
-        self.hostname = hostname
+    @classmethod
+    def from_context(cls, component_name, hostname):
+        self = cls()
+        self.component_name = component_name
+        self.affected_hostname = hostname
+        return self
 
     def __str__(self):
-        return "Missing component: " + self.component
+        return "Missing component: " + self.component_name
 
     def report(self):
         output.error("Missing component")
-        output.tabular("Component", self.component, red=True)
-        output.tabular("Host", self.hostname, red=True)
+        output.tabular("Component", self.component_name, red=True)
 
 
 class SuperfluousSection(ConfigurationError):
@@ -342,8 +430,11 @@ class SuperfluousSection(ConfigurationError):
 
     sort_key = (0,)
 
-    def __init__(self, section):
+    @classmethod
+    def from_context(cls, section):
+        self = cls()
         self.section = section
+        return self
 
     def __str__(self):
         return "Superfluous section in environment: " + self.section
@@ -352,6 +443,7 @@ class SuperfluousSection(ConfigurationError):
         output.error("Superfluous section in environment configuration")
         output.tabular("Section", self.section, red=True)
         # TODO provide location and context in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class SuperfluousComponentSection(ConfigurationError):
@@ -360,16 +452,23 @@ class SuperfluousComponentSection(ConfigurationError):
 
     sort_key = (0,)
 
-    def __init__(self, component):
-        self.component = component
+    @classmethod
+    def from_context(cls, component_name):
+        self = cls()
+        self.component_name = component_name
+        return self
 
     def __str__(self):
-        return "Override section for unknown component found: " + self.component
+        return (
+            "Override section for unknown component found: "
+            + self.component_name
+        )
 
     def report(self):
         output.error("Override section for unknown component found")
-        output.tabular("Component", self.component, red=True)
+        output.tabular("Component", self.component_name, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class SuperfluousSecretsSection(ConfigurationError):
@@ -378,16 +477,23 @@ class SuperfluousSecretsSection(ConfigurationError):
 
     sort_key = (0,)
 
-    def __init__(self, component):
-        self.component = component
+    @classmethod
+    def from_context(cls, component_name):
+        self = cls()
+        self.component_name = component_name
+        return self
 
     def __str__(self):
-        return "Secrets section for unknown component found: " + self.component
+        return (
+            "Secrets section for unknown component found: "
+            + self.component_name
+        )
 
     def report(self):
         output.error("Secrets section for unknown component found")
-        output.tabular("Component", self.component, red=True)
+        output.tabular("Component", self.component_name, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class DuplicateOverride(ConfigurationError):
@@ -396,21 +502,25 @@ class DuplicateOverride(ConfigurationError):
 
     sort_key = (0,)
 
-    def __init__(self, component, attribute):
-        self.component = component
+    @classmethod
+    def from_context(cls, component_name, attribute):
+        self = cls()
+        self.component_name = component_name
         self.attribute = attribute
+        return self
 
     def __str__(self):
         return (
-            f"A value {self.component}.{self.attribute} is defined both in"
+            f"A value {self.component_name}.{self.attribute} is defined both in"
             " environment and secrets."
         )
 
     def report(self):
         output.error("Attribute override found both in environment and secrets")
-        output.tabular("Component", self.component, red=True)
+        output.tabular("Component", self.component_name, red=True)
         output.tabular("Attribute", self.attribute, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
 
 
 class CycleErrorDetected(ConfigurationError):
@@ -418,16 +528,20 @@ class CycleErrorDetected(ConfigurationError):
 
     sort_key = (99,)
 
-    def __init__(self, error):
-        self.error = error
-
-    def __str__(self):
-        return "Found dependency cycle."
+    @classmethod
+    def from_context(cls, error):
+        self = cls()
+        self.error_str = str(error)
+        return self
 
     def report(self):
         output.error("Found dependency cycle")
-        output.annotate(str(self.error), red=True)
+        output.annotate(self.error_str, red=True)
         # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
+
+    def __str__(self):
+        return "Found dependency cycle: " + self.error_str
 
 
 class NonConvergingWorkingSet(ConfigurationError):
@@ -435,8 +549,11 @@ class NonConvergingWorkingSet(ConfigurationError):
 
     sort_key = (100,)
 
-    def __init__(self, roots):
-        self.roots = roots
+    @classmethod
+    def from_context(cls, roots):
+        self = cls()
+        self.roots_len = len(roots)
+        return self
 
     def __str__(self):
         return "There are unconfigured components remaining."
@@ -445,7 +562,7 @@ class NonConvergingWorkingSet(ConfigurationError):
         # TODO show this last or first, but not in the middle
         # of everything
         output.error(
-            "{} remaining unconfigured component(s)".format(len(self.roots))
+            "{} remaining unconfigured component(s)".format(self.roots_len)
         )
         # TODO show all incl. their host name in -vv or so
         # output.annotate(', '.join(c.name for c in self.roots))
@@ -468,9 +585,12 @@ class RepositoryDifferentError(DeploymentError):
 
     sort_key = (150,)
 
-    def __init__(self, local, remote):
+    @classmethod
+    def from_context(cls, local, remote):
+        self = cls()
         self.local = local
         self.remote = remote
+        return self
 
     def __str__(self):
         return "Remote repository has diverged. Wrong branch?"
@@ -489,22 +609,30 @@ class DuplicateHostError(ConfigurationError):
     def sort_key(self):
         return (0,)
 
-    def __init__(self, hostname):
-        self.hostname = hostname
+    @classmethod
+    def from_context(cls, hostname):
+        self = cls()
+        self.affected_hostname = hostname
+        return self
 
     def __str__(self):
-        return "Duplicate host: " + self.hostname
+        return "Duplicate host: " + self.affected_hostname
 
     def report(self):
-        output.error("Duplicate definition of host: {}".format(self.hostname))
+        output.error(
+            "Duplicate definition of host: {}".format(self.affected_hostname)
+        )
 
 
 class InvalidIPAddressError(ConfigurationError):
 
     sort_key = (0,)
 
-    def __init__(self, address):
+    @classmethod
+    def from_context(cls, address):
+        self = cls()
         self.address = address
+        return self
 
     def __str__(self):
         return "Not a valid IP address: " + self.address
@@ -518,9 +646,12 @@ class IPAddressConfigurationError(ConfigurationError):
 
     sort_key = (0,)
 
-    def __init__(self, address, kind: int):
+    @classmethod
+    def from_context(cls, address, kind):
+        self = cls()
         self.address = address
         self.kind = kind
+        return self
 
     def __str__(self):
         return (
@@ -535,4 +666,8 @@ class IPAddressConfigurationError(ConfigurationError):
             "Hint",
             f"Use `require_v{self.kind}=True` when instantiating the Address"
             " object.",
+            red=True,
         )
+
+        # TODO provide traceback/line numbers/excerpt
+        # see: https://github.com/flyingcircusio/batou/issues/316

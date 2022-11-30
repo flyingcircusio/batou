@@ -166,6 +166,9 @@ def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
     return address
 
 
+ADDR_DEFAULT = object()  # sentinel
+
+
 @functools.total_ordering
 class Address(object):
     """An internet service address that can be listened and connected to.
@@ -181,19 +184,38 @@ class Address(object):
         >>> str(x.listen)
         '127.0.0.1:80'
 
+    You can specify which IP versions are expected to be resolved for listen
+    addresses in three ways with the require_v4/require_v6 flags:
+
+    * False -> this version must not be used
+    * True -> this version must be resolved properly
+    * 'optional' -> the listen/listen_v6 attribute will contain None if it does
+       not resolve.
+
     """
 
     #: The connect address as it should be used when configuring clients.
     #: This is a :py:class:`batou.utils.NetLoc` object.
     connect = None
 
-    require_v4 = False
+    # The dance with the ADDR_DEFAULT is to allow overriding the class-based
+    # defaults on an environment level.
+    require_v4 = True
     require_v6 = False
 
     def __init__(
-        self, connect_address, port=None, require_v4=True, require_v6=False
+        self,
+        connect_address,
+        port=None,
+        require_v4=ADDR_DEFAULT,
+        require_v6=ADDR_DEFAULT,
     ):
-        if not require_v4 and not require_v6:
+        if require_v4 is not ADDR_DEFAULT:
+            self.require_v4 = require_v4
+        if require_v6 is not ADDR_DEFAULT:
+            self.require_v6 = require_v6
+
+        if not self.require_v4 and not self.require_v6:
             raise ValueError(
                 "At least one of `require_v4` or `require_v6` is required. "
                 "None were selected."
@@ -204,15 +226,7 @@ class Address(object):
             connect = connect_address
         if port is None:
             raise ValueError("Need port for service address.")
-        self.connect = NetLoc(connect, str(port))
-        if require_v4:
-            address = resolve(connect, port)
-            self.listen = NetLoc(address, str(port))
-            self.require_v4 = True
-        if require_v6:
-            address = resolve_v6(connect, port)
-            self.listen_v6 = NetLoc(address, str(port))
-            self.require_v6 = True
+        self.connect = NetLoc(connect, port)
 
     def __lt__(self, other):
         if isinstance(other, Address):
@@ -234,14 +248,24 @@ class Address(object):
         object. It raises an :py:class:`batou.IPAddressConfigurationError`
         if used unconfigured.
         """
-        try:
-            return self._listen
-        except AttributeError:
-            raise IPAddressConfigurationError(self, 4)
+        if not self.require_v4:
+            raise IPAddressConfigurationError.from_context(self, 4)
+
+        if not hasattr(self, "_listen_v4"):
+            try:
+                address = resolve(self.connect.host, self.connect.port)
+                self.listen = NetLoc(address, self.connect.port)
+            except Exception:
+                if self.require_v4 == "optional":
+                    self.listen = None
+                else:
+                    raise
+
+        return self._listen_v4
 
     @listen.setter
     def listen(self, value):
-        self._listen = value
+        self._listen_v4 = value
 
     @property
     def listen_v6(self):
@@ -250,10 +274,20 @@ class Address(object):
         object. It raises an :py:class:`batou.IPAddressConfigurationError`
         if used unconfigured.
         """
-        try:
-            return self._listen_v6
-        except AttributeError:
-            raise IPAddressConfigurationError(self, 6)
+        if not self.require_v6:
+            raise IPAddressConfigurationError.from_context(self, 6)
+
+        if not hasattr(self, "_listen_v6"):
+            try:
+                address = resolve_v6(self.connect.host, self.connect.port)
+                self.listen_v6 = NetLoc(address, self.connect.port)
+            except Exception:
+                if self.require_v6 == "optional":
+                    self.listen_v6 = None
+                else:
+                    raise
+
+        return self._listen_v6
 
     @listen_v6.setter
     def listen_v6(self, value):
@@ -445,6 +479,11 @@ def cmd(
         if not ignore_returncode:
             raise CmdExecutionError(cmd, process.returncode, stdout, stderr)
     return stdout, stderr
+
+
+def get_output(command, default=None):
+    stdout, stderr = cmd(command, ignore_returncode=True)
+    return stdout or default
 
 
 class Timer(object):

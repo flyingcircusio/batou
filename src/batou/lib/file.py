@@ -105,7 +105,7 @@ class File(Component):
                         guess_source, self._unmapped_path
                     )
                 )
-        if self.content or self.source:
+        if self.ensure == "file" and (self.content or self.source):
             if self.template_args is None:
                 self.template_args = dict()
             if not self.template_context:
@@ -648,14 +648,14 @@ class Mode(FileComponent):
                 try:
                     self.mode = convert_mode(self.mode)
                 except Exception as e:
-                    raise batou.ConversionError(
+                    raise batou.ConversionError.from_context(
                         self, "mode", self.mode, convert_mode, e
                     )
 
         elif isinstance(self.mode, int):
             pass
         else:
-            raise batou.ConfigurationError(
+            raise batou.ConfigurationError.from_context(
                 f"`mode` is required and `{self.mode!r}` is not a valid value.`"
             )
 

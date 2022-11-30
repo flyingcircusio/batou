@@ -29,37 +29,28 @@ main: Verifying repository ...
 main: Loading secrets ...
 
 ERROR: Failed loading component file
-      File: .../examples/errors/components/component5/component.py
- Exception: invalid syntax (component.py, line 1)
+           File: .../examples/errors/components/component5/component.py
+      Exception: invalid syntax (component.py, line 1)
 
 ERROR: Failed loading component file
-      File: .../examples/errors/components/component6/component.py
- Exception: No module named 'asdf'
-
-ERROR: Failed loading component file
-      File: .../examples/errors/components/component7/component.py
- Exception: Attributes only support one of those parameters: either `default` or `default_conf_string`.
+           File: .../examples/errors/components/component6/component.py
+      Exception: No module named 'asdf'
 
 ERROR: Missing component
- Component: component7
-      Host: localhost
-
-ERROR: Missing component
- Component: missingcomponent
-      Host: localhost
+      Component: missingcomponent
 
 ERROR: Superfluous section in environment configuration
-   Section: superfluoussection
+        Section: superfluoussection
 
 ERROR: Override section for unknown component found
- Component: nonexisting-component-section
+      Component: nonexisting-component-section
 
 ERROR: Attribute override found both in environment and secrets
- Component: component1
- Attribute: my_attribute
+      Component: component1
+      Attribute: my_attribute
 
 ERROR: Secrets section for unknown component found
- Component: another-nonexisting-component-section
+      Component: another-nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
 """
     )  # noqa: E501 line too long
@@ -78,36 +69,27 @@ main: Verifying repository ...
 main: Loading secrets ...
 
 ERROR: Error while calling GPG
-   command: gpg --decrypt environments/errors/secrets.cfg
- exit code: 2
-   message:
+        command: gpg --decrypt environments/errors/secrets.cfg
+      exit code: 2
+        message:
 gpg: ...
 ...
 ERROR: Failed loading component file
-      File: .../examples/errors/components/component5/component.py
- Exception: invalid syntax (component.py, line 1)
+           File: .../examples/errors/components/component5/component.py
+      Exception: invalid syntax (component.py, line 1)
 
 ERROR: Failed loading component file
-      File: .../examples/errors/components/component6/component.py
- Exception: No module named 'asdf'
-
-ERROR: Failed loading component file
-      File: .../examples/errors/components/component7/component.py
- Exception: Attributes only support one of those parameters: either `default` or `default_conf_string`.
+           File: .../examples/errors/components/component6/component.py
+      Exception: No module named 'asdf'
 
 ERROR: Missing component
- Component: component7
-      Host: localhost
-
-ERROR: Missing component
- Component: missingcomponent
-      Host: localhost
+      Component: missingcomponent
 
 ERROR: Superfluous section in environment configuration
-   Section: superfluoussection
+        Section: superfluoussection
 
 ERROR: Override section for unknown component found
- Component: nonexisting-component-section
+      Component: nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
 """
     )  # noqa: E501 line too long
@@ -116,7 +98,6 @@ ERROR: Override section for unknown component found
 def test_example_errors_late():
     os.chdir("examples/errors2")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
-
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
@@ -124,37 +105,35 @@ batou/2... (cpython 3...)
 main: Loading environment `errors`...
 main: Verifying repository ...
 main: Loading secrets ...
-================================ Connecting ... ================================
+================== Connecting hosts and configuring model ... ==================
 localhost: Connecting via local (1/1)
-============================ Configuring model ... =============================
+
 
 ERROR: Trying to access address family IPv6 which is not configured for localhost:22.
-      Hint: Use `require_v6=True` when instantiating the Address object.
+           Hint: Use `require_v6=True` when instantiating the Address object.
 
-ERROR: crontab@localhost: No cron jobs found.
+ERROR: crontab: No cron jobs found.
+ Affected hosts: localhost
 
-ERROR: Failed override attribute conversion
-      Host: localhost
- Attribute: Component1.do_what_is_needed
-Conversion: convert_literal('false')
-     Error: malformed node or string: <...Name object at 0x...>
+ERROR: malformed node or string: <...Name object at 0x...>
+      Attribute: Component1.do_what_is_needed
+     Conversion: convert_literal('false')
+ Affected hosts: localhost
 
-ERROR: Failed override attribute conversion
-      Host: localhost
- Attribute: DNSProblem.attribute_with_problem
-Conversion: Address('localhost')
-     Error: Need port for service address.
+ERROR: Need port for service address.
+      Attribute: DNSProblem.attribute_with_problem
+     Conversion: Address('localhost')
+ Affected hosts: localhost
 
-ERROR: Failed override attribute conversion
-      Host: localhost
- Attribute: FileMode > File('work/filemode/new-file.txt') > Mode('new-file.txt').mode
-Conversion: convert_mode('wrongmode')
-     Error: Mode-string should be between `---------` and `rwxrwxrwx`.
+ERROR: Mode-string should be between `---------` and `rwxrwxrwx`.
+      Attribute: FileMode > File('work/filemode/new-file.txt') > Mode('new-file.txt').mode
+     Conversion: convert_mode('wrongmode')
+ Affected hosts: localhost
 
 ERROR: Overrides for undefined attributes
-      Host: localhost
- Component: Component2
-Attributes: this_does_not_exist, this_also_does_not_exist
+      Component: Component2
+     Attributes: this_does_not_exist, this_also_does_not_exist
+ Affected hosts: localhost
 
 ERROR: Unused provided resources
     Resource "backend" provided by component3 with value ['192.168.0.1']
@@ -172,7 +151,7 @@ cycle2 depends on
 
 ERROR: 8 remaining unconfigured component(s)
 ======================= 10 ERRORS - CONFIGURATION FAILED =======================
-===================== DEPLOYMENT FAILED (during configure) =====================
+====================== DEPLOYMENT FAILED (during connect) ======================
 """
     )  # noqa: E501 line too long
 
@@ -187,7 +166,7 @@ batou/2... (cpython 3...)
 main: Loading environment `production`...
 
 ERROR: Missing environment
-Environment: production
+    Environment: production
 ======================= DEPLOYMENT FAILED (during load) ========================
 """
     )  # noqa: E501 line too long
@@ -203,11 +182,9 @@ batou/2... (cpython 3...)
 main: Loading environment `ignores`...
 main: Verifying repository ...
 main: Loading secrets ...
-================================ Connecting ... ================================
+================== Connecting hosts and configuring model ... ==================
 localhost: Connecting via local (1/2)
 otherhost: Connection ignored (2/2)
-============================ Configuring model ... =============================
-==================== Waiting for remaining connections ... =====================
 ================================== Deploying ===================================
 localhost: Scheduling component component1 ...
 localhost: Skipping component fail ... (Component ignored)
@@ -277,10 +254,8 @@ batou/2... (cpython 3...)
 main: Loading environment `tutorial`...
 main: Verifying repository ...
 main: Loading secrets ...
-================================ Connecting ... ================================
+================== Connecting hosts and configuring model ... ==================
 localhost: Connecting via local (1/1)
-============================ Configuring model ... =============================
-==================== Waiting for remaining connections ... =====================
 ================================== Deploying ===================================
 localhost: Scheduling component hello ...
 localhost > Hello > File('work/hello/hello') > Presence('hello')

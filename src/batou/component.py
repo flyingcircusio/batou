@@ -1,5 +1,6 @@
 import ast
 import contextlib
+import hashlib
 import inspect
 import os
 import os.path
@@ -82,7 +83,9 @@ def load_components_from_file(filename):
             continue
         compdef = ComponentDefinition(candidate, filename, defdir)
         if compdef.name in components:
-            raise DuplicateComponent(compdef, components[compdef.name])
+            raise DuplicateComponent.from_context(
+                compdef, components[compdef.name]
+            )
         components[compdef.name] = compdef
 
     return components
@@ -261,7 +264,7 @@ class Component(object):
                 value = attribute.from_config_string(self, value)
             setattr(self, key, value)
         if missing:
-            raise batou.MissingOverrideAttributes(self, missing)
+            raise batou.MissingOverrideAttributes.from_context(self, missing)
 
     def configure(self):
         """Configure the component by computing target state and declaring
@@ -330,12 +333,17 @@ class Component(object):
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         with self.chdir(self.workdir), self:
+            require_update = False
             try:
                 with batou.utils.Timer("{} verify()".format(self._breadcrumbs)):
                     call_with_optional_args(
                         self.verify, predicting=predict_only
                     )
             except AssertionError:
+                # avoid nested exception messages, when running `update()` in except block
+                require_update = True
+
+            if require_update:
                 self.__trigger_event__(
                     "before-update", predict_only=predict_only
                 )
@@ -952,6 +960,13 @@ class Component(object):
             return None
         return getattr(self, self.namevar, None)
 
+    def checksum(self, value=None):
+        if getattr(self, "_checksum", None) is None:
+            self._checksum = hashlib.new("sha256")
+        if value is not None:
+            self._checksum.update(value)
+        return self._checksum.hexdigest()
+
 
 class HookComponent(Component):
     """A component that provides itself as a resource."""
@@ -1030,7 +1045,14 @@ class RootComponent(object):
 
 # Overridable component attributes
 
-ATTRIBUTE_NODEFAULT = object()
+
+class ConfigString(str):
+    """A string value that will be handled as if it was
+    was read from a config file.
+    """
+
+
+NO_DEFAULT = object()
 
 
 class Attribute(object):
@@ -1056,29 +1078,23 @@ class Attribute(object):
      is used for strings from config files.
     :type conversion: str, callable
 
-    :param default: The default value for the ``Attribute``. This is not
-     passed through the conversion function. expand or map is not applied.
-    :type default: object
-
-    :param str default_conf_string: An alternative default parameter for the
-     ``Attribute``. This is treated like a string from config file
-     (expand, map, conversion) and thus can serve as documentation or as input
-     value for a more complex callable.
+    :param default: The default value for the ``Attribute``. When a
+    ``ConfigString`` value is passed then it will expanded, mapped,
+    and passed through the conversion function, depending on the other
+    arguments.
+    :type default: None
 
     :param bool expand: Expand the config string in the context of this
      component.
 
     :param bool map: Perform a VFS mapping on the config string.
 
-
     """
 
     def __init__(
         self,
-        conversion=None,
-        *,
-        default=ATTRIBUTE_NODEFAULT,
-        default_conf_string=ATTRIBUTE_NODEFAULT,
+        conversion=str,
+        default=NO_DEFAULT,
         expand=True,
         map=False,
     ):
@@ -1086,17 +1102,7 @@ class Attribute(object):
             conversion = getattr(self, "convert_{}".format(conversion))
         self.conversion = conversion
 
-        if (
-            default is not ATTRIBUTE_NODEFAULT
-            and default_conf_string is not ATTRIBUTE_NODEFAULT
-        ):
-            raise batou.ConfigurationError(
-                "Attributes only support one of those parameters:"
-                " either `default` or `default_conf_string`.",
-                self,
-            )
         self.default = default
-        self.default_conf_string = default_conf_string
         self.expand = expand
         self.map = map
         self.instances = weakref.WeakKeyDictionary()
@@ -1106,13 +1112,11 @@ class Attribute(object):
             # We're being accessed as a class attribute.
             return self
         if obj not in self.instances:
-            if self.default is not ATTRIBUTE_NODEFAULT:
-                value = self.default
-            elif self.default_conf_string is not ATTRIBUTE_NODEFAULT:
-                value = self.from_config_string(obj, self.default_conf_string)
-            else:
-                # No defaults present
-                raise AttributeError()
+            value = self.default
+            if isinstance(self.default, ConfigString):
+                value = self.from_config_string(obj, value)
+            elif value is NO_DEFAULT:
+                raise AttributeError("No override and no default given.")
             self.__set__(obj, value)
         return self.instances[obj]
 
@@ -1126,24 +1130,22 @@ class Attribute(object):
         #     value = attribute.from_config_string(self, value)
         # setattr(self, key, value)
         #
-
-        if isinstance(value, str) and self.expand:
+        if self.expand:
             value = obj.expand(value)
-        if isinstance(value, str) and self.map:
+        if self.map:
             value = obj.map(value)
-        if isinstance(value, str) and self.conversion:
-            try:
-                value = self.conversion(value)
-            except Exception as e:
-                # Try to detect our own name.
-                name = "<unknown>"
-                for k in dir(obj):
-                    if getattr(obj.__class__, k, None) is self:
-                        name = k
-                        break
-                raise batou.ConversionError(
-                    obj, name, value, self.conversion, e
-                )
+        try:
+            value = self.conversion(value)
+        except Exception as e:
+            # Try to detect our own name.
+            name = "<unknown>"
+            for k in dir(obj):
+                if getattr(obj.__class__, k, None) is self:
+                    name = k
+                    break
+            raise batou.ConversionError.from_context(
+                obj, name, value, self.conversion, e
+            )
         return value
 
     def __set__(self, obj, value):

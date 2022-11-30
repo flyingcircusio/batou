@@ -17,7 +17,7 @@ feel free to follow along using Mercurial -- batou can handle both.
   $ mkdir myproject
   $ cd myproject
   $ git init
-  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
+  $ curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/main/bootstrap | sh
   $ git commit -m "Start a batou project."
 
 The project is now initialized and batou is ready to be used.
@@ -50,7 +50,7 @@ simple application:
       def configure(self):
           self += File(
               'tick.sh',
-              mode=0755,
+              mode="rwxr-xr-x", # note: you can also pass an octal number, e.g. 0o755
               content="""\
   #!/bin/bash
   while true; do
@@ -77,11 +77,11 @@ directly on the machine you are working on:
 
   $ mkdir environments
 
-Put the following in ``environments/local.cfg`` to specify a local
+Put the following in ``environments/local/environment.cfg`` to specify a local
 configuration that will deploy the "Tick" component:
 
 .. code-block:: ini
-  :caption: environments/local.cfg (v1)
+  :caption: environments/local/environment.cfg (v1)
 
   [environment]
   connect_method = local
@@ -100,7 +100,8 @@ Your project now looks like this:
   │   └── myapp
   │       └── component.py
   └── environments
-      └── local.cfg
+      └── local
+          └── environment.cfg
 
 You can now deploy this environment:
 
@@ -134,7 +135,8 @@ project directory now looks like this:
   │   └── myapp
   │       └── component.py
   ├── environments
-  │   └── local.cfg
+  │   └── local
+  │       └── environment.cfg
   └── work
       └── tick
           └── tick.sh
@@ -214,7 +216,7 @@ to in a vagrant box is `vagrant` and we specify that as the service user.
 The machine in our Vagrant file is "default", so we use that as the hostname:
 
 .. code-block:: ini
-  :caption: environments/vagrant.cfg
+  :caption: environments/vagrant/environment.cfg
 
   [environment]
   connect_method = vagrant
@@ -264,8 +266,10 @@ home directory in a directory named `deployment` by default:
       │   └── myapp
       │       └── component.py
       ├── environments
-      │   ├── local.cfg
-      │   └── vagrant.cfg
+      │   ├── local
+      │   │   └── environment.cfg
+      │   └── vagrant
+      │       └── environment.cfg
       ├── Vagrantfile
       └── work
           └── tick
@@ -294,7 +298,7 @@ Similarly, you can deploy into VMs that were set up by the `test kitchen
     - name: tick
 
 .. code-block:: ini
-  :caption: environments/kitchen.cfg
+  :caption: environments/kitchen/environment.cfg
 
   [environment]
   connect_method = kitchen
@@ -332,7 +336,7 @@ a domain name that should be appended to all hosts.
 Here's the full environment configuration:
 
 .. code-block:: ini
-  :caption: environments/production.cfg (v2)
+  :caption: environments/production/environment.cfg (v2)
 
   [environment]
   connect_method = ssh
@@ -390,7 +394,7 @@ class:
       def configure(self):
           self += File(
               'tick.sh',
-              mode=0755,
+              mode="rwxr-xr-x",
               content="""\
   #!/bin/bash
   while true; do
@@ -409,7 +413,7 @@ To adjust the application for the development environment, we add a new
 section ``[component:tick]`` to the configuration:
 
 .. code-block:: ini
-  :caption: environments/local.cfg (v2)
+  :caption: environments/local/environment.cfg (v2)
 
   [environment]
   connect_method = local
@@ -475,7 +479,7 @@ relative to the directory that the ``component.py`` is placed in:
       def configure(self):
           self += File(
               'tick.sh',
-              mode=0755,
+              mode="rwxr-xr-x",
               source='tick.sh')
 
 Also, templating with Python format strings is very limited. batou thus
@@ -508,7 +512,7 @@ work directory:
       sleep = Attribute(int, 1)
 
       def configure(self):
-          self += File('tick.sh', mode=0755)
+          self += File('tick.sh', mode="rwxr-xr-x")
 
 To disable templating and encoding handling, you can use the ``BinaryFile``
 component:
@@ -558,7 +562,7 @@ To start managing a secret, first add a new override attribute
       sleep = Attribute(int, 1)
 
       def configure(self):
-          self += File('tick.sh', mode=0755)
+          self += File('tick.sh', mode="rwxr-xr-x")
 
 .. code-block:: bash
   :caption: components/myapp/tick.sh (v2)
@@ -747,7 +751,7 @@ To use those secret files, you can simply retrieve them from the environment obj
       def configure(self):
           self += File(
             'secrets.yaml',
-            mode=0600,
+            mode="rwxr-xr-x",
             content=self.environment.secret_files['secretdata.yaml'])
 
 
@@ -780,7 +784,7 @@ bundle``, ``hg-pull`` and ``hg-bundle``.
 Lets use ``git-bundle`` for this example:
 
 .. code-block:: ini
-  :caption: environments/production.cfg (v1)
+  :caption: environments/production/environment.cfg (v1)
 
   [environment]
   connect_method = ssh
@@ -926,7 +930,7 @@ Here is how a component installing Python packages looks like:
 Add the "Flask" compoment to your local configuration:
 
 .. code-block:: ini
-  :caption: environments/local.cfg (v3)
+  :caption: environments/local/environment.cfg (v3)
 
   [environment]
   connect_method = local
@@ -1075,7 +1079,7 @@ a program component:
       sleep = Attribute(int, 1)
 
       def configure(self):
-          self += File('tick.sh', mode=0755)
+          self += File('tick.sh', mode="rwxr-xr-x")
           self += Program('tick', command='tick.sh')
 
 Deploying it enables supervisor in its own virtualenv and starts the

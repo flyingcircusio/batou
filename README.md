@@ -12,7 +12,7 @@ Getting started with a new project is easy:
 mkdir myproject
 cd myproject
 git init
-curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/master/bootstrap | sh
+curl -sL https://raw.githubusercontent.com/flyingcircusio/batou/main/bootstrap | sh
 git commit -m "Start a batou project."
 ```
 
@@ -39,7 +39,7 @@ And here's a minimal environment:
 
 ```console
 $ mkdir environments
-$ cat > environments/dev.cfg
+$ cat > environments/dev/environment.cfg
 [environment]
 connect_method = local
 
@@ -78,10 +78,11 @@ The project is licensed under the 2-clause BSD license.
 ## Hacking
 
 * Make sure `mercurial` and `subversion` are installed and in `$PATH`.
+* `python27` also needs to be installed and in `$PATH`.
 * Run `./develop.sh` to create a local virtualenv with everything set up.
 * Run the test suite using: `bin/tox`
 * Build the documentation using: `cd doc; make`
-
+* Set up GPG for the examples with `export GNUPGHOME=<DIRECTORY OF BATOU HERE>/src/batou/secrets/tests/fixture/gnupg`
 ## Changelog
 
 See [CHANGES.md](./CHANGES.md).

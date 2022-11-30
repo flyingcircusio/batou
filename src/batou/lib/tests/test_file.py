@@ -1032,6 +1032,16 @@ def test_directory_copies_all_files(root):
 
 
 @pytest.mark.slow
+def test_directory_file_copies_all_files(root):
+    os.mkdir("source")
+    open("source/one", "w").close()
+    open("source/two", "w").close()
+    root.component += File("target", ensure="directory", source="source")
+    root.component.deploy()
+    assert sorted(os.listdir("work/mycomponent/target")) == ["one", "two"]
+
+
+@pytest.mark.slow
 def test_directory_last_updated_reflects_file_changes(root):
     os.mkdir("source")
     open("source/one", "w").close()

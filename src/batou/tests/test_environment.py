@@ -22,6 +22,9 @@ def test_load_should_use_defaults(sample_service):
 
 
 def test_load_should_use_config(sample_service):
+    assert batou.utils.Address.require_v6 is False
+    assert batou.utils.Address.require_v4 is True
+
     e = Environment("test-with-env-config")
     e.load()
     assert e.service_user == "joe"
@@ -29,6 +32,14 @@ def test_load_should_use_config(sample_service):
     assert e.branch == "release"
 
     assert e.hosts["foo1"].service_user == "bob"
+
+    # The keys were loaded into the environment
+    assert e.require_v6 is True
+    assert e.require_v4 == "optional"
+
+    # The class-based defaults were adapted
+    assert batou.utils.Address.require_v6 is True
+    assert batou.utils.Address.require_v4 == "optional"
 
 
 def test_load_ignores_predefined_environment_settings(sample_service):
@@ -191,7 +202,7 @@ components = bar
     )
     e.load_hosts(config)
     assert e.exceptions
-    assert "foo" == e.exceptions[0].hostname
+    assert "foo" == e.exceptions[0].affected_hostname
 
 
 @mock.patch("batou.environment.Environment.add_root")
@@ -317,6 +328,6 @@ def test_resolver_overrides_invalid_address(sample_service):
     e = Environment("test-resolver-invalid")
     e.load()
 
-    with pytest.raises(batou.InvalidIPAddressError) as err:
-        e.configure()
-    assert "thisisinvalid" == err.value.address
+    errors = e.configure()
+    assert len(errors) == 1
+    assert "thisisinvalid" == errors[0].address
