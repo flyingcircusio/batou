@@ -4,8 +4,13 @@
 2.3b6 (unreleased)
 ------------------
 
+### Features
+
 - Allow mysql authentication via sudo.
 
+### Bugfixes
+
+- Secrets files created without proper prefix #333
 
 2.3b5 (2022-09-21)
 ------------------
