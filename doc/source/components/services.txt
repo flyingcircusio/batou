@@ -39,6 +39,8 @@ Alternatively to using Supervisor you can register each program as a system-wide
                              Unit_After='cron.service memcached.service',
                              Service_RestartSec=11))
 
+You should import the `batou_ext.nix` module to register the Platform specific `Service` component.
+
 This will result in the following unit file:
 
 .. code-block:: ini
@@ -56,6 +58,7 @@ This will result in the following unit file:
     RestartSec=11
     Type=simple
     User=ctheune
+    Restart=always
 
     [Unit]
     After=cron.service memcached.service
