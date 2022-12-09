@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.3b6 (unreleased)
+2.3b6 (2022-12-09)
 ------------------
 
 ### Features
