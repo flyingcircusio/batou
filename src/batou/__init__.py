@@ -314,7 +314,7 @@ class UnusedResources(ConfigurationError):
     def from_context(cls, resources):
         self = cls()
         self.unused_resources = []
-        for key in sorted(resources):
+        for key in sorted(resources.keys()):
             for component, value in resources[key].items():
                 self.unused_resources.append((key, component.name, str(value)))
         return self
@@ -342,7 +342,7 @@ class UnsatisfiedResources(ConfigurationError):
     def from_context(cls, resources):
         self = cls()
         self.unsatisfied_resources = []
-        for key in sorted(resources):
+        for key in sorted(resources.keys()):
             self.unsatisfied_resources.append(
                 (key, [r.name for r in resources[key]])
             )
