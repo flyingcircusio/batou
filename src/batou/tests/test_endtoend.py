@@ -149,7 +149,7 @@ cycle1 depends on
 cycle2 depends on
         cycle1
 
-ERROR: 8 remaining unconfigured component(s)
+ERROR: 8 remaining unconfigured component(s): filemode, component1, dnsproblem, component2, dnsproblem2, component4, crontab, cycle1
 ======================= 10 ERRORS - CONFIGURATION FAILED =======================
 ====================== DEPLOYMENT FAILED (during connect) ======================
 """

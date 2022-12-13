@@ -553,6 +553,7 @@ class NonConvergingWorkingSet(ConfigurationError):
     def from_context(cls, roots):
         self = cls()
         self.roots_len = len(roots)
+        self.root_names = ", ".join(c.name for c in roots)
         return self
 
     def __str__(self):
@@ -562,10 +563,11 @@ class NonConvergingWorkingSet(ConfigurationError):
         # TODO show this last or first, but not in the middle
         # of everything
         output.error(
-            "{} remaining unconfigured component(s)".format(self.roots_len)
+            "{} remaining unconfigured component(s): {}".format(
+                self.roots_len, self.root_names
+            )
         )
         # TODO show all incl. their host name in -vv or so
-        # output.annotate(', '.join(c.name for c in self.roots))
 
 
 class DeploymentError(ReportingException):
