@@ -129,7 +129,7 @@ def test_config_exceptions_orderable(env):
         batou.SuperfluousComponentSection.from_context("asdf"),
         batou.SuperfluousSecretsSection.from_context("asdf"),
         batou.CycleErrorDetected.from_context(ValueError()),
-        batou.NonConvergingWorkingSet.from_context([c]),
+        batou.NonConvergingWorkingSet.from_context([c.root]),
         batou.DeploymentError(),
         batou.DuplicateHostMapping.from_context("host", "map1", "map2"),
         batou.RepositoryDifferentError.from_context("asdf", "bsdf"),

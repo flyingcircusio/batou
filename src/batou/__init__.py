@@ -314,7 +314,7 @@ class UnusedResources(ConfigurationError):
     def from_context(cls, resources):
         self = cls()
         self.unused_resources = []
-        for key in sorted(resources):
+        for key in sorted(resources.keys()):
             for component, value in resources[key].items():
                 self.unused_resources.append((key, component.name, str(value)))
         return self
@@ -342,7 +342,7 @@ class UnsatisfiedResources(ConfigurationError):
     def from_context(cls, resources):
         self = cls()
         self.unsatisfied_resources = []
-        for key in sorted(resources):
+        for key in sorted(resources.keys()):
             self.unsatisfied_resources.append(
                 (key, [r.name for r in resources[key]])
             )
@@ -553,6 +553,7 @@ class NonConvergingWorkingSet(ConfigurationError):
     def from_context(cls, roots):
         self = cls()
         self.roots_len = len(roots)
+        self.root_names = ", ".join(c.name for c in roots)
         return self
 
     def __str__(self):
@@ -562,10 +563,11 @@ class NonConvergingWorkingSet(ConfigurationError):
         # TODO show this last or first, but not in the middle
         # of everything
         output.error(
-            "{} remaining unconfigured component(s)".format(self.roots_len)
+            "{} remaining unconfigured component(s): {}".format(
+                self.roots_len, self.root_names
+            )
         )
         # TODO show all incl. their host name in -vv or so
-        # output.annotate(', '.join(c.name for c in self.roots))
 
 
 class DeploymentError(ReportingException):
