@@ -115,7 +115,7 @@ ERROR: Trying to access address family IPv6 which is not configured for localhos
 ERROR: crontab: No cron jobs found.
  Affected hosts: localhost
 
-ERROR: malformed node or string: <...Name object at 0x...>
+ERROR: malformed node or stri...: <...Name object at 0x...>
       Attribute: Component1.do_what_is_needed
      Conversion: convert_literal('false')
  Affected hosts: localhost
