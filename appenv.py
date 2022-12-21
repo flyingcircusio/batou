@@ -38,8 +38,8 @@ def cmd(c, merge_stderr=True, quiet=False):
         return subprocess.check_output([c], **kwargs)
     except subprocess.CalledProcessError as e:
         print("{} returned with exit code {}".format(c, e.returncode))
-        print(e.output.decode("ascii"))
-        raise ValueError(e.output.decode("ascii"))
+        print(e.output.decode("ascii", errors="replace"))
+        raise ValueError(e.output.decode("ascii", errors="replace"))
 
 
 def get(host, path, f):
@@ -488,7 +488,7 @@ class AppEnv(object):
 
         extra_specs = []
         result = cmd(
-            "{tmpdir}/bin/python -m pip freeze".format(tmpdir=tmpdir),
+            "{tmpdir}/bin/python -m pip freeze --all".format(tmpdir=tmpdir),
             merge_stderr=False,
         ).decode("ascii")
         pinned_versions = {}
