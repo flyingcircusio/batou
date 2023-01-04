@@ -5,7 +5,6 @@ import itertools
 import json
 import os.path
 import pwd
-import random
 import re
 import shutil
 import stat
@@ -19,29 +18,23 @@ from batou.component import Attribute, Component
 from batou.utils import dict_merge
 
 
-def ensure_path_nonexistent(path):
+def ensure_path_nonexistent(path: str) -> None:
     """Ensure that the given path does not exist.
 
-    strategy: rename the file to a temporary name, then remove it.
-    this allows us to fail in a useful way, since rename is atomic.
-    If we detect that the file exists after the rename, we know that
-    something else is going on and we can bail out.
+    strategy: create a temporary directory, move the path into it
+    and delete the temporary directory.
     """
-    tmp_nonce = random.getrandbits(32)
-    tmp_filename = path + ".batou-ensure-path-nonexistent-tmp" + str(tmp_nonce)
-    if not os.path.lexists(path):
+    if not os.path.exists(path):
         return
-    os.rename(path, tmp_filename)
-    # if the rename did not work, we bail out
-    assert not os.path.lexists(
-        path
-    ), f"{path} should not exist, if it does, it is a race condition."
-    if os.path.islink(tmp_filename):
-        os.unlink(tmp_filename)
-    elif os.path.isdir(tmp_filename):
-        shutil.rmtree(tmp_filename)
-    else:
-        os.unlink(tmp_filename)
+
+    parent_dir = os.path.dirname(os.path.abspath(path))
+    path_basename = os.path.basename(os.path.normpath(path))
+
+    with tempfile.TemporaryDirectory(dir=parent_dir) as temp_dir:
+        os.rename(path, os.path.join(temp_dir, path_basename))
+        # deletes temp_dir on context manager exit
+
+    assert not os.path.exists(path), f"{path} still exists after rename, race?"
 
 
 class File(Component):
