@@ -553,7 +553,7 @@ class NonConvergingWorkingSet(ConfigurationError):
     def from_context(cls, roots):
         self = cls()
         self.roots_len = len(roots)
-        self.root_names = ", ".join(c.name for c in roots)
+        self.root_names = ", ".join(sorted([r.name for r in roots]))
         return self
 
     def __str__(self):
