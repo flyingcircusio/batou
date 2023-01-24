@@ -1,6 +1,12 @@
 ## Changelog
 
 
+2.4a1 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.3 (2023-01-24)
 ----------------
 
