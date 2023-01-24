@@ -1,8 +1,8 @@
 ## Changelog
 
 
-2.3b7 (unreleased)
-------------------
+2.3 (2023-01-24)
+----------------
 
 - No further changes.
 
