@@ -38,8 +38,8 @@ def cmd(c, merge_stderr=True, quiet=False):
         return subprocess.check_output([c], **kwargs)
     except subprocess.CalledProcessError as e:
         print("{} returned with exit code {}".format(c, e.returncode))
-        print(e.output.decode("ascii"))
-        raise ValueError(e.output.decode("ascii"))
+        print(e.output.decode("utf-8", "replace"))
+        raise ValueError(e.output.decode("utf-8", "replace"))
 
 
 def get(host, path, f):
