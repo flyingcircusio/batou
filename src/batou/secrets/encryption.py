@@ -538,7 +538,11 @@ class DiffableAGEEncryptedFile(AGEEncryptedFile):
                         "Unexpected output from age: {}".format(buffer)
                     )
             else:
-                raise Exception("Unexpected output from age: {}".format(out))
+                # if out == b"", then there is no passphrase prompt, this is fine
+                if out:
+                    raise Exception(
+                        "Unexpected output from age: {}".format(out)
+                    )
 
             # read stdout
             buffer = b""
