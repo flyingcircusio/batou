@@ -2,6 +2,7 @@
 import os
 import os.path
 import traceback
+from typing import List, Optional
 
 from ._output import output
 
@@ -18,6 +19,8 @@ if not os.environ.get("REMOTE_PDB_PORT", None):
 
 class ReportingException(Exception):
     """Exceptions that support user-readable reporting."""
+
+    affected_hostname: Optional[str]
 
     def __str__(self):
         raise NotImplementedError()
@@ -64,6 +67,8 @@ class ReportingException(Exception):
 class FileLockedError(ReportingException):
     """A file is already locked and we do not want to block."""
 
+    filename: str
+
     @classmethod
     def from_context(cls, filename):
         self = cls()
@@ -79,6 +84,10 @@ class FileLockedError(ReportingException):
 
 class GPGCallError(ReportingException):
     """There was an error calling GPG on encrypted file."""
+
+    command: str
+    exitcode: str
+    output: str
 
     @classmethod
     def from_context(cls, command, exitcode, output):
@@ -103,6 +112,10 @@ class GPGCallError(ReportingException):
 
 class AgeCallError(ReportingException):
     """There was an error calling age on encrypted file."""
+
+    command: str
+    exitcode: str
+    output: str
 
     @classmethod
     def from_context(cls, command, exitcode, output):
@@ -132,6 +145,10 @@ class UpdateNeeded(AssertionError):
 class ConfigurationError(ReportingException):
     """Indicates that an environment could not be configured successfully."""
 
+    message: str
+    has_component: bool
+    component_root_name: Optional[str]
+
     @property
     def sort_key(self):
         return (0, self.message)
@@ -160,6 +177,12 @@ class ConfigurationError(ReportingException):
 
 class ConversionError(ConfigurationError):
     """An override attribute could not be converted properly."""
+
+    component_breadcrumbs: str
+    conversion_name: str
+    value_repr: str
+    error_str: str
+    key: str
 
     @property
     def sort_key(self):
@@ -211,6 +234,10 @@ class SilentConfigurationError(Exception):
 
 
 class MissingOverrideAttributes(ConfigurationError):
+
+    component_breadcrumbs: str
+    attributes: List[str]
+
     @property
     def sort_key(self):
         return (3, self.affected_hostname, self.component_breadcrumbs)
@@ -236,6 +263,10 @@ class MissingOverrideAttributes(ConfigurationError):
 
 
 class DuplicateComponent(ConfigurationError):
+    a_name: str
+    a_filename: str
+    b_filename: str
+
     @property
     def sort_key(self):
         return (2, self.a_name)
@@ -258,6 +289,10 @@ class DuplicateComponent(ConfigurationError):
 
 
 class DuplicateHostMapping(ConfigurationError):
+    affected_hostname: str
+    a: str
+    b: str
+
     @property
     def sort_key(self):
         return (3, self.affected_hostname, self.a, self.b)
