@@ -109,7 +109,7 @@ def main(args: Optional[list] = None) -> None:
     secrets.add_argument(
         "--secrets-type",
         choices=["gpg", "age"],
-        default="gpg",
+        default=None,
         required=False,
         help="Encryption format to use.",
     )

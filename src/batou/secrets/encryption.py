@@ -2,10 +2,12 @@ import fcntl
 import io
 import os
 import pathlib
+import pty
 import subprocess
+import sys
 import tempfile
 import urllib.request
-from typing import Generator, Optional
+from typing import Dict, Generator, Optional
 
 from configupdater import ConfigUpdater
 
@@ -20,6 +22,100 @@ NEW_FILE_TEMPLATE = """\
 [batou]
 members =
 """
+
+
+def expect(fd, expected):
+    """
+    Expect a certain string on the given file descriptor.
+    Returns a tuple of (bool, bytes) where the bool indicates whether the
+    expected string was found and the actual output bytes.
+    """
+    actual = os.read(fd, len(expected))
+    return (actual == expected, actual)
+
+
+def age_decrypt_file(filename: str, identity: str, passphrase: str) -> bytes:
+    temp_fd, temp_path = tempfile.mkstemp()
+
+    age_cmd = [
+        "age",
+        "-d",
+        "-i",
+        identity,
+        "-o",
+        temp_path,
+        filename,
+    ]
+
+    child_pid, fd = pty.fork()
+
+    IS_CHILD = child_pid == 0
+
+    if IS_CHILD:
+        os.execvp(age_cmd[0], age_cmd)
+
+    assert not IS_CHILD
+
+    matches, output = expect(
+        fd, b'Enter passphrase for "' + identity.encode("utf-8") + b'": '
+    )
+
+    if matches:
+        os.write(fd, passphrase.encode("utf-8") + b"\n")
+    else:
+        raise Exception(
+            "Unexpected output from age: {}".format(output.decode("utf-8"))
+        )
+
+    matches, output = expect(fd, b"\r\r\n")
+    if not matches:
+        raise Exception("Unexpected output from age: {}".format(output))
+
+    # Wait for the child to exit
+    os.waitpid(child_pid, 0)
+
+    with open(temp_path, "rb") as f:
+        result = f.read()
+
+    os.close(temp_fd)
+    os.remove(temp_path)
+
+    return result
+
+
+known_passphrases: Dict[str, str] = {}
+
+
+def get_password(identity: str) -> str:
+    """Prompt the user for a password if necessary."""
+    if identity in known_passphrases:
+        return known_passphrases[identity]
+
+    op = os.environ.get("BATOU_AGE_IDENTITY_PASSPHRASE")
+
+    if op and not op.startswith("op://"):
+        raise ValueError(
+            "The environment variable BATOU_AGE_IDENTITY_PASSPHRASE is set, "
+            "but it's not an 1password url"
+        )
+
+    if op:
+        op_process = subprocess.run(
+            ["op", "read", op],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+        passphrase = op_process.stdout.decode("utf-8").strip()
+    else:
+        import getpass
+
+        passphrase = getpass.getpass(
+            "Enter passphrase for {}: ".format(identity)
+        )
+
+    known_passphrases[identity] = passphrase
+    return passphrase
 
 
 def get_secrets_type(environment_name: str) -> Optional[str]:
@@ -299,31 +395,30 @@ EncryptedFile.__init__(
             if self.quiet:
                 args += ["-q", "--no-tty", "--batch"]
             args += ["--decrypt", self.encrypted_filename]
-        elif self.secrets_type == "age":
-            args = [self.age()]
-            args += ["--decrypt"]
-            for identity in get_age_identities():
-                args += ["-i", str(identity)]
-            args += [self.encrypted_filename]
-        try:
-            if debug:
-                print(f"Decrypting with: {args}")
-            result = subprocess.run(
-                args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-        except subprocess.CalledProcessError as e:
-            if self.secrets_type == "gpg":
+            try:
+                if debug:
+                    print(f"Decrypting with: {args}")
+                result = subprocess.run(
+                    args,
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+            except subprocess.CalledProcessError as e:
                 raise GPGCallError.from_context(
                     args, e.returncode, e.stderr
                 ) from e
-            elif self.secrets_type == "age":
-                raise AgeCallError.from_context(
-                    args, e.returncode, e.stderr
-                ) from e
             else:
-                raise RuntimeError("Unknown secrets type")
-        else:
-            return result.stdout.decode("utf-8")
+                return result.stdout.decode("utf-8")
+        elif self.secrets_type == "age":
+            identity = os.environ.get("BATOU_AGE_IDENTITY")
+            if not identity:
+                raise ValueError("Need to set BATOU_AGE_IDENTITY")
+            password = get_password(identity)
+            content = age_decrypt_file(
+                self.encrypted_filename, identity, password
+            )
+            return content.decode("utf-8")
 
     def _encrypt(self, data):
         if not self.recipients:
