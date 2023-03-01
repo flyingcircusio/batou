@@ -509,9 +509,15 @@ class Environment(object):
                         )
                     )
 
+                cycle_start = previous_working_sets.index(retry)
+                # consider all components tried during they cycle as unconfigured
+                unconfigured = set().union(*previous_working_sets[cycle_start:])
+
                 # We did not manage to improve on our last working set, so we
                 # give up.
-                exceptions.append(NonConvergingWorkingSet.from_context(retry))
+                exceptions.append(
+                    NonConvergingWorkingSet.from_context(unconfigured)
+                )
                 break
 
             working_set = retry

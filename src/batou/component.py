@@ -188,7 +188,7 @@ class Component(object):
     _prepared = False
 
     def __init__(self, namevar=None, **kw):
-        self.timer = batou.utils.Timer(self._breadcrumbs)
+        self.timer = batou.utils.Timer(self.__class__.__name__)
         # Are any keyword arguments undefined attributes?
         # This is a somewhat rough implementation as it allows overriding
         # methods
@@ -359,7 +359,7 @@ class Component(object):
 
         if self.timer.above_threshold(verify=1, update=1, total=10):
             output.annotate(
-                f"{self.host.name} > {self._breadcrumbs} [{self.timer.format(['total', 'verify', 'update', 'sub'])}]"
+                f"{self.host.name} > {self._breadcrumbs} [{self.timer.humanize('total', 'verify', 'update', 'sub')}]"
             )
 
     def verify(self):
