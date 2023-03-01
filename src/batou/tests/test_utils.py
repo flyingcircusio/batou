@@ -17,6 +17,7 @@ from batou.utils import (
     call_with_optional_args,
     cmd,
     flatten,
+    format_duration,
     hash,
     locked,
     notify,
@@ -468,3 +469,9 @@ def test_call_with_optional_args():
     # The function accepts x but also expects y and thus breaks
     with pytest.raises(TypeError):
         call_with_optional_args(quux, x=1)
+
+
+def test_format_duration():
+    assert format_duration(1.23124) == "1.23s"
+    assert format_duration(61) == "1m1s"
+    assert format_duration(None) == "NaN"

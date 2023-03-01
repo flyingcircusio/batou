@@ -188,6 +188,7 @@ class Component(object):
     _prepared = False
 
     def __init__(self, namevar=None, **kw):
+        self.timer = batou.utils.Timer(self._breadcrumbs)
         # Are any keyword arguments undefined attributes?
         # This is a somewhat rough implementation as it allows overriding
         # methods
@@ -324,7 +325,8 @@ class Component(object):
         # times. This is mostly helpful for testing, but who knows.
         self.changed = False
         for sub_component in self.sub_components:
-            sub_component.deploy(predict_only)
+            with self.timer.step("sub"):
+                sub_component.deploy(predict_only)
             if sub_component.changed:
                 self.changed = True
 
@@ -335,7 +337,7 @@ class Component(object):
         with self.chdir(self.workdir), self:
             require_update = False
             try:
-                with batou.utils.Timer("{} verify()".format(self._breadcrumbs)):
+                with self.timer.step("verify"):
                     call_with_optional_args(
                         self.verify, predicting=predict_only
                     )
@@ -349,10 +351,16 @@ class Component(object):
                 )
                 output.flush_buffer()
                 if not predict_only:
-                    self.update()
+                    with self.timer.step("update"):
+                        self.update()
                 self.changed = True
 
         output.clear_buffer()
+
+        if self.timer.above_threshold(verify=1, update=1, total=10):
+            output.annotate(
+                f"{self.host.name} > {self._breadcrumbs} [{self.timer.format(['total', 'verify', 'update', 'sub'])}]"
+            )
 
     def verify(self):
         """Verify whether this component has been deployed correctly or needs
