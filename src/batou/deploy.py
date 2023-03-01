@@ -11,7 +11,7 @@ from batou import ReportingException, SilentConfigurationError
 from batou._output import TerminalBackend, output
 
 from .environment import Environment
-from .utils import locked, notify, self_id
+from .utils import Timer, locked, notify, self_id
 
 
 class Connector(threading.Thread):
@@ -121,6 +121,8 @@ class Deployment(object):
         self.predict_only = predict_only
         self.jobs = jobs
 
+        self.timer = Timer("deployment")
+
     def load(self):
         output.section("Preparing")
 
@@ -192,8 +194,9 @@ class Deployment(object):
         output.section("Connecting hosts and configuring model ...")
         # Consume the connection iterator to start all remaining connections
         # but do not wait for them to be joined.
-        self.connections = list(self._connections())
-        [c.join() for c in self.connections]
+        with self.timer.step("connect"):
+            self.connections = list(self._connections())
+            [c.join() for c in self.connections]
         all_errors = []
         all_reporting_hostnames = set()
         for c in self.connections:
@@ -284,39 +287,43 @@ class Deployment(object):
         else:
             output.section("Deploying")
 
-        # Pick a reference remote (the last we initialised) that will pass us
-        # the order we should be deploying components in.
-        reference_node = [
-            h for h in list(self.environment.hosts.values()) if not h.ignore
-        ][0]
+        with self.timer.step("deploy"):
+            # Pick a reference remote (the last we initialised) that will pass us
+            # the order we should be deploying components in.
+            reference_node = [
+                h for h in list(self.environment.hosts.values()) if not h.ignore
+            ][0]
 
-        self.loop = asyncio.get_event_loop()
-        self.taskpool = ThreadPoolExecutor(self.jobs)
-        self.loop.set_default_executor(self.taskpool)
-        self._launch_components(reference_node.root_dependencies())
+            self.loop = asyncio.get_event_loop()
+            self.taskpool = ThreadPoolExecutor(self.jobs)
+            self.loop.set_default_executor(self.taskpool)
+            self._launch_components(reference_node.root_dependencies())
 
-        # asyncio.Task.all_tasks was removed in Python 3.9
-        # but the replacement asyncio.all_tasks is only available
-        # for Python 3.7 and upwards
-        # confer https://docs.python.org/3/whatsnew/3.7.html
-        # and https://docs.python.org/3.9/whatsnew/3.9.html
-        if sys.version_info < (3, 7):
-            all_tasks = asyncio.Task.all_tasks
-        else:
-            all_tasks = asyncio.all_tasks
+            # asyncio.Task.all_tasks was removed in Python 3.9
+            # but the replacement asyncio.all_tasks is only available
+            # for Python 3.7 and upwards
+            # confer https://docs.python.org/3/whatsnew/3.7.html
+            # and https://docs.python.org/3.9/whatsnew/3.9.html
+            if sys.version_info < (3, 7):
+                all_tasks = asyncio.Task.all_tasks
+            else:
+                all_tasks = asyncio.all_tasks
 
-        def get_pending():
-            return {t for t in all_tasks(self.loop) if not t.done()}
+            def get_pending():
+                return {t for t in all_tasks(self.loop) if not t.done()}
 
-        pending = get_pending()
-        while pending:
-            self.loop.run_until_complete(asyncio.gather(*pending))
             pending = get_pending()
+            while pending:
+                self.loop.run_until_complete(asyncio.gather(*pending))
+                pending = get_pending()
 
     def summarize(self):
         output.section("Summary")
         for node in list(self.environment.hosts.values()):
             node.summarize()
+        output.annotate(
+            f"Deployment took {self.timer.humanize('total', 'connect', 'deploy')}"
+        )
 
     def disconnect(self):
         output.step("main", "Disconnecting from nodes ...", debug=True)

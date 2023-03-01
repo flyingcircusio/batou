@@ -11,6 +11,7 @@ import subprocess
 import sys
 import time
 from collections import defaultdict
+from typing import Optional
 
 import pkg_resources
 
@@ -487,16 +488,58 @@ def get_output(command, default=None):
 
 
 class Timer(object):
-    def __init__(self, note):
-        self.duration = 0
-        self.note = note
+    def __init__(self, tag=None):
+        self.durations = defaultdict(float)  # returns 0.0 for missing keys
+        self.tag = tag
 
-    def __enter__(self):
-        self.started = time.time()
+    class TimerContext(object):
+        def __init__(self, timer, note):
+            self.timer = timer
+            self.note = note
 
-    def __exit__(self, exc1, exc2, exc3):
-        self.duration = time.time() - self.started
-        output.annotate(self.note + " took %fs" % self.duration, debug=True)
+        def __enter__(self):
+            self.start = time.time()
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            delta = time.time() - self.start
+            self.timer.durations[self.note] += delta
+            output.annotate(
+                f"Timer {self.timer.tag}: {self.note} took {delta:.2f} seconds",
+                debug=True,
+            )
+            self.timer.durations[self.note] += time.time() - self.start
+
+    def step(self, note):
+        if note == "total":
+            raise ValueError("Cannot use 'total' as a step name")
+        return self.TimerContext(self, note)
+
+    def above_threshold(self, **thresholds):
+        """
+        Return true if any of the steps took longer than the given threshold.
+        "total" is a special step that is the sum of all other steps.
+        """
+
+        total = sum(self.durations.values())
+        for note, duration in self.durations.items():
+            if note in thresholds and duration > thresholds[note]:
+                return True
+        if "total" in thresholds and total > thresholds["total"]:
+            return True
+        return False
+
+    def humanize(self, *steps):
+        """
+        Given a list of steps, return a string with the time taken for each
+        step.
+        """
+        total = sum(self.durations.values())
+        durations = self.durations.copy()
+        durations["total"] = total
+
+        return ", ".join(
+            f"{note}={format_duration(durations.get(note))}" for note in steps
+        )
 
 
 def hash(path, function="sha_512"):
@@ -542,3 +585,28 @@ def dict_merge(a, b):
         else:
             result[k] = copy.deepcopy(v)
     return result
+
+
+def format_duration(duration: Optional[float]) -> str:
+    """
+    Formats a duration (in seconds) into a human readable string.
+
+    Examples:
+    ```
+    format_duration(1.23124) == "1.23s"
+    format_duration(61) == "1m1s"
+    format_duration(None) == "NaN"
+    ```
+    """
+
+    if duration is None:
+        return "NaN"
+
+    minutes, seconds = divmod(duration, 60)
+
+    if minutes:
+        output = "{}m{}s".format(int(minutes), int(seconds))
+    else:
+        output = "{:.2f}s".format(seconds)
+
+    return output

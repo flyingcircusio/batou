@@ -190,6 +190,7 @@ localhost: Scheduling component component1 ...
 localhost: Skipping component fail ... (Component ignored)
 otherhost: Skipping component fail2 ... (Host ignored)
 =================================== Summary ====================================
+Deployment took total=...s, connect=...s, deploy=...s
 ============================= DEPLOYMENT FINISHED ==============================
 """
     )  # noqa: E501 line too long
@@ -267,6 +268,29 @@ localhost > Hello > File('work/hello/other-secrets.yaml') > Content('other-secre
 Not showing diff as it contains sensitive data,
 see ...diff for the diff.
 =================================== Summary ====================================
+Deployment took total=...s, connect=...s, deploy=...s
 ============================= DEPLOYMENT FINISHED ==============================
 """
     )  # noqa: E501 line too long
+
+
+def test_durations_are_shown_for_components():
+    os.chdir("examples/durations")
+    out, _ = cmd("./batou deploy default")
+    assert out == Ellipsis(
+        """\
+batou/2... (cpython 3...)
+================================== Preparing ===================================
+main: Loading environment `default`...
+main: Verifying repository ...
+main: Loading secrets ...
+================== Connecting hosts and configuring model ... ==================
+localhost: Connecting via local (1/1)
+================================== Deploying ===================================
+localhost: Scheduling component takeslongtime ...
+localhost > Takeslongtime [total=...s, verify=...s, update=NaN, sub=NaN]
+=================================== Summary ====================================
+Deployment took total=...s, connect=...s, deploy=...s
+============================= DEPLOYMENT FINISHED ==============================
+"""
+    )
