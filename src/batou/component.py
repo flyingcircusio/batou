@@ -144,7 +144,7 @@ class Component(object):
     #:
     #: During verify() and apply() batou automatically switches the current
     #: working directory to this.
-    workdir = None
+    workdir: str = None
 
     @property
     def defdir(self):

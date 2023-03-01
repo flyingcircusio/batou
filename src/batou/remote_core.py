@@ -397,7 +397,7 @@ if __name__ == "__channelexec__":
         try:
             import batou
         except ImportError:
-            batou = None
+            pass
         try:
             result = locals()[task](*args, **kw)
             channel.send(("batou-result", result))

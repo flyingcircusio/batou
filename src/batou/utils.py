@@ -154,7 +154,7 @@ def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
         )
         address = None
         for _, _, _, _, sockaddr in responses:
-            addr, _, _, _ = sockaddr
+            addr = sockaddr[0]
             if addr.startswith("fe80:"):
                 continue
             address = addr
@@ -197,7 +197,7 @@ class Address(object):
 
     #: The connect address as it should be used when configuring clients.
     #: This is a :py:class:`batou.utils.NetLoc` object.
-    connect = None
+    connect: "NetLoc"
 
     # The dance with the ADDR_DEFAULT is to allow overriding the class-based
     # defaults on an environment level.
@@ -252,6 +252,7 @@ class Address(object):
         if not self.require_v4:
             raise IPAddressConfigurationError.from_context(self, 4)
 
+        assert self.connect.port is not None
         if not hasattr(self, "_listen_v4"):
             try:
                 address = resolve(self.connect.host, self.connect.port)
@@ -278,6 +279,7 @@ class Address(object):
         if not self.require_v6:
             raise IPAddressConfigurationError.from_context(self, 6)
 
+        assert self.connect.port is not None
         if not hasattr(self, "_listen_v6"):
             try:
                 address = resolve_v6(self.connect.host, self.connect.port)
@@ -319,7 +321,7 @@ class NetLoc(object):
     """
 
     #: The host part of this network location. Can be a hostname or IP address.
-    host = None
+    host: str
     #: The port of this network location. Can be ``None`` or an integer.
     port = None
 
@@ -483,7 +485,7 @@ def cmd(
 
 
 def get_output(command, default=None):
-    stdout, stderr = cmd(command, ignore_returncode=True)
+    stdout, stderr = cmd(command, ignore_returncode=True)  # type: ignore
     return stdout or default
 
 
