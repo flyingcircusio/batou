@@ -67,7 +67,7 @@ def test_resolve_v6_override():
 def test_resolve_v6_does_not_return_link_local_addresses(output, monkeypatch):
     output.enable_debug = True
 
-    def link_local_addrinfo(*args, **kw):
+    def link_local_addrinfo_1(*args, **kw):
         return [
             (
                 None,
@@ -78,13 +78,13 @@ def test_resolve_v6_does_not_return_link_local_addresses(output, monkeypatch):
             )
         ]
 
-    monkeypatch.setattr(socket, "getaddrinfo", link_local_addrinfo)
+    monkeypatch.setattr(socket, "getaddrinfo", link_local_addrinfo_1)
 
     with pytest.raises(ValueError) as err:
         resolve_v6("foo.example.com", 80)
     assert "No valid address found for `foo.example.com`." == str(err.value)
 
-    def link_local_addrinfo(*args, **kw):
+    def link_local_addrinfo_2(*args, **kw):
         return [
             (
                 None,
@@ -96,7 +96,7 @@ def test_resolve_v6_does_not_return_link_local_addresses(output, monkeypatch):
             (None, None, None, None, ("2a02::1", 80, None, None)),
         ]
 
-    monkeypatch.setattr(socket, "getaddrinfo", link_local_addrinfo)
+    monkeypatch.setattr(socket, "getaddrinfo", link_local_addrinfo_2)
 
     output.backend.output = ""
     assert resolve_v6("foo.example.com", 80) == "2a02::1"
