@@ -106,14 +106,6 @@ def main(args: Optional[list] = None) -> None:
     )
     secrets.set_defaults(func=secrets.print_usage)
 
-    secrets.add_argument(
-        "--secrets-type",
-        choices=["gpg", "age"],
-        default=None,
-        required=False,
-        help="Encryption format to use.",
-    )
-
     sp = secrets.add_subparsers()
 
     p = sp.add_parser(

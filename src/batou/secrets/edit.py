@@ -4,55 +4,27 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+from typing import Optional
 
-from .encryption import (
-    EncryptedConfigFile,
-    get_secret_config_from_environment_name,
-    get_secrets_type,
-)
+from batou.environment import Environment
 
 
 class Editor(object):
     def __init__(
-        self, editor_cmd, environment, edit_file=None, secrets_type=None
+        self,
+        editor_cmd,
+        environment: Environment,
+        edit_file: Optional[str] = None,
     ):
         self.editor_cmd = editor_cmd
         self.environment = environment
-        environment_path = pathlib.Path("environments") / environment
-        self.encrypted_configfile = get_secret_config_from_environment_name(
-            environment,
-            secrets_type=secrets_type,
-        )
-
-        self.secrets_type = secrets_type or get_secrets_type(environment)
-
-        if edit_file is None:
-            self.edit_file = self.encrypted_configfile
-        else:
-            if self.secrets_type == "gpg":
-                self.edit_file = environment_path / f"secret-{edit_file}"
-            elif self.secrets_type == "age":
-                self.edit_file = environment_path / f"secret-{edit_file}.age"
-            else:
-                raise ValueError(
-                    "Unknown secrets type: {}".format(self.secrets_type)
-                )
+        self.edit_file = edit_file
+        self.file = self.environment.secret_provider.edit(edit_file)
 
     def main(self):
-        with EncryptedConfigFile(
-            self.encrypted_configfile,
-            add_files_for_env=self.environment,
-            write_lock=True,
-            secrets_type=self.secrets_type,
-        ) as configfile:
-            self.configfile = configfile
-
-            # Add the requested file to edit to the session, this might be
-            # a new file.
-            self.editing = configfile.add_file(self.edit_file)
-            with self.editing as f:
-                f.read()
-                self.cleartext = self.original_cleartext = f.cleartext
+        with self.file:
+            self.original_cleartext = self.file.plaintext
+            self.cleartext = self.file.plaintext
 
             self.interact()
 
@@ -67,7 +39,7 @@ class Editor(object):
             except Exception as e:
                 print()
                 print()
-                print("An error occurred: {}".format(e))
+                print(f"An error occurred: {e}")
                 print()
                 print("Your changes are still available. You can try:")
                 print("\tedit       -- opens editor with current data again")
@@ -87,23 +59,24 @@ class Editor(object):
             raise ValueError("unknown command `{}`".format(cmd))
 
     def encrypt(self):
-        if (
-            self.cleartext == self.original_cleartext
-            and not self.editing.is_new
-        ):
+        if self.cleartext == self.original_cleartext and not self.file.is_new:
             print("No changes from original cleartext. Not updating.")
             return
-        self.editing.cleartext = self.cleartext
-        # In case we are editing the main file, this causes a re-read
-        # of the membership and re-serialization, so we are sure the file
-        # is syntactically correct.
-        self.configfile.read()
-        # Write and (re-encrypt) _all_ files, in case the membership has
-        # changed.
-        self.configfile.write()
+        if self.edit_file:
+            # If we're editing a specific file, we can just overwrite it.
+            self.environment.secret_provider.write_file(
+                self.file, self.cleartext.encode("utf-8")
+            )
+        else:
+            # We are editing the configuration file for encryption. We
+            # need to check wether the secret_type or recipients have
+            # changed and if so, we need to re-encrypt all files.
+            self.environment.secret_provider.write_config(
+                self.file, self.cleartext.encode("utf-8")
+            )
 
     def edit(self):
-        _, suffix = os.path.splitext(self.edit_file)
+        _, suffix = os.path.splitext(self.file.path.name)
         with tempfile.NamedTemporaryFile(
             prefix="edit", suffix=suffix, mode="w+", encoding="utf-8"
         ) as clearfile:
@@ -118,21 +91,13 @@ class Editor(object):
                 self.cleartext = new_clearfile.read()
 
 
-def main(editor, environment, edit_file=None, secrets_type=None, **kw):
+def main(editor, environment, edit_file: Optional[str] = None, **kw):
     """Secrets editor console script.
 
     The main focus here is to avoid having unencrypted files accidentally
     ending up in the deployment repository.
 
     """
-    environments_path = pathlib.Path("environments")
-    if not (environments_path / environment / "environment.cfg").exists():
-        print(f"Environment {environment!r} does not exist. Typo?")
-        print("Existing environments:")
-        print("\n".join(x.name for x in environments_path.iterdir()))
-        sys.exit(1)
 
-    secrets_type = secrets_type or get_secrets_type(environment)
-
-    editor = Editor(editor, environment, edit_file, secrets_type)
+    editor = Editor(editor, Environment(environment), edit_file)
     editor.main()

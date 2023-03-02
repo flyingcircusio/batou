@@ -6,6 +6,7 @@ import os.path
 import pathlib
 import sys
 from configparser import RawConfigParser
+from typing import Dict, List, Set
 
 from importlib_metadata import entry_points
 
@@ -30,14 +31,15 @@ from batou import (
     UnusedResources,
 )
 from batou._output import output
-from batou.component import RootComponent
+from batou.component import ComponentDefinition, RootComponent
+from batou.provision import Provisioner
 from batou.repository import Repository
 from batou.utils import CycleError, cmd
 
 from .component import load_components_from_file
 from .host import Host, LocalHost, RemoteHost
 from .resources import Resources
-from .secrets import add_secrets_to_environment
+from .secrets import SecretProvider
 
 
 class ConfigSection(dict):
@@ -56,7 +58,7 @@ class ConfigSection(dict):
 class Config(object):
     def __init__(self, path):
         config = RawConfigParser()
-        config.optionxform = lambda s: s
+        config.optionxform = lambda optionstr: optionstr
         if path:  # Test support
             config.read(path)
         self.config = config
@@ -110,37 +112,44 @@ class Environment(object):
 
     def __init__(
         self,
-        name,
+        name: str,
         timeout=None,
         platform=None,
         basedir=".",
         provision_rebuild=False,
     ):
         self.name = name
-        self.hosts = {}
+        self.hosts: Dict[str, Host] = {}
         self.resources = Resources()
-        self.overrides = {}
-        self.secret_data = set()
-        self.exceptions = []
+        self.overrides: Dict[str, Dict[str, str]] = {}
+        self.secret_data: Set[str] = set()
+        self.exceptions: List[Exception] = []
         self.timeout = timeout
         self.platform = platform
         self.provision_rebuild = provision_rebuild
 
-        self.hostname_mapping = {}
+        self.hostname_mapping: Dict[str, str] = {}
 
         # These are the component classes, decorated with their
         # name.
-        self.components = {}
+        self.components: Dict[str, "ComponentDefinition"] = {}
         # These are the components assigned to hosts.
-        self.root_components = []
+        self.root_components: List[RootComponent] = []
 
         self.base_dir = os.path.abspath(basedir)
         self.workdir_base = os.path.join(self.base_dir, "work")
 
         # Additional secrets files as placed in secrets/<env>-<name>
-        self.secret_files = {}
+        self.secret_files: Dict[str, str] = {}
 
-        self.provisioners = {}
+        self.provisioners: Dict[str, Provisioner] = {}
+
+        self.secret_provider = SecretProvider.from_environment(self)
+
+    @classmethod
+    def all(cls):
+        for path in pathlib.Path("environments").glob("*/environment.cfg"):
+            yield cls(path.parent.name)
 
     def _environment_path(self, path="."):
         return os.path.abspath(
@@ -226,7 +235,7 @@ class Environment(object):
         )
 
     def load_secrets(self):
-        add_secrets_to_environment(self)
+        self.secret_provider.inject_secrets()
 
     def load_environment(self, config):
         environment = config.get("environment", {})
