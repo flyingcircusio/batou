@@ -4,9 +4,16 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+import traceback
 from typing import Optional
 
 from batou.environment import Environment
+
+NEW_FILE_TEMPLATE = """\
+[batou]
+secret_provider = age
+members =
+"""
 
 
 class Editor(object):
@@ -23,8 +30,14 @@ class Editor(object):
 
     def main(self):
         with self.file:
-            self.original_cleartext = self.file.plaintext
-            self.cleartext = self.file.plaintext
+            self.original_cleartext = self.file.cleartext
+            self.cleartext = self.original_cleartext
+            if self.file.is_new:
+                self.original_cleartext = None
+                if self.edit_file:
+                    self.cleartext = ""
+                else:
+                    self.cleartext = NEW_FILE_TEMPLATE
 
             self.interact()
 
@@ -59,7 +72,7 @@ class Editor(object):
             raise ValueError("unknown command `{}`".format(cmd))
 
     def encrypt(self):
-        if self.cleartext == self.original_cleartext and not self.file.is_new:
+        if self.cleartext == self.original_cleartext:
             print("No changes from original cleartext. Not updating.")
             return
         if self.edit_file:
@@ -68,11 +81,8 @@ class Editor(object):
                 self.file, self.cleartext.encode("utf-8")
             )
         else:
-            # We are editing the configuration file for encryption. We
-            # need to check wether the secret_type or recipients have
-            # changed and if so, we need to re-encrypt all files.
             self.environment.secret_provider.write_config(
-                self.file, self.cleartext.encode("utf-8")
+                self.cleartext.encode("utf-8")
             )
 
     def edit(self):

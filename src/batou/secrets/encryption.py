@@ -5,20 +5,22 @@ import pty
 import subprocess
 import sys
 import tempfile
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from configupdater import ConfigUpdater
 
 from batou import AgeCallError, FileLockedError, GPGCallError
 from batou._output import output
 
+debug = False
+
 
 class EncryptedFile:
-    def __init__(self, path: "pathlib.Path", writable: bool = False):
+    def __init__(self, path: "pathlib.Path", writeable: bool = False):
         self.path = path
-        self.writable = writable
+        self.writeable = writeable
         self.fd = None
-        self.is_new = False
+        self.is_new: Optional[bool] = None
 
     @property
     def decrypted(self) -> bytes:
@@ -31,10 +33,10 @@ class EncryptedFile:
 
     @property
     def _decrypted(self) -> bytes:
-        raise NotImplementedError
+        raise NotImplementedError("_decrypted() not implemented")
 
     @property
-    def plaintext(self) -> str:
+    def cleartext(self) -> str:
         return self.decrypted.decode("utf-8")
 
     @property
@@ -42,7 +44,7 @@ class EncryptedFile:
         return self.fd is not None
 
     def write(self, content: bytes, recipients: List[str]):
-        raise NotImplementedError
+        raise NotImplementedError("write() not implemented")
 
     def __enter__(self):
         self._lock()
@@ -52,17 +54,19 @@ class EncryptedFile:
         self._unlock()
 
     def _lock(self):
+        if self.locked:
+            raise ValueError("File already locked")
         if not self.path.exists():
             self.is_new = True
             self.path.touch()
-        self.fd = open(self.path, "r+" if self.writable else "r")
+        self.fd = open(self.path, "r+" if self.writeable else "r")
         try:
             fcntl.lockf(
                 self.fd,
                 fcntl.LOCK_NB  # non-blocking
                 | (
                     fcntl.LOCK_EX  # exclusive
-                    if self.writable
+                    if self.writeable
                     else fcntl.LOCK_SH  # shared
                 ),
             )
@@ -73,18 +77,46 @@ class EncryptedFile:
         if self.fd is not None:
             self.fd.close()
             self.fd = None
+        if self.is_new:
+            self.path.unlink()
 
     @property
     def exists(self):
         return self.path.exists()
+
+    def delete(self):
+        self.path.unlink()
+
+
+class NoBackingEncryptedFile(EncryptedFile):
+    def __init__(self):
+        super().__init__(pathlib.Path("/dev/null"))
+        self.is_new = True
+
+    @property
+    def _decrypted(self):
+        return b""
+
+    def write(self, content: bytes, recipients: List[str]):
+        raise NotImplementedError("write() not implemented")
+
+    @property
+    def locked(self):
+        return True
+
+    def _lock(self):
+        pass
+
+    def _unlock(self):
+        pass
 
 
 class GPGEncryptedFile(EncryptedFile):
     @property
     def _decrypted(self):
         if not self.locked:
-            raise ValueError("File not locked")
-        args = ["gpg", "--decrypt", str(self.path)]
+            raise RuntimeError("File not locked")
+        args = [self.gpg(), "--decrypt", str(self.path)]
         try:
             p = subprocess.run(
                 args,
@@ -98,10 +130,10 @@ class GPGEncryptedFile(EncryptedFile):
 
     def write(self, content: bytes, recipients: List[str]):
         if not self.locked:
-            raise ValueError("File not locked")
-        if not self.writable:
-            raise ValueError("File not writable")
-        args = ["gpg", "--encrypt"]
+            raise RuntimeError("File not locked")
+        if not self.writeable:
+            raise RuntimeError("File not writeable")
+        args = [self.gpg(), "--encrypt", "--batch", "--yes"]
         for recipient in recipients:
             args.extend(["-r", recipient])
         args.extend(["-o", str(self.path)])
@@ -116,6 +148,28 @@ class GPGEncryptedFile(EncryptedFile):
         except subprocess.CalledProcessError as e:
             raise GPGCallError.from_context(e.cmd, e.returncode, e.stderr)
         self.is_new = False
+
+    GPG_BINARY_CANDIDATES = ["gpg", "gpg2"]
+
+    def gpg(self):
+        with tempfile.TemporaryFile() as null:
+            for gpg in self.GPG_BINARY_CANDIDATES:
+                try:
+                    if debug:
+                        print(f'Trying "{gpg} --version"')
+                    subprocess.check_call(
+                        [gpg, "--version"], stdout=null, stderr=null
+                    )
+                except (subprocess.CalledProcessError, OSError):
+                    pass
+                else:
+                    return gpg
+        raise RuntimeError(
+            "Could not find gpg binary."
+            " Is GPG installed? I tried looking for: {}".format(
+                ", ".join("`{}`".format(x) for x in self.GPG_BINARY_CANDIDATES)
+            )
+        )
 
 
 def expect(fd, expected):
@@ -179,7 +233,7 @@ class AGEEncryptedFile(EncryptedFile):
         passphrase = get_passphrase(identity)
         with tempfile.NamedTemporaryFile() as temp_file:
             age_cmd = [
-                "age",
+                self.age(),
                 "-d",
                 "-i",
                 str(identity),
@@ -229,9 +283,9 @@ class AGEEncryptedFile(EncryptedFile):
     def write(self, content: bytes, recipients: List[str]):
         if not self.locked:
             raise ValueError("File is not locked")
-        if not self.writable:
-            raise ValueError("File is not writable")
-        args = ["age", "-e"]
+        if not self.writeable:
+            raise ValueError("File is not writeable")
+        args = [self.age(), "-e"]
         for recipient in recipients:
             args.extend(["-r", recipient])
         args.extend(["-o", str(self.path)])
@@ -247,3 +301,25 @@ class AGEEncryptedFile(EncryptedFile):
         except subprocess.CalledProcessError as e:
             raise AgeCallError.from_context(e.cmd, e.returncode, e.stderr)
         self.is_new = False
+
+    AGE_BINARY_CANDIDATES = ["age", "rage"]
+
+    def age(self):
+        with tempfile.TemporaryFile() as null:
+            for age in self.AGE_BINARY_CANDIDATES:
+                try:
+                    if debug:
+                        print(f'Trying "{age} --version"')
+                    subprocess.check_call(
+                        [age, "--version"], stdout=null, stderr=null
+                    )
+                except (subprocess.CalledProcessError, OSError):
+                    pass
+                else:
+                    return age
+        raise RuntimeError(
+            "Could not find age binary."
+            " Is age installed? I tried looking for: {}".format(
+                ", ".join("`{}`".format(x) for x in self.AGE_BINARY_CANDIDATES)
+            )
+        )

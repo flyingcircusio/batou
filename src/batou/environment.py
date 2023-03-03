@@ -151,6 +151,17 @@ class Environment(object):
         for path in pathlib.Path("environments").glob("*/environment.cfg"):
             yield cls(path.parent.name)
 
+    @classmethod
+    def filter(cls, names):
+        if not names:
+            return cls.all()
+        names = names.split(",")
+        names = [x.strip() for x in names]
+
+        for env in cls.all():
+            if env.name in names:
+                yield env
+
     def _environment_path(self, path="."):
         return os.path.abspath(
             os.path.join(self.base_dir, "environments", self.name, path)
