@@ -363,7 +363,8 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             print("Setting secret provider to gpg.")
         secret_provider = config.get("batou", "secret_provider")
         if secret_provider.value != "gpg":
-            super().change_secret_provider(config, self)
+            self.change_secret_provider(config, self)
+            return
         recipients_opt = config.get("batou", "members")
         if recipients_opt is None or recipients_opt.value is None:
             raise ValueError(
@@ -475,7 +476,12 @@ class AGESecretProvider(ConfigFileSecretProvider):
             return []
         recipients = recipients.value.split(",")
         recipients = [r.strip() for r in recipients]
-        return process_age_recipients(recipients, self.environment.base_dir)
+        return process_age_recipients(
+            recipients,
+            pathlib.Path(self.environment.base_dir)
+            / pathlib.Path("environments")
+            / self.environment.name,
+        )
 
     def write_config(self, content: bytes):
         config = ConfigUpdater().read_string(content.decode("utf-8"))
@@ -485,7 +491,8 @@ class AGESecretProvider(ConfigFileSecretProvider):
             print("Setting secret provider to age.")
         secret_provider = config.get("batou", "secret_provider")
         if secret_provider.value != "age":
-            super().change_secret_provider(config, self)
+            self.change_secret_provider(config, self)
+            return
         recipients_opt = config.get("batou", "members")
         if recipients_opt is None or recipients_opt.value is None:
             raise ValueError(
@@ -498,7 +505,10 @@ class AGESecretProvider(ConfigFileSecretProvider):
                 "Please add at least one recipient to the secrets file."
             )
         recipients = process_age_recipients(
-            recipients, pathlib.Path("environments") / self.environment.name
+            recipients,
+            pathlib.Path(self.environment.base_dir)
+            / pathlib.Path("environments")
+            / self.environment.name,
         )
         self.config_file.write(
             str(config).encode("utf-8"),
