@@ -27,13 +27,20 @@ class Clone(Component):
     target = "."
     revision = None
     branch = None
+    tag = None
     vcs_update = True
     clobber = False
 
     def configure(self):
-        if (not self.revision_or_branch) or (self.revision and self.branch):
+        if (
+            (not self.revision_or_branch_or_tag)
+            or (self.revision and self.branch)
+            or (self.revision and self.tag)
+            or (self.tag and self.branch)
+        ):
             raise ValueError(
-                "Clone(%s) needs exactly one of revision or branch" % self.url
+                "Clone(%s) needs exactly one of revision or branch or tag"
+                % self.url
             )
         self.target = self.map(self.target)
         self += Directory(self.target)
@@ -92,10 +99,20 @@ class Clone(Component):
                 or self.has_incoming_changesets()
             ):
                 raise UpdateNeeded()
+            if self.tag and self.current_tag() != self.tag:
+                raise UpdateNeeded()
 
     @property
-    def revision_or_branch(self):
-        return self.revision or self.branch
+    def revision_or_branch_or_tag(self):
+        return self.revision or self.branch or self.tag
+
+    def current_tag(self):
+        try:
+            with self.chdir(self.target):
+                stdout, stderr = self.cmd("LANG=C git describe --tags")
+        except RuntimeError:
+            return None
+        return stdout.strip()
 
     def current_revision(self):
         try:
@@ -147,6 +164,8 @@ class Clone(Component):
                 self.cmd(
                     self.expand("git reset --hard origin/{{component.branch}}")
                 )
+            elif self.tag:
+                self.cmd(self.expand("git reset --hard {{component.tag}}"))
             else:
                 self.cmd(self.expand("git reset --hard {{component.revision}}"))
 
