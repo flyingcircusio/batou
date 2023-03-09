@@ -39,7 +39,7 @@ class Clone(Component):
             or (self.tag and self.branch)
         ):
             raise ValueError(
-                "Clone(%s) needs exactly one of revision or branch or tag"
+                "Clone(%s) needs exactly one of revision, branch or tag"
                 % self.url
             )
         self.target = self.map(self.target)
