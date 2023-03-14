@@ -21,6 +21,10 @@ def ensure_empty_directory(path):
         ensure_path_nonexistent(os.path.join(path, file))
 
 
+def exactly_one(self, *args):
+    return sum(map(bool, args)) == 1
+
+
 class Clone(Component):
 
     namevar = "url"
@@ -32,12 +36,7 @@ class Clone(Component):
     clobber = False
 
     def configure(self):
-        if (
-            (not self.revision_or_branch_or_tag)
-            or (self.revision and self.branch)
-            or (self.revision and self.tag)
-            or (self.tag and self.branch)
-        ):
+        if not exactly_one(self.revision, self.branch, self.tag):
             raise ValueError(
                 "Clone(%s) needs exactly one of revision, branch or tag"
                 % self.url
@@ -101,10 +100,6 @@ class Clone(Component):
                 raise UpdateNeeded()
             if self.tag and self.current_tag() != self.tag:
                 raise UpdateNeeded()
-
-    @property
-    def revision_or_branch_or_tag(self):
-        return self.revision or self.branch or self.tag
 
     def current_tag(self):
         try:
