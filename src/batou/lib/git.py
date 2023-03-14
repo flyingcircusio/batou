@@ -21,7 +21,7 @@ def ensure_empty_directory(path):
         ensure_path_nonexistent(os.path.join(path, file))
 
 
-def exactly_one(self, *args):
+def exactly_one(*args):
     return sum(map(bool, args)) == 1
 
 
