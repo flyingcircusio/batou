@@ -98,7 +98,9 @@ class Clone(Component):
                 or self.has_incoming_changesets()
             ):
                 raise UpdateNeeded()
-            if self.tag and self.current_tag() != self.tag:
+            if self.tag and (
+                self.current_tag() != self.tag or self.has_incoming_changesets()
+            ):
                 raise UpdateNeeded()
 
     def current_tag(self):
