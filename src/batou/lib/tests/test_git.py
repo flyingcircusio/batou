@@ -123,6 +123,32 @@ def test_branch_does_switch_branch(root, repos_path):
 
 
 @pytest.mark.slow
+def test_tag_does_switch_tag(root, repos_path):
+    cmd(
+        """cd {dir}; git tag -a v1.0 -m "version 1.0" """.format(dir=repos_path)
+    )
+    cmd(
+        "cd {dir}; touch bar; git add .;"
+        'git commit -m "commit branch"'.format(dir=repos_path)
+    )
+    cmd(
+        """cd {dir}; git tag -a v1.1 -m "version 1.1" """.format(dir=repos_path)
+    )
+
+    for tag in ("v1.0", "v1.1"):
+        root.component += batou.lib.git.Clone(
+            repos_path, target="clone", tag=tag
+        )
+        root.component.deploy()
+        stdout, stderr = cmd(
+            "cd {workdir}/clone; git describe --tags".format(
+                workdir=root.workdir
+            )
+        )
+        assert tag == stdout.strip()
+
+
+@pytest.mark.slow
 def test_has_changes_counts_changes_to_tracked_files(root, repos_path):
     clone = batou.lib.git.Clone(repos_path, target="clone", branch="master")
     root.component += clone

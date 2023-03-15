@@ -4,7 +4,7 @@
 2.4a1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Allow git `Clone` to checkout tags.
 
 
 2.3 (2023-01-24)
