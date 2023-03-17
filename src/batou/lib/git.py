@@ -162,6 +162,7 @@ class Clone(Component):
                     self.expand("git reset --hard origin/{{component.branch}}")
                 )
             elif self.tag:
+                self.cmd(self.expand("git fetch --tags"))
                 self.cmd(self.expand("git reset --hard {{component.tag}}"))
             else:
                 self.cmd(self.expand("git reset --hard {{component.revision}}"))
