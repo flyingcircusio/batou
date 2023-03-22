@@ -190,8 +190,8 @@ If you want to contribute to the project, this part of the documentation is for 
 Support
 -------
 
-batou itself is released "as is". We hang around #batou in the Freenode IRC
-network. You can also report bugs to our `bugtracker <https://github.com/flyingcircusio/batou/issues>`_.
+batou itself is released "as is".
+You can also report bugs to our `bugtracker <https://github.com/flyingcircusio/batou/issues>`_.
 
 We also have a matrix channel: `#batou:matrix.org <https://matrix.to/#/#batou:matrix.org>`_.
 
