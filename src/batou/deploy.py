@@ -198,15 +198,22 @@ class Deployment(object):
             self.connections = list(self._connections())
             [c.join() for c in self.connections]
         all_errors = []
+        graphs = []
         all_reporting_hostnames = set()
         for c in self.connections:
-            errors = pickle.loads(c.errors)
+            errors, graph = pickle.loads(c.errors)
+            graphs.append(graph)
             reporting_hostname = c.host.name
             all_reporting_hostnames.add(reporting_hostname)
             all_errors.extend([(reporting_hostname, e) for e in errors])
             # collects all errors into (reporting_hostname, error) tuples
         # if there are no errors, we're done
         if not all_errors:
+            import json
+
+            # write graphs to out.json
+            with open("out.json", "w") as f:
+                json.dump(graphs, f)
             return
         # collect with .should_merge
         errors_by_equivalence_class = []

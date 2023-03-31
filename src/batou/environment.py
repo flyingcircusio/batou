@@ -535,7 +535,42 @@ class Environment(object):
 
         self.exceptions.extend(exceptions)
 
-        return self.exceptions
+        output.line(str(self.resources))
+
+        # clean up root_dependencies by applying str to all keys
+        dependencies = {}
+        for key, value in root_dependencies.items():
+            dependencies[str(key)] = list(str(v) for v in value)
+
+        # clean up resources
+        resources = {}
+        resources["resources"] = {}
+        for key, value in self.resources.resources.items():
+            # value is a dict
+            new_value = {}
+            for k, v in value.items():
+                new_value[str(k)] = [str(vv) for vv in v]
+            resources["resources"][str(key)] = new_value
+        resources["subscribers"] = {}
+        for key, value in self.resources.subscribers.items():
+
+            def dump_subscription(subscription):
+                return {
+                    "root": str(subscription.root),
+                    "strict": subscription.strict,
+                    "host": str(subscription.host),
+                    "reverse": subscription.reverse,
+                    "dirty": subscription.dirty,
+                }
+
+            resources["subscribers"][str(key)] = list(
+                dump_subscription(v) for v in value
+            )
+        resources["dirty_dependencies"] = list(
+            str(v) for v in self.resources.dirty_dependencies
+        )
+
+        return (self.exceptions, (dependencies, resources))
 
     def root_dependencies(self, host=None):
         """Return all roots (host/component) with their direct dependencies.
