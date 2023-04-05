@@ -33,32 +33,40 @@ class SecretProvider:
         )
         secret_provider_candidates: List[SecretProvider] = []
 
-        if (environment_path / "secrets.cfg").exists():
-            output.annotate(
-                f"Found gpg secrets for environment {environment.name}.",
-                debug=True,
-            )
-            secret_provider_candidates.append(GPGSecretProvider(environment))
+        # There should be one file called "secrets.cfg.<provider>".
+        # If there is more than one, we raise an error.
 
-        if (environment_path / "secrets.cfg.age").exists():
-            output.annotate(
-                f"Found age secrets for environment {environment.name}.",
-                debug=True,
-            )
-            secret_provider_candidates.append(AGESecretProvider(environment))
-
-        if len(secret_provider_candidates) > 1:
-            raise ValueError(
-                f"Multiple secret providers found for environment {environment.name}.",
-                f"Candidates: {secret_provider_candidates}. Cannot continue.",
-            )
-
-        if len(secret_provider_candidates) == 0:
+        config_files = list(environment_path.glob("secrets.cfg.*"))
+        if len(config_files) == 0:
             output.annotate(
                 f"No secrets found for environment {environment.name}.",
                 debug=True,
             )
             return NoSecretProvider(environment)
+        if len(config_files) > 1:
+            raise ValueError(
+                f"Multiple secret providers found for environment {environment.name}.",
+                f"Candidates: {config_files}. Cannot continue.",
+            )
+
+        extension = config_files[0].suffix
+
+        if extension == ".age":
+            output.annotate(
+                f"Found age secrets for environment {environment.name}.",
+                debug=True,
+            )
+            secret_provider_candidates.append(AGESecretProvider(environment))
+        elif extension == ".gpg":
+            output.annotate(
+                f"Found gpg secrets for environment {environment.name}.",
+                debug=True,
+            )
+            secret_provider_candidates.append(GPGSecretProvider(environment))
+        else:
+            raise ValueError(
+                f"Invalid secret provider {extension}.",
+            )
 
         return secret_provider_candidates[0]
 
@@ -143,10 +151,6 @@ class SecretProvider:
         old_secret_provider: "SecretProvider",
     ):
         new_secret_provider_str = config.get("batou", "secret_provider").value
-        if new_secret_provider_str not in ("age", "gpg"):
-            raise ValueError(
-                f"Invalid secret provider {new_secret_provider_str}."
-            )
         new_secret_provider: SecretProvider
         if new_secret_provider_str == "age":
             new_secret_provider = AGESecretProvider(self.environment)
@@ -156,6 +160,9 @@ class SecretProvider:
             raise ValueError(
                 f"Invalid secret provider {new_secret_provider_str}.",
             )
+        output.annotate(
+            f"Changing secret provider from {old_secret_provider} to {new_secret_provider}."
+        )
         new_secret_provider.write_config_new(str(config).encode("utf-8"))
         new_secret_provider.write_secret_files(
             old_secret_provider.read_secret_files()
