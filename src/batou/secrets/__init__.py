@@ -75,7 +75,9 @@ class SecretProvider:
 
     @property
     def config(self) -> ConfigUpdater:
-        raise NotImplementedError("config() not implemented.")
+        raise NotImplementedError(
+            "Cannot read encrypted config where no secret provider is configured."
+        )
 
     def read(self) -> "SecretBlob":
         """
@@ -282,16 +284,26 @@ class ConfigFileSecretProvider(SecretProvider):
         self.config_file.delete()
 
     def summary(self):
-        print("\tmembers")
-        members = self.config.get("batou", "members")
-        if members.value is not None:
-            for member in members.value.split(","):
-                member = member.strip()
-                print(f"\t\t- {member}")
-        else:
-            print("\t\tUndefined behavior.")
-        if not members:
-            print("\t\t(none)")
+        with self.config_file:
+            print("\t members")
+            members = self.config.get("batou", "members")
+            if members.value is not None:
+                for member in members.value.split(","):
+                    member = member.strip()
+                    print(f"\t\t- {member}")
+            else:
+                print("\t\tUndefined behavior.")
+            if not members:
+                print("\t\t(none)")
+            print("\t secret files")
+            # Keys of self.f.files are strings, but self.path is pathlib.Path:
+            files = self.read_secret_files().keys()
+            files = sorted(files)
+            for f in files:
+                print("\t\t-", f)
+            if not files:
+                print("\t\t(none)")
+            print()
 
     def edit(self, edit_file: Optional[str] = None):
         if edit_file is None:
@@ -327,7 +339,7 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             pathlib.Path(environment.base_dir)
             / "environments"
             / environment.name
-            / "secrets.cfg"
+            / "secrets.cfg.gpg"
         )
 
     def iter_secret_files(self, writeable=False) -> Dict[str, EncryptedFile]:

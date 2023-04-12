@@ -1,13 +1,31 @@
+import sys
+
 from configupdater import ConfigUpdater
 
+from batou import GPGCallError
 from batou.environment import Environment
 
 
+class UnknownEnvironmentError(ValueError):
+    """There is/are no environment(s) for this name(s)."""
+
+    def __init__(self, names: list):
+        self.names = names
+
+    def __str__(self):
+        return f'Unknown environment(s): {", ".join(self.names)}'
+
+
 def summary():
-    environments = Environment.all()
-    for environment in environments:
-        print(environment.name)
-        environment.secret_provider.summary()
+    try:
+        environments = Environment.all()
+        for environment in environments:
+            print(environment.name)
+            environment.secret_provider.summary()
+    except GPGCallError as e:
+        print(e, file=sys.stderr)
+        print(e.output, file=sys.stderr)
+        return 1  # exit code
 
 
 def add_user(keyid, environments, **kw):
@@ -17,7 +35,8 @@ def add_user(keyid, environments, **kw):
     to all environments.
 
     """
-    for environment in Environment.filter(environments):
+    environments_ = Environment.filter(environments)
+    for environment in environments_:
         with environment.secret_provider.edit():
             config = environment.secret_provider.config
             members = environment.secret_provider._get_recipients()
@@ -27,6 +46,10 @@ def add_user(keyid, environments, **kw):
             environment.secret_provider.write_config(
                 str(config).encode("utf-8")
             )
+    if not environments:
+        raise UnknownEnvironmentError(
+            [e.strip() for e in environments.split(",")]
+        )
 
 
 def remove_user(keyid, environments, **kw):
@@ -36,7 +59,8 @@ def remove_user(keyid, environments, **kw):
     from all environments.
 
     """
-    for environment in Environment.filter(environments):
+    environments_ = Environment.filter(environments)
+    for environment in environments_:
         with environment.secret_provider.edit():
             config = environment.secret_provider.config
             members = environment.secret_provider._get_recipients()
@@ -46,3 +70,7 @@ def remove_user(keyid, environments, **kw):
             environment.secret_provider.write_config(
                 str(config).encode("utf-8")
             )
+    if not environments:
+        raise UnknownEnvironmentError(
+            [e.strip() for e in environments.split(",")]
+        )
