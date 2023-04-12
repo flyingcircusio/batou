@@ -109,7 +109,7 @@ def test_edit_file_has_secret_prefix_gpg(tmpdir, encrypted_file):
         ),
         edit_file=filename,
     )
-    assert editor.file.path.name == f"secret-{filename}"
+    assert editor.file.path.name == f"secret-{filename}.gpg"
 
 
 def test_edit_file_has_secret_prefix_age(tmpdir, encrypted_file):

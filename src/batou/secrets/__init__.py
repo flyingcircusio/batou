@@ -349,11 +349,11 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             / self.environment.name
         )
         secret_files: Dict[str, EncryptedFile] = {}
-        for file in environment_path.glob("secret-*"):
+        for file in environment_path.glob("secret-*.gpg"):
             file = environment_path / file
             if not file.is_file():
                 continue
-            name = file.name[len("secret-") :]
+            name = file.name[len("secret-") : -len(".gpg")]
             secret_files[name] = GPGEncryptedFile(file, writeable)
         return secret_files
 
@@ -362,7 +362,7 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             pathlib.Path(self.environment.base_dir)
             / "environments"
             / self.environment.name
-            / f"secret-{name}",
+            / f"secret-{name}.gpg",
             writeable,
         )
 
