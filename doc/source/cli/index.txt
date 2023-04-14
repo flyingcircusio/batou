@@ -13,8 +13,12 @@ General options
   positional arguments:
     {deploy,secrets,init}
       deploy              Deploy an environment.
-      secrets             Manage encrypted secret files. Relies on gpg being
-                          installed and configured correctly.
+      secrets             Manage encrypted secret files. Relies on GPG (and age)
+                          being installed and configured correctly.
+      migrate             Migrate the configuration to be compatible with the
+                          batou version used. Requires to commit the changes
+                          afterwards. Might show some additional upgrade steps
+                          which cannot be performed automatically.
 
   optional arguments:
     -h, --help            show this help message and exit
@@ -50,6 +54,8 @@ batou deploy
                           default results in a serial deployment of components.
                           Will override the environment settings for operational
                           flexibility.
+    --provision-rebuild   Rebuild provisioned resources from scratch. DANGER:
+                          this is potentially destructive.
 
 batou secrets edit
 ------------------
@@ -73,7 +79,7 @@ Show an overview of which users have access to what encrypted secrets.
 
 .. code-block:: console
 
-    usage: batou secrets summary [-h]
+    usage: ./batou secrets summary [-h]
 
     optional arguments:
       -h, --help  show this help message and exit
@@ -82,20 +88,20 @@ Example:
 
 .. code-block:: console
 
-  $ ./batou secrets summary
+    $ ./batou secrets summary
 
-  production
-     members
-      - alice@example.com
-     secret files
-      - secrets.yaml
+    production
+      members
+        - alice@example.com
+      secret files
+        - secrets.yaml
 
-  tutorial
-     members
-      - alice@example.com
-      - bob@example.com
-     secret files
-      (none)
+    tutorial
+      members
+        - alice@example.com
+        - bob@example.com
+      secret files
+        (none)
 
 
 batou secrets add

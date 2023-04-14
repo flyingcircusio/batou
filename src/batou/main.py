@@ -100,7 +100,7 @@ def main(args: Optional[list] = None) -> None:
         "secrets",
         help=textwrap.dedent(
             """
-            Manage encrypted secret files. Relies on GPG being installed and
+            Manage encrypted secret files. Relies on GPG (and age) being installed and
             configured correctly. """
         ),
     )
