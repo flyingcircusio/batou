@@ -1,7 +1,7 @@
-Quickstart
-==========
+Foundations for creating and maintaining deployments
+====================================================
 
-Do you want to get started? We'll go through the steps of developing a project
+Do you want to get started? We'll go through the steps of developing a deployment
 with batou. The steps are built on top of each other, so if you have trouble
 with a specific step, it might help to review what happened earlier.
 
