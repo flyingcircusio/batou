@@ -123,7 +123,7 @@ Features
 User guide
 ----------
 
-This part of the documentation, begins with some background information about Requests, then focuses on step-by-step instructions for getting the most out of batou.
+This part of the documentation, begins with some background information about batou, then focuses on the basic parts needed on a regular basis when creating and maintaining increasingly complex deployments with batou. The last part of the narrative documentation covers selected topics in depth.
 
 .. toctree::
    :maxdepth: 2
@@ -133,8 +133,8 @@ This part of the documentation, begins with some background information about Re
    user/quickstart
    user/advanced
 
-Command line
-------------
+Reference: Command line interface
+---------------------------------
 
 If you are looking for information on what commands the batou CLI provides then this is for you.
 
@@ -144,8 +144,8 @@ If you are looking for information on what commands the batou CLI provides then 
    cli/index
 
 
-Components
-----------
+Reference: Component Library
+----------------------------
 
 This is the list of components that batou provides -- builtin and through the `batou_ext` package:
 
@@ -159,8 +159,8 @@ This is the list of components that batou provides -- builtin and through the `b
    components/services.txt
 
 
-API
----
+Reference: Python API
+---------------------
 
 If you are looking for information on a specific function, class or method, this part of the documentation is for you.
 
