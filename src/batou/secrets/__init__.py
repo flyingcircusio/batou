@@ -33,6 +33,11 @@ class SecretProvider:
         )
         secret_provider_candidates: List[SecretProvider] = []
 
+        output.annotate(
+            f"Looking for secrets for environment {environment.name}.",
+            debug=True,
+        )
+
         # There should be one file called "secrets.cfg.<provider>".
         # If there is more than one, we raise an error.
 
@@ -96,6 +101,10 @@ class SecretProvider:
         """
         Inject secrets into the environment.
         """
+        output.annotate(
+            f"Injecting secrets for environment {self.environment.name}.",
+            debug=True,
+        )
         secret_blob = self.read()
         for hostname in secret_blob.host_data:
             if hostname not in self.environment.hosts:
@@ -126,6 +135,11 @@ class SecretProvider:
         self.environment.secret_data.update(secret_blob.secret_data)
         self.environment.secret_files.update(secret_blob.secret_files)
 
+        output.annotate(
+            f"Injected secrets for environment {self.environment.name}.",
+            debug=True,
+        )
+
     def summary(self):
         """
         Print a summary of the secrets.
@@ -154,6 +168,9 @@ class SecretProvider:
     ):
         new_secret_provider_str = config.get("batou", "secret_provider").value
         new_secret_provider: SecretProvider
+        output.annotate(
+            f"Changing secret provider from {old_secret_provider} to {new_secret_provider}."
+        )
         if new_secret_provider_str == "age":
             new_secret_provider = AGESecretProvider(self.environment)
         elif new_secret_provider_str == "gpg":
@@ -171,6 +188,9 @@ class SecretProvider:
         )
         self.environment.secret_provider = new_secret_provider
         old_secret_provider.purge()
+        output.annotate(
+            f"Secret provider changed from {old_secret_provider} to {new_secret_provider}."
+        )
 
     def purge(self):
         raise NotImplementedError("purge() not implemented.")
@@ -187,6 +207,9 @@ class SecretBlob:
         secret_data: Set[str],
         secret_files: Dict[str, str],
     ):
+        """
+        Holds the secrets for an environment.
+        """
         self.host_data = host_data
         self.component_overrides = component_overrides
         self.secret_data = secret_data
@@ -204,6 +227,10 @@ class NoSecretProvider(SecretProvider):
         print("\tNo secrets found.")
 
     def edit(self, edit_file: Optional[str] = None):
+        output.annotate(
+            f"Editing secrets for environment {self.environment.name} without secret configuration.",
+            debug=True,
+        )
         if edit_file is not None:
             raise ValueError(
                 "Cannot edit secret files for environment without secret configuration.",
@@ -211,6 +238,10 @@ class NoSecretProvider(SecretProvider):
         return NoBackingEncryptedFile()
 
     def write_config(self, content: bytes):
+        output.annotate(
+            f"Writing secrets configuration for environment {self.environment.name} without secret configuration.",
+            debug=True,
+        )
         self.change_secret_provider(
             ConfigUpdater().read_string(content.decode("utf-8")), self
         )
