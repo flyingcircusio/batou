@@ -1,5 +1,5 @@
-Advanced Usage
-==============
+In-depth topics
+===============
 
 
 Writing a custom component (TODO)
