@@ -167,10 +167,10 @@ class SecretProvider:
         old_secret_provider: "SecretProvider",
     ):
         new_secret_provider_str = config.get("batou", "secret_provider").value
-        new_secret_provider: SecretProvider
-        output.annotate(
-            f"Changing secret provider from {old_secret_provider} to {new_secret_provider}."
-        )
+        # new_secret_provider: SecretProvider
+        # output.annotate(
+        #     f"Changing secret provider from {old_secret_provider} to {new_secret_provider}."
+        # )
         if new_secret_provider_str == "age":
             new_secret_provider = AGESecretProvider(self.environment)
         elif new_secret_provider_str == "gpg":

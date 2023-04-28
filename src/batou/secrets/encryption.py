@@ -133,7 +133,7 @@ class GPGEncryptedFile(EncryptedFile):
             raise RuntimeError("File not locked")
         if not self.writeable:
             raise RuntimeError("File not writeable")
-        args = [self.gpg(), "--encrypt", "--batch", "--yes"]
+        args = [self.gpg(), "--encrypt", "--batch"]
         for recipient in recipients:
             args.extend(["-r", recipient])
         args.extend(["-o", str(self.path)])
