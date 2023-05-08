@@ -1114,6 +1114,10 @@ class Attribute(object):
         self.expand = expand
         self.map = map
         self.instances = weakref.WeakKeyDictionary()
+        self.names = dict()
+
+    def __set_name__(self, owner, name):
+        self.names[owner] = name
 
     def __get__(self, obj, objtype=None):
         if obj is None:
@@ -1124,7 +1128,10 @@ class Attribute(object):
             if isinstance(self.default, ConfigString):
                 value = self.from_config_string(obj, value)
             elif value is NO_DEFAULT:
-                raise AttributeError("No override and no default given.")
+                name = self.names[obj.__class__]
+                raise AttributeError(
+                    f"No override and no default given for `{name}` on {obj.__class__.__name__} instance {obj}."
+                )
             self.__set__(obj, value)
         return self.instances[obj]
 
