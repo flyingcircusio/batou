@@ -133,12 +133,13 @@ class GPGEncryptedFile(EncryptedFile):
             raise RuntimeError("File not locked")
         if not self.writeable:
             raise RuntimeError("File not writeable")
-        args = [self.gpg(), "--encrypt", "--batch"]
+        old_path = self.path.rename(str(self.path) + ".old")
+        args = [self.gpg(), "--encrypt"]
         for recipient in recipients:
             args.extend(["-r", recipient])
         args.extend(["-o", str(self.path)])
         try:
-            p = subprocess.run(
+            subprocess.run(
                 args,
                 input=content,
                 stdout=subprocess.PIPE,
@@ -146,8 +147,11 @@ class GPGEncryptedFile(EncryptedFile):
                 check=True,
             )
         except subprocess.CalledProcessError as e:
+            old_path.rename(self.path)
             raise GPGCallError.from_context(e.cmd, e.returncode, e.stderr)
-        self.is_new = False
+        else:
+            old_path.unlink()
+            self.is_new = False
 
     GPG_BINARY_CANDIDATES = ["gpg", "gpg2"]
 
