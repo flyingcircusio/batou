@@ -125,7 +125,9 @@ class GPGEncryptedFile(EncryptedFile):
                 check=True,
             )
         except subprocess.CalledProcessError as e:
-            raise GPGCallError.from_context(e.cmd, e.returncode, e.stderr)
+            raise GPGCallError.from_context(
+                e.cmd, e.returncode, e.stderr
+            ) from e
         return p.stdout
 
     def write(self, content: bytes, recipients: List[str]):
@@ -133,7 +135,10 @@ class GPGEncryptedFile(EncryptedFile):
             raise RuntimeError("File not locked")
         if not self.writeable:
             raise RuntimeError("File not writeable")
-        old_path = self.path.rename(str(self.path) + ".old")
+        self.path.rename(str(self.path) + ".old")
+        old_path = pathlib.Path(str(self.path) + ".old")
+        # starting with python 3.8, pathlib.Path's rename() method
+        # returns the new path, so we need to store the old path
         args = [self.gpg(), "--encrypt"]
         for recipient in recipients:
             args.extend(["-r", recipient])
