@@ -112,13 +112,13 @@ class Environment(object):
 
     def __init__(
         self,
-        name: str,
+        name,
         timeout=None,
         platform=None,
         basedir=".",
         provision_rebuild=False,
     ):
-        self.name = name
+        self.name: str = name
         self.hosts: Dict[str, Host] = {}
         self.resources = Resources()
         self.overrides: Dict[str, Dict[str, str]] = {}
