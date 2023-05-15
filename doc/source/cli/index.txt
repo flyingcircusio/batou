@@ -13,7 +13,7 @@ General options
   positional arguments:
     {deploy,secrets,init}
       deploy              Deploy an environment.
-      secrets             Manage encrypted secret files. Relies on GPG (and age)
+      secrets             Manage encrypted secret files. Relies on age (or GPG)
                           being installed and configured correctly.
       migrate             Migrate the configuration to be compatible with the
                           batou version used. Requires to commit the changes
