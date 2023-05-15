@@ -1,7 +1,7 @@
 # Documentation for batou secrets with age.
 
 Using batou with age as a secrets backend works similar to using batou with
-gpg as before. Ther is a small format change in the secrets.cfg file, as well
+gpg as before. There is a small format change in the secrets.cfg file, as well
 as renaming the secret files from "secret-*" to "secret-*.gpg" or "secret-*.age"
 for age encrypted secrets.
 
