@@ -591,7 +591,10 @@ def test_attribute_missing_override_and_default(root):
     with pytest.raises(AttributeError) as e:
         root.component += f
 
-    assert e.value.args[0] == "No override and no default given."
+    assert (
+        e.value.args[0]
+        == 'No override and no default given for `a` on Foo instance <Foo (localhost) "MyComponent > Foo">.'
+    )
 
 
 @pytest.mark.parametrize(
