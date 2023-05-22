@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.3.1 (unreleased)
+## 2.3.1 (2023-05-22)
 ------------------
 
 - Error when accessing `Attribute` without an override or default now show the name of the attribute being accessed in the error message
