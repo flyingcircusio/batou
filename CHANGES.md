@@ -4,7 +4,10 @@
 2.3.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Error when accessing `Attribute` without an override or default now show the name of the attribute being accessed in the error message
+  ([#337]((https://github.com/flyingcircusio/batou/issues/337)))
+- a formatting bug in the error message for batou.lib.file.File has been fixed
+  ([#348]((https://github.com/flyingcircusio/batou/issues/348)))
 
 
 2.3 (2023-01-24)
