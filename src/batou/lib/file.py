@@ -368,8 +368,9 @@ class ManagedContentBase(FileComponent):
         # - we might fall back using the path attribute (namevar)
         if self.source and getattr(self, self._content_source_attribute):
             raise ValueError(
-                'Only one of either "{}" or "source" are allowed.',
-                format(self._content_source_attribute),
+                'Only one of either "{}" or "source" are allowed.'.format(
+                    self._content_source_attribute
+                ),
             )
 
         if not getattr(self, self._content_source_attribute):
