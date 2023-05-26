@@ -45,6 +45,7 @@ setup(
             update_requirements = batou.release:update_requirements
         [batou.provisioners]
             fc-nixos-dev-container = batou.provision:FCDevContainer
+            fc-nixos-dev-vm = batou.provision:FCDevVM
     """,
     author="Christian Theune",
     author_email="ct@flyingcircus.io",
