@@ -1,7 +1,11 @@
-{ config, lib, pkgs, modulesPath, ... }: with config;
-
 {
-
+  config,
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
+with config; {
   time.timeZone = lib.mkForce "Europe/Berlin";
 
   flyingcircus.roles.webgateway.enable = true;
@@ -34,5 +38,4 @@
     pkgs.gnome2.pango
     pkgs.fontconfig
   ];
-
 }
