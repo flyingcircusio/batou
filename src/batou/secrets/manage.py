@@ -44,6 +44,7 @@ def add_user(keyid, environments, **kw):
     """
     environments_ = Environment.filter(environments)
     for environment in environments_:
+        environment.load_secrets()
         with environment.secret_provider.edit():
             config = environment.secret_provider.config
             members = environment.secret_provider._get_recipients()
