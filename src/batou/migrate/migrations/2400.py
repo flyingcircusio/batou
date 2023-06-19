@@ -39,9 +39,11 @@ def _migrate_environment(name: str) -> None:
     cwd = Path.cwd()
     environments = cwd / "environments"
     (environments / name).mkdir(exist_ok=True)
-    secrets_cfg = cwd / "secrets" / f"{name}.cfg"
+    secrets_cfg = cwd / "secrets" / f"secrets.cfg"
     if secrets_cfg.exists():
-        secrets_cfg.rename(environments / name / "secrets.cfg.gpg")
-    for secret_file in (cwd / "secrets").glob(f"secret-*"):
-        filename = str(secret_file.name)
-        secret_file.rename(environments / name / (filename + ".gpg"))
+        secrets_cfg.rename(str(secrets_cfg) + ".gpg")
+        for secret_file in (environments / name / "secrets").iterdir():
+            if secret_file.name.startswith(
+                "secret-"
+            ) and not secret_file.name.endswith(".gpg"):
+                secret_file.rename(str(secret_file) + ".gpg")
