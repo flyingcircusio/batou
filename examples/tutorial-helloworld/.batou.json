@@ -1,1 +1,5 @@
-{"migration": {"version": 2303}}
+{
+    "migration": {
+        "version": 2400
+    }
+}
