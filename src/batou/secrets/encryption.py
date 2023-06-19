@@ -1,3 +1,4 @@
+import errno
 import fcntl
 import os
 import pathlib
@@ -206,7 +207,12 @@ def expect(fd, expected):
     Returns a tuple of (bool, bytes) where the bool indicates whether the
     expected string was found and the actual output bytes.
     """
-    actual = os.read(fd, len(expected))
+    try:
+        actual = os.read(fd, len(expected))
+    except OSError as e:
+        if e.errno == errno.EIO:
+            return (False, b"")
+        raise
     return (actual == expected, actual)
 
 
