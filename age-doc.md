@@ -42,13 +42,18 @@ You can also use the script in `rename-secrets.py` to do this for you.
 
 ## New environment variables
 
-Age needs to know which secret key to use for decryption. Set the `BATOU_AGE_IDENTITY`
-key to your ssh secret key, or another source of age keys.
+Age needs to know which secret key to use for decryption. Set the `BATOU_AGE_IDENTITIES`
+key to your ssh private key file, or a comma separated list of ssh private key files to
+try to use for decryption.
+
+By default, batou will use the search order of ssh
+(~/.ssh/id_rsa, ~/.ssh/id_ecdsa, ~/.ssh/id_ecdsa_sk,
+~/.ssh/id_ed25519, ~/.ssh/id_ed25519_sk and ~/.ssh/id_dsa).
 
 You can run this in your shell or add it to your `.bashrc` or `.zshrc` file:
 
 ```bash
-export BATOU_AGE_IDENTITY=$HOME/.ssh/id_ed25519
+export BATOU_AGE_IDENTITIES=$HOME/.ssh/id_ed25519
 ```
 
 If your ssh key is encrypted, you can use the `BATOU_AGE_IDENTITY_PASSPHRASE` environment

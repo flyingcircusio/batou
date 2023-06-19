@@ -144,8 +144,6 @@ class Environment(object):
 
         self.provisioners: Dict[str, Provisioner] = {}
 
-        self.secret_provider = SecretProvider.from_environment(self)
-
     @classmethod
     def all(cls):
         for path in pathlib.Path("environments").glob("*/environment.cfg"):
@@ -246,6 +244,7 @@ class Environment(object):
         )
 
     def load_secrets(self):
+        self.secret_provider = SecretProvider.from_environment(self)
         self.secret_provider.inject_secrets()
 
     def load_environment(self, config):

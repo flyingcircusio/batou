@@ -2,7 +2,7 @@ import sys
 
 from configupdater import ConfigUpdater
 
-from batou import GPGCallError
+from batou import AgeCallError, GPGCallError
 from batou.environment import Environment
 
 
@@ -17,15 +17,21 @@ class UnknownEnvironmentError(ValueError):
 
 
 def summary():
-    try:
-        environments = Environment.all()
-        for environment in environments:
-            print(environment.name)
+    return_code = 0
+    environments = Environment.all()
+    for environment in environments:
+        print(environment.name)
+        try:
             environment.secret_provider.summary()
-    except GPGCallError as e:
-        print(e, file=sys.stderr)
-        print(e.output, file=sys.stderr)
-        return 1  # exit code
+        except GPGCallError as e:
+            print(e, file=sys.stderr)
+            print(e.output, file=sys.stderr)
+            return_code = 1
+        except AgeCallError as e:
+            print(e, file=sys.stderr)
+            print(e.output, file=sys.stderr)
+            return_code = 1
+    return return_code
 
 
 def add_user(keyid, environments, **kw):

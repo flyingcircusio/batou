@@ -9,6 +9,8 @@ from typing import Optional
 
 from batou.environment import Environment
 
+from .encryption import debug
+
 NEW_FILE_TEMPLATE = """\
 [batou]
 secret_provider = age
@@ -29,17 +31,24 @@ class Editor(object):
         self.file = self.environment.secret_provider.edit(edit_file)
 
     def main(self):
-        with self.file:
-            self.original_cleartext = self.file.cleartext
-            self.cleartext = self.original_cleartext
-            if self.file.is_new:
-                self.original_cleartext = None
-                if self.edit_file:
-                    self.cleartext = ""
-                else:
-                    self.cleartext = NEW_FILE_TEMPLATE
+        try:
+            with self.file:
+                self.original_cleartext = self.file.cleartext
+                self.cleartext = self.original_cleartext
+                if self.file.is_new:
+                    self.original_cleartext = None
+                    if self.edit_file:
+                        self.cleartext = ""
+                    else:
+                        self.cleartext = NEW_FILE_TEMPLATE
 
-            self.interact()
+                self.interact()
+        except Exception as e:
+            # only print traceback if we're in debug mode
+            if debug:
+                traceback.print_exc()
+            print(e, file=sys.stderr)
+            sys.exit(1)
 
     def _input(self):
         return input("> ").strip()
@@ -68,6 +77,8 @@ class Editor(object):
             self.encrypt()
         elif cmd == "encrypt":
             self.encrypt()
+        elif cmd == "":
+            raise ValueError("empty command")
         else:
             raise ValueError("unknown command `{}`".format(cmd))
 
