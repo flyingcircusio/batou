@@ -28,21 +28,16 @@ need to commit those changes manually.
 
 
 def _get_environment_names():
-    return [
-        x.stem
-        for x in (Path.cwd() / "environments").iterdir()
-        if x.suffix == ".cfg"
-    ]
+    return [x for x in (Path.cwd() / "environments").iterdir() if x.is_dir()]
 
 
 def _migrate_environment(name: str) -> None:
     cwd = Path.cwd()
-    environments = cwd / "environments"
-    (environments / name).mkdir(exist_ok=True)
-    secrets_cfg = cwd / "secrets" / f"secrets.cfg"
+    environment_dir = cwd / "environments" / name
+    secrets_cfg = environment_dir / f"secrets.cfg"
     if secrets_cfg.exists():
         secrets_cfg.rename(str(secrets_cfg) + ".gpg")
-        for secret_file in (environments / name / "secrets").iterdir():
+        for secret_file in environment_dir.iterdir():
             if secret_file.name.startswith(
                 "secret-"
             ) and not secret_file.name.endswith(".gpg"):
