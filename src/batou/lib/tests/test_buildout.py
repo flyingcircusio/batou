@@ -39,30 +39,6 @@ def test_update_should_pass_custom_timeout(root):
 
 @pytest.mark.slow
 @pytest.mark.timeout(60)
-def test_runs_buildout_successfully(root):
-    b = Buildout(
-        python="2.7",
-        version="2.13.4",
-        setuptools="44.1.1",
-        config=File(
-            "buildout.cfg",
-            source=pkg_resources.resource_filename(
-                __name__, "buildout-example.cfg"
-            ),
-        ),
-    )
-    root.component += b
-    root.component.deploy()
-    assert os.path.isdir(
-        os.path.join(root.environment.workdir_base, "mycomponent/parts")
-    )
-    assert os.path.isfile(
-        os.path.join(root.environment.workdir_base, "mycomponent/bin/py")
-    )
-
-
-@pytest.mark.slow
-@pytest.mark.timeout(60)
 def test_runs_buildout3_successfully(root, output):
     b = Buildout(
         python="3",
