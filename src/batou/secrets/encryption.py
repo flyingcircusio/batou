@@ -286,7 +286,6 @@ class AGEEncryptedFile(EncryptedFile):
         identities = get_identities()
         exceptions = []
         for identity in identities:
-            passphrase = get_passphrase(identity)
             with tempfile.NamedTemporaryFile() as temp_file:
                 args = [
                     self.age(),
@@ -318,6 +317,7 @@ class AGEEncryptedFile(EncryptedFile):
                 )
 
                 if matches:
+                    passphrase = get_passphrase(identity)
                     os.write(fd, passphrase.encode("utf-8") + b"\n")
                     matches, out = expect(fd, b"\r\r\n")
                     if not matches:
