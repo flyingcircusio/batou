@@ -32,24 +32,17 @@ class Editor(object):
         self.file = self.environment.secret_provider.edit(edit_file)
 
     def main(self):
-        try:
-            with self.file:
-                self.original_cleartext = self.file.cleartext
-                self.cleartext = self.original_cleartext
-                if self.file.is_new:
-                    self.original_cleartext = None
-                    if self.edit_file:
-                        self.cleartext = ""
-                    else:
-                        self.cleartext = NEW_FILE_TEMPLATE
+        with self.file:
+            self.original_cleartext = self.file.cleartext
+            self.cleartext = self.original_cleartext
+            if self.file.is_new:
+                self.original_cleartext = None
+                if self.edit_file:
+                    self.cleartext = ""
+                else:
+                    self.cleartext = NEW_FILE_TEMPLATE
 
-                self.interact()
-        except Exception as e:
-            # only print traceback if we're in debug mode
-            if debug:
-                traceback.print_exc()
-            print(e, file=sys.stderr)
-            sys.exit(1)
+            self.interact()
 
     def _input(self):
         return input("> ").strip()
@@ -89,9 +82,10 @@ class Editor(object):
             return
         if self.edit_file:
             # If we're editing a specific file, we can just overwrite it.
-            self.environment.secret_provider.write_file(
-                self.file, self.cleartext.encode("utf-8")
-            )
+            with self.environment.secret_provider.config_file:
+                self.environment.secret_provider.write_file(
+                    self.file, self.cleartext.encode("utf-8")
+                )
         else:
             self.environment.secret_provider.write_config(
                 self.cleartext.encode("utf-8")
@@ -105,9 +99,12 @@ class Editor(object):
             clearfile.write(self.cleartext)
             clearfile.flush()
 
-            subprocess.check_call(
-                [self.editor_cmd + " " + clearfile.name], shell=True
-            )
+            args = [self.editor_cmd + " " + clearfile.name]
+
+            if debug:
+                print("Running editor with command: {}".format(args))
+
+            subprocess.check_call(args, shell=True)
 
             with open(clearfile.name, "r") as new_clearfile:
                 self.cleartext = new_clearfile.read()
@@ -121,5 +118,12 @@ def main(editor, environment, edit_file: Optional[str] = None, **kw):
 
     """
 
-    editor = Editor(editor, Environment(environment), edit_file)
-    editor.main()
+    try:
+        editor = Editor(editor, Environment(environment), edit_file)
+        editor.main()
+    except Exception as e:
+        # only print traceback if we're in debug mode
+        if debug:
+            traceback.print_exc()
+        print(e, file=sys.stderr)
+        sys.exit(1)

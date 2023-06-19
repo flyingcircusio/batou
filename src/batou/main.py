@@ -209,4 +209,4 @@ def main(args: Optional[list] = None) -> None:
         return args.func(**func_args)
     except batou.FileLockedError as e:
         # Nicer error reporting for non-deployment commands.
-        print("File already locked: {}".format(e.filename))
+        print(e)

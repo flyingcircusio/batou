@@ -354,14 +354,13 @@ class ConfigFileSecretProvider(SecretProvider):
         raise NotImplementedError("_get_file() not implemented.")
 
     def write_file(self, file: EncryptedFile, content: bytes):
-        with self.config_file:
-            recipients = self._get_recipients()
-            if not recipients:
-                raise ValueError(
-                    "No recipients found for environment. "
-                    "Please add a 'batou.members' section to the secrets file."
-                )
-            file.write(content, recipients)
+        recipients = self._get_recipients()
+        if not recipients:
+            raise ValueError(
+                "No recipients found for environment. "
+                "Please add a 'batou.members' section to the secrets file."
+            )
+        file.write(content, recipients)
 
     def write_config_new(self, content: bytes):
         self.config_file.writeable = True
@@ -437,6 +436,7 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             str(config).encode("utf-8"),
             recipients,
         )
+        self.write_secret_files(self.read_secret_files())
 
 
 def process_age_recipients(members, environment_path):
@@ -581,3 +581,4 @@ class AGESecretProvider(ConfigFileSecretProvider):
             str(config).encode("utf-8"),
             recipients,
         )
+        self.write_secret_files(self.read_secret_files())

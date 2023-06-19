@@ -45,7 +45,7 @@ def cleanup_gpg_sockets():
 
 def test_error_message_no_gpg_found(encrypted_file):
     c = GPGEncryptedFile(encrypted_file)
-    c.GPG_BINARY_CANDIDATES = ["foobarasdf-54875982"]
+    GPGEncryptedFile.GPG_BINARY_CANDIDATES = ["foobarasdf-54875982"]
     with pytest.raises(RuntimeError) as e:
         c.gpg()
     assert e.value.args[0] == (
@@ -56,7 +56,7 @@ def test_error_message_no_gpg_found(encrypted_file):
 
 def test_error_message_no_age_found(encrypted_file):
     c = AGEEncryptedFile(encrypted_file)
-    c.AGE_BINARY_CANDIDATES = ["foobarasdf-54875982"]
+    AGEEncryptedFile.AGE_BINARY_CANDIDATES = ["foobarasdf-54875982"]
     with pytest.raises(RuntimeError) as e:
         c.age()
     assert e.value.args[0] == (

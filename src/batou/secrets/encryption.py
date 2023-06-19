@@ -61,7 +61,7 @@ class EncryptedFile:
 
     def _lock(self):
         if self.locked:
-            raise ValueError("File already locked")
+            raise FileLockedError.from_context(self.path)
         if not self.path.exists():
             self.is_new = True
             self.path.touch()
@@ -327,6 +327,15 @@ class AGEEncryptedFile(EncryptedFile):
                             )
                         )
                         continue
+                    # also assert, that output is empty from now on
+                    chunk = os.read(fd, 1024)
+                    if chunk:
+                        exceptions.append(
+                            Exception(
+                                "Unexpected output from age: {}".format(chunk)
+                            )
+                        )
+                        continue
 
                 # Wait for the child to exit
                 pid, exitcode = os.waitpid(child_pid, 0)
@@ -339,8 +348,6 @@ class AGEEncryptedFile(EncryptedFile):
 
                 temp_file.seek(0)
                 result = temp_file.read()
-
-                print(f"Result: {result}", file=sys.stderr)
 
                 if result:
                     return result
