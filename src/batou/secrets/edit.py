@@ -25,6 +25,7 @@ class Editor(object):
         environment: Environment,
         edit_file: Optional[str] = None,
     ):
+        environment.load_secrets()
         self.editor_cmd = editor_cmd
         self.environment = environment
         self.edit_file = edit_file
