@@ -15,7 +15,11 @@ repos:
     -   id: check-yaml
         exclude: "examples/tutorial-secrets/environments/tutorial/secret-foobar.yaml"
     -   id: detect-private-key
-        exclude: "src/batou/insecure-private.key"
+        exclude: |
+            (?x)^(
+                src/batou/insecure-private.key|
+                src/batou/secrets/tests/fixture/age/id_ed25519
+            )$
 
 -   repo: https://github.com/pycqa/isort
     rev: 5.12.0

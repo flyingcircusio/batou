@@ -17,7 +17,7 @@ class UnknownEnvironmentError(ValueError):
 
 
 def summary():
-    return_code = 0
+    return_code = None
     environments = Environment.all()
     for environment in environments:
         print(environment.name)
@@ -68,6 +68,7 @@ def remove_user(keyid, environments, **kw):
     """
     environments_ = Environment.filter(environments)
     for environment in environments_:
+        environment.load_secrets()
         with environment.secret_provider.edit():
             config = environment.secret_provider.config
             members = environment.secret_provider._get_recipients()

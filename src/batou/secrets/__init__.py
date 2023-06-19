@@ -322,8 +322,8 @@ class ConfigFileSecretProvider(SecretProvider):
         self.config_file.delete()
 
     def summary(self):
+        print("\t members")
         with self.config_file:
-            print("\t members")
             members = self.config.get("batou", "members")
             if members.value is not None:
                 for member in members.value.split(","):
