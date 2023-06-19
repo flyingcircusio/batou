@@ -19,11 +19,7 @@ need to commit those changes manually.
         """,
         "automatic",
     )
-    environments = _get_environment_names()
-    # sort environments by length to ensure that we migrate the most specific
-    # environments first
-    environments.sort(key=len, reverse=True)
-    for name in environments:
+    for name in _get_environment_names():
         _migrate_environment(name)
 
 
