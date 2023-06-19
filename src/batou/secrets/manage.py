@@ -22,6 +22,7 @@ def summary():
     for environment in environments:
         print(environment.name)
         try:
+            environment.load_secrets()
             environment.secret_provider.summary()
         except GPGCallError as e:
             print(e, file=sys.stderr)
