@@ -12,12 +12,12 @@ def test_venv_updates_if_python_changes(root):
             self.venv = VirtualEnv(self.version)
             self += self.venv
 
-    playground = Playground("2.7")
+    playground = Playground("3.7")
     root.component += playground
     playground.deploy()
     root.component.sub_components.remove(playground)
 
-    playground = Playground("3")
+    playground = Playground("3.8")
     root.component += playground
     playground.deploy()
 
@@ -37,7 +37,7 @@ def test_venv_does_not_update_if_python_does_not_change(root):
             self.venv = VirtualEnv(self.version)
             self += self.venv
 
-    playground = Playground("2.7")
+    playground = Playground("3.7")
     root.component += playground
     playground.deploy()
     assert playground.changed
