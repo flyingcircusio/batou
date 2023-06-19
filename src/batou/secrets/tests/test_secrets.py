@@ -45,24 +45,30 @@ def cleanup_gpg_sockets():
 
 def test_error_message_no_gpg_found(encrypted_file):
     c = GPGEncryptedFile(encrypted_file)
+    OLD_GPG_BINARY_CANDIDATES = GPGEncryptedFile.GPG_BINARY_CANDIDATES
     GPGEncryptedFile.GPG_BINARY_CANDIDATES = ["foobarasdf-54875982"]
+    GPGEncryptedFile._gpg = None
     with pytest.raises(RuntimeError) as e:
         c.gpg()
     assert e.value.args[0] == (
         "Could not find gpg binary. Is GPG installed? I tried looking for: "
         "`foobarasdf-54875982`"
     )
+    GPGEncryptedFile.GPG_BINARY_CANDIDATES = OLD_GPG_BINARY_CANDIDATES
 
 
 def test_error_message_no_age_found(encrypted_file):
     c = AGEEncryptedFile(encrypted_file)
+    OLD_AGE_BINARY_CANDIDATES = AGEEncryptedFile.AGE_BINARY_CANDIDATES
     AGEEncryptedFile.AGE_BINARY_CANDIDATES = ["foobarasdf-54875982"]
+    AGEEncryptedFile._age = None
     with pytest.raises(RuntimeError) as e:
         c.age()
     assert e.value.args[0] == (
         "Could not find age binary. Is age installed? I tried looking for: "
         "`foobarasdf-54875982`"
     )
+    AGEEncryptedFile.AGE_BINARY_CANDIDATES = OLD_AGE_BINARY_CANDIDATES
 
 
 def test_decrypt(encrypted_file):

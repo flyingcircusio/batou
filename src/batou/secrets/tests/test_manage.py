@@ -54,5 +54,5 @@ def test_manage__summary__2(capsys, monkeypatch):
     assert summary() == 1  # exit code
     out, err = capsys.readouterr()
     expected = "Exitcode 2 while calling: gpg --decrypt"
-    assert out == "errors\n\t members\n"
+    assert out == "errors\n"
     assert err.startswith(expected)
