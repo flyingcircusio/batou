@@ -4,6 +4,8 @@
 2.4a1 (unreleased)
 ------------------
 
+- Add age support
+
 - Allow git `Clone` to checkout tags.
 
 
