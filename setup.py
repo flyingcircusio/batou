@@ -39,10 +39,6 @@ setup(
             batou = batou.main:main
         [zc.buildout]
             requirements = batou.buildout:Requirements
-        [zest.releaser.prereleaser.after]
-            update_requirements = batou.release:update_requirements
-        [zest.releaser.postreleaser.after]
-            update_requirements = batou.release:update_requirements
         [batou.provisioners]
             fc-nixos-dev-container = batou.provision:FCDevContainer
     """,
