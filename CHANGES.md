@@ -1,7 +1,7 @@
 ## Changelog
 
 
-2.4a1 (unreleased)
+## 2.4a1 (2023-06-27)
 ------------------
 
 - Add age support
