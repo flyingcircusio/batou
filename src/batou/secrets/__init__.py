@@ -329,9 +329,10 @@ class ConfigFileSecretProvider(SecretProvider):
         with self.config_file:
             members = self.config.get("batou", "members")
             if members.value is not None:
-                for member in re.split(r"(\n|,)", members.value):
+                for member in re.split(r"(\n|,)+", members.value):
                     member = member.strip()
-                    print(f"\t\t- {member}")
+                    if member:
+                        print(f"\t\t- {member}")
             else:
                 print("\t\tUndefined behavior.")
             if not members:
@@ -410,8 +411,8 @@ class GPGSecretProvider(ConfigFileSecretProvider):
         recipients = self.config.get("batou", "members")
         if recipients.value is None:
             return []
-        recipients = re.split(r"(\n|,)", recipients.value)
-        recipients = [r.strip() for r in recipients]
+        recipients = re.split(r"(\n|,)+", recipients.value)
+        recipients = [r.strip() for r in recipients if r.strip()]
         return recipients
 
     def write_config(self, content: bytes):
@@ -429,8 +430,8 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             raise ValueError(
                 "Please add a 'batou.members' section to the secrets file."
             )
-        recipients = re.split(r"(\n|,)", recipients_opt.value)
-        recipients = [r.strip() for r in recipients]
+        recipients = re.split(r"(\n|,)+", recipients_opt.value)
+        recipients = [r.strip() for r in recipients if r.strip()]
         if not recipients or len(recipients) == 0 or recipients[0] == "":
             raise ValueError(
                 "Please add at least one recipient to the secrets file."
@@ -547,8 +548,8 @@ class AGESecretProvider(ConfigFileSecretProvider):
         recipients = self.config.get("batou", "members")
         if recipients.value is None:
             return []
-        recipients = re.split(r"(\n|,)", recipients.value)
-        recipients = [r.strip() for r in recipients]
+        recipients = re.split(r"(\n|,)+", recipients.value)
+        recipients = [r.strip() for r in recipients if r.strip()]
         return process_age_recipients(
             recipients,
             pathlib.Path(self.environment.base_dir)
@@ -571,8 +572,8 @@ class AGESecretProvider(ConfigFileSecretProvider):
             raise ValueError(
                 "Please add a 'batou.members' section to the secrets file."
             )
-        recipients = re.split(r"(\n|,)", recipients_opt.value)
-        recipients = [r.strip() for r in recipients]
+        recipients = re.split(r"(\n|,)+", recipients_opt.value)
+        recipients = [r.strip() for r in recipients if r.strip()]
         if not recipients or len(recipients) == 0 or recipients[0] == "":
             raise ValueError(
                 "Please add at least one recipient to the secrets file."
