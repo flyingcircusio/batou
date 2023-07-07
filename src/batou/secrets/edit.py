@@ -92,7 +92,8 @@ class Editor(object):
             )
 
     def edit(self):
-        _, suffix = os.path.splitext(self.file.path.name)
+        filename, _encryption_ext = os.path.splitext(self.file.path.name)
+        _, suffix = os.path.splitext(filename)
         with tempfile.NamedTemporaryFile(
             prefix="edit", suffix=suffix, mode="w+", encoding="utf-8"
         ) as clearfile:
