@@ -329,16 +329,26 @@ class AGEEncryptedFile(EncryptedFile):
                     if not matches:
                         exceptions.append(
                             Exception(
-                                "Unexpected output from age: {}".format(out)
+                                'Unexpected output from age, expected "\\r\\r\\n": {}'.format(
+                                    out
+                                )
                             )
                         )
                         continue
                     # also assert, that output is empty from now on
-                    chunk = os.read(fd, 1024)
-                    if chunk:
+                    buffer = b""
+                    while True:
+                        chunk = os.read(fd, 1024)
+                        if not chunk:
+                            break
+                        buffer += chunk
+                    if buffer:
+                        magic_bytes = b"\x1b[F\x1b[K"
+                        if buffer.startswith(magic_bytes):
+                            buffer = buffer[len(magic_bytes) :]
                         exceptions.append(
                             Exception(
-                                "Unexpected output from age: {}".format(chunk)
+                                "Unexpected output from age: {}".format(buffer)
                             )
                         )
                         continue
