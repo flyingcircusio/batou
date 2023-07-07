@@ -175,10 +175,6 @@ class SecretProvider:
         old_secret_provider: "SecretProvider",
     ):
         new_secret_provider_str = config.get("batou", "secret_provider").value
-        # new_secret_provider: SecretProvider
-        # output.annotate(
-        #     f"Changing secret provider from {old_secret_provider} to {new_secret_provider}."
-        # )
         if new_secret_provider_str == "age":
             new_secret_provider = AGESecretProvider(self.environment)
         elif new_secret_provider_str == "gpg":
@@ -188,7 +184,7 @@ class SecretProvider:
                 f"Invalid secret provider {new_secret_provider_str}.",
             )
         output.annotate(
-            f"Changing secret provider from {old_secret_provider} to {new_secret_provider}."
+            f"Changing secret provider from {old_secret_provider.secret_provider_str()} to {new_secret_provider.secret_provider_str()}."
         )
         new_secret_provider.write_config_new(str(config).encode("utf-8"))
         new_secret_provider.write_secret_files(
@@ -205,6 +201,9 @@ class SecretProvider:
 
     def _get_recipients(self) -> List[str]:
         raise NotImplementedError("_get_recipients() not implemented.")
+
+    def secret_provider_str(self) -> str:
+        raise NotImplementedError("secret_provider_str() not implemented.")
 
 
 class SecretBlob:
@@ -259,6 +258,9 @@ class NoSecretProvider(SecretProvider):
 
     def purge(self):
         pass
+
+    def secret_provider_str(self) -> str:
+        return "none"
 
 
 class ConfigFileSecretProvider(SecretProvider):
@@ -439,6 +441,9 @@ class GPGSecretProvider(ConfigFileSecretProvider):
         )
         self.write_secret_files(self.read_secret_files())
 
+    def secret_provider_str(self) -> str:
+        return "gpg"
+
 
 def process_age_recipients(members, environment_path):
     """Process the recipients list."""
@@ -583,3 +588,6 @@ class AGESecretProvider(ConfigFileSecretProvider):
             recipients,
         )
         self.write_secret_files(self.read_secret_files())
+
+    def secret_provider_str(self) -> str:
+        return "age"
