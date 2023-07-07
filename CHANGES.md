@@ -1,7 +1,7 @@
 ## Changelog
 
 
-## 2.4a2 (unreleased)
+## 2.4a2 (2023-07-07)
 ---------------------
 
 - Expand age documentation
