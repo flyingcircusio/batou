@@ -1,5 +1,6 @@
 import os
 import pathlib
+import re
 import urllib.request
 from typing import TYPE_CHECKING, Dict, List, Optional, Set
 
@@ -326,7 +327,7 @@ class ConfigFileSecretProvider(SecretProvider):
         with self.config_file:
             members = self.config.get("batou", "members")
             if members.value is not None:
-                for member in members.value.split(","):
+                for member in re.split(r"(\n|,)", members.value):
                     member = member.strip()
                     print(f"\t\t- {member}")
             else:
@@ -407,7 +408,7 @@ class GPGSecretProvider(ConfigFileSecretProvider):
         recipients = self.config.get("batou", "members")
         if recipients.value is None:
             return []
-        recipients = recipients.value.split(",")
+        recipients = re.split(r"(\n|,)", recipients.value)
         recipients = [r.strip() for r in recipients]
         return recipients
 
@@ -426,7 +427,7 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             raise ValueError(
                 "Please add a 'batou.members' section to the secrets file."
             )
-        recipients = recipients_opt.value.split(",")
+        recipients = re.split(r"(\n|,)", recipients_opt.value)
         recipients = [r.strip() for r in recipients]
         if not recipients or len(recipients) == 0 or recipients[0] == "":
             raise ValueError(
@@ -541,7 +542,7 @@ class AGESecretProvider(ConfigFileSecretProvider):
         recipients = self.config.get("batou", "members")
         if recipients.value is None:
             return []
-        recipients = recipients.value.split(",")
+        recipients = re.split(r"(\n|,)", recipients.value)
         recipients = [r.strip() for r in recipients]
         return process_age_recipients(
             recipients,
@@ -565,7 +566,7 @@ class AGESecretProvider(ConfigFileSecretProvider):
             raise ValueError(
                 "Please add a 'batou.members' section to the secrets file."
             )
-        recipients = recipients_opt.value.split(",")
+        recipients = re.split(r"(\n|,)", recipients_opt.value)
         recipients = [r.strip() for r in recipients]
         if not recipients or len(recipients) == 0 or recipients[0] == "":
             raise ValueError(
