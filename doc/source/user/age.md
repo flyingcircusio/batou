@@ -28,6 +28,9 @@ secret_provider = age
 You can see that using the `age` secret provider allows us to specify keys from
 https sources. This is because age accepts ssh public keys as encryption recipients.
 
+We accept ssh public keys (beginning with `ssh-`) as well as age public keys
+(beginning with `age1-`), or `http(s)://` urls to ssh public-key files.
+
 GPG is still supported as before.
 
 On saving a file with changes, the `secret_provider` key will be added to the
@@ -62,6 +65,10 @@ variable to provide a 1password reference url to your ssh key passphrase.
 ```bash
 export BATOU_AGE_IDENTITY_PASSPHRASE="op://<vault>/<item>[/<section>]/<field>"
 ```
+
+You can find the secret reference url in the 1password 8 app, by right clicking on the
+arrow next to the password field and selecting "Copy Secret Reference". Follow the
+[1password documentation](https://developer.1password.com/docs/cli/secret-references/#step-1-copy-secret-references) for more information.
 
 You need to set up the 1password cli to use the `op` command. See the
 [1password cli documentation](https://developer.1password.com/docs/cli/get-started/).

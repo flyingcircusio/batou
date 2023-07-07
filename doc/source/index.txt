@@ -132,6 +132,7 @@ This part of the documentation, begins with some background information about ba
    user/install
    user/quickstart
    user/advanced
+   user/age
 
 Reference: Command line interface
 ---------------------------------
