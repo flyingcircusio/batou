@@ -4,7 +4,9 @@
 ## 2.4a2 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Expand age documentation
+- Allow newlines to separate secret file members
+- Make parsing for age output more robust
 
 
 ## 2.4a1 (2023-06-27)
