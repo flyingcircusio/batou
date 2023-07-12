@@ -346,6 +346,7 @@ class AGEEncryptedFile(EncryptedFile):
                         magic_bytes = b"\x1b[F\x1b[K"
                         if buffer.startswith(magic_bytes):
                             buffer = buffer[len(magic_bytes) :]
+                    if buffer:
                         exceptions.append(
                             Exception(
                                 "Unexpected output from age: {}".format(buffer)
