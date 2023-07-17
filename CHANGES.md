@@ -4,7 +4,7 @@
 ## 2.4a3 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Correctly implement output parsing for age from brew
 
 
 ## 2.4a2 (2023-07-07)
