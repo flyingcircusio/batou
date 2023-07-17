@@ -1,7 +1,7 @@
 ## Changelog
 
 
-## 2.4a3 (unreleased)
+## 2.4a3 (2023-07-17)
 ---------------------
 
 - Correctly implement output parsing for age from brew
