@@ -397,8 +397,7 @@ if [ ${{PROVISION_REBUILD+x}} ]; then
     ssh $PROVISION_HOST sudo fc-manage-dev-vms destroy $PROVISION_VM
 fi
 
-ssh $PROVISION_HOST sudo fc-manage-dev-vms ${{PROVISION_VM_MEMORY:+"-m" "$PROVISION_VM_MEMORY"}} ${{PROVISION_VM_CORES:+"-c" "$PROVISION_VM_CORES"}} ensure $PROVISION_VM $PROVISION_HYDRA_EVAL "'$PROVISION_ALIASES'"
-
+ssh $PROVISION_HOST sudo fc-manage-dev-vms ensure --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --hydra-eval $PROVISION_HYDRA_EVAL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
 {seed_script}
 
 # We experimented with hiding errors in this fc-manage run to allow
