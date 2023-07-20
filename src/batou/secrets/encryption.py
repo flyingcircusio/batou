@@ -338,7 +338,16 @@ class AGEEncryptedFile(EncryptedFile):
                     # also assert, that output is empty from now on
                     buffer = b""
                     while True:
-                        chunk = os.read(fd, 1024)
+                        try:
+                            chunk = os.read(fd, 1024)
+                        except OSError as err: # noqa
+                            if err.errno == errno.EIO:
+                                # work arond suspected pty "feature", where
+                                # reading from the file descriptor
+                                # when there is no data raises instead of
+                                # returning an empty string, see
+                                # https://bugs.python.org/issue5380
+                                chunk = None
                         if not chunk:
                             break
                         buffer += chunk
