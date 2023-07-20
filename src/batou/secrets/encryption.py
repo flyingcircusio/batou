@@ -340,7 +340,7 @@ class AGEEncryptedFile(EncryptedFile):
                     while True:
                         try:
                             chunk = os.read(fd, 1024)
-                        except OSError as err: # noqa
+                        except OSError as err:  # noqa
                             if err.errno == errno.EIO:
                                 # work arond suspected pty "feature", where
                                 # reading from the file descriptor
