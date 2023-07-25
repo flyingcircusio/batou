@@ -4,7 +4,7 @@
 ## 2.4a4 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Fix a small bug in `age` support
 
 
 ## 2.4a3 (2023-07-17)
