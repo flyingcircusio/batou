@@ -1,5 +1,6 @@
 import os
 import pathlib
+import sys
 
 import pytest
 
@@ -22,6 +23,10 @@ def test_edit_gpg(tmpdir):
     assert editor.cleartext == "asdf"
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 6),
+    reason="age is available in tests with python 3.6 only",
+)
 def test_edit_age(tmpdir):
     editor = Editor(
         "true",
@@ -112,6 +117,10 @@ def test_edit_file_has_secret_prefix_gpg(tmpdir, encrypted_file):
     assert editor.file.path.name == f"secret-{filename}.gpg"
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 6),
+    reason="age is available in tests with python 3.6 only",
+)
 def test_edit_file_has_secret_prefix_age(tmpdir, encrypted_file):
     filename = "asdf123"
     editor = Editor(
