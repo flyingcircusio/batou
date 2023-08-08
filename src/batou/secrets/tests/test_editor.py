@@ -24,8 +24,8 @@ def test_edit_gpg(tmpdir):
 
 
 @pytest.mark.skipif(
-    sys.version_info < (3, 6),
-    reason="age is available in tests with python 3.6 only",
+    sys.version_info < (3, 7),
+    reason="age is available in tests with python 3.7 only",
 )
 def test_edit_age(tmpdir):
     editor = Editor(
@@ -118,8 +118,8 @@ def test_edit_file_has_secret_prefix_gpg(tmpdir, encrypted_file):
 
 
 @pytest.mark.skipif(
-    sys.version_info < (3, 6),
-    reason="age is available in tests with python 3.6 only",
+    sys.version_info < (3, 7),
+    reason="age is available in tests with python 3.7 only",
 )
 def test_edit_file_has_secret_prefix_age(tmpdir, encrypted_file):
     filename = "asdf123"
