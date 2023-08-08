@@ -40,7 +40,10 @@ def test_update_should_pass_custom_timeout(root):
 
 @pytest.mark.slow
 @pytest.mark.timeout(60)
-@pytest.mark.skipif(sys.version_info >= (3, 7))
+@pytest.mark.skipif(
+    sys.version_info >= (3, 7),
+    reason="python 2.7 only available in tests with python 3.6",
+)
 def test_runs_buildout_successfully(root):
     b = Buildout(
         python="2.7",

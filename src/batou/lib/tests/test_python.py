@@ -6,7 +6,10 @@ from batou.component import Component
 from batou.lib.python import VirtualEnv
 
 
-@pytest.mark.skipif(sys.version_info >= (3, 7))
+@pytest.mark.skipif(
+    sys.version_info >= (3, 7),
+    reason="python 2.7 only available in tests with python 3.6",
+)
 def test_venv_updates_if_python_changes(root):
     import ast
 
@@ -34,7 +37,10 @@ def test_venv_updates_if_python_changes(root):
     assert 3 == ast.literal_eval(out)[0]
 
 
-@pytest.mark.skipif(sys.version_info >= (3, 7))
+@pytest.mark.skipif(
+    sys.version_info >= (3, 7),
+    reason="python 2.7 only available in tests with python 3.6",
+)
 def test_venv_does_not_update_if_python_does_not_change(root):
     class Playground(Component):
         namevar = "version"
