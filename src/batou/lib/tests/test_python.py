@@ -1,7 +1,12 @@
+import sys
+
+import pytest
+
 from batou.component import Component
 from batou.lib.python import VirtualEnv
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 7))
 def test_venv_updates_if_python_changes(root):
     import ast
 
@@ -12,12 +17,12 @@ def test_venv_updates_if_python_changes(root):
             self.venv = VirtualEnv(self.version)
             self += self.venv
 
-    playground = Playground("3.7")
+    playground = Playground("2.7")
     root.component += playground
     playground.deploy()
     root.component.sub_components.remove(playground)
 
-    playground = Playground("3.8")
+    playground = Playground("3")
     root.component += playground
     playground.deploy()
 
@@ -29,6 +34,7 @@ def test_venv_updates_if_python_changes(root):
     assert 3 == ast.literal_eval(out)[0]
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 7))
 def test_venv_does_not_update_if_python_does_not_change(root):
     class Playground(Component):
         namevar = "version"
@@ -37,7 +43,7 @@ def test_venv_does_not_update_if_python_does_not_change(root):
             self.venv = VirtualEnv(self.version)
             self += self.venv
 
-    playground = Playground("3.7")
+    playground = Playground("2.7")
     root.component += playground
     playground.deploy()
     assert playground.changed

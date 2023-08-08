@@ -1,4 +1,5 @@
 import os.path
+import sys
 
 import mock
 import pkg_resources
@@ -35,6 +36,31 @@ def test_update_should_pass_custom_timeout(root):
     assert b.cmd.call_count == 1
     calls = iter(x[1][0] for x in b.cmd.mock_calls)
     assert next(calls) == 'bin/buildout -t 40 -c "buildout.cfg"'
+
+
+@pytest.mark.slow
+@pytest.mark.timeout(60)
+@pytest.mark.skipif(sys.version_info >= (3, 7))
+def test_runs_buildout_successfully(root):
+    b = Buildout(
+        python="2.7",
+        version="2.13.4",
+        setuptools="44.1.1",
+        config=File(
+            "buildout.cfg",
+            source=pkg_resources.resource_filename(
+                __name__, "buildout-example.cfg"
+            ),
+        ),
+    )
+    root.component += b
+    root.component.deploy()
+    assert os.path.isdir(
+        os.path.join(root.environment.workdir_base, "mycomponent/parts")
+    )
+    assert os.path.isfile(
+        os.path.join(root.environment.workdir_base, "mycomponent/bin/py")
+    )
 
 
 @pytest.mark.slow
