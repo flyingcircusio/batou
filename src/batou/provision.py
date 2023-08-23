@@ -63,7 +63,7 @@ class FCDevProvisioner(Provisioner):
         ssh_config.append(
             """
 Host {hostname} {aliases}
-    HostName {hostname}
+    HostName "{hostname}"
     ProxyJump {target_host}
     User developer
     IdentityFile {insecure_private_key}
