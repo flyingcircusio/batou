@@ -434,14 +434,12 @@ fi
     def suggest_name(self, name):
         config = "-F ssh_config" if os.path.exists("ssh_config") else ""
         out, _ = cmd(
-            "ssh {config} {target_host} 'ls -p /etc/devhost/vm-configs/ | grep \"\.nix\" | sed -e 's/\.nix$//''".format(
-                config=config, target_host=self.target_host
-            )
+            f"ssh {config} {self.target_host} 'sudo fc-manage-dev-vms list'"
         )
         names = filter(None, [x.strip() for x in out.splitlines()])
         while True:
             name = uuid.uuid4().hex[:8]
-            if name not in names:
+            if name not in names and not name.isnumeric():
                 return name
 
     def _initial_provision_env(self, host):
