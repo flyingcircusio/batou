@@ -394,10 +394,10 @@ COPY() {{
 }}
 
 if [ ${{PROVISION_REBUILD+x}} ]; then
-    ssh $PROVISION_HOST sudo fc-manage-dev-vms destroy $PROVISION_VM
+    ssh $PROVISION_HOST sudo fc-devhost destroy $PROVISION_VM
 fi
 
-ssh $PROVISION_HOST sudo fc-manage-dev-vms ensure --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --hydra-eval $PROVISION_HYDRA_EVAL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
+ssh $PROVISION_HOST sudo fc-devhost ensure --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --hydra-eval $PROVISION_HYDRA_EVAL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
 {seed_script}
 
 # We experimented with hiding errors in this fc-manage run to allow
@@ -433,9 +433,7 @@ fi
 
     def suggest_name(self, name):
         config = "-F ssh_config" if os.path.exists("ssh_config") else ""
-        out, _ = cmd(
-            f"ssh {config} {self.target_host} 'sudo fc-manage-dev-vms list'"
-        )
+        out, _ = cmd(f"ssh {config} {self.target_host} 'sudo fc-devhost list'")
         names = filter(None, [x.strip() for x in out.splitlines()])
         while True:
             name = uuid.uuid4().hex[:8]
