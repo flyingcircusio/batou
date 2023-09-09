@@ -31,7 +31,7 @@ from batou import (
     UnusedResources,
 )
 from batou._output import output
-from batou.component import ComponentDefinition, RootComponent
+from batou.component import Component, ComponentDefinition, RootComponent
 from batou.provision import Provisioner
 from batou.repository import Repository
 from batou.utils import CycleError, cmd
@@ -565,6 +565,16 @@ class Environment(object):
             exceptions.append(
                 UnusedResources.from_context(self.resources.unused)
             )
+
+        # if any of Component.instances has ._prepared == False, then
+        # warn via output.annotate
+        for component in Component.instances:
+            if not component._prepared:
+                output.annotate(
+                    "Component {} was not prepared.".format(
+                        component.__class__.__name__
+                    ),
+                )
 
         for root in order:
             root.log_finish_configure()
