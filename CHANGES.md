@@ -1,10 +1,11 @@
 ## Changelog
 
 
-## 2.4a5 (unreleased)
+## 2.4rc1 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Add support for provisioning development environments using the new
+  Flying Circus ephemeral VM devhost feature.
 
 
 ## 2.4a4 (2023-07-25)
