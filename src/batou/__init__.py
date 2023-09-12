@@ -582,6 +582,32 @@ class DuplicateOverride(ConfigurationError):
         # see: https://github.com/flyingcircusio/batou/issues/316
 
 
+class DuplicateSecretsComponentAttribute(ConfigurationError):
+    """A component attribute was specified multiple times in the secrets."""
+
+    sort_key = (0,)
+
+    @classmethod
+    def from_context(cls, component_name, attribute):
+        self = cls()
+        self.component_name = component_name
+        self.attribute = attribute
+        return self
+
+    def __str__(self):
+        return (
+            f"A value {self.component_name}.{self.attribute} is defined multiple"
+            " times in secrets."
+        )
+
+    def report(self):
+        output.error("Attribute defined multiple times in secrets")
+        output.tabular("Component", self.component_name, red=True)
+        output.tabular("Attribute", self.attribute, red=True)
+        # TODO provide traceback in debug output
+        # see: https://github.com/flyingcircusio/batou/issues/316
+
+
 class CycleErrorDetected(ConfigurationError):
     """We think we found a cycle in the component dependencies."""
 

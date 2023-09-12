@@ -6,7 +6,11 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Set
 
 from configupdater import ConfigUpdater
 
-from batou import DuplicateOverride, SuperfluousSecretsSection
+from batou import (
+    DuplicateOverride,
+    DuplicateSecretsComponentAttribute,
+    SuperfluousSecretsSection,
+)
 from batou._output import output
 
 from .encryption import (
@@ -133,12 +137,20 @@ class SecretProvider:
             for key, value in secret_blob.component_overrides[
                 component_name
             ].items():
-                if key in overrides:
+                keys_added = set()
+                if key in keys_added:
+                    self.environment.exceptions.append(
+                        DuplicateSecretsComponentAttribute.from_context(
+                            component_name, key
+                        )
+                    )
+                elif key in overrides:
                     self.environment.exceptions.append(
                         DuplicateOverride.from_context(component_name, key)
                     )
                 else:
                     overrides[key] = value
+                    keys_added.add(key)
 
         self.environment.secret_data.update(secret_blob.secret_data)
         self.environment.secret_files.update(secret_blob.secret_files)
