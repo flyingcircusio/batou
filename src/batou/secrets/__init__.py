@@ -489,6 +489,9 @@ def process_age_recipients(members, environment_path):
             # and add it to the key meta file
             if key.startswith("http://"):
                 print("WARNING: Downloading public keys over http is insecure!")
+                raise ValueError(
+                    "Downloading public keys over http is insecure!"
+                )
             key_meta_file_content += f"# ssh key file from {key}\n"
             if debug:
                 print(f"Downloading key file from `{key}`")
