@@ -1,7 +1,7 @@
 ## Changelog
 
 
-## 2.4rc1 (unreleased)
+## 2.4rc1 (2023-09-12)
 ---------------------
 
 - Add support for provisioning development environments using the new
