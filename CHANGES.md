@@ -1,6 +1,12 @@
 ## Changelog
 
 
+## 2.4rc2 (unreleased)
+----------------------
+
+- Nothing changed yet.
+
+
 ## 2.4rc1 (2023-09-12)
 ---------------------
 
