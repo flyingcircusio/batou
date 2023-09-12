@@ -488,7 +488,6 @@ def process_age_recipients(members, environment_path):
             # it's a url to a key file, so we need to download it
             # and add it to the key meta file
             if key.startswith("http://"):
-                print("WARNING: Downloading public keys over http is insecure!")
                 raise ValueError(
                     "Downloading public keys over http is insecure!"
                 )
