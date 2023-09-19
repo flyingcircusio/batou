@@ -118,7 +118,10 @@ Host {hostname} {aliases}
                     f" alias override v4 {alias_fqdn} -> {addr}", debug=True
                 )
                 batou.utils.resolve_override[alias_fqdn] = addr
-        except (socket.gaierror, ValueError):
+        except (OSError, ValueError):
+            # We used to catch socket.gaierror here, but reading the
+            # docs correctly it can raise any OSError (and socket and gaierror
+            # are subclasses)
             pass
 
         try:
@@ -128,7 +131,10 @@ Host {hostname} {aliases}
                     f" alias override v6 {alias_fqdn} -> {addr}", debug=True
                 )
                 batou.utils.resolve_v6_override[alias_fqdn] = addr
-        except (socket.gaierror, ValueError):
+        except (OSError, ValueError):
+            # We used to catch socket.gaierror here, but reading the
+            # docs correctly it can raise any OSError (and socket and gaierror
+            # are subclasses)
             pass
 
     def summarize(self, host):
