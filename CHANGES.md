@@ -4,7 +4,8 @@
 ## 2.4rc2 (unreleased)
 ----------------------
 
-- Nothing changed yet.
+- Fix bug where some rare exceptions (caused by DNS resolvers during provisioning)
+  bubbled incorrectly and caused spurious deployment errors.
 
 
 ## 2.4rc1 (2023-09-12)
