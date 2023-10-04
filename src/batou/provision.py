@@ -1,5 +1,6 @@
 import os
 import os.path
+import shlex
 import socket
 import tempfile
 import textwrap
@@ -245,7 +246,7 @@ Host {hostname} {aliases}
                         rsync_path=rsync_path,
                         ENV="\n".join(
                             sorted(
-                                'export {}="{}"'.format(k, v)
+                                f"export {k}={shlex.quote(v)}"
                                 for k, v in env.items()
                             )
                         ),
