@@ -475,3 +475,58 @@ def test_format_duration():
     assert format_duration(1.23124) == "1.23s"
     assert format_duration(61) == "1m1s"
     assert format_duration(None) == "NaN"
+
+
+def test_export_environment_variables():
+    from batou.utils import export_environment_variables
+
+    environ = {
+        "a": "1",
+        "B": "None",
+        "AB": "True",
+        "AB1": "'",
+        "_A": '"',
+        "_1": "${}",
+        "_ABBA_": r"\\",
+    }
+    assert (
+        export_environment_variables(environ)
+        == """\
+export AB1=''"'"''
+export AB=True
+export B=None
+export _1='${}'
+export _A='"'
+export _ABBA_='\\\\'
+export a=1"""
+    )
+
+    environ = {"1a": None}
+    with pytest.raises(ValueError) as e:
+        export_environment_variables(environ)
+    assert e.value.args[0] == "`1a` is not a valid shell variable name"
+
+    # This is a real-world example from
+    # https://api.wordpress.org/secret-key/1.1/salt/
+    environ = {
+        "AUTH_KEY": "mc+REHo9-fQ0.GQZDB'bu-/5W&g#+(Lv{+-B`Ai{@nv^UvJ*/|$U6Tzyg>;02p9|Q",
+        "SECURE_AUTH_KEY": 'QXVjV-D(~RGX"Rhx(OPr3<j)F}>n4<A .;Ki5hrW}QbPl8%Tv:_$2t+:;}9~bw2SY',
+        "LOGGED_IN_KEY": "y{ZO{0N0Ai5Nk|>hk2+!c~WhFJ=-#b1KLu)_B!-Jh2H+rw}R|/pty0ZXGbrq]+,m",
+        "NONCE_KEY": "0<>{%+,,u9,Qw,8V*7^je-2* V/%+?c%~KW/Ck[42Vbhf$}3^,kh!*yt3&v,{F-P",
+        "AUTH_SALT": "A^hJ)$w7;!5cp$8cFYrDsK.PGN|a-Rn@NR(x@2#-nLZH/LUsnfi,%T3TNmkBF6%s",
+        "SECURE_AUTH_SALT": "Vy|F(qC=,Rh61%~A=3>76k5cgpWXZJd/-YiFwx2uacUTWB~F{?Hr::CL%e>AwE-W",
+        "LOGGED_IN_SALT": "e|rs/?YVJAhf-40Y:]Sih j||$n-WMyaT|Afp3DWwdmQ(O!FK]w>ZkkpfS*`KlQK",
+        "NONCE_SALT": ";FY@_]@c.yiSc+<Q&&YylX8*>iDr7VG5U64/jgoL.$VegW$daH`We _|Q9s~g`|E",
+    }
+    assert (
+        export_environment_variables(environ)
+        == """\
+export AUTH_KEY='mc+REHo9-fQ0.GQZDB'"'"'bu-/5W&g#+(Lv{+-B`Ai{@nv^UvJ*/|$U6Tzyg>;02p9|Q'
+export AUTH_SALT='A^hJ)$w7;!5cp$8cFYrDsK.PGN|a-Rn@NR(x@2#-nLZH/LUsnfi,%T3TNmkBF6%s'
+export LOGGED_IN_KEY='y{ZO{0N0Ai5Nk|>hk2+!c~WhFJ=-#b1KLu)_B!-Jh2H+rw}R|/pty0ZXGbrq]+,m'
+export LOGGED_IN_SALT='e|rs/?YVJAhf-40Y:]Sih j||$n-WMyaT|Afp3DWwdmQ(O!FK]w>ZkkpfS*`KlQK'
+export NONCE_KEY='0<>{%+,,u9,Qw,8V*7^je-2* V/%+?c%~KW/Ck[42Vbhf$}3^,kh!*yt3&v,{F-P'
+export NONCE_SALT=';FY@_]@c.yiSc+<Q&&YylX8*>iDr7VG5U64/jgoL.$VegW$daH`We _|Q9s~g`|E'
+export SECURE_AUTH_KEY='QXVjV-D(~RGX"Rhx(OPr3<j)F}>n4<A .;Ki5hrW}QbPl8%Tv:_$2t+:;}9~bw2SY'
+export SECURE_AUTH_SALT='Vy|F(qC=,Rh61%~A=3>76k5cgpWXZJd/-YiFwx2uacUTWB~F{?Hr::CL%e>AwE-W'"""
+    )

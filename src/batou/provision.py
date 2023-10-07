@@ -1,5 +1,6 @@
 import os
 import os.path
+import shlex
 import socket
 import tempfile
 import textwrap
@@ -237,18 +238,13 @@ Host {hostname} {aliases}
             try:
                 os.chmod(f.name, 0o700)
                 # We're placing the ENV vars directly in the script because
-                # that helps debugging a lot. We need to be careful to
-                # deleted it later, though, because it might contain secrets.
+                # that helps debugging a lot. We need to be careful to delete
+                # it later, though, because it is likely to contain secrets.
                 f.write(
                     self.SEED_TEMPLATE.format(
                         seed_script=seed_script,
                         rsync_path=rsync_path,
-                        ENV="\n".join(
-                            sorted(
-                                'export {}="{}"'.format(k, v)
-                                for k, v in env.items()
-                            )
-                        ),
+                        ENV=batou.utils.export_environment_variables(env),
                     )
                 )
                 f.close()
