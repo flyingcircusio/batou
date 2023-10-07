@@ -6,6 +6,8 @@ import hashlib
 import inspect
 import itertools
 import os
+import re
+import shlex
 import socket
 import subprocess
 import sys
@@ -615,3 +617,23 @@ def format_duration(duration: Optional[float]) -> str:
         output = "{:.2f}s".format(seconds)
 
     return output
+
+
+VARNAME_PATTERN = re.compile("^[a-zA-Z_][a-zA-Z_0-9]*$")
+
+
+def export_environment_variables(environ):
+    """Turn this dict into shell environment variable exports.
+
+    This creates a snippet that can be embedded into a shell script to access
+    all entries of this dict as environment variables.
+
+    Ensures proper quoting.
+    """
+    # Verify all keys are valid as shell variable nameså
+    for k in environ:
+        if not VARNAME_PATTERN.match(k):
+            raise ValueError(f"`{k}` is not a valid shell variable name")
+    return "\n".join(
+        sorted(f"export {k}={shlex.quote(v)}" for k, v in environ.items())
+    )
