@@ -555,6 +555,26 @@ class SuperfluousSecretsSection(ConfigurationError):
         # see: https://github.com/flyingcircusio/batou/issues/316
 
 
+class UnknownHostSecretsSection(ConfigurationError):
+    """A host section was found in the secrets
+    but no associated host is known."""
+
+    sort_key = (0,)
+
+    @classmethod
+    def from_context(cls, hostname):
+        self = cls()
+        self.hostname = hostname
+        return self
+
+    def __str__(self):
+        return "Secrets section for unknown host found: " + self.hostname
+
+    def report(self):
+        output.error("Secrets section for unknown host found")
+        output.tabular("Host", self.hostname, red=True)
+
+
 class DuplicateOverride(ConfigurationError):
     """An override for a component attribute was found both in the secrets and
     in the environment configuration."""
