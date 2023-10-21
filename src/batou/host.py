@@ -245,31 +245,19 @@ class LocalHost(Host):
 class RemoteHost(Host):
 
     gateway = None
+    use_sudo = None
 
-    def connect(self, interpreter="python3"):
-        if self.gateway:
-            output.annotate("Disconnecting ...", debug=True)
-            self.disconnect()
-
-        output.annotate("Connecting ...", debug=True)
-        # Call sudo, ensuring:
-        # - no password will ever be asked (fail instead)
-        # - we ensure a consistent set of environment variables
-        #   irregardless of the local configuration of env_reset, etc.
-
-        CONDITIONAL_SUDO = """\
-if [ -n "$ZSH_VERSION" ]; then setopt SH_WORD_SPLIT; fi;
-if [ \"$USER\" = \"{user}\" ]; then \
-pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
-""".format(
-            user=self.service_user
-        )
-
-        spec = "ssh={fqdn}//python={sudo} {interpreter}//type={method}".format(
+    def _makegateway(self, interpreter):
+        if self.use_sudo:
+            # When calling sudo, ensure that no password will ever be
+            # requested, and fail otherwise.
+            interpreter = "sudo -ni -u {user} {interpreter}".format(
+                user=self.service_user, interpreter=interpreter
+            )
+        spec = "ssh={fqdn}//python={interpreter}//type={method}".format(
             fqdn=self.fqdn,
-            sudo=CONDITIONAL_SUDO,
-            interpreter=interpreter,
             method=self.environment.connect_method,
+            interpreter=interpreter,
         )
         ssh_configs = [
             "ssh_config_{}".format(self.environment.name),
@@ -279,7 +267,18 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
             if os.path.exists(ssh_config):
                 spec += "//ssh_config={}".format(ssh_config)
                 break
-        self.gateway = execnet.makegateway(spec)
+
+        return execnet.makegateway(spec)
+
+    def connect(self, interpreter="python3"):
+        if self.gateway:
+            output.annotate("Disconnecting ...", debug=True)
+            self.disconnect()
+
+        output.annotate("Connecting ...", debug=True)
+
+        self.gateway = self._makegateway(interpreter)
+
         try:
             self.channel = self.gateway.remote_exec(remote_core)
         except IOError:
@@ -289,6 +288,30 @@ pre=\"\"; else pre=\"sudo -ni -u {user}\"; fi; $pre\
                     self.fqdn
                 )
             )
+
+        if self.use_sudo is None:
+            # Discover whether we need to invoke sudo to reach the
+            # right user.
+            remote_user = self.rpc.whoami()
+            self.use_sudo = remote_user != self.service_user
+
+            if self.use_sudo:
+                output.annotate(
+                    "Service user requires sudo, reconnecting ...", debug=True
+                )
+
+                self.gateway.exit()
+                self.gateway = self._makegateway(interpreter)
+
+                try:
+                    self.channel = self.gateway.remote_exec(remote_core)
+                except IOError:
+                    raise RuntimeError(
+                        "Could not start batou on host `{}`. "
+                        "The output above may contain more information. ".format(
+                            self.fqdn
+                        )
+                    )
 
         output.annotate("Connected ...", debug=True)
 
