@@ -43,6 +43,8 @@ class Repository(object):
             return NullRepository(environment)
         elif environment.update_method == "rsync":
             return RSyncRepository(environment)
+        elif environment.update_method == "rsync-ext":
+            return RSyncExtRepository(environment)
         elif environment.update_method == "hg-bundle":
             return MercurialBundleRepository(environment)
         elif environment.update_method == "hg-pull":
@@ -105,6 +107,65 @@ class RSyncRepository(Repository):
         # https://github.com/flyingcircusio/batou/issues/107
         rsync.add_target(host.gateway, target)
         rsync.send()
+
+
+class RSyncExtRepository(Repository):
+    IGNORE_LIST = (
+        ".appenv",
+        ".batou",
+        ".batou-lock",
+        ".git",
+        ".hg",
+        ".kitchen",
+        ".vagrant",
+        "work",
+    )
+
+    SYNC_OPTS = [
+        "--recursive",
+        "--links",
+        "--delete",
+    ]
+
+    def verify(self):
+        output.annotate(
+            "You are using external rsync. This is a non-verifying "
+            "repository -- continuing on your own risk!",
+            red=True,
+        )
+
+    def update(self, host):
+        source, dest = self.root, host.remote_repository
+
+        rsync_args = self.SYNC_OPTS.copy()
+
+        ssh_configs = [
+            "ssh_config_{}".format(self.environment.name),
+            "ssh_config",
+        ]
+        for ssh_config in ssh_configs:
+            if os.path.exists(ssh_config):
+                rsync_args.append(f"--rsh='ssh -F {ssh_config}'")
+                break
+
+        for ignore in self.IGNORE_LIST:
+            rsync_args.append(f"--exclude='{ignore}'")
+
+        if host.require_sudo:
+            rsync_args.append(
+                "--rsync-path='sudo -ni -u {} rsync'".format(host.service_user)
+            )
+
+        output.annotate("rsync-ext: {} -> {}".format(source, dest), debug=True)
+
+        cmd(
+            "rsync {opts} {source}/ {target}:{dest}".format(
+                opts=" ".join(rsync_args),
+                source=source,
+                target=host.fqdn,
+                dest=dest,
+            )
+        )
 
 
 def hg_cmd(hgcmd):
