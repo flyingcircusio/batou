@@ -49,6 +49,11 @@ target_directory
         deployment repository is stored. Supports tilde expansion. Default:
         ``~/deployment``.
 
+require_sudo
+    Override the automatic detection of whether `sudo` is required to run
+    processes as the service user. If set to `True` then `sudo` will
+    always be used unconditionally. If set to `False` then `sudo` will
+    never be used.
 
 vfs mapping (TODO)
 ------------------
