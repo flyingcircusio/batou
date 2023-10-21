@@ -115,6 +115,7 @@ _no_value_marker = object()
 class Host(object):
 
     service_user = None
+    require_sudo = None
     ignore = False
     platform = None
     _provisioner = None
@@ -138,6 +139,10 @@ class Host(object):
 
         self.platform = config.get("platform", environment.platform)
         self.service_user = config.get("service_user", environment.service_user)
+        if "require_sudo" in config:
+            self.require_sudo = ast.literal_eval(config.get("require_sudo"))
+        else:
+            self.require_sudo = environment.require_sudo
 
         self.remap = ast.literal_eval(
             config.get("provision-dynamic-hostname", "False")
@@ -245,10 +250,9 @@ class LocalHost(Host):
 class RemoteHost(Host):
 
     gateway = None
-    use_sudo = None
 
     def _makegateway(self, interpreter):
-        if self.use_sudo:
+        if self.service_user is not None and self.require_sudo:
             # When calling sudo, ensure that no password will ever be
             # requested, and fail otherwise.
             interpreter = "sudo -ni -u {user} {interpreter}".format(
@@ -289,13 +293,13 @@ class RemoteHost(Host):
                 )
             )
 
-        if self.use_sudo is None:
+        if self.service_user is not None and self.require_sudo is None:
             # Discover whether we need to invoke sudo to reach the
             # right user.
             remote_user = self.rpc.whoami()
-            self.use_sudo = remote_user != self.service_user
+            self.require_sudo = remote_user != self.service_user
 
-            if self.use_sudo:
+            if self.require_sudo:
                 output.annotate(
                     "Service user requires sudo, reconnecting ...", debug=True
                 )
