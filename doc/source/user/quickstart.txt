@@ -778,8 +778,8 @@ integrity on the target systems. This consists of multiple steps:
    are the same.
 
 To leverage those features in batou, you have to select an update method in
-your environment that is not ``rsync``. batou supports ``git-pull``, ``git-
-bundle``, ``hg-pull`` and ``hg-bundle``.
+your environment that is not ``rsync`` or ``rsync-ext``. batou supports
+``git-pull``, ``git-bundle``, ``hg-pull`` and ``hg-bundle``.
 
 Lets use ``git-bundle`` for this example:
 
