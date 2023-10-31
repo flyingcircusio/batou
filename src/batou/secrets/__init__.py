@@ -205,7 +205,7 @@ class SecretProvider:
         self.environment.secret_provider = new_secret_provider
         old_secret_provider.purge()
         output.annotate(
-            f"Secret provider changed from {old_secret_provider} to {new_secret_provider}."
+            f"Secret provider changed from {old_secret_provider.secret_provider_str()} to {new_secret_provider.secret_provider_str()}."
         )
 
     def purge(self):
@@ -510,13 +510,15 @@ def process_age_recipients(members, environment_path):
             old_key_meta_file_content = f.read()
         if old_key_meta_file_content != key_meta_file_content:
             print(
-                "WARNING: The key meta file has changed!\n"
-                "Please make sure that the new keys are correct!"
+                "WARNING: The age encryption public-key metadata file has changed!\n"
+                "This means that some secrets are now encrypted with a different set of keys.\n"
+                "Please make sure that the new keys are correct and check the file in once you are done."
             )
     else:
         print(
-            "WARNING: The key meta file does not exist!\n"
-            "Please make sure that the new keys are correct!"
+            "WARNING: The age encryption public-key metadata file does not exist!\n"
+            "This is not a problem if you are setting up the environment for the first time.\n"
+            "Please make sure that the new keys are correct and check the file in once you are done."
         )
     # write the new key meta file
     with open(key_meta_file_path, "w") as f:

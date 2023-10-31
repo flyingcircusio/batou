@@ -41,7 +41,14 @@ secrets.cfg file. If you do not change the file, the file will not even be re-en
 Essentially, you just have to rename the secret files from `secret-*` to `secret-*.gpg`
 as well as renaming the `secrets.cfg` file to `secrets.cfg.gpg`.
 
-You can also use the script in `rename-secrets.py` to do this for you.
+Upgrading a project to the new secrets format is done by running `./batou migrate`
+if your batou version supports age secrets. This will append `.gpg` to all existing
+secret files, since only gpg was supported before.
+
+You can still use the gpg encrypted secrets on newer batou versions. In case you
+want to use age encrypted secrets, edit the `secrets.cfg(.gpg)` file using
+`./batou secrets edit` and add the `secret_provider = age` key to the `[batou]`
+section. Once you close the editor, the secrets will be re-encrypted using age.
 
 ## New environment variables
 
@@ -58,6 +65,8 @@ You can run this in your shell or add it to your `.bashrc` or `.zshrc` file:
 ```bash
 export BATOU_AGE_IDENTITIES=$HOME/.ssh/id_ed25519
 ```
+
+## SSH Key decryption using 1password integration
 
 If your ssh key is encrypted, you can use the `BATOU_AGE_IDENTITY_PASSPHRASE` environment
 variable to provide a 1password reference url to your ssh key passphrase.
