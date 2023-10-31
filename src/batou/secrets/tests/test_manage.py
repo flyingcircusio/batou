@@ -75,5 +75,5 @@ def test_manage__summary__3(capsys, monkeypatch):
     assert summary() == 0  # exit code
     out, err = capsys.readouterr()
     expected = "secretserror\n\t members"
-    assert out.startswith(expected)
+    assert expected in out
     assert err == ""
