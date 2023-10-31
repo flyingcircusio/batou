@@ -7,7 +7,7 @@ from batou.environment import Environment
 
 
 def summary():
-    return_code = None
+    return_code = 0
     environments = Environment.all()
     for environment in environments:
         print(environment.name)

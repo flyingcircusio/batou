@@ -41,7 +41,7 @@ def test_manage__2(tmp_path, monkeypatch, capsys):
 def test_manage__summary__1(capsys, monkeypatch):
     """It prints a summary of the environments, members and secret files."""
     monkeypatch.chdir("examples/errors")
-    assert summary() is None
+    assert summary() == 0  # exit code
     out, err = capsys.readouterr()
     expected = textwrap.dedent(
         """\
@@ -67,3 +67,13 @@ def test_manage__summary__2(capsys, monkeypatch):
     expected = "Exitcode 2 while calling: gpg --decrypt"
     assert out == "errors\n"
     assert err.startswith(expected)
+
+
+def test_manage__summary__3(capsys, monkeypatch):
+    """It can decode files where the host is not present."""
+    monkeypatch.chdir("examples/errors2")
+    assert summary() == 0  # exit code
+    out, err = capsys.readouterr()
+    expected = "secretserror\n\t members"
+    assert out.startswith(expected)
+    assert err == ""
