@@ -247,7 +247,9 @@ def test_diff_is_not_shown_for_keys_in_secrets(tmp_path, monkeypatch, capsys):
     try:
         out, _ = cmd("./batou deploy tutorial")
     finally:
-        shutil.rmtree("work")
+        if os.path.exists("work"):
+            shutil.rmtree("work")
+        # shutil.rmtree("work")
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
