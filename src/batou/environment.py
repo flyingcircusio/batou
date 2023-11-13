@@ -42,6 +42,16 @@ from .resources import Resources
 from .secrets import SecretProvider
 
 
+class UnknownEnvironmentError(ValueError):
+    """There is/are no environment(s) for this name(s)."""
+
+    def __init__(self, names: list):
+        self.names = names
+
+    def __str__(self):
+        return f'Unknown environment(s): {", ".join(self.names)}'
+
+
 class ConfigSection(dict):
     def as_list(self, option):
         result = self[option]
@@ -150,15 +160,20 @@ class Environment(object):
             yield cls(path.parent.name)
 
     @classmethod
-    def filter(cls, names):
-        if not names:
-            return cls.all()
-        names = names.split(",")
-        names = [x.strip() for x in names]
-
-        for env in cls.all():
-            if env.name in names:
-                yield env
+    def filter(cls, filter):
+        if filter:
+            filter = filter.split(",")
+        environments = []
+        for e in cls.all():
+            if filter:
+                if e.name in filter:
+                    filter.remove(e.name)
+                else:
+                    continue
+            environments.append(e)
+        if filter:
+            raise UnknownEnvironmentError(filter)
+        return environments
 
     def _environment_path(self, path="."):
         return os.path.abspath(
