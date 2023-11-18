@@ -32,6 +32,7 @@ setup(
             "pytest-coverage",
             "pytest-instafail",
             "pytest-timeout",
+            "pytest-patterns",
         ]
     },
     entry_points="""
