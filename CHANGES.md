@@ -6,6 +6,8 @@
 
 - Fix bug where some rare exceptions (caused by DNS resolvers during provisioning)
   bubbled incorrectly and caused spurious deployment errors.
+- Add new `rsync-ext` repository type which uses an external rsync
+  binary for repository synchronisation.
 
 
 ## 2.4rc1 (2023-09-12)
