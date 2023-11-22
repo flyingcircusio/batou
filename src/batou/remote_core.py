@@ -229,7 +229,7 @@ def ensure_repository(target, method):
     elif method in ["git-pull", "git-bundle"]:
         if not os.path.exists(target + "/.git"):
             cmd("git init {}".format(target))
-    elif method == "rsync":
+    elif method in ["rsync", "rsync-ext"]:
         pass
     elif method == "local":
         pass

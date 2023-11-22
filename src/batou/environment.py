@@ -90,6 +90,7 @@ class Environment(object):
     """
 
     service_user = None
+    require_sudo = None
     host_domain = None
     branch = None
     connect_method = None
@@ -251,6 +252,7 @@ class Environment(object):
         environment = config.get("environment", {})
         for key in [
             "service_user",
+            "require_sudo",
             "host_domain",
             "target_directory",
             "connect_method",
