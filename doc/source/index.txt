@@ -115,7 +115,7 @@ Features
 * Store database passwords, SSH keys, SSL certificates or other secret data with on the-fly decryption. Manage access to secrets per environment and user.
 * Use Jinja2 templates to easily create dynamic configuration.
 * Dynamically connect services during deployments and track their dependencies.
-* Few run-time requirements on your servers: only Python 2.7 and SSH are needed.
+* Few run-time requirements on your servers: only Python 3 and SSH are needed.
 * Use pre-defined components to manage files, python environments, supervisor, cronjobs, and more.
 * Writing your own components is easy and you can use additional Python
   package dependencies.
