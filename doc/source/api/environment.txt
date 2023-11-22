@@ -31,7 +31,7 @@ update_method
     * `pull`, the default, uses `hg/git clone` and/or `hg/git pull` on the remote site.
     * `bundle` will copy the necessary changes as Mercurial/Git bundle, via the batou ssh link.
     * `rsync` will rsync the *working copy*. This is most useful in combination with the vagrant platform.
-    * `rsync-ext` is the same as `rsync`, except that it calls an external rsync binary instead of using the emulation in the Python `execnet` library.
+    * `rsync-ext` is the same as `rsync`, except that it calls an external rsync binary instead of using the emulation in the Python `execnet` library. This is a drop-in replacement for `rsync`, with the exception that it handles deletion of files in the remote copy of the repository which no longer exist in the local copy.
 
 
 branch
