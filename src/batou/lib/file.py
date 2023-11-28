@@ -204,6 +204,9 @@ class SyncDirectory(Component):
         return " ".join("--exclude '{}'".format(x) for x in self.exclude) + " "
 
     def verify(self):
+        if not os.path.isdir(self.path):
+            raise batou.UpdateNeeded()
+
         stdout, stderr = self.cmd(
             "rsync {} {}{}/ {}".format(
                 self.verify_opts, self.exclude_arg, self.source, self.path
