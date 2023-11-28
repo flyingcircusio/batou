@@ -23,6 +23,7 @@ from batou.lib.file import (
     Presence,
     Purge,
     Symlink,
+    SyncDirectory,
     YAMLContent,
     ensure_path_nonexistent,
 )
@@ -1144,3 +1145,11 @@ def test_purge_globs_and_deletes_files(root):
     root.component += Purge("sourc*")
     root.component.deploy()
     assert sorted(os.listdir("work/mycomponent")) == []
+
+
+def test_syncdirectory_needs_update_on_nonexisting_target(root):
+    os.mkdir("work/mycomponent/existing_dir")
+    open("work/mycomponent/existing_dir/test_file", "w").close()
+    with pytest.raises(batou.UpdateNeeded):
+        sd = SyncDirectory("non_existing_dir", source="existing_dir")
+        sd.verify()
