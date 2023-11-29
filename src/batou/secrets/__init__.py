@@ -10,6 +10,7 @@ from batou import (
     DuplicateOverride,
     DuplicateSecretsComponentAttribute,
     SuperfluousSecretsSection,
+    UnknownHostSecretsSection,
 )
 from batou._output import output
 
@@ -120,9 +121,10 @@ class SecretProvider:
         secret_blob = self.read()
         for hostname in secret_blob.host_data:
             if hostname not in self.environment.hosts:
-                raise ValueError(
-                    f"Secret for unknown host {hostname}.",
+                self.environment.exceptions.append(
+                    UnknownHostSecretsSection.from_context(hostname)
                 )
+                continue
             for key, value in secret_blob.host_data[hostname].items():
                 self.environment.hosts[hostname].data[key] = value
 
