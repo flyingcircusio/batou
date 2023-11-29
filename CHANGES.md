@@ -8,6 +8,9 @@
   bubbled incorrectly and caused spurious deployment errors.
 - Add new `rsync-ext` repository type which uses an external rsync
   binary for repository synchronisation.
+- Fixes bug where `batou` would crash if a secrets configuration file
+  defines values for a host that is not in the environment.
+- re-add some tests for secrets handling
 
 
 ## 2.4rc1 (2023-09-12)
