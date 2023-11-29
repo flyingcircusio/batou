@@ -6,7 +6,11 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Set
 
 from configupdater import ConfigUpdater
 
-from batou import DuplicateOverride, SuperfluousSecretsSection
+from batou import (
+    DuplicateOverride,
+    DuplicateSecretsComponentAttribute,
+    SuperfluousSecretsSection,
+)
 from batou._output import output
 
 from .encryption import (
@@ -133,12 +137,20 @@ class SecretProvider:
             for key, value in secret_blob.component_overrides[
                 component_name
             ].items():
-                if key in overrides:
+                keys_added = set()
+                if key in keys_added:
+                    self.environment.exceptions.append(
+                        DuplicateSecretsComponentAttribute.from_context(
+                            component_name, key
+                        )
+                    )
+                elif key in overrides:
                     self.environment.exceptions.append(
                         DuplicateOverride.from_context(component_name, key)
                     )
                 else:
                     overrides[key] = value
+                    keys_added.add(key)
 
         self.environment.secret_data.update(secret_blob.secret_data)
         self.environment.secret_files.update(secret_blob.secret_files)
@@ -193,7 +205,7 @@ class SecretProvider:
         self.environment.secret_provider = new_secret_provider
         old_secret_provider.purge()
         output.annotate(
-            f"Secret provider changed from {old_secret_provider} to {new_secret_provider}."
+            f"Secret provider changed from {old_secret_provider.secret_provider_str()} to {new_secret_provider.secret_provider_str()}."
         )
 
     def purge(self):
@@ -476,7 +488,9 @@ def process_age_recipients(members, environment_path):
             # it's a url to a key file, so we need to download it
             # and add it to the key meta file
             if key.startswith("http://"):
-                print("WARNING: Downloading public keys over http is insecure!")
+                raise ValueError(
+                    "Downloading public keys over http is insecure!"
+                )
             key_meta_file_content += f"# ssh key file from {key}\n"
             if debug:
                 print(f"Downloading key file from `{key}`")
@@ -496,13 +510,15 @@ def process_age_recipients(members, environment_path):
             old_key_meta_file_content = f.read()
         if old_key_meta_file_content != key_meta_file_content:
             print(
-                "WARNING: The key meta file has changed!\n"
-                "Please make sure that the new keys are correct!"
+                "WARNING: The age encryption public-key metadata file has changed!\n"
+                "This means that some secrets are now encrypted with a different set of keys.\n"
+                "Please make sure that the new keys are correct and check the file in once you are done."
             )
     else:
         print(
-            "WARNING: The key meta file does not exist!\n"
-            "Please make sure that the new keys are correct!"
+            "WARNING: The age encryption public-key metadata file does not exist!\n"
+            "This is not a problem if you are setting up the environment for the first time.\n"
+            "Please make sure that the new keys are correct and check the file in once you are done."
         )
     # write the new key meta file
     with open(key_meta_file_path, "w") as f:

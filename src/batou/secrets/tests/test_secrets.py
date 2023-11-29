@@ -90,3 +90,56 @@ def test_write_should_fail_unless_write_locked(encrypted_file):
         secret.cleartext
         with pytest.raises(RuntimeError):
             secret.write(b"", [])
+
+
+def test_open_nonexistent_file_for_read_should_fail():
+    with pytest.raises(IOError):
+        with GPGEncryptedFile(pathlib.Path("/no/such/file")) as secret:
+            secret.cleartext
+
+
+def test_open_nonexistent_file_for_write_should_create_empty_lock_file():
+    tf = tempfile.NamedTemporaryFile(prefix="new_encrypted.")
+    tf.close()  # deletes file
+    encrypted = GPGEncryptedFile(pathlib.Path(tf.name), writeable=True)
+    with encrypted as secrets:
+        assert secrets.cleartext == ""
+        # The file exists, because we set the write lock
+        assert os.path.exists(tf.name)
+    # When exiting a file without writing, the lock file is removed
+    assert not os.path.exists(tf.name)
+
+
+def test_write(encrypted_file):
+    # encrypted = EncryptedConfigFile(encrypted_file, write_lock=True)
+    encrypted = GPGEncryptedFile(pathlib.Path(encrypted_file), writeable=True)
+    with encrypted as secrets:
+        secrets.write(
+            b"""\
+[batou]
+members = batou
+[asdf]
+x = 1
+""",
+            ["batou"],
+        )
+
+    assert FIXTURE_ENCRYPTED_CONFIG.read_bytes() != encrypted_file.read_bytes()
+    assert 0 != encrypted_file.stat().st_size
+
+
+def test_write_fails_if_recipient_key_is_missing_keeps_old_file(encrypted_file):
+    encrypted = GPGEncryptedFile(pathlib.Path(encrypted_file), writeable=True)
+    with encrypted as secrets:
+        with pytest.raises(batou.GPGCallError):
+            secrets.write(
+                b"""\
+[batou]
+members = foobar@example.com
+[asdf]
+x = 1
+""",
+                ["foobar@example.com"],
+            )
+
+    assert encrypted_file.read_bytes() == FIXTURE_ENCRYPTED_CONFIG.read_bytes()

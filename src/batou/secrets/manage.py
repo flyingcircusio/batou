@@ -6,16 +6,6 @@ from batou import AgeCallError, GPGCallError
 from batou.environment import Environment
 
 
-class UnknownEnvironmentError(ValueError):
-    """There is/are no environment(s) for this name(s)."""
-
-    def __init__(self, names: list):
-        self.names = names
-
-    def __str__(self):
-        return f'Unknown environment(s): {", ".join(self.names)}'
-
-
 def summary():
     return_code = None
     environments = Environment.all()
@@ -54,7 +44,7 @@ def add_user(keyid, environments, **kw):
             environment.secret_provider.write_config(
                 str(config).encode("utf-8")
             )
-    if not environments:
+    if not environments_:
         raise UnknownEnvironmentError(
             [e.strip() for e in environments.split(",")]
         )

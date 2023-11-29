@@ -4,7 +4,18 @@ import textwrap
 
 import pytest
 
-from ..manage import UnknownEnvironmentError, add_user, remove_user, summary
+from batou.environment import UnknownEnvironmentError
+
+from ..manage import add_user, remove_user, summary
+
+
+@pytest.mark.parametrize("func", (add_user, remove_user))
+def test_manage__1(monkeypatch, func):
+    """It raises an exception if called with an unknown environment."""
+    monkeypatch.chdir("examples/errors")
+    with pytest.raises(UnknownEnvironmentError) as err:
+        func("max@example.com", "foo,bar,errors")
+    assert "Unknown environment(s): foo, bar" == str(err.value)
 
 
 def test_manage__2(tmp_path, monkeypatch, capsys):
