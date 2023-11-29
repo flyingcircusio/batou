@@ -1,7 +1,7 @@
 ## Changelog
 
 
-## 2.4rc2 (unreleased)
+## 2.4rc2 (2023-11-29)
 ----------------------
 
 - Fix bug where some rare exceptions (caused by DNS resolvers during provisioning)
