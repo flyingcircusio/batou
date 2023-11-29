@@ -13,6 +13,8 @@
 - Fixes bug where `batou` would crash if a secrets configuration file
   defines values for a host that is not in the environment.
 - re-add some tests for secrets handling
+- fix error message for ManagedContentBase
+- add name tracking to class `Attribute`, show Attribute names in error messages
 
 
 ## 2.4rc1 (2023-09-12)
