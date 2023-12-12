@@ -16,7 +16,7 @@ import io
 
 import jinja2
 
-from batou import output
+from batou import TemplatingError, output
 
 
 class TemplateEngine(object):
@@ -34,7 +34,10 @@ class TemplateEngine(object):
 
     def template(self, sourcefile, args):
         """Render template from `sourcefile` and return the value."""
-        return self._render_template_file(sourcefile, args).getvalue()
+        try:
+            return self._render_template_file(sourcefile, args).getvalue()
+        except jinja2.exceptions.TemplateError as e:
+            raise TemplatingError.from_context(e)
 
     def _render_template_file(self, sourcefile, args):
         """Expand template found in `sourcefile` and return it as StringIO."""
@@ -71,6 +74,9 @@ class Jinja2Engine(TemplateEngine):
                 "template starts with:"
             )
             output.annotate(templatestr[:100])
-        tmpl = self.env.from_string(templatestr)
-        tmpl.filename = identifier
-        return tmpl.render(**args)
+        try:
+            tmpl = self.env.from_string(templatestr)
+            tmpl.filename = identifier
+            return tmpl.render(**args)
+        except jinja2.exceptions.TemplateError as e:
+            raise TemplatingError.from_context(e)

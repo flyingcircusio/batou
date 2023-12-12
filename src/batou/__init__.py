@@ -5,6 +5,8 @@ import socket
 import traceback
 from typing import List, Optional
 
+import jinja2
+
 from ._output import output
 
 with open(os.path.dirname(__file__) + "/version.txt") as f:
@@ -852,3 +854,30 @@ class IPAddressConfigurationError(ConfigurationError):
 
         # TODO provide traceback/line numbers/excerpt
         # see: https://github.com/flyingcircusio/batou/issues/316
+
+
+class TemplatingError(ConfigurationError):
+    """An error occured while rendering a template."""
+
+    sort_key = (0,)
+
+    @classmethod
+    def from_context(cls, exception):
+        self = cls()
+        self.exception_str = str(exception)
+        # if exception is instance of jinja2.TemplateSyntaxError
+        # there is some magic in jinja2 that makes the __str__ method
+        # less capable, if exception.translated is set to True
+        if isinstance(exception, jinja2.TemplateSyntaxError):
+            exception.translated = False
+            self.exception_str = str(exception)
+            exception.translated = True
+        return self
+
+    def __str__(self):
+        return (
+            "An error occured while rendering a template: " + self.exception_str
+        )
+
+    def report(self):
+        output.error(str(self))
