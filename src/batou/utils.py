@@ -17,7 +17,12 @@ from typing import Optional
 
 import pkg_resources
 
-from batou import DeploymentError, IPAddressConfigurationError, output
+from batou import (
+    ConfigurationError,
+    DeploymentError,
+    IPAddressConfigurationError,
+    output,
+)
 
 
 class BagOfAttributes(dict):
@@ -263,7 +268,11 @@ class Address(object):
                 if self.require_v4 == "optional":
                     self.listen = None
                 else:
-                    raise
+                    raise ConfigurationError.from_context(
+                        "Could not resolve IPv4 address for `{}:{}`.".format(
+                            self.connect.host, self.connect.port
+                        )
+                    )
 
         return self._listen_v4
 
@@ -290,7 +299,11 @@ class Address(object):
                 if self.require_v6 == "optional":
                     self.listen_v6 = None
                 else:
-                    raise
+                    raise ConfigurationError.from_context(
+                        "Could not resolve IPv6 address for `{}:{}`.".format(
+                            self.connect.host, self.connect.port
+                        )
+                    )
 
         return self._listen_v6
 
