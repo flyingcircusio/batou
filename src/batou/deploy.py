@@ -7,7 +7,11 @@ import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 
-from batou import ReportingException, SilentConfigurationError
+from batou import (
+    ConfigurationError,
+    ReportingException,
+    SilentConfigurationError,
+)
 from batou._output import TerminalBackend, output
 
 from .environment import Environment
@@ -98,7 +102,6 @@ class ConfigureErrors(ReportingException):
 
 
 class Deployment(object):
-
     _upstream = None
 
     def __init__(
@@ -111,7 +114,6 @@ class Deployment(object):
         predict_only=False,
         provision_rebuild=False,
     ):
-
         self.environment = Environment(
             environment, timeout, platform, provision_rebuild=provision_rebuild
         )
@@ -205,6 +207,11 @@ class Deployment(object):
             all_reporting_hostnames.add(reporting_hostname)
             all_errors.extend([(reporting_hostname, e) for e in errors])
             # collects all errors into (reporting_hostname, error) tuples
+        # if there are no connections, then we append a ConfigurationError
+        if not self.connections:
+            raise ConfigurationError.from_context(
+                "No host found in environment."
+            )
         # if there are no errors, we're done
         if not all_errors:
             return
