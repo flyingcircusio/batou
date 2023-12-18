@@ -176,7 +176,20 @@ class Clone(Component):
             "git status --porcelain --untracked-files=all"
         )
         items = (line.split(None, 1) for line in stdout.splitlines())
-        return [filepath for status, filepath in items if status == "??"]
+        untracked_items = [
+            filepath for status, filepath in items if status == "??"
+        ]
+
+        # from the manpage of git-status: If a filename contains whitespace
+        # or other nonprintable characters, that field will be quoted
+        # in the manner of a C string literal
+        # so we need to unquote the filenames
+        def unquote_git(s):
+            if s.startswith('"') and s.endswith('"'):
+                return s[1:-1].encode().decode("unicode-escape")
+            return s
+
+        return [unquote_git(item) for item in untracked_items]
 
     def last_updated(self):
         with self.chdir(self.target):

@@ -325,3 +325,24 @@ def test_clone_into_workdir_works(root, repos_path, repos_path2):
     root.component += git
     root.component.deploy()
     assert not os.path.exists(root.component.map("asdf"))
+
+
+@pytest.mark.slow
+def test_can_read_untracked_files_correctly(root, repos_path):
+    fun_strings = [
+        "this string has spaces in it",
+        "this string has a ' in it",
+        'this string has a " in it',
+        '"this string has a \' and a " in it"',
+        "this string has a \\ in it",
+        "this string has a \\ and a ' in it",
+        "this string has a \\ and a & in it",
+    ]
+    git = batou.lib.git.Clone(repos_path, branch="master")
+    root.component += git
+    root.component.deploy()
+    for s in fun_strings:
+        with open(root.component.map(s), "w") as f:
+            f.write(s)
+    with git.chdir(git.target):
+        assert set(git.untracked_files()) == set(fun_strings)
