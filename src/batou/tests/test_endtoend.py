@@ -154,7 +154,7 @@ cycle2 depends on
         cycle1
 
 ERROR: 10 remaining unconfigured component(s): component1, component2, component4, component5, crontab, cycle1, cycle2, dnsproblem, dnsproblem2, filemode
-======================= 10 ERRORS - CONFIGURATION FAILED =======================
+======================= 11 ERRORS - CONFIGURATION FAILED =======================
 ====================== DEPLOYMENT FAILED (during connect) ======================
 """
     )  # noqa: E501 line too long
