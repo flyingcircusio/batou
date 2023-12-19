@@ -120,7 +120,7 @@ ERROR: malformed node or string: <...Name object at 0x...>
      Conversion: convert_literal('false')
  Affected hosts: localhost
 
-ERROR: Error while expanding attribute: KeyError('doesnotexist')
+ERROR: Error while expanding attribute: KeyError('doesnotexist'...
       Attribute: Component5.attribute_cannot_be_expanded
  Affected hosts: localhost
 
@@ -153,7 +153,7 @@ cycle1 depends on
 cycle2 depends on
         cycle1
 
-ERROR: 9 remaining unconfigured component(s): component1, component2, component4, component5, crontab, cycle1, cycle2, dnsproblem, dnsproblem2, filemode
+ERROR: 10 remaining unconfigured component(s): component1, component2, component4, component5, crontab, cycle1, cycle2, dnsproblem, dnsproblem2, filemode
 ======================= 10 ERRORS - CONFIGURATION FAILED =======================
 ====================== DEPLOYMENT FAILED (during connect) ======================
 """
