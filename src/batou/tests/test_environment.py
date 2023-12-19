@@ -4,6 +4,7 @@ from mock import Mock
 
 import batou
 import batou.utils
+from batou.component import Component
 from batou.environment import Config, Environment
 from batou.host import Host
 
@@ -286,6 +287,10 @@ def test_components_for_host_can_be_retrieved_from_environment(sample_service):
 
 @mock.patch("batou.remote_core.Output.line")
 def test_log_in_component_configure_is_put_out(output, sample_service):
+    # we are deploying in this test
+    # so we will reset some application state
+    Component.instances = []
+    # this is for tracking which components are used and not
     e = Environment("test-with-provide-require")
     e.load()
     e.configure()
