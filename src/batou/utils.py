@@ -17,7 +17,12 @@ from typing import Optional
 
 import pkg_resources
 
-from batou import DeploymentError, IPAddressConfigurationError, output
+from batou import (
+    DeploymentError,
+    GetAddressInfoError,
+    IPAddressConfigurationError,
+    output,
+)
 
 
 class BagOfAttributes(dict):
@@ -259,11 +264,16 @@ class Address(object):
             try:
                 address = resolve(self.connect.host, self.connect.port)
                 self.listen = NetLoc(address, self.connect.port)
-            except Exception:
+            except Exception as e:
                 if self.require_v4 == "optional":
                     self.listen = None
                 else:
-                    raise
+                    if isinstance(e, OSError):
+                        raise GetAddressInfoError.from_context(
+                            f"{self.connect.host}:{self.connect.port}", str(e)
+                        )
+                    else:
+                        raise
 
         return self._listen_v4
 
@@ -286,11 +296,16 @@ class Address(object):
             try:
                 address = resolve_v6(self.connect.host, self.connect.port)
                 self.listen_v6 = NetLoc(address, self.connect.port)
-            except Exception:
+            except Exception as e:
                 if self.require_v6 == "optional":
                     self.listen_v6 = None
                 else:
-                    raise
+                    if isinstance(e, OSError):
+                        raise GetAddressInfoError.from_context(
+                            f"{self.connect.host}:{self.connect.port}", str(e)
+                        )
+                    else:
+                        raise
 
         return self._listen_v6
 

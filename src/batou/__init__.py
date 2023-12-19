@@ -1,6 +1,7 @@
 # This code must not cause non-stdlib imports to support self-bootstrapping.
 import os
 import os.path
+import socket
 import traceback
 from typing import List, Optional
 
@@ -138,6 +139,28 @@ class AgeCallError(ReportingException):
         output.tabular("message", self.output, separator=":\n")
 
 
+class GetAddressInfoError(ReportingException, socket.gaierror):
+    """There was an error calling getaddrinfo."""
+
+    hostname: str
+    error: str
+
+    @classmethod
+    def from_context(cls, hostname, error):
+        self = cls()
+        self.hostname = hostname
+        self.error = error
+        return self
+
+    def __str__(self):
+        return f"Error while resolving {self.hostname}: {self.error}"
+
+    def report(self):
+        output.error("Error while resolving hostname")
+        output.tabular("hostname", self.hostname, red=True)
+        output.tabular("message", self.error, separator=":\n")
+
+
 class UpdateNeeded(AssertionError):
     """A component requires an update."""
 
@@ -273,7 +296,6 @@ class SilentConfigurationError(Exception):
 
 
 class MissingOverrideAttributes(ConfigurationError):
-
     component_breadcrumbs: str
     attributes: List[str]
 
@@ -771,7 +793,6 @@ class DuplicateHostError(ConfigurationError):
 
 
 class InvalidIPAddressError(ConfigurationError):
-
     sort_key = (0,)
 
     @classmethod
