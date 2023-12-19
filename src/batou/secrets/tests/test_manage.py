@@ -1,3 +1,4 @@
+import glob
 import os
 import shutil
 import textwrap
@@ -6,7 +7,7 @@ import pytest
 
 from batou.environment import UnknownEnvironmentError
 
-from ..manage import add_user, remove_user, summary
+from ..manage import add_user, reencrypt, remove_user, summary
 
 
 @pytest.mark.parametrize("func", (add_user, remove_user))
@@ -99,3 +100,30 @@ def test_manage__summary__3(capsys, monkeypatch):
     expected = "secretserror\n\t members"
     assert expected in out
     assert err == ""
+
+
+def test_manage__reencrypt__1(tmp_path, monkeypatch, capsys):
+    """It re-encrypts all files with the current members."""
+    shutil.copytree("examples/tutorial-secrets", tmp_path / "tutorial-secrets")
+
+    monkeypatch.chdir(tmp_path / "tutorial-secrets")
+
+    # read files environments/*/secret*
+    # and make sure all of them change
+    # when we re-encrypt
+
+    old = {}
+    for path in glob.glob("environments/*/secret*"):
+        with open(path, "rb") as f:
+            old[path] = f.read()
+
+    reencrypt("")  # empty string means all environments
+    new = {}
+    for path in glob.glob("environments/*/secret*"):
+        with open(path, "rb") as f:
+            new[path] = f.read()
+
+    for path in old:
+        assert old[path] != new[path]
+
+    assert set(old) == set(new)

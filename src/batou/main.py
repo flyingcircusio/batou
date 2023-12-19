@@ -166,6 +166,18 @@ def main(args: Optional[list] = None) -> None:
     )
     p.set_defaults(func=batou.secrets.manage.remove_user)
 
+    p = sp.add_parser(
+        "reencrypt",
+        help="Re-encrypt all secret files with the current members.",
+    )
+    p.set_defaults(func=p.print_usage)
+    p.add_argument(
+        "--environments",
+        default="",
+        help="The environments to update. Update all if not specified.",
+    )
+    p.set_defaults(func=batou.secrets.manage.reencrypt)
+
     # migrate
     migrate = subparsers.add_parser(
         "migrate",
