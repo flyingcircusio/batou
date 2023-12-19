@@ -172,11 +172,11 @@ def test_address_v6_only(monkeypatch):
 
     monkeypatch.setitem(resolve_v6_override, hostname, "::346")
 
-    with pytest.raises(socket.gaierror) as f:
+    with pytest.raises(batou.GetAddressInfoError) as f:
         a = Address(hostname, 1234)
         a.listen
 
-    assert str(f.value) in RESOLVER_ERRORS
+    assert any(x in str(f.value) for x in RESOLVER_ERRORS)
 
     address = Address(hostname, 1234, require_v4=False, require_v6=True)
     assert address.listen_v6.host == "::346"
@@ -184,29 +184,29 @@ def test_address_v6_only(monkeypatch):
 
 
 def test_address_fails_when_name_cannot_be_looked_up_at_all():
-    with pytest.raises(socket.gaierror) as f:
+    with pytest.raises(batou.GetAddressInfoError) as f:
         a = Address("does-not-exist.example.com:1234")
         a.listen
-    assert str(f.value) in RESOLVER_ERRORS
+    assert any(x in str(f.value) for x in RESOLVER_ERRORS)
 
-    with pytest.raises(socket.gaierror) as f:
+    with pytest.raises(batou.GetAddressInfoError) as f:
         a = Address(
             "does-not-exist.example.com:1234", require_v4=False, require_v6=True
         )
         a.listen_v6
-    assert str(f.value) in RESOLVER_ERRORS
+    assert any(x in str(f.value) for x in RESOLVER_ERRORS)
 
-    with pytest.raises(socket.gaierror) as f:
+    with pytest.raises(batou.GetAddressInfoError) as f:
         a = Address(
             "does-not-exist.example.com:1234", require_v4=True, require_v6=True
         )
         a.listen
-    with pytest.raises(socket.gaierror) as f:
+    with pytest.raises(batou.GetAddressInfoError) as f:
         a = Address(
             "does-not-exist.example.com:1234", require_v4=True, require_v6=True
         )
         a.listen_v6
-    assert str(f.value) in RESOLVER_ERRORS
+    assert any(x in str(f.value) for x in RESOLVER_ERRORS)
 
 
 def test_address_optional_when_name_cannot_be_looked_up_at_all():
@@ -341,7 +341,6 @@ class LockfileContextManagerTests(unittest.TestCase):
 
 
 class NotifyTests(unittest.TestCase):
-
     # XXX: What this actually should test is:
     # if notify-send is there, use it. It does not need to exit on all
     # non-darwin machines.
@@ -394,7 +393,6 @@ def test_graph_remove_leafs():
 
 
 class Checksum(unittest.TestCase):
-
     fixture = os.path.join(
         os.path.dirname(__file__), "fixture", "component", "haproxy.cfg"
     )
