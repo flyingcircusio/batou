@@ -156,6 +156,40 @@ ERROR: 9 remaining unconfigured component(s): component1, component2, component4
     )  # noqa: E501 line too long
 
 
+def test_example_errors_python():
+    os.chdir("examples/errors3")
+    out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
+    # save out for debugging
+    assert out == Ellipsis(
+        """\
+batou/2... (cpython 3...)
+================================== Preparing ===================================
+main: Loading environment `errors`...
+main: Verifying repository ...
+main: Loading secrets ...
+================== Connecting hosts and configuring model ... ==================
+localhost: Connecting via local (1/1)
+
+
+ERROR: Exception('Programmers make errors too :)')
+This /might/ be a batou bug. Please consider reporting it.
+
+           Host: localhost
+ Root Component: hello
+      Component: '<World (localhost) "Hello > World">'
+
+Traceback (simplified, most recent call last):
+  File ".../examples/errors3/components/hello/component.py", line 8, in configure
+    raise Exception("Programmers make errors too :)")
+
+
+ERROR: 1 remaining unconfigured component(s): hello
+======================= 2 ERRORS - CONFIGURATION FAILED ========================
+====================== DEPLOYMENT FAILED (during connect) ======================
+"""
+    )  # noqa: E501 line too long
+
+
 def test_example_errors_missing_environment():
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy production", acceptable_returncodes=[1])
