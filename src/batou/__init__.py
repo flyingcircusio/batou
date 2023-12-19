@@ -18,6 +18,25 @@ if not os.environ.get("REMOTE_PDB_PORT", None):
     os.environ["REMOTE_PDB_PORT"] = "4444"
 
 
+def prepare_traceback(tb):
+    from batou import component, environment
+
+    stack = traceback.extract_tb(tb)
+    while True:
+        # Delete remoting-internal stack frames.'
+        line = stack.pop(0)
+        if line[0] in [
+            "<string>",
+            "<remote exec>",
+            environment.__file__.rstrip("c"),
+            component.__file__.rstrip("c"),
+        ]:
+            continue
+        stack.insert(0, line)
+        break
+    return "".join(traceback.format_list(stack))
+
+
 class ReportingException(Exception):
     """Exceptions that support user-readable reporting."""
 
@@ -390,22 +409,8 @@ class UnknownComponentConfigurationError(ConfigurationError):
         self.root_name = root.name
         self.root_host_name = root.host.name
         self.exception_repr = repr(exception)
-        stack = traceback.extract_tb(tb)
-        from batou import component, environment
 
-        while True:
-            # Delete remoting-internal stack frames.'
-            line = stack.pop(0)
-            if line[0] in [
-                "<string>",
-                "<remote exec>",
-                environment.__file__.rstrip("c"),
-                component.__file__.rstrip("c"),
-            ]:
-                continue
-            stack.insert(0, line)
-            break
-        self.traceback = "".join(traceback.format_list(stack))
+        self.traceback = prepare_traceback(tb)
         return self
 
     def __str__(self):
@@ -507,10 +512,12 @@ class ComponentLoadingError(ConfigurationError):
     sort_key = (0,)
 
     @classmethod
-    def from_context(cls, filename, exception):
+    def from_context(cls, filename, exception, tb):
         self = cls()
         self.filename = filename
         self.exception_str = str(exception)
+
+        self.traceback = prepare_traceback(tb)
         return self
 
     def __str__(self):
@@ -520,6 +527,11 @@ class ComponentLoadingError(ConfigurationError):
         output.error("Failed loading component file")
         output.tabular("File", self.filename, red=True)
         output.tabular("Exception", self.exception_str, red=True)
+        output.annotate(
+            "Traceback (simplified, most recent call last):", red=True
+        )
+        output.annotate(self.traceback, red=True)
+
         # TODO provide traceback in debug output
         # see: https://github.com/flyingcircusio/batou/issues/316
 
