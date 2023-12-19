@@ -568,13 +568,14 @@ class Environment(object):
 
         # if any of Component.instances has ._prepared == False, then
         # warn via output.annotate
-        for component in Component.instances:
-            if not component._prepared:
-                output.annotate(
-                    "Component {} was not prepared.".format(
-                        component.__class__.__name__
-                    ),
-                )
+        if not exceptions:
+            for component in Component.instances:
+                if not component._prepared:
+                    output.warn(
+                        "A Component '{}' was initialized but was not prepared (configured).\nThis may not be what you want".format(
+                            component.__class__.__name__
+                        ),
+                    )
 
         for root in order:
             root.log_finish_configure()
