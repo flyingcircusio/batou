@@ -372,7 +372,7 @@ class ConfigFileSecretProvider(SecretProvider):
         raise NotImplementedError("_get_file() not implemented.")
 
     def write_file(self, file: EncryptedFile, content: bytes):
-        recipients = self._get_recipients()
+        recipients = self._get_recipients_for_encryption()
         if not recipients:
             raise ValueError(
                 "No recipients found for environment. "
@@ -384,6 +384,14 @@ class ConfigFileSecretProvider(SecretProvider):
         self.config_file.writeable = True
         with self.config_file:
             self.write_config(content)
+
+    def _get_recipients(self) -> List[str]:
+        recipients = self.config.get("batou", "members")
+        if recipients.value is None:
+            return []
+        recipients = re.split(r"(\n|,)+", recipients.value)
+        recipients = [r.strip() for r in recipients if r.strip()]
+        return recipients
 
 
 class GPGSecretProvider(ConfigFileSecretProvider):
@@ -421,13 +429,8 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             writeable,
         )
 
-    def _get_recipients(self) -> List[str]:
-        recipients = self.config.get("batou", "members")
-        if recipients.value is None:
-            return []
-        recipients = re.split(r"(\n|,)+", recipients.value)
-        recipients = [r.strip() for r in recipients if r.strip()]
-        return recipients
+    def _get_recipients_for_encryption(self) -> List[str]:
+        return self._get_recipients()
 
     def write_config(self, content: bytes):
         config = ConfigUpdater().read_string(content.decode("utf-8"))
@@ -562,12 +565,8 @@ class AGESecretProvider(ConfigFileSecretProvider):
             writeable,
         )
 
-    def _get_recipients(self) -> List[str]:
-        recipients = self.config.get("batou", "members")
-        if recipients.value is None:
-            return []
-        recipients = re.split(r"(\n|,)+", recipients.value)
-        recipients = [r.strip() for r in recipients if r.strip()]
+    def _get_recipients_for_encryption(self) -> List[str]:
+        recipients = self._get_recipients()
         return process_age_recipients(
             recipients,
             pathlib.Path(self.environment.base_dir)
