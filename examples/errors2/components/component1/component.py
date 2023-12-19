@@ -24,6 +24,13 @@ class Component4(Component):
         self.require("application")
 
 
+class Component5(Component):
+    attribute_cannot_be_expanded = Attribute("literal", default=None)
+
+    def configure(self):
+        print(self.attribute_cannot_be_expanded)
+
+
 class SubComponent(Component):
 
     namevar = "aname"

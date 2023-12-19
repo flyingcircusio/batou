@@ -175,6 +175,45 @@ class ConfigurationError(ReportingException):
         output.error(message)
 
 
+class AttributeExpansionError(ConfigurationError):
+    """An override attribute could not be expanded properly."""
+
+    component_breadcrumbs: str
+    value_repr: str
+    error_str: str
+    key: str
+
+    @property
+    def sort_key(self):
+        return (
+            1,
+            self.affected_hostname,
+            self.component_breadcrumbs,
+            self.key,
+        )
+
+    @classmethod
+    def from_context(cls, component, key, value, error):
+        self = cls()
+        self.affected_hostname = component.root.host.name
+        self.component_breadcrumbs = component._breadcrumbs
+        self.value_repr = repr(value)
+        self.error_str = str(error)
+        self.key = key
+        return self
+
+    def __str__(self):
+        return "Error while expanding attribute: " + self.error_str
+
+    def report(self):
+        output.error("Error while expanding attribute: " + self.error_str)
+        output.tabular(
+            "Attribute",
+            "{}.{}".format(self.component_breadcrumbs, self.key),
+            red=True,
+        )
+
+
 class ConversionError(ConfigurationError):
     """An override attribute could not be converted properly."""
 
