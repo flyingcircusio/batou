@@ -3,7 +3,7 @@ import sys
 from configupdater import ConfigUpdater
 
 from batou import AgeCallError, GPGCallError
-from batou.environment import Environment
+from batou.environment import Environment, UnknownEnvironmentError
 
 
 def summary():
@@ -44,10 +44,6 @@ def add_user(keyid, environments, **kw):
             environment.secret_provider.write_config(
                 str(config).encode("utf-8")
             )
-    if not environments_:
-        raise UnknownEnvironmentError(
-            [e.strip() for e in environments.split(",")]
-        )
 
 
 def remove_user(keyid, environments, **kw):
@@ -69,7 +65,3 @@ def remove_user(keyid, environments, **kw):
             environment.secret_provider.write_config(
                 str(config).encode("utf-8")
             )
-    if not environments:
-        raise UnknownEnvironmentError(
-            [e.strip() for e in environments.split(",")]
-        )

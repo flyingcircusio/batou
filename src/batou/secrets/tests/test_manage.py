@@ -38,6 +38,28 @@ def test_manage__2(tmp_path, monkeypatch, capsys):
     assert "306151601E813A47" in out
 
 
+def test_manage__2_age(tmp_path, monkeypatch, capsys):
+    """It allows to add/remove_users in an age encrypted environment."""
+    shutil.copytree("examples/tutorial-secrets", tmp_path / "tutorial-secrets")
+    monkeypatch.chdir(tmp_path / "tutorial-secrets")
+
+    key_name = "https://github.com/ctheune.keys"
+
+    summary()
+    out, err = capsys.readouterr()
+    assert key_name in out
+
+    remove_user(key_name, "age")
+    summary()
+    out, err = capsys.readouterr()
+    assert key_name not in out
+
+    add_user(key_name, "age")
+    summary()
+    out, err = capsys.readouterr()
+    assert key_name in out
+
+
 def test_manage__summary__1(capsys, monkeypatch):
     """It prints a summary of the environments, members and secret files."""
     monkeypatch.chdir("examples/errors")
