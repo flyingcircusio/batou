@@ -1150,19 +1150,20 @@ class Attribute(object):
         #     value = attribute.from_config_string(self, value)
         # setattr(self, key, value)
         #
-        if self.expand:
-            value = obj.expand(value)
+        try:
+            if self.expand:
+                value = obj.expand(value)
+        except Exception as e:
+            name = self.names.get(obj.__class__, "<unknown>")
+            raise batou.AttributeExpansionError.from_context(
+                obj, name, value, repr(e)
+            ) from e
         if self.map:
             value = obj.map(value)
         try:
             value = self.conversion(value)
         except Exception as e:
-            # Try to detect our own name.
-            name = "<unknown>"
-            for k in dir(obj):
-                if getattr(obj.__class__, k, None) is self:
-                    name = k
-                    break
+            name = self.names.get(obj.__class__, "<unknown>")
             raise batou.ConversionError.from_context(
                 obj, name, value, self.conversion, e
             )
