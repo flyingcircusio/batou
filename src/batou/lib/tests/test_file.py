@@ -1153,3 +1153,14 @@ def test_syncdirectory_needs_update_on_nonexisting_target(root):
     with pytest.raises(batou.UpdateNeeded):
         sd = SyncDirectory("non_existing_dir", source="existing_dir")
         sd.verify()
+
+
+def test_directory_passes_args_to_syncdirectory(root):
+    d = Directory(
+        "target", source="source", verify_opts="-abc", sync_opts="-xyz"
+    )
+    d.prepare(root.component)
+    sd = d._
+    assert isinstance(sd, SyncDirectory)
+    assert sd.verify_opts == "-abc"
+    assert sd.sync_opts == "-xyz"
