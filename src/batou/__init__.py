@@ -20,6 +20,10 @@ if not os.environ.get("REMOTE_PDB_PORT", None):
     os.environ["REMOTE_PDB_PORT"] = "4444"
 
 
+def prepare_error(error):
+    return f"{error.__class__.__name__}: {error}"
+
+
 def prepare_traceback(tb):
     from batou import component, environment
 
@@ -244,15 +248,15 @@ class AttributeExpansionError(ConfigurationError):
         self.affected_hostname = component.root.host.name
         self.component_breadcrumbs = component._breadcrumbs
         self.value_repr = repr(value)
-        self.error_str = str(error)
+        self.error = prepare_error(error)
         self.key = key
         return self
 
     def __str__(self):
-        return "Error while expanding attribute: " + self.error_str
+        return "Error while expanding attribute: " + self.error
 
     def report(self):
-        output.error("Error while expanding attribute: " + self.error_str)
+        output.error("Error while expanding attribute: " + self.error)
         output.tabular(
             "Attribute",
             "{}.{}".format(self.component_breadcrumbs, self.key),
