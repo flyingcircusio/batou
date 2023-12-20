@@ -19,14 +19,28 @@ from batou.utils import dict_merge
 
 
 def ensure_path_nonexistent(path):
+    """Ensure that the given path does not exist.
+
+    strategy: rename the file to a temporary name, then remove it.
+    this allows us to fail in a useful way, since rename is atomic.
+    If we detect that the file exists after the rename, we know that
+    something else is going on and we can bail out.
+    """
+    tmp_nonce = random.getrandbits(32)
+    tmp_filename = path + ".batou-ensure-path-nonexistent-tmp" + str(tmp_nonce)
     if not os.path.lexists(path):
         return
-    if os.path.islink(path):
-        os.unlink(path)
-    elif os.path.isdir(path):
-        shutil.rmtree(path)
+    os.rename(path, tmp_filename)
+    # if the rename did not work, we bail out
+    assert not os.path.lexists(
+        path
+    ), f"{path} should not exist, if it does, it is a race condition."
+    if os.path.islink(tmp_filename):
+        os.unlink(tmp_filename)
+    elif os.path.isdir(tmp_filename):
+        shutil.rmtree(tmp_filename)
     else:
-        os.unlink(path)
+        os.unlink(tmp_filename)
 
 
 class File(Component):
