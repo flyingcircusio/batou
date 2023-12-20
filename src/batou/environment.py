@@ -528,10 +528,9 @@ class Environment(object):
                                 unprepared_components, root
                             )
                         )
-                    if not exceptions:
-                        # configured this component successfully
-                        # we won't have to retry it later
-                        continue
+                    # configured this component successfully
+                    # we won't have to retry it later
+                    continue
                 retry.add(root)
 
             retry.update(self.resources.dirty_dependencies)
