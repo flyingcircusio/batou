@@ -244,13 +244,22 @@ class Directory(Component):
     source = None
     exclude = ()
 
+    verify_opts = None
+    sync_opts = None
+
     def configure(self):
         self.path = self.map(self.path)
         if self.source:
             # XXX The ordering is wrong. SyncDirectory should run *after*.
-            self += SyncDirectory(
-                self.path, source=self.source, exclude=self.exclude
-            )
+            args = {
+                "source": self.source,
+                "exclude": self.exclude,
+            }
+            if self.verify_opts:
+                args["verify_opts"] = self.verify_opts
+            if self.sync_opts:
+                args["sync_opts"] = self.sync_opts
+            self += SyncDirectory(self.path, **args)
 
     def verify(self):
         assert os.path.isdir(self.path)
