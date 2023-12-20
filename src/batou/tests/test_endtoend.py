@@ -56,12 +56,23 @@ ERROR: Secrets section for unknown component found
     )  # noqa: E501 line too long
 
 
-def test_example_errors_gpg_cannot_decrypt(monkeypatch):
+def test_example_errors_gpg_cannot_decrypt(monkeypatch, patterns):
     monkeypatch.setitem(os.environ, "GNUPGHOME", "")
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
-    assert out == Ellipsis(
-        """\
+
+    patterns.empty_lines.optional("<empty-line>")
+    patterns.gpg.optional(
+        """
+gpg: ...
+..."...<...@...>"
+"""
+    )
+
+    errors = patterns.errors
+    errors.merge("gpg", "empty_lines")
+    errors.in_order(
+        """
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 main: Loading environment `errors`...
@@ -72,8 +83,8 @@ ERROR: Error while calling GPG
         command: gpg --decrypt ...environments/errors/secrets.cfg.gpg
       exit code: 2
         message:
-gpg: ...
-...
+gpg: encrypted ...
+
 ERROR: Failed loading component file
            File: .../examples/errors/components/component5/component.py
       Exception: invalid syntax (component.py, line 1)
@@ -92,7 +103,9 @@ ERROR: Override section for unknown component found
       Component: nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
 """
-    )  # noqa: E501 line too long
+    )
+
+    assert errors == out
 
 
 def test_example_errors_late():
