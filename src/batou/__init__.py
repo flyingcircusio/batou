@@ -473,6 +473,27 @@ class UnusedResources(ConfigurationError):
             )
 
 
+class UnusedComponentsInitialized(ConfigurationError):
+    """Some components were initialized but never used."""
+
+    sort_key = (5, "unused")
+
+    @classmethod
+    def from_context(cls, components, root):
+        self = cls()
+        self.unused_components = []
+        for component in components:
+            self.unused_components.append(repr(component.__class__.__name__))
+        self.root_name = root.name
+        return self
+
+    def __str__(self):
+        return f"Unused components: {', '.join(self.unused_components)}"
+
+    def report(self):
+        output.error(f"Unused components: {', '.join(self.unused_components)}")
+
+
 class UnsatisfiedResources(ConfigurationError):
     """Some required resources were never provided."""
 
