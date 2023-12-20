@@ -22,7 +22,7 @@ def prepare_traceback(tb):
     from batou import component, environment
 
     stack = traceback.extract_tb(tb)
-    while True:
+    while stack:
         # Delete remoting-internal stack frames.'
         line = stack.pop(0)
         if line[0] in [
@@ -34,6 +34,8 @@ def prepare_traceback(tb):
             continue
         stack.insert(0, line)
         break
+    if not stack:
+        return "<no-non-remote-internal-traceback-lines-found>"
     return "".join(traceback.format_list(stack))
 
 
