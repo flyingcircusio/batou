@@ -28,6 +28,7 @@ from batou import (
     SuperfluousSection,
     UnknownComponentConfigurationError,
     UnsatisfiedResources,
+    UnusedComponentsInitialized,
     UnusedResources,
 )
 from batou._output import output
@@ -497,6 +498,7 @@ class Environment(object):
 
             for root in working_set:
                 try:
+                    Component.instances.clear()
                     self.resources.reset_component_resources(root)
                     root.overrides = self.overrides.get(root.name, {})
                     root.prepare()
@@ -516,9 +518,20 @@ class Environment(object):
                         )
                     )
                 else:
-                    # configured this component successfully
-                    # we won't have to retry it later
-                    continue
+                    unprepared_components = []
+                    for component in Component.instances:
+                        if not component._prepared:
+                            unprepared_components.append(component)
+                    if unprepared_components:
+                        exceptions.append(
+                            UnusedComponentsInitialized.from_context(
+                                unprepared_components, root
+                            )
+                        )
+                    if not exceptions:
+                        # configured this component successfully
+                        # we won't have to retry it later
+                        continue
                 retry.add(root)
 
             retry.update(self.resources.dirty_dependencies)
@@ -565,17 +578,6 @@ class Environment(object):
             exceptions.append(
                 UnusedResources.from_context(self.resources.unused)
             )
-
-        # if any of Component.instances has ._prepared == False, then
-        # warn via output.annotate
-        if not exceptions:
-            for component in Component.instances:
-                if not component._prepared:
-                    output.warn(
-                        "A Component '{}' was initialized but was not prepared (configured).\nThis may not be what you want".format(
-                            component.__class__.__name__
-                        ),
-                    )
 
         for root in order:
             root.log_finish_configure()
