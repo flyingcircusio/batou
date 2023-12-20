@@ -37,7 +37,7 @@ class TemplateEngine(object):
         try:
             return self._render_template_file(sourcefile, args).getvalue()
         except jinja2.exceptions.TemplateError as e:
-            raise TemplatingError.from_context(e)
+            raise TemplatingError.from_context(e, sourcefile)
 
     def _render_template_file(self, sourcefile, args):
         """Expand template found in `sourcefile` and return it as StringIO."""
@@ -78,5 +78,5 @@ class Jinja2Engine(TemplateEngine):
             tmpl = self.env.from_string(templatestr)
             tmpl.filename = identifier
             return tmpl.render(**args)
-        except jinja2.exceptions.TemplateError as e:
-            raise TemplatingError.from_context(e)
+        except Exception as e:
+            raise TemplatingError.from_context(e, identifier)

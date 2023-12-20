@@ -256,7 +256,12 @@ class AttributeExpansionError(ConfigurationError):
         return "Error while expanding attribute: " + self.error
 
     def report(self):
-        output.error("Error while expanding attribute: " + self.error)
+        output.error("Error while expanding attribute:")
+        output.tabular(
+            "Message",
+            self.error,
+            red=True,
+        )
         output.tabular(
             "Attribute",
             "{}.{}".format(self.component_breadcrumbs, self.key),
@@ -866,9 +871,10 @@ class TemplatingError(ConfigurationError):
     sort_key = (0,)
 
     @classmethod
-    def from_context(cls, exception):
+    def from_context(cls, exception, template_identifier):
         self = cls()
-        self.exception_str = str(exception)
+        self.exception_str = prepare_error(exception)
+        self.template_identifier = template_identifier
         # if exception is instance of jinja2.TemplateSyntaxError
         # there is some magic in jinja2 that makes the __str__ method
         # less capable, if exception.translated is set to True
@@ -879,9 +885,7 @@ class TemplatingError(ConfigurationError):
         return self
 
     def __str__(self):
-        return (
-            "An error occured while rendering a template: " + self.exception_str
-        )
+        return f"An error occured while rendering a template ({self.template_identifier}): {self.exception_str}"
 
     def report(self):
         output.error(str(self))

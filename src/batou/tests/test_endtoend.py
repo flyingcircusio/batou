@@ -132,7 +132,8 @@ ERROR: malformed node or string: <...Name object at 0x...>
      Conversion: convert_literal('false')
  Affected hosts: localhost
 
-ERROR: Error while expanding attribute: KeyError: 'doesnotexist'
+ERROR: Error while expanding attribute:
+        Message: TemplatingError: An error occured while rendering a template (Component5): KeyError: 'doesnotexist'
       Attribute: Component5.attribute_cannot_be_expanded
  Affected hosts: localhost
 
