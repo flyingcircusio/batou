@@ -132,7 +132,7 @@ ERROR: malformed node or string: <...Name object at 0x...>
      Conversion: convert_literal('false')
  Affected hosts: localhost
 
-ERROR: Error while expanding attribute: attribute: KeyError: 'doesnotexist'
+ERROR: Error while expanding attribute: KeyError: 'doesnotexist'
       Attribute: Component5.attribute_cannot_be_expanded
  Affected hosts: localhost
 
