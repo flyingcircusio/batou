@@ -61,7 +61,7 @@ def test_configurationerrors_can_be_sorted(root):
     errors.append(MissingEnvironment.from_context(root.environment))
 
     errors.append(
-        ComponentLoadingError.from_context("asdf.py", ValueError("asdf"))
+        ComponentLoadingError.from_context("asdf.py", ValueError("asdf"), None)
     )
 
     errors.append(MissingComponent.from_context("component", "hostname"))
