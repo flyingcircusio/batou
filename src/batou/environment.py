@@ -215,8 +215,9 @@ class Environment(object):
             try:
                 self.components.update(load_components_from_file(filename))
             except Exception as e:
+                exc_type, ex, tb = sys.exc_info()
                 self.exceptions.append(
-                    ComponentLoadingError.from_context(filename, e)
+                    ComponentLoadingError.from_context(filename, e, tb)
                 )
 
         config = Config(config_file)

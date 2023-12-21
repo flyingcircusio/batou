@@ -31,10 +31,16 @@ main: Loading secrets ...
 ERROR: Failed loading component file
            File: .../examples/errors/components/component5/component.py
       Exception: invalid syntax (component.py, line 1)
+Traceback (simplified, most recent call last):
+<no-non-remote-internal-traceback-lines-found>
 
 ERROR: Failed loading component file
            File: .../examples/errors/components/component6/component.py
       Exception: No module named 'asdf'
+Traceback (simplified, most recent call last):
+  File ".../errors/components/component6/component.py", line 1, in <module>
+    import asdf  # noqa: F401 import unused
+
 
 ERROR: Missing component
       Component: missingcomponent
@@ -77,10 +83,16 @@ gpg: ...
 ERROR: Failed loading component file
            File: .../examples/errors/components/component5/component.py
       Exception: invalid syntax (component.py, line 1)
+Traceback (simplified, most recent call last):
+<no-non-remote-internal-traceback-lines-found>
 
 ERROR: Failed loading component file
            File: .../examples/errors/components/component6/component.py
       Exception: No module named 'asdf'
+Traceback (simplified, most recent call last):
+  File ".../examples/errors/components/component6/component.py", line 1, in <module>
+    import asdf  # noqa: F401 import unused
+
 
 ERROR: Missing component
       Component: missingcomponent
