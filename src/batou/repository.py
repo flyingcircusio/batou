@@ -395,14 +395,21 @@ class GitBundleRepository(GitRepository):
             )
         fd, bundle_file = tempfile.mkstemp()
         os.close(fd)
-        out, err = cmd(
-            "git bundle create {file} {range}".format(
-                file=bundle_file, range=bundle_range
-            ),
-            acceptable_returncodes=[0, 128],
-        )
-        if "create empty bundle" in err:
-            return
+        try:
+            out, err = cmd(
+                "git bundle create {file} {range}".format(
+                    file=bundle_file, range=bundle_range
+                ),
+                acceptable_returncodes=[0],
+            )
+        except CmdExecutionError as e:
+            if (
+                e.returncode == 128
+                and "fatal: Refusing to create empty bundle." in e.stderr
+            ):
+                return
+            raise
+
         change_size = os.stat(bundle_file).st_size
         if change_size == 0:
             output.error("Created invalid bundle (0 bytes):")
