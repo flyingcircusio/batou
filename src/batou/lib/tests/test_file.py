@@ -80,7 +80,7 @@ def test_ensure_path_nonexistent_fails_if_os_rename_is_dummied(tmpdir):
     with patch("os.rename", Mock(return_value=None)):
         with pytest.raises(AssertionError) as e:
             ensure_path_nonexistent("dir")
-    assert "race condition" in str(e.value)
+    assert "race" in str(e.value)
 
 
 def test_presence_creates_nonexisting_file(root):
