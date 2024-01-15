@@ -1,10 +1,33 @@
 ## Changelog
 
 
-## 2.5 (unreleased)
--------------------
+## 2.4.1 (unreleased)
+---------------------
 
-- Nothing changed yet.
+- Deploying an environment without any hosts now gives a more
+  helpful error message. (#414)
+- In october 2023 readthedocs.org disabled building projects
+  using the web-configuration. This release adds a configuration
+  file to enable building batou's documentation again. (#415, #422)
+- `batou.utils.Address`` now handles getaddrinfo errors more gracefully.
+  (#416)
+- batou.lib.git.Clone now handles unquoting of filenames in git status
+  output correctly. (#418)
+- Errors thrown during attribute expansion are now explicitly
+  handled and report the attribute name. (#419)
+- Adds a `batou secrets reencrypt [--environments ENVIRONMENTS]`
+  command to re-encrypt secrets files. This is useful if you
+  want to re-fetch public keys from a keyserver. (#421)
+- Improved behaviour of `batou secrets add` and `batou secrets remove`
+  for age encrypted secrets (#421)
+- If a component fails to load, the error message now includes
+  a traceback. (#426)
+- Exposes `verify_opts` and `sync_opts` in `batou.lib.file.Directory`
+  to allow passing options to the underlying `rsync` call. The arguments
+  are passed via a `batou.lib.file.SyncDirectory` component.
+  (#427)
+- Sending a git repository via `git bundle` now fails correctly if
+  the bundle command fails. (#430)
 
 
 ## 2.4 (2023-12-06)
