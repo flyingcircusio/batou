@@ -8,6 +8,8 @@ import sys
 import tempfile
 from typing import Dict, List, Optional
 
+from configupdater import ConfigUpdater
+
 from batou import AgeCallError, FileLockedError, GPGCallError
 from batou._output import output
 
@@ -45,12 +47,21 @@ class EncryptedFile:
     def locked(self) -> bool:
         return self.fd is not None
 
-    def write(self, content: bytes, recipients: List[str]):
+    def write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
+        if debug:
+            print(
+                f"EncryptedFile({self.path}).write({content}, {recipients}, {reencrypt})",
+                file=sys.stderr,
+            )
         self._decrypted = None
-        self._write(content, recipients)
+        self._write(content, recipients, reencrypt)
         self._decrypted = content
 
-    def _write(self, content: bytes, recipients: List[str]):
+    def _write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
         raise NotImplementedError("_write() not implemented")
 
     def __enter__(self):
@@ -140,7 +151,9 @@ class GPGEncryptedFile(EncryptedFile):
             ) from e
         return p.stdout
 
-    def _write(self, content: bytes, recipients: List[str]):
+    def _write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
         if not self.locked:
             raise RuntimeError("File not locked")
         if not self.writeable:
@@ -383,7 +396,9 @@ class AGEEncryptedFile(EncryptedFile):
             f"Could not decrypt {self.path} with any of the identities {identities}"
         )
 
-    def _write(self, content: bytes, recipients: List[str]):
+    def _write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
         if not self.locked:
             raise ValueError("File is not locked")
         if not self.writeable:
@@ -433,3 +448,287 @@ class AGEEncryptedFile(EncryptedFile):
                 ", ".join("`{}`".format(x) for x in cls.AGE_BINARY_CANDIDATES)
             )
         )
+
+
+class DiffableAGEEncryptedFile(AGEEncryptedFile):
+    def decrypt_age_string(self, content: str) -> str:
+        content = content.replace("\\n", "\n")
+        # decrypt the string with age
+        identities = get_identities()
+
+        with tempfile.NamedTemporaryFile() as temp_file:
+            # write the encrypted string into the file
+            temp_file.write(content.encode("utf-8"))
+            temp_file.flush()
+
+            stdout_r, stdout_w = os.pipe()
+            stderr_r, stderr_w = os.pipe()
+            args = [
+                self.age(),
+                "-d",
+            ]
+
+            for identity in identities:
+                args.extend(["-i", str(identity)])
+
+            args.extend([str(temp_file.name)])
+
+            if debug:
+                print(f"Running `{args}`", file=sys.stderr)
+
+            child_pid, fd = pty.fork()
+
+            IS_CHILD = child_pid == 0
+
+            if IS_CHILD:
+                os.dup2(stdout_w, 1)
+                os.dup2(stderr_w, 2)
+                os.close(stdout_r)
+                os.close(stdout_w)
+                os.close(stderr_r)
+                os.close(stderr_w)
+                os.execvp(args[0], args)
+
+            assert not IS_CHILD
+
+            os.close(stdout_w)
+            os.close(stderr_w)
+
+            # read the passphrase prompt
+            matches, out = expect(
+                fd,
+                b'Enter passphrase for "'
+                + identities[0].encode("utf-8")
+                + b'": ',
+            )
+
+            if matches:
+                passphrase = get_passphrase(identities[0])
+                os.write(fd, passphrase.encode("utf-8") + b"\n")
+                matches, out = expect(fd, b"\r\r\n\x1b[F\x1b[K")
+                if not matches:
+                    raise Exception(
+                        'Unexpected output from age, expected "\\r\\r\\n": {}'.format(
+                            out
+                        )
+                    )
+                # also assert, that output is empty from now on
+                buffer = b""
+                while True:
+                    try:
+                        chunk = os.read(fd, 1024)
+                    except OSError as err:
+                        if err.errno == errno.EIO:
+                            # work arond suspected pty "feature", where
+                            # reading from the file descriptor
+                            # when there is no data raises instead of
+                            # returning an empty string, see
+                            # https://bugs.python.org/issue5380
+                            chunk = None
+                    if not chunk:
+                        break
+                    buffer += chunk
+                if buffer:
+                    raise Exception(
+                        "Unexpected output from age: {}".format(buffer)
+                    )
+            else:
+                raise Exception("Unexpected output from age: {}".format(out))
+
+            # read stdout
+            buffer = b""
+            while True:
+                try:
+                    chunk = os.read(stdout_r, 1024)
+                except OSError as err:
+                    if err.errno == errno.EIO:
+                        # work arond suspected pty "feature", where
+                        # reading from the file descriptor
+                        # when there is no data raises instead of
+                        # returning an empty string, see
+                        # https://bugs.python.org/issue5380
+                        chunk = None
+                if not chunk:
+                    break
+                buffer += chunk
+
+            # Wait for the child to exit
+            pid, exitcode = os.waitpid(child_pid, 0)
+
+            if exitcode != 0 or pid != child_pid:
+                # print stderr, stdout
+                buf_stderr = b""
+                while True:
+                    try:
+                        chunk = os.read(stderr_r, 1024)
+                    except OSError as err:
+                        if err.errno == errno.EIO:
+                            # work arond suspected pty "feature", where
+                            # reading from the file descriptor
+                            # when there is no data raises instead of
+                            # returning an empty string, see
+                            # https://bugs.python.org/issue5380
+                            chunk = None
+                    if not chunk:
+                        break
+                    buf_stderr += chunk
+
+                raise AgeCallError.from_context(args, exitcode, buf_stderr)
+
+            os.close(fd)
+
+            return buffer.decode("utf-8")
+
+    def encrypt_age_string(self, content: str, recipients: List[str]) -> str:
+        # encrypt the string with age
+        stdin_r, stdin_w = os.pipe()
+        stdout_r, stdout_w = os.pipe()
+        stderr_r, stderr_w = os.pipe()
+        args = [
+            self.age(),
+            "-e",
+            "-a",
+        ]
+
+        for recipient in recipients:
+            args.extend(["-r", recipient])
+
+        if debug:
+            print(f"Running `{args}`", file=sys.stderr)
+
+        child_pid, fd = pty.fork()
+
+        IS_CHILD = child_pid == 0
+
+        if IS_CHILD:
+            os.dup2(stdin_r, 0)
+            os.dup2(stdout_w, 1)
+            os.dup2(stderr_w, 2)
+            os.close(stdin_r)
+            os.close(stdin_w)
+            os.close(stdout_r)
+            os.close(stdout_w)
+            os.close(stderr_r)
+            os.close(stderr_w)
+            os.execvp(args[0], args)
+
+        assert not IS_CHILD
+
+        os.close(stdin_r)
+        os.close(stdout_w)
+        os.close(stderr_w)
+
+        os.write(stdin_w, content.encode("utf-8"))
+        os.close(stdin_w)
+
+        # read the encrypted string
+        buffer = b""
+        while True:
+            try:
+                chunk = os.read(stdout_r, 1024)
+            except OSError as err:
+                if err.errno == errno.EIO:
+                    # work arond suspected pty "feature", where
+                    # reading from the file descriptor
+                    # when there is no data raises instead of
+                    # returning an empty string, see
+                    # https://bugs.python.org/issue5380
+                    chunk = None
+            if not chunk:
+                break
+            buffer += chunk
+
+        # Wait for the child to exit
+        pid, exitcode = os.waitpid(child_pid, 0)
+
+        if exitcode != 0 or pid != child_pid:
+            # print stderr, stdout
+            buf_stderr = b""
+            while True:
+                try:
+                    chunk = os.read(stderr_r, 1024)
+                except OSError as err:
+                    if err.errno == errno.EIO:
+                        # work arond suspected pty "feature", where
+                        # reading from the file descriptor
+                        # when there is no data raises instead of
+                        # returning an empty string, see
+                        # https://bugs.python.org/issue5380
+                        chunk = None
+                if not chunk:
+                    break
+                buf_stderr += chunk
+
+            raise AgeCallError.from_context(args, exitcode, buf_stderr)
+
+        os.close(fd)
+
+        return buffer.decode("utf-8").replace("\n", "\\n")
+
+    def decrypt(self):
+        # read the entire file, parse as ConfigUpdater
+
+        if not self.locked:
+            raise ValueError("File is not locked")
+
+        config_encrypted = ConfigUpdater().read(self.path)
+        config = ConfigUpdater().read(self.path)
+
+        # for each section
+        for section in config.sections():
+            # if section is called batou, skip
+            if section == "batou":
+                continue
+            # for each option
+            for option in config[section]:
+                # decrypt the value
+                config[section][option].value = self.decrypt_age_string(
+                    config[section][option].value
+                )
+
+        # cache the decrypted content
+        self._decrypted_content = config
+        self._encrypted_content = config_encrypted
+
+        # return the decrypted content as bytes
+        return str(config).encode("utf-8")
+
+    def _write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
+        # parse the content as ConfigUpdater
+        config = ConfigUpdater()
+        config.read_string(content.decode("utf-8"))
+
+        # for each section
+        for section in config.sections():
+            # if section is called batou, skip
+            if section == "batou":
+                continue
+            # for each option
+            for option in config[section]:
+                if (
+                    not reencrypt
+                    and (self._encrypted_content is not None)
+                    and (section in self._decrypted_content)
+                    and (option in self._decrypted_content[section])
+                    and (
+                        self._decrypted_content[section][option].value
+                        == config[section][option].value
+                    )
+                ):
+                    # unchanged encrypted value. no recipient change so "not reencrypt" is fine
+                    config[section][option].value = self._encrypted_content[
+                        section
+                    ][option].value
+                else:
+                    # encrypt the value
+                    config[section][option].value = self.encrypt_age_string(
+                        config[section][option].value, recipients
+                    )
+
+        # write the config to the file
+        with open(self.path, "w") as f:
+            f.write(str(config))
+
+        self.is_new = False
