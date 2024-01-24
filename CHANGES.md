@@ -28,7 +28,7 @@
   (#427)
 - Sending a git repository via `git bundle` now fails correctly if
   the bundle command fails. (#430)
-
+- Clarify `ensure_path_nonexistent` behaviour and documentation on race conditions. (#429)
 
 ## 2.4 (2023-12-06)
 ----------------------
