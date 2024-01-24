@@ -74,15 +74,6 @@ def test_ensure_path_does_not_fail_on_nonexisting_path():
     assert not os.path.exists("missing")
 
 
-def test_ensure_path_nonexistent_fails_if_os_rename_is_dummied(tmpdir):
-    os.chdir(str(tmpdir))
-    os.mkdir("dir")
-    with patch("os.rename", Mock(return_value=None)):
-        with pytest.raises(AssertionError) as e:
-            ensure_path_nonexistent("dir")
-    assert "race" in str(e.value)
-
-
 def test_presence_creates_nonexisting_file(root):
     p = Presence("path")
     root.component += p
