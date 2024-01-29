@@ -135,3 +135,19 @@ batou secrets remove
       --environments ENVIRONMENTS
                             The environments to update. Update all if not
                             specified.
+
+batou secrets reencrypt
+-----------------------
+
+Re-encrypt all secrets with the current set of keys. This is useful when
+you want to update the set of public keys fetched from a key server.
+
+.. code-block:: console
+
+    usage: batou secrets reencrypt [-h] [--environments ENVIRONMENTS]
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --environments ENVIRONMENTS
+                            The environments to update. Update all if not
+                            specified.
