@@ -162,6 +162,7 @@ class Environment(object):
 
     @classmethod
     def filter(cls, filter):
+        filter_is_age = filter == "age"
         if filter:
             filter = filter.split(",")
         environments = []
@@ -175,6 +176,10 @@ class Environment(object):
         if filter:
             raise UnknownEnvironmentError(filter)
         print(f"DEBUG: Environment.filter({filter}) -> {environments}")
+        if filter_is_age:
+            assert (
+                len(environments) == 1
+            ), "DEBUG: filter_is_age, but len(environments) != 1"
         return environments
 
     def _environment_path(self, path="."):
