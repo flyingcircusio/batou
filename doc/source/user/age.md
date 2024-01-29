@@ -29,7 +29,7 @@ You can see that using the `age` secret provider allows us to specify keys from
 https sources. This is because age accepts ssh public keys as encryption recipients.
 
 We accept ssh public keys (beginning with `ssh-`) as well as age public keys
-(beginning with `age1-`), or `http(s)://` urls to ssh public-key files.
+(beginning with `age1`), or `http(s)://` urls to ssh public-key files.
 
 GPG is still supported as before.
 
