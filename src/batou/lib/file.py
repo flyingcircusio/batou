@@ -17,16 +17,40 @@ from batou import output
 from batou.component import Attribute, Component
 from batou.utils import dict_merge
 
+# Explain the logic that in a multi-user and concurrent system there isn't really a coarse grained guarantee around files not existing.
 
-def ensure_path_nonexistent(path):
+# What this can guarantee, however, is that during the lifetime of this function call, there will have been an atomic moment where the file did not exist, or, if it existed and can not be removed, it will raise an error.
+
+# This means: if the file wasn't there in the first place, we're fine. If the file existed and we removed it, we are fine, we don't care whether someone else might have recreated it immediately after. If the file existed and was removed by someone else, we don't care either. If the file existed and we can't remove it, we need to fail.
+
+
+def ensure_path_nonexistent(path: str) -> None:
+    """Ensure that the given path does not exist.
+
+    In a multi-user/concurrent environment, it is possible that a path is created
+    at any time. This function will ensure that the path does not exist at some
+    point in time during the execution of this function.
+
+    During the lifetime of this function call, there will have been an atomic
+    moment where the file did not exist, or, if it existed and can not be
+    removed, it will raise an error.
+
+    This function will not guarantee that the path does not exist after this
+    function has returned.
+    """
+
     if not os.path.lexists(path):
         return
-    if os.path.islink(path):
-        os.unlink(path)
-    elif os.path.isdir(path):
-        shutil.rmtree(path)
-    else:
-        os.unlink(path)
+
+    parent_dir = os.path.dirname(os.path.abspath(path))
+    path_basename = os.path.basename(os.path.normpath(path))
+
+    with tempfile.TemporaryDirectory(dir=parent_dir) as temp_dir:
+        try:
+            os.rename(path, os.path.join(temp_dir, path_basename))
+        except FileNotFoundError as e:
+            # The file was not there in the first place, we're done.
+            pass
 
 
 class File(Component):
