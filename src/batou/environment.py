@@ -174,6 +174,7 @@ class Environment(object):
             environments.append(e)
         if filter:
             raise UnknownEnvironmentError(filter)
+        print(f"DEBUG: Environment.filter({filter}) -> {environments}")
         return environments
 
     def _environment_path(self, path="."):
