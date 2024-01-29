@@ -162,10 +162,9 @@ class Environment(object):
 
     @classmethod
     def filter(cls, filter):
-        if filter:
-            filter = filter.split(",")
-        else:
+        if not filter:
             return list(cls.all())
+        filter = filter.split(",")
         environments = []
         for e in cls.all():
             if e.name not in filter:
