@@ -168,12 +168,10 @@ class Environment(object):
             return list(cls.all())
         environments = []
         for e in cls.all():
-            if filter:
-                if e.name in filter:
-                    filter.remove(e.name)
-                else:
-                    continue
-                environments.append(e)
+            if e.name not in filter:
+                continue
+            filter.remove(e.name)
+            environments.append(e)
         if filter:
             raise UnknownEnvironmentError(filter)
         return environments
