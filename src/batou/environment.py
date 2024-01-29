@@ -164,6 +164,8 @@ class Environment(object):
     def filter(cls, filter):
         if filter:
             filter = filter.split(",")
+        else:
+            return list(cls.all())
         environments = []
         for e in cls.all():
             if filter:
