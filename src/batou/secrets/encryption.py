@@ -451,6 +451,11 @@ class AGEEncryptedFile(EncryptedFile):
 
 
 class DiffableAGEEncryptedFile(AGEEncryptedFile):
+    def __init__(self, path: "pathlib.Path", writeable: bool = False):
+        super().__init__(path, writeable)
+        self._decrypted_content = None
+        self._encrypted_content = None
+
     def decrypt_age_string(self, content: str) -> str:
         content = content.replace("\\n", "\n")
         # decrypt the string with age
