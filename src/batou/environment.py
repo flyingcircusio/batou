@@ -162,15 +162,14 @@ class Environment(object):
 
     @classmethod
     def filter(cls, filter):
-        if filter:
-            filter = filter.split(",")
+        if not filter:
+            return list(cls.all())
+        filter = filter.split(",")
         environments = []
         for e in cls.all():
-            if filter:
-                if e.name in filter:
-                    filter.remove(e.name)
-                else:
-                    continue
+            if e.name not in filter:
+                continue
+            filter.remove(e.name)
             environments.append(e)
         if filter:
             raise UnknownEnvironmentError(filter)
