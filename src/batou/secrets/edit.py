@@ -57,7 +57,7 @@ class Editor(object):
                 print()
                 print(f"An error occurred: {e}")
                 print("Traceback:")
-                traceback.print_exc()
+                print(traceback.format_exc())
                 print()
                 print("Your changes are still available. You can try:")
                 print("\tedit       -- opens editor with current data again")
