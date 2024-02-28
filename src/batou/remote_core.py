@@ -107,6 +107,12 @@ class Output(object):
             out = "      " + out.replace("\n", "\n      ") + "\n"
             self.backend.write(out, red=True)
 
+    def warn(self, message, debug=False):
+        if debug and not self.enable_debug:
+            return
+        self.flush_buffer()
+        self.step("WARN", message, yellow=True)
+
 
 class ChannelBackend(object):
     def __init__(self, channel):
