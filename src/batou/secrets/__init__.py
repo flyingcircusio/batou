@@ -501,10 +501,16 @@ def process_age_recipients(members, environment_path):
                 print(f"Downloading key file from `{key}`")
             key_file = urllib.request.urlopen(key)
             key_file_content = key_file.read().decode("utf-8")
-            for line in key_file_content.splitlines():
-                if line.startswith("ssh-"):
-                    new_members.append(line)
-                    key_meta_file_content += f"{line}\n"
+            remote_keys = sorted(
+                [
+                    line
+                    for line in key_file_content.splitlines()
+                    if line.startswith("ssh-")
+                ]
+            )
+            for line in remote_keys:
+                new_members.append(line)
+                key_meta_file_content += f"{line}\n"
         else:
             # unknown key type
             print(f"WARNING: Unknown key type for {key}\nWill be ignored!")
