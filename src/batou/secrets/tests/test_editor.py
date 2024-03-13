@@ -6,6 +6,7 @@ import pytest
 
 from batou.environment import Environment
 from batou.secrets.edit import Editor
+from batou.tests.ellipsis import Ellipsis
 
 from .test_secrets import encrypted_file
 
@@ -66,12 +67,21 @@ def test_edit_command_loop(tmpdir, capsys):
 
     out, err = capsys.readouterr()
     assert err == ""
-    assert (
-        out
-        == """\
+    assert out == Ellipsis(
+        """\
 
 
 An error occurred: gpg is broken
+Traceback:
+Traceback (most recent call last):
+  File ".../src/batou/secrets/edit.py", line ..., in interact
+    self.process_cmd(cmd)
+  File ".../src/batou/secrets/edit.py", line ..., in process_cmd
+    self.edit()
+  File ".../src/batou/secrets/tests/test_editor.py", line ..., in broken_cmd
+    raise RuntimeError("gpg is broken")
+RuntimeError: gpg is broken
+
 
 Your changes are still available. You can try:
 \tedit       -- opens editor with current data again
@@ -80,6 +90,16 @@ Your changes are still available. You can try:
 
 
 An error occurred: gpg is broken
+Traceback:
+Traceback (most recent call last):
+  File ".../src/batou/secrets/edit.py", line ..., in interact
+    self.process_cmd(cmd)
+  File ".../src/batou/secrets/edit.py", line ..., in process_cmd
+    self.edit()
+  File ".../src/batou/secrets/tests/test_editor.py", line ..., in broken_cmd
+    raise RuntimeError("gpg is broken")
+RuntimeError: gpg is broken
+
 
 Your changes are still available. You can try:
 \tedit       -- opens editor with current data again
@@ -88,6 +108,14 @@ Your changes are still available. You can try:
 
 
 An error occurred: unknown command `asdf`
+Traceback:
+Traceback (most recent call last):
+  File ".../src/batou/secrets/edit.py", line ..., in interact
+    self.process_cmd(cmd)
+  File ".../src/batou/secrets/edit.py", line ..., in process_cmd
+    raise ValueError("unknown command `{}`".format(cmd))
+ValueError: unknown command `asdf`
+
 
 Your changes are still available. You can try:
 \tedit       -- opens editor with current data again
@@ -96,6 +124,16 @@ Your changes are still available. You can try:
 
 
 An error occurred: gpg is broken
+Traceback:
+Traceback (most recent call last):
+  File ".../src/batou/secrets/edit.py", line ..., in interact
+    self.process_cmd(cmd)
+  File ".../src/batou/secrets/edit.py", line ..., in process_cmd
+    self.encrypt()
+  File ".../src/batou/secrets/tests/test_editor.py", line ..., in broken_cmd
+    raise RuntimeError("gpg is broken")
+RuntimeError: gpg is broken
+
 
 Your changes are still available. You can try:
 \tedit       -- opens editor with current data again
