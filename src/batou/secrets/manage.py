@@ -74,10 +74,11 @@ def reencrypt(environments, **kw):
 
     """
     environments_ = Environment.filter(environments)
+    print(f"Re-encrypting environments {[e.name for e in environments_]}")
     for environment in environments_:
         environment.load_secrets()
         with environment.secret_provider.edit():
             config = environment.secret_provider.config
             environment.secret_provider.write_config(
-                str(config).encode("utf-8")
+                str(config).encode("utf-8"), force_reencrypt=True
             )
