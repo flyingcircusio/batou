@@ -55,12 +55,12 @@ def test_manage__2_age(tmp_path, monkeypatch, capsys):
     out, err = capsys.readouterr()
     assert key_name in out
 
-    remove_user(key_name, "age")
+    remove_user(key_name, "age,age-diffable")
     summary()
     out, err = capsys.readouterr()
     assert key_name not in out
 
-    add_user(key_name, "age")
+    add_user(key_name, "age,age-diffable")
     summary()
     out, err = capsys.readouterr()
     assert key_name in out
