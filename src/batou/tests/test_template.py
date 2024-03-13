@@ -6,6 +6,7 @@ import jinja2
 import mock
 import pytest
 
+from batou import TemplatingError
 from batou.template import TemplateEngine
 
 Server = collections.namedtuple("Server", ["name", "address"])
@@ -81,7 +82,7 @@ hello {{hello}}hello {{hello}}hello {{hello}}hello {{hello}}hello \
 
 def test_jinja2_unknown_variable_should_fail():
     tmpl = TemplateEngine.get("jinja2")
-    with pytest.raises(jinja2.UndefinedError):
+    with pytest.raises(TemplatingError):
         tmpl.expand("unknown variable {{foo}}", {})
 
 
