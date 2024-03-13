@@ -398,15 +398,8 @@ class ConfigFileSecretProvider(SecretProvider):
             self.write_config(content)
 
     def _get_recipients(self) -> List[str]:
-        try:
-            recipients = self.config.get("batou", "members")
-        except:
-            # print out current self.config_file
-            # print(f"Current config file: {self.config_file.path}")
-            print(f"Current config: {self.config}")
-            import sys
+        recipients = self.config.get("batou", "members")
 
-            sys.exit(1)
         if recipients.value is None:
             return []
         recipients = re.split(r"(\n|,)+", recipients.value)
