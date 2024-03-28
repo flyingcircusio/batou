@@ -79,7 +79,7 @@ class File(Component):
     leading = False
 
     # Signal that the content is sensitive data.
-    sensitive_data = False
+    sensitive_data = None
 
     def configure(self):
         self._unmapped_path = self.path
@@ -379,7 +379,7 @@ class ManagedContentBase(FileComponent):
 
     content = None
     source = ""
-    sensitive_data = False
+    sensitive_data = None
 
     # If content is given as unicode (always the case with templates)
     # then require it to be encodable. We assume UTF-8 as a sensible default
@@ -513,7 +513,7 @@ class ManagedContentBase(FileComponent):
                 output.line(
                     f"see {diff_log} for the full diff.".format(), yellow=True
                 )
-            if contains_secrets:
+            if contains_secrets and self.sensitive_data is None:
                 output.line(
                     "Not showing diff as it contains sensitive data,",
                     yellow=True,
