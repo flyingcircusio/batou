@@ -291,6 +291,67 @@ Deployment took total=...s, connect=...s, deploy=...s
     )  # noqa: E501 line too long
 
 
+def test_diff_for_keys_in_secrets_overridable(tmp_path, monkeypatch, capsys):
+    """It respects the "sensitive_data" flag when showing diffs for
+    files which contain secrets
+
+    Secrets might be in the config file in secrets/ or additional
+    encrypted files belonging to the environment.
+    """
+
+    monkeypatch.chdir("examples/sensitive-values")
+    if os.path.exists("work"):
+        shutil.rmtree("work")
+    try:
+        out, _ = cmd("./batou deploy local")
+    finally:
+        if os.path.exists("work"):
+            shutil.rmtree("work")
+    assert out == Ellipsis(
+        """\
+batou/2... (cpython 3...)
+================================== Preparing ===================================
+main: Loading environment `local`...
+main: Verifying repository ...
+main: Loading secrets ...
+================== Connecting hosts and configuring model ... ==================
+localhost: Connecting via local (1/1)
+================================== Deploying ===================================
+localhost: Scheduling component sensitivevalues ...
+localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.key') > Presence('client_ed25519.key')
+localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.key') > Content('client_ed25519.key')
+Not showing diff as it contains sensitive data,
+see ...diff for the diff.
+localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.pub') > Presence('client_ed25519.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.pub') > Content('client_ed25519.pub')
+Not showing diff as it contains sensitive data,
+see ...diff for the diff.
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_rsa.pub') > Presence('hostkey_sensitive_auto_rsa.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_rsa.pub') > Content('hostkey_sensitive_auto_rsa.pub')
+  hostkey_sensitive_auto_rsa.pub ---
+  hostkey_sensitive_auto_rsa.pub +++
+  hostkey_sensitive_auto_rsa.pub @@ -0,0 +1 @@
+  hostkey_sensitive_auto_rsa.pub +ssh-rsa ... batou-example-host
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_ed25519.pub') > Presence('hostkey_sensitive_auto_ed25519.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_ed25519.pub') > Content('hostkey_sensitive_auto_ed25519.pub')
+Not showing diff as it contains sensitive data,
+see ...diff for the diff.
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_masked_rsa.pub') > Presence('hostkey_sensitive_masked_rsa.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_masked_rsa.pub') > Content('hostkey_sensitive_masked_rsa.pub')
+Not showing diff as it contains sensitive data.
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_clear_ed25519.pub') > Presence('hostkey_sensitive_clear_ed25519.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_clear_ed25519.pub') > Content('hostkey_sensitive_clear_ed25519.pub')
+  hostkey_sensitive_clear_ed25519.pub ---
+  hostkey_sensitive_clear_ed25519.pub +++
+  hostkey_sensitive_clear_ed25519.pub @@ -0,0 +1 @@
+  hostkey_sensitive_clear_ed25519.pub +ssh-ed25519 ... batou-example-host
+=================================== Summary ====================================
+Deployment took total=...s, connect=...s, deploy=...s
+============================= DEPLOYMENT FINISHED ==============================
+"""
+    )
+
+
 def test_durations_are_shown_for_components():
     os.chdir("examples/durations")
     out, _ = cmd("./batou deploy default")
