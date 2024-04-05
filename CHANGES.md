@@ -4,7 +4,8 @@
 ## 2.4.2 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Improve Jinja2 templating error messages, showing line number and
+  error message. (#417)
 
 
 ## 2.4.1 (2024-01-30)
