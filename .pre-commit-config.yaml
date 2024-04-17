@@ -5,6 +5,7 @@ repos:
     rev: v4.4.0
     hooks:
     -   id: trailing-whitespace
+        exclude: ^(.*\.age|.*\.gpg)
     -   id: end-of-file-fixer
         # These are non-anchored regular rexpressions
         exclude: ^(.*/encrypted.cfg|.*/secrets.cfg|.*/secret-foobar.yaml|.*\.age|.*\.gpg)

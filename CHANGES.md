@@ -4,7 +4,8 @@
 ## 2.4.2 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Age encryption: Sort keys in the key lockfile to avoid unnecessary changes
+  in the lockfile. (#445)
 
 
 ## 2.4.1 (2024-01-30)
