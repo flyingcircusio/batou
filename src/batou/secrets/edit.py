@@ -56,6 +56,16 @@ class Editor(object):
                 print()
                 print()
                 print(f"An error occurred: {e}")
+                print("Traceback:")
+                tb = traceback.format_exc()
+                tb_lines = tb.splitlines()
+                # if tb is too long, only have first and last 10 lines
+                if len(tb_lines) > 20 and not debug:
+                    print("\n".join(tb_lines[:10]))
+                    print("...")
+                    print("\n".join(tb_lines[-10:]))
+                else:
+                    print(tb)
                 print()
                 print("Your changes are still available. You can try:")
                 print("\tedit       -- opens editor with current data again")
