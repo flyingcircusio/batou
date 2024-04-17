@@ -9,7 +9,8 @@
   configupdater-compatible and whose sensitive values are encrypted.
   This allows to show diffs of the encrypted files without revealing
   the sensitive values. (#440)
-
+- Age encryption: Sort keys in the key lockfile to avoid unnecessary changes
+  in the lockfile. (#445)
 
 ## 2.4.1 (2024-01-30)
 ---------------------
