@@ -1,3 +1,4 @@
+import base64
 import errno
 import fcntl
 import os
@@ -7,6 +8,8 @@ import subprocess
 import sys
 import tempfile
 from typing import Dict, List, Optional
+
+from configupdater import ConfigUpdater
 
 from batou import AgeCallError, FileLockedError, GPGCallError
 from batou._output import output
@@ -45,12 +48,21 @@ class EncryptedFile:
     def locked(self) -> bool:
         return self.fd is not None
 
-    def write(self, content: bytes, recipients: List[str]):
+    def write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
+        if debug:
+            print(
+                f"EncryptedFile({self.path}).write({content}, {recipients}, {reencrypt})",
+                file=sys.stderr,
+            )
         self._decrypted = None
-        self._write(content, recipients)
+        self._write(content, recipients, reencrypt)
         self._decrypted = content
 
-    def _write(self, content: bytes, recipients: List[str]):
+    def _write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
         raise NotImplementedError("_write() not implemented")
 
     def __enter__(self):
@@ -140,7 +152,9 @@ class GPGEncryptedFile(EncryptedFile):
             ) from e
         return p.stdout
 
-    def _write(self, content: bytes, recipients: List[str]):
+    def _write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
         if not self.locked:
             raise RuntimeError("File not locked")
         if not self.writeable:
@@ -383,7 +397,9 @@ class AGEEncryptedFile(EncryptedFile):
             f"Could not decrypt {self.path} with any of the identities {identities}"
         )
 
-    def _write(self, content: bytes, recipients: List[str]):
+    def _write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
         if not self.locked:
             raise ValueError("File is not locked")
         if not self.writeable:
@@ -433,3 +449,95 @@ class AGEEncryptedFile(EncryptedFile):
                 ", ".join("`{}`".format(x) for x in cls.AGE_BINARY_CANDIDATES)
             )
         )
+
+
+class DiffableAGEEncryptedFile(EncryptedFile):
+    def __init__(self, path: "pathlib.Path", writeable: bool = False):
+        super().__init__(path, writeable)
+        self._decrypted_content = None
+        self._encrypted_content = None
+
+    def decrypt_age_string(self, content: str) -> str:
+        # base64 -> tmpfile -> AGEEncryptedFile -> decrypt -> read
+        with tempfile.NamedTemporaryFile() as temp_file:
+            temp_file.write(base64.b64decode(content))
+            temp_file.flush()
+            with AGEEncryptedFile(pathlib.Path(temp_file.name)) as ef:
+                return ef.cleartext
+
+    def encrypt_age_string(self, content: str, recipients: List[str]) -> str:
+        # tmpfile -> AGEEncryptedFile -> write plaintext -> read ciphertext -> base64
+        with tempfile.NamedTemporaryFile() as temp_file:
+            with AGEEncryptedFile(pathlib.Path(temp_file.name), True) as ef:
+                ef.write(content.encode("utf-8"), recipients)
+            with open(temp_file.name, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+
+    def decrypt(self):
+        # read the entire file, parse as ConfigUpdater
+
+        if not self.locked:
+            raise ValueError("File is not locked")
+
+        config_encrypted = ConfigUpdater().read(self.path)
+        config = ConfigUpdater().read(self.path)
+
+        # for each section
+        for section in config.sections():
+            # if section is called batou, skip
+            if section == "batou":
+                continue
+            # for each option
+            for option in config[section]:
+                # decrypt the value
+                config[section][option].value = self.decrypt_age_string(
+                    config[section][option].value
+                )
+
+        # cache the decrypted content
+        self._decrypted_content = config
+        self._encrypted_content = config_encrypted
+
+        # return the decrypted content as bytes
+        return str(config).encode("utf-8")
+
+    def _write(
+        self, content: bytes, recipients: List[str], reencrypt: bool = False
+    ):
+        # parse the content as ConfigUpdater
+        config = ConfigUpdater()
+        config.read_string(content.decode("utf-8"))
+
+        # for each section
+        for section in config.sections():
+            # if section is called batou, skip
+            if section == "batou":
+                continue
+            # for each option
+            for option in config[section]:
+                new_value = config[section][option].value
+                assert new_value is not None
+
+                try:
+                    old_value = self._decrypted_content[section][option].value
+                except Exception:
+                    old_value = None
+
+                value_has_changed = new_value != old_value
+
+                if reencrypt or value_has_changed:
+                    new_encrypted_value = self.encrypt_age_string(
+                        new_value, recipients
+                    )
+                else:
+                    new_encrypted_value = self._encrypted_content[section][
+                        option
+                    ].value
+
+                config[section][option].value = new_encrypted_value
+
+        # write the config to the file
+        with open(self.path, "w") as f:
+            f.write(str(config))
+
+        self.is_new = False

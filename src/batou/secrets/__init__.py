@@ -16,6 +16,7 @@ from batou._output import output
 
 from .encryption import (
     AGEEncryptedFile,
+    DiffableAGEEncryptedFile,
     EncryptedFile,
     GPGEncryptedFile,
     NoBackingEncryptedFile,
@@ -81,6 +82,14 @@ class SecretProvider:
                 debug=True,
             )
             secret_provider_candidates.append(GPGSecretProvider(environment))
+        elif extension == ".age-diffable":
+            output.annotate(
+                f"Found age-diffable secrets for environment {environment.name}.",
+                debug=True,
+            )
+            secret_provider_candidates.append(
+                DiffableAGESecretProvider(environment)
+            )
         else:
             raise ValueError(
                 f"Invalid secret provider {extension}.",
@@ -177,7 +186,7 @@ class SecretProvider:
     def write_file(self, file: EncryptedFile, content: bytes):
         raise NotImplementedError("write_file() not implemented.")
 
-    def write_config(self, content: bytes):
+    def write_config(self, content: bytes, force_reencrypt: bool = False):
         raise NotImplementedError("write_config() not implemented.")
 
     def write_config_new(self, content: bytes):
@@ -193,31 +202,30 @@ class SecretProvider:
             new_secret_provider = AGESecretProvider(self.environment)
         elif new_secret_provider_str == "gpg":
             new_secret_provider = GPGSecretProvider(self.environment)
+        elif new_secret_provider_str == "age-diffable":
+            new_secret_provider = DiffableAGESecretProvider(self.environment)
         else:
             raise ValueError(
                 f"Invalid secret provider {new_secret_provider_str}.",
             )
         output.annotate(
-            f"Changing secret provider from {old_secret_provider.secret_provider_str()} to {new_secret_provider.secret_provider_str()}."
+            f"Changing secret provider from {old_secret_provider.secret_provider_str} to {new_secret_provider.secret_provider_str}."
         )
         new_secret_provider.write_config_new(str(config).encode("utf-8"))
         new_secret_provider.write_secret_files(
             old_secret_provider.read_secret_files()
         )
         self.environment.secret_provider = new_secret_provider
-        old_secret_provider.purge()
+        old_secret_provider.purge(new_secret_provider.iter_secret_files())
         output.annotate(
-            f"Secret provider changed from {old_secret_provider.secret_provider_str()} to {new_secret_provider.secret_provider_str()}."
+            f"Secret provider changed from {old_secret_provider.secret_provider_str} to {new_secret_provider.secret_provider_str}."
         )
 
-    def purge(self):
+    def purge(self, except_files: Dict[str, EncryptedFile] = {}):
         raise NotImplementedError("purge() not implemented.")
 
     def _get_recipients(self) -> List[str]:
         raise NotImplementedError("_get_recipients() not implemented.")
-
-    def secret_provider_str(self) -> str:
-        raise NotImplementedError("secret_provider_str() not implemented.")
 
 
 class SecretBlob:
@@ -238,6 +246,8 @@ class SecretBlob:
 
 
 class NoSecretProvider(SecretProvider):
+    secret_provider_str = "none"
+
     def __init__(self, environment: "Environment"):
         super().__init__(environment)
 
@@ -258,7 +268,7 @@ class NoSecretProvider(SecretProvider):
             )
         return NoBackingEncryptedFile()
 
-    def write_config(self, content: bytes):
+    def write_config(self, content: bytes, force_reencrypt: bool = False):
         output.annotate(
             f"Writing secrets configuration for environment {self.environment.name} without secret configuration.",
             debug=True,
@@ -270,11 +280,8 @@ class NoSecretProvider(SecretProvider):
     def read_secret_files(self) -> Dict[str, bytes]:
         return {}
 
-    def purge(self):
+    def purge(self, except_files: Dict[str, EncryptedFile] = {}):
         pass
-
-    def secret_provider_str(self) -> str:
-        return "none"
 
 
 class ConfigFileSecretProvider(SecretProvider):
@@ -333,9 +340,10 @@ class ConfigFileSecretProvider(SecretProvider):
             with self._get_file(name, writeable=True) as file:
                 self.write_file(file, content)
 
-    def purge(self):
-        for file in self.iter_secret_files(writeable=True).values():
-            file.delete()
+    def purge(self, except_files: Dict[str, EncryptedFile] = {}):
+        for name, file in self.iter_secret_files(writeable=True).items():
+            if name not in except_files:
+                file.delete()
         self.config_file.delete()
 
     def summary(self):
@@ -387,6 +395,7 @@ class ConfigFileSecretProvider(SecretProvider):
 
     def _get_recipients(self) -> List[str]:
         recipients = self.config.get("batou", "members")
+
         if recipients.value is None:
             return []
         recipients = re.split(r"(\n|,)+", recipients.value)
@@ -395,6 +404,8 @@ class ConfigFileSecretProvider(SecretProvider):
 
 
 class GPGSecretProvider(ConfigFileSecretProvider):
+    secret_provider_str = "gpg"
+
     def __init__(self, environment: "Environment"):
         super().__init__(environment)
         # load encrypted file
@@ -432,7 +443,7 @@ class GPGSecretProvider(ConfigFileSecretProvider):
     def _get_recipients_for_encryption(self) -> List[str]:
         return self._get_recipients()
 
-    def write_config(self, content: bytes):
+    def write_config(self, content: bytes, force_reencrypt: bool = False):
         config = ConfigUpdater().read_string(content.decode("utf-8"))
         secret_provider = config.get("batou", "secret_provider", fallback=None)
         if secret_provider is None or secret_provider.value is None:
@@ -456,11 +467,9 @@ class GPGSecretProvider(ConfigFileSecretProvider):
         self.config_file.write(
             str(config).encode("utf-8"),
             recipients,
+            reencrypt=force_reencrypt,
         )
         self.write_secret_files(self.read_secret_files())
-
-    def secret_provider_str(self) -> str:
-        return "gpg"
 
 
 def process_age_recipients(members, environment_path):
@@ -501,25 +510,34 @@ def process_age_recipients(members, environment_path):
                 print(f"Downloading key file from `{key}`")
             key_file = urllib.request.urlopen(key)
             key_file_content = key_file.read().decode("utf-8")
-            for line in key_file_content.splitlines():
-                if line.startswith("ssh-"):
-                    new_members.append(line)
-                    key_meta_file_content += f"{line}\n"
+            remote_keys = sorted(
+                [
+                    line
+                    for line in key_file_content.splitlines()
+                    if line.startswith("ssh-")
+                ]
+            )
+            for line in remote_keys:
+                new_members.append(line)
+                key_meta_file_content += f"{line}\n"
         else:
             # unknown key type
             print(f"WARNING: Unknown key type for {key}\nWill be ignored!")
     # compare key_meta_file_content and the old one
     # if they differ, we will warn
+    keys_changed = False
     if os.path.exists(key_meta_file_path):
         with open(key_meta_file_path, "r") as f:
             old_key_meta_file_content = f.read()
         if old_key_meta_file_content != key_meta_file_content:
+            keys_changed = True
             print(
                 "WARNING: The age encryption public-key metadata file has changed!\n"
                 "This means that some secrets are now encrypted with a different set of keys.\n"
                 "Please make sure that the new keys are correct and check the file in once you are done."
             )
     else:
+        keys_changed = True
         print(
             "WARNING: The age encryption public-key metadata file does not exist!\n"
             "This is not a problem if you are setting up the environment for the first time.\n"
@@ -528,13 +546,16 @@ def process_age_recipients(members, environment_path):
     # write the new key meta file
     with open(key_meta_file_path, "w") as f:
         f.write(key_meta_file_content)
-    return new_members
+    return new_members, keys_changed
 
 
 class AGESecretProvider(ConfigFileSecretProvider):
+    FileFactory = AGEEncryptedFile
+    secret_provider_str = "age"
+
     def __init__(self, environment: "Environment"):
         super().__init__(environment)
-        self.config_file = AGEEncryptedFile(
+        self.config_file = self.FileFactory(
             pathlib.Path(environment.base_dir)
             / "environments"
             / environment.name
@@ -572,16 +593,16 @@ class AGESecretProvider(ConfigFileSecretProvider):
             pathlib.Path(self.environment.base_dir)
             / pathlib.Path("environments")
             / self.environment.name,
-        )
+        )[0]
 
-    def write_config(self, content: bytes):
+    def write_config(self, content: bytes, force_reencrypt: bool = False):
         config = ConfigUpdater().read_string(content.decode("utf-8"))
         secret_provider = config.get("batou", "secret_provider", fallback=None)
         if secret_provider is None or secret_provider.value is None:
-            config.set("batou", "secret_provider", "age")
-            print("Setting secret provider to age.")
+            config.set("batou", "secret_provider", self.secret_provider_str)
+            print(f"Setting secret provider to {self.secret_provider_str}.")
         secret_provider = config.get("batou", "secret_provider")
-        if secret_provider.value != "age":
+        if secret_provider.value != self.secret_provider_str:
             self.change_secret_provider(config, self)
             return
         recipients_opt = config.get("batou", "members")
@@ -595,7 +616,7 @@ class AGESecretProvider(ConfigFileSecretProvider):
             raise ValueError(
                 "Please add at least one recipient to the secrets file."
             )
-        recipients = process_age_recipients(
+        recipients, keys_changed = process_age_recipients(
             recipients,
             pathlib.Path(self.environment.base_dir)
             / pathlib.Path("environments")
@@ -604,8 +625,21 @@ class AGESecretProvider(ConfigFileSecretProvider):
         self.config_file.write(
             str(config).encode("utf-8"),
             recipients,
+            reencrypt=keys_changed or force_reencrypt,
         )
-        self.write_secret_files(self.read_secret_files())
+        if keys_changed or force_reencrypt:
+            self.write_secret_files(self.read_secret_files())
 
-    def secret_provider_str(self) -> str:
-        return "age"
+
+class DiffableAGESecretProvider(AGESecretProvider):
+    FileFactory = DiffableAGEEncryptedFile
+    secret_provider_str = "age-diffable"
+
+    def __init__(self, environment: "Environment"):
+        super().__init__(environment)
+        self.config_file = DiffableAGEEncryptedFile(
+            pathlib.Path(environment.base_dir)
+            / "environments"
+            / environment.name
+            / "secrets.cfg.age-diffable"
+        )
