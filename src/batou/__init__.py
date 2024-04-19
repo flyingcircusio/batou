@@ -5,6 +5,8 @@ import socket
 import traceback
 from typing import List, Optional
 
+import jinja2
+
 from ._output import output
 
 with open(os.path.dirname(__file__) + "/version.txt") as f:
@@ -16,6 +18,10 @@ if not os.environ.get("REMOTE_PDB_HOST", None):
     os.environ["REMOTE_PDB_HOST"] = "127.0.0.1"
 if not os.environ.get("REMOTE_PDB_PORT", None):
     os.environ["REMOTE_PDB_PORT"] = "4444"
+
+
+def prepare_error(error):
+    return f"{error.__class__.__name__}: {error}"
 
 
 def prepare_traceback(tb):
@@ -242,15 +248,20 @@ class AttributeExpansionError(ConfigurationError):
         self.affected_hostname = component.root.host.name
         self.component_breadcrumbs = component._breadcrumbs
         self.value_repr = repr(value)
-        self.error_str = str(error)
+        self.error = prepare_error(error)
         self.key = key
         return self
 
     def __str__(self):
-        return "Error while expanding attribute: " + self.error_str
+        return "Error while expanding attribute: " + self.error
 
     def report(self):
-        output.error("Error while expanding attribute: " + self.error_str)
+        output.error("Error while expanding attribute:")
+        output.tabular(
+            "Message",
+            self.error,
+            red=True,
+        )
         output.tabular(
             "Attribute",
             "{}.{}".format(self.component_breadcrumbs, self.key),
@@ -410,7 +421,9 @@ class UnknownComponentConfigurationError(ConfigurationError):
         self = cls()
         self.root_name = root.name
         self.root_host_name = root.host.name
-        self.exception_repr = repr(exception)
+        self.exception_repr = prepare_error(exception)
+        stack = traceback.extract_tb(tb)
+        from batou import component, environment
 
         self.traceback = prepare_traceback(tb)
         return self
@@ -852,3 +865,29 @@ class IPAddressConfigurationError(ConfigurationError):
 
         # TODO provide traceback/line numbers/excerpt
         # see: https://github.com/flyingcircusio/batou/issues/316
+
+
+class TemplatingError(ReportingException):
+    """An error occured while rendering a template."""
+
+    sort_key = (0,)
+
+    @classmethod
+    def from_context(cls, exception, template_identifier):
+        self = cls()
+        self.exception_str = prepare_error(exception)
+        self.template_identifier = template_identifier
+        # if exception is instance of jinja2.TemplateSyntaxError
+        # there is some magic in jinja2 that makes the __str__ method
+        # less capable, if exception.translated is set to True
+        if isinstance(exception, jinja2.TemplateSyntaxError):
+            exception.translated = False
+            self.exception_str = str(exception)
+            exception.translated = True
+        return self
+
+    def __str__(self):
+        return f"An error occured while rendering a template ({self.template_identifier}): {self.exception_str}"
+
+    def report(self):
+        output.error(str(self))

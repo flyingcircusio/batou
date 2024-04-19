@@ -1156,7 +1156,7 @@ class Attribute(object):
         except Exception as e:
             name = self.names.get(obj.__class__, "<unknown>")
             raise batou.AttributeExpansionError.from_context(
-                obj, name, value, repr(e)
+                obj, name, value, e
             ) from e
         if self.map:
             value = obj.map(value)

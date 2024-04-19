@@ -4,6 +4,8 @@
 ## 2.4.2 (unreleased)
 ---------------------
 
+- Improve Jinja2 templating error messages, showing line number and
+  error message. (#417)
 - Encryption: Add support for `age-diffable` encryption format.
   This format is a batou-specific extension for files that are
   configupdater-compatible and whose sensitive values are encrypted.
