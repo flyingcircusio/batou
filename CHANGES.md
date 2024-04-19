@@ -1,7 +1,7 @@
 ## Changelog
 
 
-## 2.4.2 (unreleased)
+## 2.5.0b1 (2024-04-19)
 ---------------------
 
 - Improve Jinja2 templating error messages, showing line number and
