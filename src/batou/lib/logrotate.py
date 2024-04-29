@@ -1,6 +1,6 @@
 import os.path
 
-import pkg_resources
+import importlib_resources
 
 from batou.component import Component, HookComponent, platform
 from batou.lib.file import File
@@ -25,8 +25,10 @@ class RotatedLogfile(HookComponent):
 class Logrotate(Component):
 
     common_config = b""
-    logrotate_template = pkg_resources.resource_string(
-        __name__, "resources/logrotate.in"
+    logrotate_template = (
+        importlib_resources.files(__name__)
+        .joinpath("resources/logrotate.in")
+        .read_bytes()
     )
 
     def configure(self):

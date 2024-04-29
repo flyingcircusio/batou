@@ -15,7 +15,7 @@ import time
 from collections import defaultdict
 from typing import Optional
 
-import pkg_resources
+import importlib_metadata
 
 from batou import (
     DeploymentError,
@@ -44,7 +44,7 @@ def self_id():
     template = "batou/{version} ({python}, {system})"
     system = os.uname()
     system = " ".join([system[0], system[2], system[4]])
-    version = pkg_resources.require("batou")[0].version
+    version = importlib_metadata.version("batou")
     python = sys.implementation.name
     python += " {0}.{1}.{2}-{3}{4}".format(*sys.version_info)
     return template.format(**locals())

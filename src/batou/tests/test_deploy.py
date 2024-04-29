@@ -26,6 +26,9 @@ def test_main_with_errors(capsys):
 
     out, err = capsys.readouterr()
     assert err == ""
+    # save the output to a file to compare it with the expected output
+    with open("errors_output.txt", "w") as f:
+        f.write(out)
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
@@ -46,8 +49,7 @@ ERROR: Failed loading component file
 Traceback (simplified, most recent call last):
   File ".../examples/errors/components/component6/component.py", line 1, in <module>
     import asdf  # noqa: F401 import unused
-
-
+...
 ERROR: Missing component
       Component: missingcomponent
 

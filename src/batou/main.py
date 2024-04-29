@@ -5,7 +5,7 @@ import sys
 import textwrap
 from typing import Optional
 
-import pkg_resources
+import importlib_resources
 
 import batou
 import batou.deploy
@@ -18,8 +18,12 @@ from batou._output import TerminalBackend, output
 
 def main(args: Optional[list] = None) -> None:
     os.chdir(os.environ["APPENV_BASEDIR"])
-    version = pkg_resources.resource_string(__name__, "version.txt")
-    version = version.decode("ascii").strip()
+    version = (
+        importlib_resources.files("batou")
+        .joinpath("version.txt")
+        .read_text()
+        .strip()
+    )
     parser = argparse.ArgumentParser(
         description=(
             "batou v{}: multi-(host|component|environment|version|platform)"

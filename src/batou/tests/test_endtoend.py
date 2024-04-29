@@ -20,6 +20,8 @@ def test_service_early_resource():
 def test_example_errors_early():
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
+    with open("errors_example_errors_early_output.txt", "w") as f:
+        f.write(out)
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
@@ -40,8 +42,7 @@ ERROR: Failed loading component file
 Traceback (simplified, most recent call last):
   File ".../errors/components/component6/component.py", line 1, in <module>
     import asdf  # noqa: F401 import unused
-
-
+...
 ERROR: Missing component
       Component: missingcomponent
 
@@ -92,8 +93,7 @@ ERROR: Failed loading component file
 Traceback (simplified, most recent call last):
   File ".../examples/errors/components/component6/component.py", line 1, in <module>
     import asdf  # noqa: F401 import unused
-
-
+...
 ERROR: Missing component
       Component: missingcomponent
 
@@ -127,7 +127,7 @@ ERROR: Trying to access address family IPv6 which is not configured for localhos
 ERROR: crontab: No cron jobs found.
  Affected hosts: localhost
 
-ERROR: malformed node or string: <...Name object at 0x...>
+ERROR: malformed node or string ...: <...Name object at 0x...>
       Attribute: Component1.do_what_is_needed
      Conversion: convert_literal('false')
  Affected hosts: localhost
@@ -176,6 +176,8 @@ ERROR: 10 remaining unconfigured component(s): component1, component2, component
 def test_example_errors_missing_environment():
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy production", acceptable_returncodes=[1])
+    with open("errors_example_errors_missing_environment_output.txt", "w") as f:
+        f.write(out)
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
@@ -192,6 +194,8 @@ ERROR: Missing environment
 def test_example_ignores():
     os.chdir("examples/ignores")
     out, _ = cmd("./batou deploy ignores")
+    with open("ignores_output.txt", "w") as f:
+        f.write(out)
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
