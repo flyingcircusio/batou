@@ -6,6 +6,7 @@
   pyyaml,
   execnet,
   importlib-metadata,
+  importlib-resources,
   remote-pdb,
   py,
   configupdater,
@@ -30,6 +31,7 @@ in
       pyyaml
       execnet
       importlib-metadata
+      importlib-resources
       remote-pdb
       py
       configupdater
