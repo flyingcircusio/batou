@@ -18,7 +18,7 @@ setup(
         "Jinja2==3.0.1",
         "requests",
         # ConfigUpdater does not manage its minimum requirements correctly.
-        "setuptools>=56.0.0",
+        "setuptools>=38.3",
         "execnet>=1.8.1",
         "importlib_metadata",
         "importlib_resources",

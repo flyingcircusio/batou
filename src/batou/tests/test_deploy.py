@@ -27,8 +27,6 @@ def test_main_with_errors(capsys):
     out, err = capsys.readouterr()
     assert err == ""
     # save the output to a file to compare it with the expected output
-    with open("errors_output.txt", "w") as f:
-        f.write(out)
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)

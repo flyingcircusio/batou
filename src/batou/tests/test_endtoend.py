@@ -20,8 +20,6 @@ def test_service_early_resource():
 def test_example_errors_early():
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
-    with open("errors_example_errors_early_output.txt", "w") as f:
-        f.write(out)
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
@@ -176,8 +174,6 @@ ERROR: 10 remaining unconfigured component(s): component1, component2, component
 def test_example_errors_missing_environment():
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy production", acceptable_returncodes=[1])
-    with open("errors_example_errors_missing_environment_output.txt", "w") as f:
-        f.write(out)
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
@@ -194,8 +190,6 @@ ERROR: Missing environment
 def test_example_ignores():
     os.chdir("examples/ignores")
     out, _ = cmd("./batou deploy ignores")
-    with open("ignores_output.txt", "w") as f:
-        f.write(out)
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
