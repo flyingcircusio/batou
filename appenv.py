@@ -20,6 +20,7 @@ import hashlib
 import http.client
 import os
 import os.path
+import re
 import shutil
 import subprocess
 import sys
@@ -244,6 +245,59 @@ def ensure_best_python(base):
         sys.exit(65)
 
 
+def parse_requirement_string(requirement_string):
+    """Parse a requirement from a requirement string.
+
+    This function is a simplified version of the Requirement class from
+    packaging.requirements.
+    Previously, this was done using pkg_resources.parse_requirements,
+    but pkg_resources is deprecated and errors out on import.
+    And the replacement packaging is apparently not packaged in python
+    virtualenvs where we need it.
+
+    See packaging / _parser.py for the requirements grammar.
+    As well as packaging / _tokenizer.py for the tokenization rules/regexes.
+    """
+    # packaging / _tokenizer.py
+    identifier_regex = r"\b[a-zA-Z0-9][a-zA-Z0-9._-]*\b"
+    url_regex = r"[^ \t]+"
+    whitespace_regex = r"[ \t]+"
+    # comments copied from packaging / _parser.py
+    # requirement = WS? IDENTIFIER WS? extras WS? requirement_details
+    # extras = (LEFT_BRACKET wsp* extras_list? wsp* RIGHT_BRACKET)?
+    # requirement_details = AT URL (WS requirement_marker?)?
+    #                     | specifier WS? (requirement_marker)?
+    # requirement_marker = SEMICOLON marker WS?
+    # consider these comments for illustrative purporses only, since according
+    # to the source code, the actual grammar is subtly different from this :)
+
+    # We will make some simplifications here:
+    # - We only care about the name, and URL if present.
+    # - We assume that the requirement string is well-formed. If not,
+    #   pip operations will fail later on.
+    # - We will not parse extras, specifiers, or markers.
+
+    # check for name
+    name_match = re.search(
+        f"^(?:{whitespace_regex})?{identifier_regex}", requirement_string
+    )
+    name = name_match.group() if name_match else None
+    # check for URL
+    url_match = re.search(
+        f"@(?:{whitespace_regex})?(?P<url>{url_regex})"
+        f"(?:{whitespace_regex})?;?",
+        requirement_string,
+    )
+    url = url_match.group("url") if url_match else None
+
+    # now we want an object with .name, .url and str(obj) == requirement_string
+    return type(
+        "ParsedRequirement",
+        (),
+        {"name": name, "url": url, "__str__": lambda self: requirement_string},
+    )()
+
+
 class AppEnv(object):
 
     base = None  # The directory where we add the environments. Co-located
@@ -409,7 +463,7 @@ class AppEnv(object):
                 os.unlink(current_path)
             except FileNotFoundError:
                 pass
-            os.symlink(env_dir, current_path)
+            os.symlink(env_hash, current_path)
 
         self.env_dir = env_dir
 
@@ -488,21 +542,6 @@ class AppEnv(object):
             )
         )
 
-        # Hack because we might not have packaging, but the venv should
-        tmp_paths = cmd(
-            "{tmpdir}/bin/python -c"
-            " 'import sys; print(\"\\n\".join(sys.path))'".format(
-                tmpdir=tmpdir
-            ),
-            merge_stderr=False,
-        ).decode(sys.getfilesystemencoding())
-        for line in tmp_paths.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            sys.path.append(line)
-        from packaging.requirements import Requirement
-
         extra_specs = []
         result = cmd(
             "{tmpdir}/bin/python -m pip freeze".format(tmpdir=tmpdir),
@@ -513,8 +552,8 @@ class AppEnv(object):
             if line.strip().startswith("-e "):
                 # We'd like to pick up the original -e statement here.
                 continue
-            spec = Requirement(line)
-            pinned_versions[spec.name] = spec
+            parsed_requirement = parse_requirement_string(line)
+            pinned_versions[parsed_requirement.name] = parsed_requirement
         requested_versions = {}
         with open("requirements.txt") as f:
             for line in f.readlines():
@@ -528,8 +567,8 @@ class AppEnv(object):
                 # filter comments, in particular # appenv-python-preferences
                 if line.strip().startswith("#"):
                     continue
-                spec = Requirement(line)
-                requested_versions[spec.name] = spec
+                parsed_requirement = parse_requirement_string(line)
+                requested_versions[parsed_requirement.name] = parsed_requirement
 
         final_versions = {}
         for spec in requested_versions.values():

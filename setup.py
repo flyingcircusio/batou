@@ -22,7 +22,6 @@ setup(
         "execnet>=1.8.1",
         "importlib_metadata",
         "importlib_resources",
-        "packaging",
         "py>=1.11.0",
         "pyyaml",
         "remote-pdb",
