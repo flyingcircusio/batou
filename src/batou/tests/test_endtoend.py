@@ -40,8 +40,7 @@ ERROR: Failed loading component file
 Traceback (simplified, most recent call last):
   File ".../errors/components/component6/component.py", line 1, in <module>
     import asdf  # noqa: F401 import unused
-
-
+...
 ERROR: Missing component
       Component: missingcomponent
 
@@ -92,8 +91,7 @@ ERROR: Failed loading component file
 Traceback (simplified, most recent call last):
   File ".../examples/errors/components/component6/component.py", line 1, in <module>
     import asdf  # noqa: F401 import unused
-
-
+...
 ERROR: Missing component
       Component: missingcomponent
 
@@ -127,7 +125,7 @@ ERROR: Trying to access address family IPv6 which is not configured for localhos
 ERROR: crontab: No cron jobs found.
  Affected hosts: localhost
 
-ERROR: malformed node or string: <...Name object at 0x...>
+ERROR: malformed node or strin...: <...Name object at 0x...>
       Attribute: Component1.do_what_is_needed
      Conversion: convert_literal('false')
  Affected hosts: localhost

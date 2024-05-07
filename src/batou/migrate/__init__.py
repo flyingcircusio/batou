@@ -3,7 +3,7 @@ import json
 import textwrap
 from typing import List
 
-import pkg_resources
+import importlib_resources
 
 from batou._output import TerminalBackend, output
 
@@ -41,9 +41,12 @@ def read_config() -> int:
 
 def get_migration_steps() -> List[int]:
     """Return the sorted list of all known migration steps."""
-    migration_files = pkg_resources.resource_listdir(
-        MIGRATION_MODULE, "migrations"
+    migration_files = (
+        importlib_resources.files(MIGRATION_MODULE)
+        .joinpath("migrations")
+        .iterdir()
     )
+    migration_files = [x.name for x in migration_files]
     return sorted(
         int(x.partition(".")[0])
         for x in migration_files

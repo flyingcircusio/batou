@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
+import pathlib
 import sys
 import time
 
 import pytest
-from pkg_resources import resource_filename
 
 from batou.lib.archive import Extract
 
@@ -27,7 +27,9 @@ def test_missing_archive_predicts_change(root):
 
 def test_untar_extracts_archive_to_target_directory(root):
     extract = Extract(
-        resource_filename(__name__, "example.tar.gz"), target="example"
+        # resource_filename(__name__, "example.tar.gz"), target="example"
+        pathlib.Path(__file__).parent / "example.tar.gz",
+        target="example",
     )
     root.component += extract
     root.component.deploy()
@@ -38,7 +40,8 @@ def test_ignores_ctime_for_directories(root):
     # This is hard to test: ctime can not be changed directly,
     # we thus have to perform a somewhat elaborate dance to align
     # the starts as we wish.
-    archive = resource_filename(__name__, "example.tar.gz")
+    # archive = resource_filename(__name__, "example.tar.gz")
+    archive = pathlib.Path(__file__).parent / "example.tar.gz"
     extract = Extract(archive, target="example")
 
     root.component += extract
@@ -60,7 +63,10 @@ def test_ignores_ctime_for_directories(root):
 
 def test_untar_can_strip_paths_off_archived_files(root):
     extract = Extract(
-        resource_filename(__name__, "example.tar.gz"), target="example", strip=1
+        # resource_filename(__name__, "example.tar.gz"), target="example", strip=1
+        pathlib.Path(__file__).parent / "example.tar.gz",
+        target="example",
+        strip=1,
     )
     root.component += extract
     root.component.deploy()
@@ -69,7 +75,9 @@ def test_untar_can_strip_paths_off_archived_files(root):
 
 def test_zip_extracts_archive_to_target_directory(root):
     extract = Extract(
-        resource_filename(__name__, "example.zip"), target="example"
+        # resource_filename(__name__, "example.zip"), target="example"
+        pathlib.Path(__file__).parent / "example.zip",
+        target="example",
     )
     root.component += extract
     root.component.deploy()
@@ -78,7 +86,9 @@ def test_zip_extracts_archive_to_target_directory(root):
 
 def test_zip_overwrites_existing_files(root):
     extract = Extract(
-        resource_filename(__name__, "example.zip"), target="example"
+        # resource_filename(__name__, "example.zip"), target="example"
+        pathlib.Path(__file__).parent / "example.zip",
+        target="example",
     )
     root.component += extract
 
@@ -98,7 +108,9 @@ def test_zip_overwrites_existing_files(root):
 @pytest.mark.skipif(sys.platform != "darwin", reason="only runs on OS X")
 def test_dmg_extracts_archive_to_target_directory(root):
     extract = Extract(
-        resource_filename(__name__, "example.dmg"), target="example"
+        # resource_filename(__name__, "example.dmg"), target="example"
+        pathlib.Path(__file__).parent / "example.dmg",
+        target="example",
     )
     root.component += extract
     root.component.deploy()
@@ -118,7 +130,10 @@ def test_dmg_extracts_archive_to_target_directory(root):
 
 def test_dmg_does_not_support_strip(root):
     extract = Extract(
-        resource_filename(__name__, "example.dmg"), strip=1, target="example"
+        # resource_filename(__name__, "example.dmg"), strip=1, target="example"
+        pathlib.Path(__file__).parent / "example.dmg",
+        strip=1,
+        target="example",
     )
     with pytest.raises(ValueError) as e:
         root.component += extract

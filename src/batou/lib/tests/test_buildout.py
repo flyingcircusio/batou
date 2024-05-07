@@ -1,8 +1,8 @@
 import os.path
+import pathlib
 import sys
 
 import mock
-import pkg_resources
 import pytest
 
 from batou.utils import CmdExecutionError
@@ -51,9 +51,7 @@ def test_runs_buildout_successfully(root):
         setuptools="44.1.1",
         config=File(
             "buildout.cfg",
-            source=pkg_resources.resource_filename(
-                __name__, "buildout-example.cfg"
-            ),
+            source=pathlib.Path(__file__).parent / "buildout-example.cfg",
         ),
     )
     root.component += b
@@ -77,9 +75,7 @@ def test_runs_buildout3_successfully(root, output):
         pip="21.0.1",
         config=File(
             "buildout3.cfg",
-            source=pkg_resources.resource_filename(
-                __name__, "buildout3-example.cfg"
-            ),
+            source=str(pathlib.Path(__file__).parent / "buildout3-example.cfg"),
         ),
     )
     root.component += b

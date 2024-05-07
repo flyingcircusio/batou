@@ -8,7 +8,7 @@ nodeenv==1.5.0
 packaging==20.4
 pluggy==0.13.1
 pre-commit==2.15.0
-py==1.10.0
+py==1.11.0
 pyparsing==2.4.7
 PyYAML==6.0.1
 six==1.15.0
