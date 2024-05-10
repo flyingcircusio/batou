@@ -490,9 +490,17 @@ class DiffableAGEEncryptedFile(EncryptedFile):
             # for each option
             for option in config[section]:
                 # decrypt the value
-                config[section][option].value = self.decrypt_age_string(
+                decrypted = self.decrypt_age_string(
                     config[section][option].value
                 )
+                if "\n" in decrypted:
+                    # multiline: accounts for indentss
+                    config[section][option].set_values(
+                        decrypted.split("\n"),
+                        prepend_newline=False,
+                    )
+                else:
+                    config[section][option].value = decrypted
 
         # cache the decrypted content
         self._decrypted_content = config
