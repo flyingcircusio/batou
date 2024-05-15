@@ -1,7 +1,7 @@
 ## Changelog
 
 
-## 2.5.0b2 (unreleased)
+## 2.5.0b2 (2024-05-15)
 -----------------------
 
 - Fix multiline strings in `age-diffable` encryption format.
