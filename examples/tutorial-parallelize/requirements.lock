@@ -1,7 +1,7 @@
 # appenv-requirements-hash: 35def24caecef0f662f773367a0734f42fdd4489e3dd70d0b0005655c6605604
 -e ../../
 ConfigUpdater==3.2
-Jinja2==3.0.1
+Jinja2==3.1.4
 MarkupSafe==2.1.5
 PyYAML==6.0.1
 certifi==2024.2.2
