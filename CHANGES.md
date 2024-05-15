@@ -4,7 +4,10 @@
 ## 2.5.0b2 (unreleased)
 -----------------------
 
-- Nothing changed yet.
+- Fix multiline strings in `age-diffable` encryption format.
+- Drop support for Python 3.6
+- Add support for Python 3.10 and 3.11. Python 3.12 works too, but is not in
+  the test suite, yet.
 
 
 ## 2.5.0b1 (2024-04-19)
