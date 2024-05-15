@@ -12,6 +12,7 @@ import batou
 from batou.secrets import GPGSecretProvider
 from batou.secrets.encryption import (
     AGEEncryptedFile,
+    DiffableAGEEncryptedFile,
     EncryptedFile,
     GPGEncryptedFile,
 )
@@ -143,3 +144,39 @@ x = 1
             )
 
     assert encrypted_file.read_bytes() == FIXTURE_ENCRYPTED_CONFIG.read_bytes()
+
+
+def test_write_and_read_age_diffable(encrypted_file):
+    encrypted = DiffableAGEEncryptedFile(
+        pathlib.Path(encrypted_file), writeable=True
+    )
+    content = b"""\
+[batou]
+members = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIACZ8++sQADp8fztgumfw2i+WSgzMHB7MgSpkM2y5pHi batou-ci-test-key
+
+[asdf]
+value = This is a very long
+    multiline string
+    that should be encrypted
+    and decrypted correctly
+"""
+    # parse content as config to ensure that the content is valid
+    config = configparser.ConfigParser()
+    config.read_string(content.decode("utf-8"))
+
+    with encrypted as secrets:
+        secrets.write(
+            content,
+            [
+                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIACZ8++sQADp8fztgumfw2i+WSgzMHB7MgSpkM2y5pHi batou-ci-test-key"
+            ],
+        )
+
+    assert content != encrypted_file.read_bytes()
+    assert 0 != encrypted_file.stat().st_size
+
+    with DiffableAGEEncryptedFile(encrypted_file) as secrets:
+        # we want the multiline string to be read correctly
+        secret_config = configparser.ConfigParser()
+        secret_config.read_string(secrets.cleartext)
+        assert config["asdf"]["value"] == secret_config["asdf"]["value"]
