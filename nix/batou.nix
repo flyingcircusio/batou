@@ -13,18 +13,9 @@
   mock,
   pytest,
   setuptools,
+  jinja2,
   src,
-}: let
-  jinja2 = buildPythonPackage rec {
-    pname = "Jinja2";
-    version = "3.0.1";
-    propagatedBuildInputs = [markupsafe];
-    src = fetchPypi {
-      inherit pname version;
-      sha256 = "sha256-cD9IS0emr1AudDyRIllcyBKwJx9mFyJAMRT3GnnQ9aQ=";
-    };
-  };
-in
+}:
   buildPythonPackage {
     propagatedBuildInputs = [
       requests
