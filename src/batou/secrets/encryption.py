@@ -494,7 +494,7 @@ class DiffableAGEEncryptedFile(EncryptedFile):
                     config[section][option].value
                 )
                 if "\n" in decrypted:
-                    # multiline: accounts for indentss
+                    # multiline: accounts for indents
                     config[section][option].set_values(
                         decrypted.split("\n"),
                         prepend_newline=False,
