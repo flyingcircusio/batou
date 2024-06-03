@@ -4,7 +4,7 @@
 ## 2.5.0b3 (unreleased)
 -----------------------
 
-- Nothing changed yet.
+- batou migrate now writes .batou.json with a newline at the end.
 
 
 ## 2.5.0b2 (2024-05-15)
