@@ -6,7 +6,7 @@ filelock==3.12.2
 identify==1.5.9
 nodeenv==1.5.0
 packaging==24.0
-pluggy==0.13.1
+pluggy==1.2.0
 pre-commit==2.15.0
 py==1.11.0
 pyparsing==2.4.7
