@@ -14,6 +14,6 @@ PyYAML==6.0.1
 six==1.15.0
 toml==0.10.2
 tox==4.7.0
-virtualenv==20.1.0
+virtualenv==20.26.2
 sphinx==4.2.0
 recommonmark==0.7.1
