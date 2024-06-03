@@ -7,7 +7,7 @@ oops() {
     exit 1
 }
 
-curl -sL https://raw.githubusercontent.com/flyingcircusio/appenv/main/src/appenv.py -o appenv || oops "failed to download appenv"
+curl -sL https://raw.githubusercontent.com/flyingcircusio/appenv/master/src/appenv.py -o appenv || oops "failed to download appenv"
 chmod +x appenv
 ln -sf appenv batou
 echo "batou>=2.4.1" >> requirements.txt
