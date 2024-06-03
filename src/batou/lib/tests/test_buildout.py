@@ -72,7 +72,7 @@ def test_runs_buildout3_successfully(root, output):
         version="3.0.0b1",
         setuptools="54.1.1",
         wheel="0.36.2",
-        pip="24.0",
+        pip="21.0.1",
         config=File(
             "buildout3.cfg",
             source=str(pathlib.Path(__file__).parent / "buildout3-example.cfg"),
