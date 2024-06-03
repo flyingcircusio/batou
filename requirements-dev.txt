@@ -2,7 +2,7 @@
 appdirs==1.4.4
 cfgv==3.2.0
 distlib==0.3.1
-filelock==3.0.12
+filelock==3.12.2
 identify==1.5.9
 nodeenv==1.5.0
 packaging==24.0
