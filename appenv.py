@@ -33,14 +33,25 @@ def cmd(c, merge_stderr=True, quiet=False):
     # XXX better IO management for interactive output and seeing original
     # errors and output at appropriate places ...
     try:
-        kwargs = {"shell": True}
+        kwargs = {}
+        if isinstance(c, str):
+            kwargs["shell"] = True
+            c = [c]
         if merge_stderr:
             kwargs["stderr"] = subprocess.STDOUT
-        return subprocess.check_output([c], **kwargs)
+        return subprocess.check_output(c, **kwargs)
     except subprocess.CalledProcessError as e:
         print("{} returned with exit code {}".format(c, e.returncode))
         print(e.output.decode("utf-8", "replace"))
         raise ValueError(e.output.decode("utf-8", "replace"))
+
+
+def python(path, c, **kwargs):
+    return cmd([os.path.join(path, "bin/python")] + c, **kwargs)
+
+
+def pip(path, c, **kwargs):
+    return python(path, ["-m", "pip"] + c, **kwargs)
 
 
 def get(host, path, f):
@@ -63,29 +74,28 @@ def ensure_venv(target):
 
     if os.path.exists(target):
         print("Deleting unclean target)")
-        cmd("rm -rf {target}".format(target=target))
+        cmd(["rm", "-rf", target])
 
     version = sys.version.split()[0]
     python_maj_min = ".".join(str(x) for x in sys.version_info[:2])
     print("Creating venv ...")
-    venv.create(target, with_pip=False)
+    venv.create(target, with_pip=False, symlinks=True)
 
     try:
         # This is trying to detect whether we're on a proper Python stdlib
         # or on a broken Debian. See various StackOverflow questions about
         # this.
-        import distutils.util  # noqa: F401 imported but unused
         import ensurepip  # noqa: F401 imported but unused
     except ImportError:
         # Okay, lets repair this, if we can. May need privilege escalation
         # at some point.
-        # We could do: apt-get -y -q install python3-distutils python3-venv
+        # We could do: apt-get -y -q install python3-venv
         # on some systems but it requires root and is specific to Debian.
         # I decided to go a more sledge hammer route.
 
         # XXX we can speed this up by storing this in ~/.appenv/overlay instead
         # of doing the download for every venv we manage
-        print("Activating broken distutils/ensurepip stdlib workaround ...")
+        print("Activating broken ensurepip stdlib workaround ...")
 
         tmp_base = tempfile.mkdtemp()
         try:
@@ -97,12 +107,12 @@ def ensure_venv(target):
                     f,
                 )
 
-            cmd("tar xf {} -C {}".format(download, tmp_base))
+            cmd(["tar", "xf", download, "-C", tmp_base])
 
             assert os.path.exists(
                 os.path.join(tmp_base, "Python-{}".format(version))
             )
-            for module in ["ensurepip", "distutils"]:
+            for module in ["ensurepip"]:
                 print(module)
                 shutil.copytree(
                     os.path.join(
@@ -118,7 +128,7 @@ def ensure_venv(target):
                 )
 
             # (always) prepend the site packages so we can actually have a
-            # fixed distutils installation.
+            # fixed installation.
             site_packages = os.path.abspath(
                 os.path.join(
                     target, "lib", "python" + python_maj_min, "site-packages"
@@ -135,10 +145,8 @@ def ensure_venv(target):
             shutil.rmtree(tmp_base)
 
     print("Ensuring pip ...")
-    cmd("{target}/bin/python -m ensurepip --default-pip".format(target=target))
-    cmd(
-        "{target}/bin/python -m pip install --upgrade pip".format(target=target)
-    )
+    python(target, ["-m", "ensurepip", "--default-pip"])
+    pip(target, ["install", "--upgrade", "pip"])
 
 
 def ensure_minimal_python():
@@ -245,6 +253,22 @@ def ensure_best_python(base):
         sys.exit(65)
 
 
+class ParsedRequirement:
+    """A parsed requirement from a requirement string.
+
+    Has a similiar interface to the real Requirement class from
+    packaging.requirements, but is reduced to the parts we need.
+    """
+
+    def __init__(self, name, url, requirement_string):
+        self.name = name
+        self.url = url
+        self.requirement_string = requirement_string
+
+    def __str__(self):
+        return self.requirement_string
+
+
 def parse_requirement_string(requirement_string):
     """Parse a requirement from a requirement string.
 
@@ -290,12 +314,7 @@ def parse_requirement_string(requirement_string):
     )
     url = url_match.group("url") if url_match else None
 
-    # now we want an object with .name, .url and str(obj) == requirement_string
-    return type(
-        "ParsedRequirement",
-        (),
-        {"name": name, "url": url, "__str__": lambda self: requirement_string},
-    )()
+    return ParsedRequirement(name, url, requirement_string)
 
 
 class AppEnv(object):
@@ -440,7 +459,7 @@ class AppEnv(object):
                     raise Exception()
             except Exception:
                 print("Existing envdir not consistent, deleting")
-                cmd("rm -rf {env_dir}".format(env_dir=env_dir))
+                cmd(["rm", "-rf", env_dir])
 
         if not os.path.exists(env_dir):
             ensure_venv(env_dir)
@@ -449,12 +468,16 @@ class AppEnv(object):
                 f.write(requirements)
 
             print("Installing ...")
-            cmd(
-                "{env_dir}/bin/python -m pip install --no-deps -r"
-                " {env_dir}/requirements.lock".format(env_dir=env_dir)
+            pip(
+                env_dir,
+                [
+                    "install",
+                    "--no-deps",
+                    "-r",
+                    "{env_dir}/requirements.lock".format(env_dir=env_dir),
+                ],
             )
-
-            cmd("{env_dir}/bin/python -m pip check".format(env_dir=env_dir))
+            pip(env_dir, ["check"])
 
             with open(os.path.join(env_dir, "appenv.ready"), "w") as f:
                 f.write("Ready or not, here I come, you can't hide\n")
@@ -525,7 +548,7 @@ class AppEnv(object):
                 appenvdir=self.appenv_dir
             )
         )
-        cmd("rm -rf {appenvdir}".format(appenvdir=self.appenv_dir))
+        cmd(["rm", "-rf", self.appenv_dir])
 
     def update_lockfile(self, args=None, remaining=None):
         ensure_minimal_python()
@@ -533,20 +556,13 @@ class AppEnv(object):
         print("Updating lockfile")
         tmpdir = os.path.join(self.appenv_dir, "updatelock")
         if os.path.exists(tmpdir):
-            cmd("rm -rf {tmpdir}".format(tmpdir=tmpdir))
+            cmd(["rm", "-rf", tmpdir])
         ensure_venv(tmpdir)
         print("Installing packages ...")
-        cmd(
-            "{tmpdir}/bin/python -m pip install -r requirements.txt".format(
-                tmpdir=tmpdir
-            )
-        )
+        pip(tmpdir, ["install", "-r", "requirements.txt"])
 
         extra_specs = []
-        result = cmd(
-            "{tmpdir}/bin/python -m pip freeze".format(tmpdir=tmpdir),
-            merge_stderr=False,
-        ).decode("ascii")
+        result = pip(tmpdir, ["freeze"], merge_stderr=False).decode("ascii")
         pinned_versions = {}
         for line in result.splitlines():
             if line.strip().startswith("-e "):
@@ -592,7 +608,7 @@ class AppEnv(object):
             )
             f.write("\n".join(lines))
             f.write("\n")
-        cmd("rm -rf {tmpdir}".format(tmpdir=tmpdir))
+        cmd(["rm", "-rf", tmpdir])
 
 
 def main():
