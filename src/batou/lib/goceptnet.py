@@ -1,4 +1,5 @@
 """Platform components specific to gocept.net."""
+
 import os.path
 
 import batou.lib.service
