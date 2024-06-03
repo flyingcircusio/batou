@@ -4,7 +4,7 @@ ConfigUpdater==3.2
 Jinja2==3.1.4
 MarkupSafe==2.1.5
 PyYAML==6.0.1
-certifi==2024.2.2
+certifi==2024.6.2
 charset-normalizer==3.3.2
 execnet==2.0.2
 idna==3.7
