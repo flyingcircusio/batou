@@ -79,6 +79,7 @@ def write_config(version: int) -> None:
     """
     with open(CONFIG_FILE_NAME, "w") as f:
         json.dump({"migration": {"version": version}}, f)
+        f.write("\n")
 
 
 def get_current_version() -> int:
