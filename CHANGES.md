@@ -4,7 +4,7 @@
 ## 2.5.0b3 (unreleased)
 -----------------------
 
-- batou migrate now writes .batou.json with a newline at the end.
+- batou migrate now writes .batou.json with a newline at the end as `pre-commit` hooks expect (usually).
 
 
 ## 2.5.0b2 (2024-05-15)
