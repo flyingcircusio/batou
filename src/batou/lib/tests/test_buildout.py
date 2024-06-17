@@ -69,7 +69,7 @@ def test_runs_buildout_successfully(root):
 def test_runs_buildout3_successfully(root, output):
     b = Buildout(
         python="3",
-        version="3.0.0b1",
+        version="3.0.1",
         setuptools="68.0.0",
         wheel="0.36.2",
         pip="23.3.2",
