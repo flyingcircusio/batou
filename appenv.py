@@ -327,7 +327,7 @@ class AppEnv(object):
     env_dir = None  # The current specific venv that we're working with.
     appenv_dir = None  # The directory where to place specific venvs.
 
-    def __init__(self, base):
+    def __init__(self, base, original_cwd):
         self.base = base
 
         # This used to be computed based on the application name but
@@ -338,7 +338,7 @@ class AppEnv(object):
         # Allow simplifying a lot of code by assuming that all the
         # meta-operations happen in the base directory. Store the original
         # working directory here so we switch back at the appropriate time.
-        self.original_cwd = os.path.abspath(os.curdir)
+        self.original_cwd = original_cwd
 
     def meta(self):
         # Parse the appenv arguments
@@ -562,7 +562,19 @@ class AppEnv(object):
         pip(tmpdir, ["install", "-r", "requirements.txt"])
 
         extra_specs = []
-        result = pip(tmpdir, ["freeze"], merge_stderr=False).decode("ascii")
+        result = pip(tmpdir, ["freeze", "--all", "--exclude", "pip"]).decode(
+            "utf-8"
+        )
+        # See https://pip.pypa.io/en/stable/cli/pip_freeze/
+        # --all
+        # Do not skip these packages in the output:
+        # setuptools, wheel, distribute, pip
+        # --exclude <package>
+        # Exclude specified package from the output.
+        # We need to include setuptools, since we do a --no-deps install
+        # of the requirements.lock file.
+        # We are already installing pip in ensure_venv, so we don't need it
+        # in the requirements.lock file.
         pinned_versions = {}
         for line in result.splitlines():
             if line.strip().startswith("-e "):
@@ -613,6 +625,7 @@ class AppEnv(object):
 
 def main():
     base = os.path.dirname(__file__)
+    original_cwd = os.getcwd()
 
     ensure_best_python(base)
     # clear PYTHONPATH variable to get a defined environment
@@ -624,14 +637,11 @@ def main():
     # Determine whether we're being called as appenv or as an application name
     application_name = os.path.splitext(os.path.basename(__file__))[0]
 
-    appenv = AppEnv(base)
-    try:
-        if application_name == "appenv":
-            appenv.meta()
-        else:
-            appenv.run(application_name, sys.argv[1:])
-    finally:
-        os.chdir(appenv.original_cwd)
+    appenv = AppEnv(base, original_cwd)
+    if application_name == "appenv":
+        appenv.meta()
+    else:
+        appenv.run(application_name, sys.argv[1:])
 
 
 if __name__ == "__main__":
