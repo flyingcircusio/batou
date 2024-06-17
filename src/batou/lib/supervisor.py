@@ -205,7 +205,7 @@ class Supervisor(Component):
     def configure(self):
         self.provide("supervisor", self)
 
-        buildout_cfg = File("buildout3.cfg", source=self.buildout_cfg)
+        buildout_cfg = File("buildout.cfg", source=self.buildout_cfg)
         self += Buildout(
             version=self.buildout_version,
             setuptools=self.setuptools_version,
