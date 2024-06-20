@@ -482,16 +482,26 @@ class UnusedComponentsInitialized(ConfigurationError):
     def from_context(cls, components, root):
         self = cls()
         self.unused_components = []
+        self.breadcrumbs = []
         for component in components:
             self.unused_components.append(repr(component.__class__.__name__))
+            self.breadcrumbs.append(component._init_breadcrumbs)
         self.root_name = root.name
         return self
 
     def __str__(self):
-        return f"Unused components: {', '.join(self.unused_components)}"
+        out_str = "Unused components: "
+        for i, component in enumerate(self.unused_components):
+            out_str += f"\n    {component}: {' -> '.join(self.breadcrumbs[i])}"
+        return out_str
 
     def report(self):
-        output.error(f"Unused components: {', '.join(self.unused_components)}")
+        output.error(f"Unused components:")
+        for i, component in enumerate(self.unused_components):
+            output.line(
+                f"    {component}: {' -> '.join(self.breadcrumbs[i])}", red=True
+            )
+        output.tabular("Root", self.root_name, red=True)
 
 
 class UnsatisfiedResources(ConfigurationError):

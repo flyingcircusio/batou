@@ -334,9 +334,11 @@ def test_resolver_overrides_invalid_address(sample_service):
     assert "thisisinvalid" == errors[0].address
 
 
-def test_unused_components_get_reported(sample_service):
+def test_unused_components_get_reported(sample_service, output):
     e = Environment("test-unused")
     e.load()
-    errors = e.configure()
 
-    assert any(isinstance(e, batou.UnusedComponentsInitialized) for e in errors)
+    output.backend.output = ""
+    e.configure()
+
+    assert "'Unused': BadUnused" in output.backend.output

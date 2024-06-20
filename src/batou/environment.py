@@ -523,11 +523,14 @@ class Environment(object):
                         if not component._prepared:
                             unprepared_components.append(component)
                     if unprepared_components:
-                        exceptions.append(
+                        # TODO: activate in future
+                        unused_exception = (
                             UnusedComponentsInitialized.from_context(
                                 unprepared_components, root
                             )
                         )
+                        # exceptions.append(unused_exception)
+                        output.warn(str(unused_exception))
                     # configured this component successfully
                     # we won't have to retry it later
                     continue

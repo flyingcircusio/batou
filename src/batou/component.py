@@ -196,6 +196,29 @@ class Component(object):
     _prepared = False
 
     def __init__(self, namevar=None, **kw):
+        init_stack = inspect.stack()
+        init_stack.reverse()
+        init_breadcrumbs = []
+        for frame in init_stack:
+            if (
+                "self" in frame.frame.f_locals
+                and isinstance(frame.frame.f_locals["self"], Component)
+                and frame.frame.f_code.co_name == "configure"
+            ):
+                component = frame.frame.f_locals["self"]
+                try:
+                    init_breadcrumbs.append(component._breadcrumb)
+                except AttributeError:
+                    # some ._breadcrumb are broken
+                    breadcrumb = component.__class__.__name__
+                    if component.namevar:
+                        breadcrumb += (
+                            f"({getattr(component, component.namevar, None)})"
+                        )
+                    init_breadcrumbs.append(breadcrumb)
+
+        self._init_breadcrumbs = init_breadcrumbs
+
         Component.instances.append(self)
         self.timer = batou.utils.Timer(self.__class__.__name__)
         # Are any keyword arguments undefined attributes?
