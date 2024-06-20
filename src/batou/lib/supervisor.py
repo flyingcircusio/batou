@@ -169,6 +169,9 @@ process_name={{component.name}}
 class Supervisor(Component):
 
     address = Attribute(Address, default=ConfigString("localhost:9001"))
+    buildout_version = Attribute(default="3.0.1")
+    setuptools_version = Attribute(default="68.0.0")
+    wheel_version = Attribute(default="0.40.0")
     buildout_cfg = os.path.join(
         os.path.dirname(__file__), "resources", "supervisor.buildout.cfg"
     )
@@ -205,10 +208,11 @@ class Supervisor(Component):
 
         buildout_cfg = File("buildout.cfg", source=self.buildout_cfg)
         self += Buildout(
-            version="2.13.3",
-            setuptools="50.3.2",
+            version=self.buildout_version,
+            setuptools=self.setuptools_version,
             config=buildout_cfg,
             python="3",
+            wheel=self.wheel_version,
         )
 
         self.program_config_dir = Directory("etc/supervisor.d", leading=True)
