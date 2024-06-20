@@ -148,6 +148,10 @@ def ensure_venv(target):
     python(target, ["-m", "ensurepip", "--default-pip"])
     pip(target, ["install", "--upgrade", "pip"])
 
+    # backwards compatibilty: install setuptools if python >= 3.12
+    if sys.version_info >= (3, 12):
+        pip(target, ["install", "--upgrade", "setuptools"])
+
 
 def ensure_minimal_python():
     current_python = os.path.realpath(sys.executable)
@@ -562,19 +566,7 @@ class AppEnv(object):
         pip(tmpdir, ["install", "-r", "requirements.txt"])
 
         extra_specs = []
-        result = pip(tmpdir, ["freeze", "--all", "--exclude", "pip"]).decode(
-            "utf-8"
-        )
-        # See https://pip.pypa.io/en/stable/cli/pip_freeze/
-        # --all
-        # Do not skip these packages in the output:
-        # setuptools, wheel, distribute, pip
-        # --exclude <package>
-        # Exclude specified package from the output.
-        # We need to include setuptools, since we do a --no-deps install
-        # of the requirements.lock file.
-        # We are already installing pip in ensure_venv, so we don't need it
-        # in the requirements.lock file.
+        result = pip(tmpdir, ["freeze"], merge_stderr=False).decode("ascii")
         pinned_versions = {}
         for line in result.splitlines():
             if line.strip().startswith("-e "):
