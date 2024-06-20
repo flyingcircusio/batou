@@ -1,4 +1,5 @@
 """Securely edit encrypted secret files."""
+
 import os
 import pathlib
 import subprocess

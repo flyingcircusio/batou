@@ -80,7 +80,7 @@ def test_simple_appenv(root):
 
 
 def test_appenv_custom_pip_version(root):
-    pip_version = "20.1.1"
+    pip_version = "24.0"
     with open("requirements.lock", "w") as f:
         # I hate using a real package and a real index here ...
         f.write("six==1.14.0\n")
