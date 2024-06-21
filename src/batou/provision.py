@@ -17,7 +17,6 @@ from batou.utils import cmd
 
 
 class Provisioner(object):
-
     rebuild = False
 
     def __init__(self, name):
@@ -294,7 +293,6 @@ Host {hostname} {aliases}
 
 
 class FCDevContainer(FCDevProvisioner):
-
     SEED_TEMPLATE = """\
 #/bin/sh
 set -e
@@ -376,7 +374,6 @@ fi
 
 
 class FCDevVM(FCDevProvisioner):
-
     SEED_TEMPLATE = """\
 #/bin/sh
 set -e
@@ -404,11 +401,13 @@ if [ ${{PROVISION_REBUILD+x}} ]; then
     ssh $PROVISION_HOST sudo fc-devhost destroy $PROVISION_VM
 fi
 
-if [ -z "$PROVISION_HYDRA_EVAL" ]; then
-    ssh $PROVISION_HOST sudo fc-devhost provision --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --image-url $PROVISION_IMAGE --channel-url $PROVISION_CHANNEL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
-else
-    ssh $PROVISION_HOST sudo fc-devhost ensure --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --hydra-eval $PROVISION_HYDRA_EVAL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
-fi
+ssh $PROVISION_HOST sudo fc-devhost ensure \\
+    --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES \\
+    --aliases "'$PROVISION_ALIASES'" \\
+    --hydra-eval "$PROVISION_HYDRA_EVAL"  \\
+    --image-url "$PROVISION_IMAGE" \\
+    --channel-url "$PROVISION_CHANNEL" \\
+    $PROVISION_VM
 
 {seed_script}
 
@@ -429,13 +428,13 @@ fi
 
 """  # noqa: E501 line too long
     target_host = None
-    hydra_eval = None
     aliases = ()
-    memory = None
-    cores = None
+    memory = ""
+    cores = ""
 
-    channel_url = None
-    image_url = None
+    hydra_eval = ""  # deprecated
+    channel_url = ""
+    image_url = ""
 
     @classmethod
     def from_config_section(cls, name, section):
@@ -445,24 +444,9 @@ fi
         instance.cores = section.get("cores")
 
         if "release" in section:
-            release_scheme = urlparse(section["release"])
-            # removes leading '/' or nothing if there is no path in the uri
-            release = release_scheme.path[1:]
-            channel = release_scheme.netloc
-
-            assert (
-                release_scheme.scheme == "fcrs"
-            ), f"invalid scheme specified for the release: {release_scheme.scheme}"
-
-            # no realease specified -> default to latest
-            if not release:
-                release = "latest"
-
-            release_url = f"https://directory.fcio.net/releases/metadata/{channel}/{release}"
-
-            resp = requests.get(release_url)
+            resp = requests.get(section["release"])
+            resp.raise_for_status()
             release_info = resp.json()
-
             instance.channel_url = release_info["url_channel"]
             instance.image_url = release_info["url_devhost_image"]
         else:
@@ -485,15 +469,9 @@ fi
             "PROVISION_HOST": self.target_host,
             "PROVISION_ALIASES": " ".join(host.aliases.keys()),
         }
-
-        if self.hydra_eval is not None:
-            env["PROVISION_HYDRA_EVAL"] = self.hydra_eval
-        else:
-            env["PROVISION_CHANNEL"] = self.channel_url
-            env["PROVISION_IMAGE"] = self.image_url
-
-        if self.memory is not None:
-            env["PROVISION_VM_MEMORY"] = self.memory
-        if self.cores is not None:
-            env["PROVISION_VM_CORES"] = self.cores
+        env["PROVISION_HYDRA_EVAL"] = self.hydra_eval
+        env["PROVISION_CHANNEL"] = self.channel_url
+        env["PROVISION_IMAGE"] = self.image_url
+        env["PROVISION_VM_MEMORY"] = self.memory
+        env["PROVISION_VM_CORES"] = self.cores
         return env
