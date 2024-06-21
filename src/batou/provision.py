@@ -1,10 +1,15 @@
+import json
 import os
 import os.path
+import re
 import shlex
 import socket
 import tempfile
 import textwrap
 import uuid
+from urllib.parse import urlparse
+
+import requests
 
 import batou.utils
 from batou import output
@@ -12,7 +17,6 @@ from batou.utils import cmd
 
 
 class Provisioner(object):
-
     rebuild = False
 
     def __init__(self, name):
@@ -289,7 +293,6 @@ Host {hostname} {aliases}
 
 
 class FCDevContainer(FCDevProvisioner):
-
     SEED_TEMPLATE = """\
 #/bin/sh
 set -e
@@ -371,7 +374,6 @@ fi
 
 
 class FCDevVM(FCDevProvisioner):
-
     SEED_TEMPLATE = """\
 #/bin/sh
 set -e
@@ -399,7 +401,14 @@ if [ ${{PROVISION_REBUILD+x}} ]; then
     ssh $PROVISION_HOST sudo fc-devhost destroy $PROVISION_VM
 fi
 
-ssh $PROVISION_HOST sudo fc-devhost ensure --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --hydra-eval $PROVISION_HYDRA_EVAL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
+ssh $PROVISION_HOST sudo fc-devhost ensure \\
+    --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES \\
+    --aliases "'$PROVISION_ALIASES'" \\
+    --hydra-eval "$PROVISION_HYDRA_EVAL"  \\
+    --image-url "$PROVISION_IMAGE" \\
+    --channel-url "$PROVISION_CHANNEL" \\
+    $PROVISION_VM
+
 {seed_script}
 
 # We experimented with hiding errors in this fc-manage run to allow
@@ -419,18 +428,30 @@ fi
 
 """  # noqa: E501 line too long
     target_host = None
-    hydra_eval = None
     aliases = ()
-    memory = None
-    cores = None
+    memory = ""
+    cores = ""
+
+    hydra_eval = ""  # deprecated
+    channel_url = ""
+    image_url = ""
 
     @classmethod
     def from_config_section(cls, name, section):
         instance = FCDevVM(name)
         instance.target_host = section["host"]
-        instance.hydra_eval = section["hydra-eval"]
         instance.memory = section.get("memory")
         instance.cores = section.get("cores")
+
+        if "release" in section:
+            resp = requests.get(section["release"])
+            resp.raise_for_status()
+            release_info = resp.json()
+            instance.channel_url = release_info["url_channel"]
+            instance.image_url = release_info["url_devhost_image"]
+        else:
+            instance.hydra_eval = section["hydra-eval"]
+
         return instance
 
     def suggest_name(self, name):
@@ -446,11 +467,11 @@ fi
         env = {
             "PROVISION_VM": host.name,
             "PROVISION_HOST": self.target_host,
-            "PROVISION_HYDRA_EVAL": self.hydra_eval,
             "PROVISION_ALIASES": " ".join(host.aliases.keys()),
         }
-        if self.memory is not None:
-            env["PROVISION_VM_MEMORY"] = self.memory
-        if self.cores is not None:
-            env["PROVISION_VM_CORES"] = self.cores
+        env["PROVISION_HYDRA_EVAL"] = self.hydra_eval
+        env["PROVISION_CHANNEL"] = self.channel_url
+        env["PROVISION_IMAGE"] = self.image_url
+        env["PROVISION_VM_MEMORY"] = self.memory
+        env["PROVISION_VM_CORES"] = self.cores
         return env
