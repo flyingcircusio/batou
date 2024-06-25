@@ -494,14 +494,18 @@ class UnusedComponentsInitialized(ConfigurationError):
         return self
 
     def __str__(self):
-        out_str = "Unused components: "
+        out_str = "Some components were initialized but never added to the environment:"
         for i, component in enumerate(self.unused_components):
             out_str += f"\n    {component}: {' -> '.join(self.breadcrumbs[i])}"
             out_str += f"\n        initialized in {self.init_file_paths[i]}:{self.init_line_numbers[i]}"
+        out_str += f"\nRoot: {self.root_name}"
+        out_str += f"\nAdd the components to the environment using `self += component`."
         return out_str
 
     def report(self):
-        output.error(f"Unused components:")
+        output.error(
+            f"Some components were initialized but never added to the environment:"
+        )
         for i, component in enumerate(self.unused_components):
             output.line(
                 f"    {component}: {' -> '.join(self.breadcrumbs[i])}", red=True
@@ -510,6 +514,10 @@ class UnusedComponentsInitialized(ConfigurationError):
                 f"        initialized in {self.init_file_paths[i]}:{self.init_line_numbers[i]}",
                 red=True,
             )
+        output.line(
+            f"Add the components to the environment using `self += component`.",
+            red=True,
+        )
         output.tabular("Root", self.root_name, red=True)
 
 
