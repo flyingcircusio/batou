@@ -199,6 +199,9 @@ class Component(object):
         init_stack = inspect.stack()
         init_stack.reverse()
         init_breadcrumbs = []
+        call_site = init_stack[-2]
+        self._init_file_path = call_site.filename
+        self._init_line_number = call_site.lineno
         for frame in init_stack:
             if (
                 "self" in frame.frame.f_locals

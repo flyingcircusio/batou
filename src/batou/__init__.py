@@ -483,9 +483,13 @@ class UnusedComponentsInitialized(ConfigurationError):
         self = cls()
         self.unused_components = []
         self.breadcrumbs = []
+        self.init_file_paths = []
+        self.init_line_numbers = []
         for component in components:
             self.unused_components.append(repr(component.__class__.__name__))
             self.breadcrumbs.append(component._init_breadcrumbs)
+            self.init_file_paths.append(component._init_file_path)
+            self.init_line_numbers.append(component._init_line_number)
         self.root_name = root.name
         return self
 
@@ -493,6 +497,7 @@ class UnusedComponentsInitialized(ConfigurationError):
         out_str = "Unused components: "
         for i, component in enumerate(self.unused_components):
             out_str += f"\n    {component}: {' -> '.join(self.breadcrumbs[i])}"
+            out_str += f"\n        initialized in {self.init_file_paths[i]}:{self.init_line_numbers[i]}"
         return out_str
 
     def report(self):
@@ -500,6 +505,10 @@ class UnusedComponentsInitialized(ConfigurationError):
         for i, component in enumerate(self.unused_components):
             output.line(
                 f"    {component}: {' -> '.join(self.breadcrumbs[i])}", red=True
+            )
+            output.line(
+                f"        initialized in {self.init_file_paths[i]}:{self.init_line_numbers[i]}",
+                red=True,
             )
         output.tabular("Root", self.root_name, red=True)
 
