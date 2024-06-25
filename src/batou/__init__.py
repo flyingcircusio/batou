@@ -473,6 +473,54 @@ class UnusedResources(ConfigurationError):
             )
 
 
+class UnusedComponentsInitialized(ConfigurationError):
+    """Some components were initialized but never used."""
+
+    sort_key = (5, "unused")
+
+    @classmethod
+    def from_context(cls, components, root):
+        self = cls()
+        self.unused_components = []
+        self.breadcrumbs = []
+        self.init_file_paths = []
+        self.init_line_numbers = []
+        for component in components:
+            self.unused_components.append(repr(component.__class__.__name__))
+            self.breadcrumbs.append(component._init_breadcrumbs)
+            self.init_file_paths.append(component._init_file_path)
+            self.init_line_numbers.append(component._init_line_number)
+        self.root_name = root.name
+        return self
+
+    def __str__(self):
+        out_str = "Some components were initialized but never added to the environment:"
+        for i, component in enumerate(self.unused_components):
+            out_str += f"\n    {component}: {' -> '.join(self.breadcrumbs[i])}"
+            out_str += f"\n        initialized in {self.init_file_paths[i]}:{self.init_line_numbers[i]}"
+        out_str += f"\nRoot: {self.root_name}"
+        out_str += f"\nAdd the components to the environment using `self += component`."
+        return out_str
+
+    def report(self):
+        output.error(
+            f"Some components were initialized but never added to the environment:"
+        )
+        for i, component in enumerate(self.unused_components):
+            output.line(
+                f"    {component}: {' -> '.join(self.breadcrumbs[i])}", red=True
+            )
+            output.line(
+                f"        initialized in {self.init_file_paths[i]}:{self.init_line_numbers[i]}",
+                red=True,
+            )
+        output.line(
+            f"Add the components to the environment using `self += component`.",
+            red=True,
+        )
+        output.tabular("Root", self.root_name, red=True)
+
+
 class UnsatisfiedResources(ConfigurationError):
     """Some required resources were never provided."""
 

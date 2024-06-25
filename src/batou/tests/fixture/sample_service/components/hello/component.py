@@ -62,3 +62,12 @@ class HelloProv(Component):
 class Sub(Component):
     def configure(self):
         self.log("Sub!")
+
+
+class Unused(Component):
+    pass
+
+
+class BadUnused(Component):
+    def configure(self):
+        Unused()

@@ -7,6 +7,7 @@ import os.path
 import sys
 import types
 import weakref
+from typing import List
 
 import batou
 import batou.c
@@ -146,6 +147,13 @@ class Component(object):
     #: working directory to this.
     workdir: str = None
 
+    #: A list of all component instances that have been created. When
+    #: a component is created (__init__) it is added to this list.
+    #: After the configuration phase, this list is checked for
+    #: components that have component._prepared == False and
+    #: warns about them.
+    instances: List["Component"] = []
+
     @property
     def defdir(self):
         """(*readonly*) The definition directory
@@ -188,6 +196,33 @@ class Component(object):
     _prepared = False
 
     def __init__(self, namevar=None, **kw):
+        init_stack = inspect.stack()
+        init_stack.reverse()
+        init_breadcrumbs = []
+        call_site = init_stack[-2]
+        self._init_file_path = call_site.filename
+        self._init_line_number = call_site.lineno
+        for frame in init_stack:
+            if (
+                "self" in frame.frame.f_locals
+                and isinstance(frame.frame.f_locals["self"], Component)
+                and frame.frame.f_code.co_name == "configure"
+            ):
+                component = frame.frame.f_locals["self"]
+                try:
+                    init_breadcrumbs.append(component._breadcrumb)
+                except AttributeError:
+                    # some ._breadcrumb are broken
+                    breadcrumb = component.__class__.__name__
+                    if component.namevar:
+                        breadcrumb += (
+                            f"({getattr(component, component.namevar, None)})"
+                        )
+                    init_breadcrumbs.append(breadcrumb)
+
+        self._init_breadcrumbs = init_breadcrumbs
+
+        Component.instances.append(self)
         self.timer = batou.utils.Timer(self.__class__.__name__)
         # Are any keyword arguments undefined attributes?
         # This is a somewhat rough implementation as it allows overriding
