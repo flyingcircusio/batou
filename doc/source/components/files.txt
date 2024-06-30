@@ -90,8 +90,12 @@ Creates a file. The main parameter for File is the target path. A ``File`` insta
 
     Mark a file as sensitive so its content is not exposed by the
     (diff-)output of batou. This is useful in situations where the
-    rendered file contains a password or other sensitive data.
-    [Default: False]
+    rendered file contains a password or other sensitive data. If
+    unset, batou will automatically determine if file content is
+    sensitive if it shares words with secrets provided by the
+    environment. This attribute can be set to True or False to make
+    batou consider the file's content as always or never sensitive,
+    respectively. [Default: None]
 
 .. py:class:: batou.lib.file.BinaryFile(path)
 
