@@ -28,10 +28,11 @@ from batou import (
     SuperfluousSection,
     UnknownComponentConfigurationError,
     UnsatisfiedResources,
+    UnusedComponentsInitialized,
     UnusedResources,
 )
 from batou._output import output
-from batou.component import ComponentDefinition, RootComponent
+from batou.component import Component, ComponentDefinition, RootComponent
 from batou.provision import Provisioner
 from batou.repository import Repository
 from batou.utils import CycleError, cmd
@@ -497,6 +498,7 @@ class Environment(object):
 
             for root in working_set:
                 try:
+                    Component.instances.clear()
                     self.resources.reset_component_resources(root)
                     root.overrides = self.overrides.get(root.name, {})
                     root.prepare()
@@ -516,6 +518,19 @@ class Environment(object):
                         )
                     )
                 else:
+                    unprepared_components = []
+                    for component in Component.instances:
+                        if not component._prepared:
+                            unprepared_components.append(component)
+                    if unprepared_components:
+                        # TODO: activate in future
+                        unused_exception = (
+                            UnusedComponentsInitialized.from_context(
+                                unprepared_components, root
+                            )
+                        )
+                        # exceptions.append(unused_exception)
+                        output.warn(str(unused_exception))
                     # configured this component successfully
                     # we won't have to retry it later
                     continue

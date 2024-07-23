@@ -4,6 +4,7 @@ from mock import Mock
 
 import batou
 import batou.utils
+from batou.component import Component, RootComponent
 from batou.environment import Config, Environment
 from batou.host import Host
 
@@ -331,3 +332,13 @@ def test_resolver_overrides_invalid_address(sample_service):
     errors = e.configure()
     assert len(errors) == 1
     assert "thisisinvalid" == errors[0].address
+
+
+def test_unused_components_get_reported(sample_service, output):
+    e = Environment("test-unused")
+    e.load()
+
+    output.backend.output = ""
+    e.configure()
+
+    assert "'Unused': BadUnused" in output.backend.output
