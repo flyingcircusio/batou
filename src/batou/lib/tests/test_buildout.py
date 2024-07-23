@@ -69,10 +69,10 @@ def test_runs_buildout_successfully(root):
 def test_runs_buildout3_successfully(root, output):
     b = Buildout(
         python="3",
-        version="3.0.0b1",
-        setuptools="54.1.1",
+        version="3.0.1",
+        setuptools="68.0.0",
         wheel="0.36.2",
-        pip="21.0.1",
+        pip="23.3.2",
         config=File(
             "buildout3.cfg",
             source=str(pathlib.Path(__file__).parent / "buildout3-example.cfg"),

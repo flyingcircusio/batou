@@ -370,9 +370,9 @@ class Environment(object):
                 hostname,
                 self,
                 config={
-                    "ignore": "True"
-                    if literal_hostname.startswith("!")
-                    else "False"
+                    "ignore": (
+                        "True" if literal_hostname.startswith("!") else "False"
+                    )
                 },
             )
             self.hosts[host.name] = host

@@ -28,19 +28,39 @@ import tempfile
 import venv
 
 
+class TColors:
+    """Terminal colors for pretty output."""
+
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RESET = "\033[0m"
+
+
 def cmd(c, merge_stderr=True, quiet=False):
     # TODO revisit the cmd() architecture w/ python 3
     # XXX better IO management for interactive output and seeing original
     # errors and output at appropriate places ...
     try:
-        kwargs = {"shell": True}
+        kwargs = {}
+        if isinstance(c, str):
+            kwargs["shell"] = True
+            c = [c]
         if merge_stderr:
             kwargs["stderr"] = subprocess.STDOUT
-        return subprocess.check_output([c], **kwargs)
+        return subprocess.check_output(c, **kwargs)
     except subprocess.CalledProcessError as e:
         print("{} returned with exit code {}".format(c, e.returncode))
         print(e.output.decode("utf-8", "replace"))
         raise ValueError(e.output.decode("utf-8", "replace"))
+
+
+def python(path, c, **kwargs):
+    return cmd([os.path.join(path, "bin/python")] + c, **kwargs)
+
+
+def pip(path, c, **kwargs):
+    return python(path, ["-m", "pip"] + c, **kwargs)
 
 
 def get(host, path, f):
@@ -63,29 +83,28 @@ def ensure_venv(target):
 
     if os.path.exists(target):
         print("Deleting unclean target)")
-        cmd("rm -rf {target}".format(target=target))
+        cmd(["rm", "-rf", target])
 
     version = sys.version.split()[0]
     python_maj_min = ".".join(str(x) for x in sys.version_info[:2])
     print("Creating venv ...")
-    venv.create(target, with_pip=False)
+    venv.create(target, with_pip=False, symlinks=True)
 
     try:
         # This is trying to detect whether we're on a proper Python stdlib
         # or on a broken Debian. See various StackOverflow questions about
         # this.
-        import distutils.util  # noqa: F401 imported but unused
         import ensurepip  # noqa: F401 imported but unused
     except ImportError:
         # Okay, lets repair this, if we can. May need privilege escalation
         # at some point.
-        # We could do: apt-get -y -q install python3-distutils python3-venv
+        # We could do: apt-get -y -q install python3-venv
         # on some systems but it requires root and is specific to Debian.
         # I decided to go a more sledge hammer route.
 
         # XXX we can speed this up by storing this in ~/.appenv/overlay instead
         # of doing the download for every venv we manage
-        print("Activating broken distutils/ensurepip stdlib workaround ...")
+        print("Activating broken ensurepip stdlib workaround ...")
 
         tmp_base = tempfile.mkdtemp()
         try:
@@ -97,12 +116,12 @@ def ensure_venv(target):
                     f,
                 )
 
-            cmd("tar xf {} -C {}".format(download, tmp_base))
+            cmd(["tar", "xf", download, "-C", tmp_base])
 
             assert os.path.exists(
                 os.path.join(tmp_base, "Python-{}".format(version))
             )
-            for module in ["ensurepip", "distutils"]:
+            for module in ["ensurepip"]:
                 print(module)
                 shutil.copytree(
                     os.path.join(
@@ -118,7 +137,7 @@ def ensure_venv(target):
                 )
 
             # (always) prepend the site packages so we can actually have a
-            # fixed distutils installation.
+            # fixed installation.
             site_packages = os.path.abspath(
                 os.path.join(
                     target, "lib", "python" + python_maj_min, "site-packages"
@@ -135,14 +154,11 @@ def ensure_venv(target):
             shutil.rmtree(tmp_base)
 
     print("Ensuring pip ...")
-    cmd("{target}/bin/python -m ensurepip --default-pip".format(target=target))
-    cmd(
-        "{target}/bin/python -m pip install --upgrade pip".format(target=target)
-    )
+    python(target, ["-m", "ensurepip", "--default-pip"])
+    pip(target, ["install", "--upgrade", "pip"])
 
 
-def ensure_minimal_python():
-    current_python = os.path.realpath(sys.executable)
+def parse_preferences():
     preferences = None
     if os.path.exists("requirements.txt"):
         with open("requirements.txt") as f:
@@ -155,9 +171,15 @@ def ensure_minimal_python():
                 preferences = [x.strip() for x in preferences.split(",")]
                 preferences = list(filter(None, preferences))
                 break
+    return preferences
+
+
+def ensure_minimal_python():
+    current_python = os.path.realpath(sys.executable)
+    preferences = parse_preferences()
     if not preferences:
         # We have no preferences defined, use the current python.
-        print("Update lockfile with with {}.".format(current_python))
+        print("Updating lockfile with with {}.".format(current_python))
         print("If you want to use a different version, set it via")
         print(" `# appenv-python-preference:` in requirements.txt.")
         return
@@ -202,20 +224,18 @@ def ensure_best_python(base):
         return
     import shutil
 
-    # use newest Python available if nothing else is requested
-    preferences = ["3.{}".format(x) for x in reversed(range(4, 20))]
+    preferences = parse_preferences()
 
-    if os.path.exists("requirements.txt"):
-        with open("requirements.txt") as f:
-            for line in f:
-                # Expected format:
-                # # appenv-python-preference: 3.1,3.9,3.4
-                if not line.startswith("# appenv-python-preference: "):
-                    continue
-                preferences = line.split(":")[1]
-                preferences = [x.strip() for x in preferences.split(",")]
-                preferences = list(filter(None, preferences))
-                break
+    if preferences is None:
+        if sys.version_info >= (3, 12):
+            print("You are using a Python version >= 3.12.")
+            print(
+                "Please specify a Python version in the requirements.txt file."
+            )
+            print("Lockfiles created with a Python version lower than 3.12")
+            print("may create a broken venv with a Python version >= 3.12.")
+        # use newest Python available if nothing else is requested
+        preferences = ["3.{}".format(x) for x in reversed(range(4, 20))]
 
     current_python = os.path.realpath(sys.executable)
     for version in preferences:
@@ -243,6 +263,22 @@ def ensure_best_python(base):
         print("Could not find a preferred Python version.")
         print("Preferences: {}".format(", ".join(preferences)))
         sys.exit(65)
+
+
+class ParsedRequirement:
+    """A parsed requirement from a requirement string.
+
+    Has a similiar interface to the real Requirement class from
+    packaging.requirements, but is reduced to the parts we need.
+    """
+
+    def __init__(self, name, url, requirement_string):
+        self.name = name
+        self.url = url
+        self.requirement_string = requirement_string
+
+    def __str__(self):
+        return self.requirement_string
 
 
 def parse_requirement_string(requirement_string):
@@ -290,12 +326,7 @@ def parse_requirement_string(requirement_string):
     )
     url = url_match.group("url") if url_match else None
 
-    # now we want an object with .name, .url and str(obj) == requirement_string
-    return type(
-        "ParsedRequirement",
-        (),
-        {"name": name, "url": url, "__str__": lambda self: requirement_string},
-    )()
+    return ParsedRequirement(name, url, requirement_string)
 
 
 class AppEnv(object):
@@ -308,7 +339,7 @@ class AppEnv(object):
     env_dir = None  # The current specific venv that we're working with.
     appenv_dir = None  # The directory where to place specific venvs.
 
-    def __init__(self, base):
+    def __init__(self, base, original_cwd):
         self.base = base
 
         # This used to be computed based on the application name but
@@ -319,7 +350,7 @@ class AppEnv(object):
         # Allow simplifying a lot of code by assuming that all the
         # meta-operations happen in the base directory. Store the original
         # working directory here so we switch back at the appropriate time.
-        self.original_cwd = os.path.abspath(os.curdir)
+        self.original_cwd = original_cwd
 
     def meta(self):
         # Parse the appenv arguments
@@ -440,7 +471,7 @@ class AppEnv(object):
                     raise Exception()
             except Exception:
                 print("Existing envdir not consistent, deleting")
-                cmd("rm -rf {env_dir}".format(env_dir=env_dir))
+                cmd(["rm", "-rf", env_dir])
 
         if not os.path.exists(env_dir):
             ensure_venv(env_dir)
@@ -449,12 +480,16 @@ class AppEnv(object):
                 f.write(requirements)
 
             print("Installing ...")
-            cmd(
-                "{env_dir}/bin/python -m pip install --no-deps -r"
-                " {env_dir}/requirements.lock".format(env_dir=env_dir)
+            pip(
+                env_dir,
+                [
+                    "install",
+                    "--no-deps",
+                    "-r",
+                    "{env_dir}/requirements.lock".format(env_dir=env_dir),
+                ],
             )
-
-            cmd("{env_dir}/bin/python -m pip check".format(env_dir=env_dir))
+            pip(env_dir, ["check"])
 
             with open(os.path.join(env_dir, "appenv.ready"), "w") as f:
                 f.write("Ready or not, here I come, you can't hide\n")
@@ -525,28 +560,33 @@ class AppEnv(object):
                 appenvdir=self.appenv_dir
             )
         )
-        cmd("rm -rf {appenvdir}".format(appenvdir=self.appenv_dir))
+        cmd(["rm", "-rf", self.appenv_dir])
 
     def update_lockfile(self, args=None, remaining=None):
         ensure_minimal_python()
+        preferences = parse_preferences()
+        python312_mixed_setuptools_workaround = False
+        if preferences is not None:
+            if any(f"3.{x}" in preferences for x in range(4, 12)):
+                if any(f"3.{x}" in preferences for x in range(12, 20)):
+                    python312_mixed_setuptools_workaround = True
         os.chdir(self.base)
         print("Updating lockfile")
         tmpdir = os.path.join(self.appenv_dir, "updatelock")
         if os.path.exists(tmpdir):
-            cmd("rm -rf {tmpdir}".format(tmpdir=tmpdir))
+            cmd(["rm", "-rf", tmpdir])
         ensure_venv(tmpdir)
         print("Installing packages ...")
-        cmd(
-            "{tmpdir}/bin/python -m pip install -r requirements.txt".format(
-                tmpdir=tmpdir
-            )
-        )
+        pip(tmpdir, ["install", "-r", "requirements.txt"])
 
         extra_specs = []
-        result = cmd(
-            "{tmpdir}/bin/python -m pip freeze".format(tmpdir=tmpdir),
-            merge_stderr=False,
-        ).decode("ascii")
+        pip_freeze_args = ["freeze"]
+        if python312_mixed_setuptools_workaround:
+            pip_freeze_args.extend(["--all", "--exclude", "pip"])
+        result = pip(tmpdir, pip_freeze_args, merge_stderr=False).decode(
+            "ascii"
+        )
+        # They changed this behaviour in https://github.com/pypa/pip/pull/12032
         pinned_versions = {}
         for line in result.splitlines():
             if line.strip().startswith("-e "):
@@ -592,11 +632,12 @@ class AppEnv(object):
             )
             f.write("\n".join(lines))
             f.write("\n")
-        cmd("rm -rf {tmpdir}".format(tmpdir=tmpdir))
+        cmd(["rm", "-rf", tmpdir])
 
 
 def main():
     base = os.path.dirname(__file__)
+    original_cwd = os.getcwd()
 
     ensure_best_python(base)
     # clear PYTHONPATH variable to get a defined environment
@@ -608,14 +649,11 @@ def main():
     # Determine whether we're being called as appenv or as an application name
     application_name = os.path.splitext(os.path.basename(__file__))[0]
 
-    appenv = AppEnv(base)
-    try:
-        if application_name == "appenv":
-            appenv.meta()
-        else:
-            appenv.run(application_name, sys.argv[1:])
-    finally:
-        os.chdir(appenv.original_cwd)
+    appenv = AppEnv(base, original_cwd)
+    if application_name == "appenv":
+        appenv.meta()
+    else:
+        appenv.run(application_name, sys.argv[1:])
 
 
 if __name__ == "__main__":
