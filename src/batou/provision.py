@@ -458,7 +458,7 @@ fi
             if not release:
                 release = "latest"
 
-            release_url = f"https://directory.fcio.net/releases/metadata/{channel}/{release}"
+            release_url = f"https://my.flyingcircus.io/releases/metadata/{channel}/{release}"
 
             resp = requests.get(release_url)
             release_info = resp.json()
