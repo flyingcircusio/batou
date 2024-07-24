@@ -7,6 +7,7 @@
 - batou migrate now writes .batou.json with a newline at the end as `pre-commit` hooks expect (usually).
 - Add support for python 3.12
 - Unused Components, that is, Components that are initialized, but not used in the deployment, are now reported as warnings.
+- add support for specifying a release for devhosts instead of a fixed url pointing to a specific hydra eval
 
 
 ## 2.5.0b2 (2024-05-15)

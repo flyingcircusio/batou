@@ -1,10 +1,15 @@
+import json
 import os
 import os.path
+import re
 import shlex
 import socket
 import tempfile
 import textwrap
 import uuid
+from urllib.parse import urlparse
+
+import requests
 
 import batou.utils
 from batou import output
@@ -399,7 +404,12 @@ if [ ${{PROVISION_REBUILD+x}} ]; then
     ssh $PROVISION_HOST sudo fc-devhost destroy $PROVISION_VM
 fi
 
-ssh $PROVISION_HOST sudo fc-devhost ensure --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --hydra-eval $PROVISION_HYDRA_EVAL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
+if [ -z "$PROVISION_HYDRA_EVAL" ]; then
+    ssh $PROVISION_HOST sudo fc-devhost provision --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --image-url $PROVISION_IMAGE --channel-url $PROVISION_CHANNEL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
+else
+    ssh $PROVISION_HOST sudo fc-devhost ensure --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --hydra-eval $PROVISION_HYDRA_EVAL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
+fi
+
 {seed_script}
 
 # We experimented with hiding errors in this fc-manage run to allow
@@ -424,13 +434,40 @@ fi
     memory = None
     cores = None
 
+    channel_url = None
+    image_url = None
+
     @classmethod
     def from_config_section(cls, name, section):
         instance = FCDevVM(name)
         instance.target_host = section["host"]
-        instance.hydra_eval = section["hydra-eval"]
         instance.memory = section.get("memory")
         instance.cores = section.get("cores")
+
+        if "release" in section:
+            release_scheme = urlparse(section["release"])
+            # removes leading '/' or nothing if there is no path in the uri
+            release = release_scheme.path[1:]
+            channel = release_scheme.netloc
+
+            assert (
+                release_scheme.scheme == "fcrs"
+            ), f"invalid scheme specified for the release: {release_scheme.scheme}"
+
+            # no release specified -> default to latest
+            if not release:
+                release = "latest"
+
+            release_url = f"https://my.flyingcircus.io/releases/metadata/{channel}/{release}"
+
+            resp = requests.get(release_url)
+            release_info = resp.json()
+
+            instance.channel_url = release_info["url_channel"]
+            instance.image_url = release_info["url_devhost_image"]
+        else:
+            instance.hydra_eval = section["hydra-eval"]
+
         return instance
 
     def suggest_name(self, name):
@@ -446,9 +483,15 @@ fi
         env = {
             "PROVISION_VM": host.name,
             "PROVISION_HOST": self.target_host,
-            "PROVISION_HYDRA_EVAL": self.hydra_eval,
             "PROVISION_ALIASES": " ".join(host.aliases.keys()),
         }
+
+        if self.hydra_eval is not None:
+            env["PROVISION_HYDRA_EVAL"] = self.hydra_eval
+        else:
+            env["PROVISION_CHANNEL"] = self.channel_url
+            env["PROVISION_IMAGE"] = self.image_url
+
         if self.memory is not None:
             env["PROVISION_VM_MEMORY"] = self.memory
         if self.cores is not None:
