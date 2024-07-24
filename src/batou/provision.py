@@ -6,13 +6,14 @@ import tempfile
 import textwrap
 import uuid
 
+import requests
+
 import batou.utils
 from batou import output
 from batou.utils import cmd
 
 
 class Provisioner(object):
-
     rebuild = False
 
     def __init__(self, name):
@@ -289,7 +290,6 @@ Host {hostname} {aliases}
 
 
 class FCDevContainer(FCDevProvisioner):
-
     SEED_TEMPLATE = """\
 #/bin/sh
 set -e
@@ -371,7 +371,6 @@ fi
 
 
 class FCDevVM(FCDevProvisioner):
-
     SEED_TEMPLATE = """\
 #/bin/sh
 set -e
@@ -399,7 +398,21 @@ if [ ${{PROVISION_REBUILD+x}} ]; then
     ssh $PROVISION_HOST sudo fc-devhost destroy $PROVISION_VM
 fi
 
-ssh $PROVISION_HOST sudo fc-devhost ensure --memory $PROVISION_VM_MEMORY --cpu $PROVISION_VM_CORES --hydra-eval $PROVISION_HYDRA_EVAL --aliases "'$PROVISION_ALIASES'" $PROVISION_VM
+cli_args="--memory $PROVISION_VM_MEMORY\\
+  --cpu $PROVISION_VM_CORES \\
+  --aliases \\"'$PROVISION_ALIASES'\\""
+
+# Error handling is done in the python part
+if [ -n "$PROVISION_HYDRA_EVAL" ]; then
+    cli_args="${{cli_args}} --hydra-eval $PROVISION_HYDRA_EVAL"
+else
+    cli_args="${{cli_args}} --image-url $PROVISION_IMAGE --channel-url $PROVISION_CHANNEL"
+fi
+
+ssh $PROVISION_HOST sudo fc-devhost ensure \\
+    $cli_args \\
+    $PROVISION_VM
+
 {seed_script}
 
 # We experimented with hiding errors in this fc-manage run to allow
@@ -419,18 +432,33 @@ fi
 
 """  # noqa: E501 line too long
     target_host = None
-    hydra_eval = None
     aliases = ()
     memory = None
     cores = None
+
+    hydra_eval = ""  # deprecated
+    channel_url = ""
+    image_url = ""
 
     @classmethod
     def from_config_section(cls, name, section):
         instance = FCDevVM(name)
         instance.target_host = section["host"]
-        instance.hydra_eval = section["hydra-eval"]
-        instance.memory = section.get("memory")
-        instance.cores = section.get("cores")
+        instance.memory = section["memory"]
+        instance.cores = section["cores"]
+
+        if "release" in section:
+            resp = requests.get(section["release"])
+            resp.raise_for_status()
+            release_info = resp.json()
+            instance.channel_url = release_info["channel_url"]
+            instance.image_url = release_info["devhost_image_url"]
+        elif "hydra-eval" in section:
+            instance.hydra_eval = section["hydra-eval"]
+        else:
+            raise ValueError(
+                "Either `release` or `hydra-eval` must be set in the provisioner config section."
+            )
         return instance
 
     def suggest_name(self, name):
@@ -443,14 +471,13 @@ fi
                 return name
 
     def _initial_provision_env(self, host):
-        env = {
+        return {
             "PROVISION_VM": host.name,
             "PROVISION_HOST": self.target_host,
-            "PROVISION_HYDRA_EVAL": self.hydra_eval,
             "PROVISION_ALIASES": " ".join(host.aliases.keys()),
+            "PROVISION_HYDRA_EVAL": self.hydra_eval,
+            "PROVISION_CHANNEL": self.channel_url,
+            "PROVISION_IMAGE": self.image_url,
+            "PROVISION_VM_MEMORY": self.memory,
+            "PROVISION_VM_CORES": self.cores,
         }
-        if self.memory is not None:
-            env["PROVISION_VM_MEMORY"] = self.memory
-        if self.cores is not None:
-            env["PROVISION_VM_CORES"] = self.cores
-        return env
