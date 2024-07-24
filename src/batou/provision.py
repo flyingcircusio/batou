@@ -454,7 +454,7 @@ fi
                 release_scheme.scheme == "fcrs"
             ), f"invalid scheme specified for the release: {release_scheme.scheme}"
 
-            # no realease specified -> default to latest
+            # no release specified -> default to latest
             if not release:
                 release = "latest"
 
