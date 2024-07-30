@@ -7,6 +7,7 @@
 - batou migrate now writes .batou.json with a newline at the end as `pre-commit` hooks expect (usually).
 - Add support for python 3.12
 - Unused Components, that is, Components that are initialized, but not used in the deployment, are now reported as warnings.
+- The multiline strings fix in `age-diffable` encryption format was incomplete. This release additionally pulls up the configupdater version to 3.2, which includes the parameter `prepend_newline` used.
 
 
 ## 2.5.0b2 (2024-05-15)
