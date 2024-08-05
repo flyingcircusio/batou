@@ -150,6 +150,8 @@ class Resources(object):
     def unsatisfied(self):
         unsatisfied = set()
         for key, subscribers in list(self.subscribers.items()):
+            if not any(s.strict for s in subscribers):
+                continue
             if key not in self.resources:
                 unsatisfied.add(key)
                 continue
