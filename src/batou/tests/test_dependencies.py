@@ -86,8 +86,10 @@ def test_provider_with_consumer_limited_by_host_raises_error(env):
     env.add_root("provider", Host("test2", env))
     env.add_root("samehostconsumer", Host("test", env))
     errors = env.configure()
-    assert len(errors) == 1
-    assert isinstance(errors[0], UnusedResources)
+    assert len(errors) == 3
+    assert isinstance(errors[0], UnsatisfiedResources)
+    assert isinstance(errors[1], NonConvergingWorkingSet)
+    assert isinstance(errors[2], UnusedResources)
 
 
 def test_consumer_retrieves_value_from_provider_order2(env):
