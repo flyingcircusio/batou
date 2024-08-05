@@ -148,7 +148,21 @@ class Resources(object):
 
     @property
     def unsatisfied(self):
-        return set(self.strict_subscribers) - set(self.resources)
+        unsatisfied = set()
+        for key, subscribers in list(self.subscribers.items()):
+            if key not in self.resources:
+                unsatisfied.add(key)
+                continue
+            for s in subscribers:
+                if s.host is None:
+                    continue
+                if not any(
+                    resource_root.host is s.host
+                    for resource_root in self.resources[key]
+                ):
+                    unsatisfied.add(key)
+                    break
+        return unsatisfied
 
     @property
     def unsatisfied_components(self):
