@@ -4,7 +4,8 @@
 ## 2.5.0b4 (unreleased)
 -----------------------
 
-- Nothing changed yet.
+- Fix unsatisfied resource message if a host-specific resource is not
+  satisfied. (#463)
 
 
 ## 2.5.0b3 (2024-08-05)
