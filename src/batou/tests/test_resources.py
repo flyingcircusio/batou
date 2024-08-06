@@ -1,5 +1,7 @@
 import mock
 
+from batou import NonConvergingWorkingSet, UnsatisfiedResources
+from batou.environment import Environment
 from batou.resources import Resources
 
 
@@ -23,3 +25,13 @@ def test_reset_marks_depending_components_as_dirty():
     assert resources.dirty_dependencies == set()
     resources.reset_component_resources(root1)
     assert resources.dirty_dependencies == set([root2])
+
+
+def test_mentions_missing_requirement_with_host_requirement(sample_service):
+    e = Environment("test-resources-host")
+    e.load()
+    errors = e.configure()
+    assert len(errors) == 2
+    assert isinstance(errors[0], UnsatisfiedResources)
+    assert isinstance(errors[1], NonConvergingWorkingSet)
+    assert "key" in str(errors[0].__dict__)

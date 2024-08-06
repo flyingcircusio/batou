@@ -71,3 +71,14 @@ class Unused(Component):
 class BadUnused(Component):
     def configure(self):
         Unused()
+
+
+class Component1(Component):
+    def configure(self):
+        self.hello = self.require_one("key", host=self.host)
+        self.require("unrelated")
+
+
+class Component2(Component):
+    def configure(self):
+        self.provide("key", "value")
