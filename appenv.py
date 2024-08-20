@@ -564,12 +564,6 @@ class AppEnv(object):
 
     def update_lockfile(self, args=None, remaining=None):
         ensure_minimal_python()
-        preferences = parse_preferences()
-        python312_mixed_setuptools_workaround = False
-        if preferences is not None:
-            if any(f"3.{x}" in preferences for x in range(4, 12)):
-                if any(f"3.{x}" in preferences for x in range(12, 20)):
-                    python312_mixed_setuptools_workaround = True
         os.chdir(self.base)
         print("Updating lockfile")
         tmpdir = os.path.join(self.appenv_dir, "updatelock")
@@ -580,12 +574,9 @@ class AppEnv(object):
         pip(tmpdir, ["install", "-r", "requirements.txt"])
 
         extra_specs = []
-        pip_freeze_args = ["freeze"]
-        if python312_mixed_setuptools_workaround:
-            pip_freeze_args.extend(["--all", "--exclude", "pip"])
-        result = pip(tmpdir, pip_freeze_args, merge_stderr=False).decode(
-            "ascii"
-        )
+        result = pip(
+            tmpdir, ["freeze", "--all", "--exclude", "pip"], merge_stderr=False
+        ).decode("ascii")
         # They changed this behaviour in https://github.com/pypa/pip/pull/12032
         pinned_versions = {}
         for line in result.splitlines():
