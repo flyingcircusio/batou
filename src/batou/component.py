@@ -895,6 +895,15 @@ class Component(object):
         built-in string templates, to keep your inline configuration
         in sync with the external file templating based on Jinja2.
 
+        The following variables are available in the template context:
+
+        - ``host``: The host object this component is configured for.
+        - ``environment``: The environment object this component is configured
+          for.
+        - ``component``: The component object this component is configured for.
+        - ``batou_generated_header``: A string that can be used to mark
+            generated files.
+
         :param unicode string: The string you want to be expanded as a Jinja2
             template.
 
@@ -922,6 +931,15 @@ class Component(object):
         Instead of using the ``File`` component to expand templates, you
         can expand a file and receive a unicode string (instead of directly
         rendering the file to a target location).
+
+        The following variables are available in the template context:
+
+        - ``host``: The host object this component is configured for.
+        - ``environment``: The environment object this component is configured
+            for.
+        - ``component``: The component object this component is configured for.
+        - ``batou_generated_header``: A string that can be used to mark
+            generated files.
 
         :param str filename: The file you want to expand. The filename is
             **not** mapped by this function. Map the filename before calling
