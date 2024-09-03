@@ -15,6 +15,7 @@ import batou.utils
 import batou.vfs
 from batou import (
     ComponentLoadingError,
+    ComponentWithUpdateWithoutVerify,
     ConfigurationError,
     CycleErrorDetected,
     DuplicateHostError,
@@ -518,6 +519,8 @@ class Environment(object):
                         )
                     )
                 else:
+                    # warnings: does not fail the deployment
+                    # 1. unprepared component warning
                     unprepared_components = []
                     for component in Component._instances:
                         if not component._prepared:
@@ -531,6 +534,28 @@ class Environment(object):
                         )
                         # exceptions.append(unused_exception)
                         output.warn(str(unused_exception))
+
+                    # 2. a component has .update() but no .verify()
+                    components_without_verify = []
+
+                    def has_original_update_method(component):
+                        return type(component).update != Component.update
+
+                    def has_original_verify_method(component):
+                        return type(component).verify != Component.verify
+
+                    for component in Component._instances:
+                        if not has_original_update_method(
+                            component
+                        ) and has_original_verify_method(component):
+                            components_without_verify.append(component)
+                    if components_without_verify:
+                        component_without_verify_exception = (
+                            ComponentWithUpdateWithoutVerify.from_context(
+                                components_without_verify, root
+                            )
+                        )
+                        output.warn(str(component_without_verify_exception))
                     # configured this component successfully
                     # we won't have to retry it later
                     continue
