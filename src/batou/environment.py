@@ -498,7 +498,7 @@ class Environment(object):
 
             for root in working_set:
                 try:
-                    Component.instances.clear()
+                    Component._instances.clear()
                     self.resources.reset_component_resources(root)
                     root.overrides = self.overrides.get(root.name, {})
                     root.prepare()
@@ -519,7 +519,7 @@ class Environment(object):
                     )
                 else:
                     unprepared_components = []
-                    for component in Component.instances:
+                    for component in Component._instances:
                         if not component._prepared:
                             unprepared_components.append(component)
                     if unprepared_components:
