@@ -16,5 +16,5 @@ six==1.15.0
 toml==0.10.2
 tox==4.7.0
 virtualenv==20.26.2
-sphinx==8.0.2
+sphinx==7.4.7
 recommonmark==0.7.1
