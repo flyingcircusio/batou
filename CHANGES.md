@@ -1,7 +1,7 @@
 ## Changelog
 
 
-## 2.5.0b4 (unreleased)
+## 2.5.0 (2024-09-04)
 -----------------------
 
 - Fix unsatisfied resource message if a host-specific resource is not
