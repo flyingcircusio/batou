@@ -159,7 +159,7 @@ class Component(object):
     #: After the configuration phase, this list is checked for
     #: components that have component._prepared == False and
     #: warns about them.
-    instances: List["Component"] = []
+    _instances: List["Component"] = []
 
     @property
     def defdir(self):
@@ -229,7 +229,7 @@ class Component(object):
 
         self._init_breadcrumbs = init_breadcrumbs
 
-        Component.instances.append(self)
+        Component._instances.append(self)
         self.timer = batou.utils.Timer(self.__class__.__name__)
         # Are any keyword arguments undefined attributes?
         # This is a somewhat rough implementation as it allows overriding
