@@ -493,6 +493,7 @@ class Environment(object):
 
         while working_set:
             exceptions = []
+            components_without_verify = []
             previous_working_sets.append(working_set.copy())
             retry = set()
             self.resources.dirty_dependencies.clear()
@@ -536,26 +537,19 @@ class Environment(object):
                         output.warn(str(unused_exception))
 
                     # 2. a component has .update() but no .verify()
-                    components_without_verify = []
-
                     def has_original_update_method(component):
-                        return type(component).update != Component.update
+                        return type(component).update == Component.update
 
                     def has_original_verify_method(component):
-                        return type(component).verify != Component.verify
+                        return type(component).verify == Component.verify
 
                     for component in Component._instances:
-                        if not has_original_update_method(
-                            component
-                        ) and has_original_verify_method(component):
-                            components_without_verify.append(component)
-                    if components_without_verify:
-                        component_without_verify_exception = (
-                            ComponentWithUpdateWithoutVerify.from_context(
-                                components_without_verify, root
-                            )
-                        )
-                        output.warn(str(component_without_verify_exception))
+                        if (
+                            not has_original_update_method(component)
+                            and has_original_verify_method(component)
+                            and (component not in components_without_verify)
+                        ):
+                            components_without_verify.append((component, root))
                     # configured this component successfully
                     # we won't have to retry it later
                     continue
@@ -597,6 +591,15 @@ class Environment(object):
                 break
 
             working_set = retry
+
+        # warn if a component has .update() but no .verify()
+        if components_without_verify:
+            component_without_verify_exception = (
+                ComponentWithUpdateWithoutVerify.from_context(
+                    components_without_verify, root
+                )
+            )
+            output.warn(str(component_without_verify_exception))
 
         # We managed to converge on a working set. However, some resource were
         # provided but never used. We're rather picky here and report this as

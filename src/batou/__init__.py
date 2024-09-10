@@ -527,19 +527,21 @@ class ComponentWithUpdateWithoutVerify(ConfigurationError):
     sort_key = (5, "without_verify")
 
     @classmethod
-    def from_context(cls, components, root):
+    def from_context(cls, components, roots):
         self = cls()
         self.components = []
         for component in components:
             self.components.append(repr(component.__class__.__name__))
-        self.root_name = root.name
+        self.roots = []
+        for root in roots:
+            self.roots.append(root.name)
         return self
 
     def __str__(self):
         out_str = "Some components have an update method but no verify method:"
-        for component in self.components:
+        for idx, component in enumerate(self.components):
             out_str += f"\n    {component}"
-        out_str += f"\nRoot: {self.root_name}"
+            out_str += f"\nRoot: {self.roots[idx]}"
         out_str += f"\nThe update() method may not be called by batou if the verify() method is missing."
         return out_str
 
