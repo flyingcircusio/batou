@@ -4,8 +4,8 @@
 ## 2.5.1 (unreleased)
 ---------------------
 
-- Nothing changed yet.
-
+- Devhost provisioning: Add `release` attribute to provisioner config
+  to allow using release metadata URLs instead of `hydra_eval`
 
 ## 2.5.0 (2024-09-04)
 -----------------------
