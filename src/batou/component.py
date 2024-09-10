@@ -655,9 +655,9 @@ class Component(object):
                     key, host
                 )
             )
-        elif len(resources) == 0:
+        elif len(resources) == 0 and strict:
             raise SilentConfigurationError()
-        return resources[0]
+        return resources[0] if resources else None
 
     def assert_cmd(self, *args, **kw):
         """Assert that given command returns successfully, raise

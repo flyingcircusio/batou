@@ -4,7 +4,7 @@
 ## 2.5.1 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- fix Component.require_one raising a configuration error with strict=False
 
 
 ## 2.5.0 (2024-09-04)
