@@ -521,6 +521,43 @@ class UnusedComponentsInitialized(ConfigurationError):
         output.tabular("Root", self.root_name, red=True)
 
 
+class ComponentWithUpdateWithoutVerify(ConfigurationError):
+    """Some components have an update method but no verify method."""
+
+    sort_key = (5, "without_verify")
+
+    @classmethod
+    def from_context(cls, components, roots):
+        self = cls()
+        self.components = []
+        for component in components:
+            self.components.append(repr(component.__class__.__name__))
+        self.roots = []
+        for root in roots:
+            self.roots.append(root.name)
+        return self
+
+    def __str__(self):
+        out_str = "Some components have an update method but no verify method:"
+        for idx, component in enumerate(self.components):
+            out_str += f"\n    {component}"
+            out_str += f"\nRoot: {self.roots[idx]}"
+        out_str += f"\nThe update() method may not be called by batou if the verify() method is missing."
+        return out_str
+
+    def report(self):
+        output.error(
+            f"Some components have an update method but no verify method:"
+        )
+        for component in self.components:
+            output.line(f"    {component}", red=True)
+        output.tabular("Root", self.root_name, red=True)
+        output.line(
+            f"The update() method may not be called by batou if the verify() method is missing.",
+            red=True,
+        )
+
+
 class UnsatisfiedResources(ConfigurationError):
     """Some required resources were never provided."""
 
