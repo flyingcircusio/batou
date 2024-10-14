@@ -18,6 +18,8 @@ debug = False
 
 
 class EncryptedFile:
+    file_ending = None
+
     def __init__(self, path: "pathlib.Path", writeable: bool = False):
         self.path = path
         self.writeable = writeable
@@ -131,6 +133,8 @@ class NoBackingEncryptedFile(EncryptedFile):
 
 
 class GPGEncryptedFile(EncryptedFile):
+    file_ending = ".gpg"
+
     def decrypt(self):
         if not self.locked:
             raise RuntimeError("File not locked")
@@ -300,6 +304,8 @@ def get_passphrase(identity: str) -> str:
 
 
 class AGEEncryptedFile(EncryptedFile):
+    file_ending = ".age"
+
     def decrypt(self):
         if not self.locked:
             raise ValueError("File is not locked")
@@ -452,6 +458,8 @@ class AGEEncryptedFile(EncryptedFile):
 
 
 class DiffableAGEEncryptedFile(EncryptedFile):
+    file_ending = ".age-diffable"
+
     def __init__(self, path: "pathlib.Path", writeable: bool = False):
         super().__init__(path, writeable)
         self._decrypted_content = None
@@ -549,3 +557,21 @@ class DiffableAGEEncryptedFile(EncryptedFile):
             f.write(str(config))
 
         self.is_new = False
+
+
+all_encrypted_file_types = [
+    NoBackingEncryptedFile,
+    GPGEncryptedFile,
+    AGEEncryptedFile,
+    DiffableAGEEncryptedFile,
+]
+
+
+def get_encrypted_file(
+    path: "pathlib.Path", writeable: bool = False
+) -> EncryptedFile:
+    """Return the appropriate EncryptedFile object for the given path."""
+    for ef in all_encrypted_file_types:
+        if ef.file_ending and path.name.endswith(ef.file_ending):
+            return ef(path, writeable)
+    raise ValueError(f"Unknown encrypted file type for {path}")

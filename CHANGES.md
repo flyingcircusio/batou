@@ -5,6 +5,8 @@
 ---------------------
 
 - fix Component.require_one raising a configuration error with strict=False
+- Adds command `./batou secrets decrypttostdout` to decrypt a secrets file to stdout.
+  - Useful for integration with git diff using textconv, see documentation for installation instructions.
 
 
 ## 2.5.0 (2024-09-04)

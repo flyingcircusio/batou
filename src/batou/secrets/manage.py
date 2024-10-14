@@ -1,9 +1,11 @@
+import pathlib
 import sys
 
 from configupdater import ConfigUpdater
 
 from batou import AgeCallError, GPGCallError
 from batou.environment import Environment, UnknownEnvironmentError
+from batou.secrets.encryption import get_encrypted_file
 
 
 def summary():
@@ -82,3 +84,14 @@ def reencrypt(environments, **kw):
             environment.secret_provider.write_config(
                 str(config).encode("utf-8"), force_reencrypt=True
             )
+
+
+def decrypt_to_stdout(file: str):
+    # check: the file lives in an environment
+    # an environment has a parent folder called "environments"
+    file_path = pathlib.Path(file).absolute()
+    with get_encrypted_file(file_path) as encrypted_file:
+        decrypted = encrypted_file.decrypt()
+    sys.stdout.buffer.write(decrypted)
+    sys.stdout.flush()
+    return 0
