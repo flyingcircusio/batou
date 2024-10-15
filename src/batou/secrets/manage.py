@@ -87,8 +87,7 @@ def reencrypt(environments, **kw):
 
 
 def decrypt_to_stdout(file: str):
-    # check: the file lives in an environment
-    # an environment has a parent folder called "environments"
+    """Decrypt a file and write the content to stdout."""
     file_path = pathlib.Path(file).absolute()
     with get_encrypted_file(file_path) as encrypted_file:
         decrypted = encrypted_file.decrypt()
