@@ -182,6 +182,17 @@ def main(args: Optional[list] = None) -> None:
     )
     p.set_defaults(func=batou.secrets.manage.reencrypt)
 
+    p = sp.add_parser(
+        "decrypttostdout",
+        help="Decrypt a secret file to stdout, useful for git diff.",
+    )
+    p.set_defaults(func=p.print_usage)
+    p.add_argument(
+        "file",
+        help="The secret file to decrypt, should be contained in an environment.",
+    )
+    p.set_defaults(func=batou.secrets.manage.decrypt_to_stdout)
+
     # migrate
     migrate = subparsers.add_parser(
         "migrate",

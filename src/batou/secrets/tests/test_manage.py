@@ -8,7 +8,15 @@ import pytest
 
 from batou.environment import UnknownEnvironmentError
 
-from ..manage import add_user, reencrypt, remove_user, summary
+from ..encryption import GPGEncryptedFile
+from ..manage import (
+    add_user,
+    decrypt_to_stdout,
+    reencrypt,
+    remove_user,
+    summary,
+)
+from .test_secrets import cleartext_file, encrypted_file
 
 
 @pytest.mark.parametrize("func", (add_user, remove_user))
@@ -136,3 +144,14 @@ def test_manage__reencrypt__1(tmp_path, monkeypatch, capsys):
         assert old[path] != new[path]
 
     assert set(old) == set(new)
+
+
+def test_manage__decrypt_to_stdout__1(encrypted_file, capsys):
+    """It decrypts a file and writes the content to stdout."""
+    with GPGEncryptedFile(encrypted_file) as secret:
+        with open(cleartext_file) as cleartext:
+            # assert cleartext.read().strip() == secret.cleartext.strip()
+            assert decrypt_to_stdout(str(encrypted_file)) == 0
+            out, err = capsys.readouterr()
+            assert out == cleartext.read()
+            assert err == ""

@@ -19,7 +19,7 @@ from batou.secrets.encryption import (
 
 FIXTURE = pathlib.Path(__file__).parent / "fixture"
 cleartext_file = FIXTURE / "cleartext.cfg"
-FIXTURE_ENCRYPTED_CONFIG = FIXTURE / "encrypted.cfg"
+FIXTURE_ENCRYPTED_CONFIG = FIXTURE / "encrypted.cfg.gpg"
 
 
 @pytest.fixture(scope="function")
