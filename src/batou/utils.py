@@ -73,14 +73,9 @@ def locked(filename, exit_on_failure=False):
             print("Could not acquire lock {}".format(filename), file=sys.stderr)
             if exit_on_failure:
                 print(
-                    "Another instance of batou may be running, or a stale lock file may exist.",
+                    "Another instance of batou is currently running and locked the lockfile.",
                     file=sys.stderr,
                 )
-                print(
-                    "If you are sure no other instance is running, you can remove the lock file manually.",
-                    file=sys.stderr,
-                )
-                print("Lock file: {}".format(filename), file=sys.stderr)
                 print("Exiting.", file=sys.stderr)
                 sys.exit(1)
             raise RuntimeError(
