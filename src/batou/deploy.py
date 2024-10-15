@@ -361,7 +361,7 @@ def main(
     else:
         ACTION = "DEPLOYMENT"
         SUCCESS_FORMAT = {"green": True}
-    with locked(".batou-lock"):
+    with locked(".batou-lock", exit_on_failure=True):
         deployment = Deployment(
             environment,
             platform,

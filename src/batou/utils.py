@@ -64,13 +64,25 @@ class MultiFile(object):
 
 
 @contextlib.contextmanager
-def locked(filename):
+def locked(filename, exit_on_failure=False):
     # XXX can we make this not leave files around?
     with open(filename, "a+") as lockfile:
         try:
             fcntl.lockf(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
             print("Could not acquire lock {}".format(filename), file=sys.stderr)
+            if exit_on_failure:
+                print(
+                    "Another instance of batou may be running, or a stale lock file may exist.",
+                    file=sys.stderr,
+                )
+                print(
+                    "If you are sure no other instance is running, you can remove the lock file manually.",
+                    file=sys.stderr,
+                )
+                print("Lock file: {}".format(filename), file=sys.stderr)
+                print("Exiting.", file=sys.stderr)
+                sys.exit(1)
             raise RuntimeError(
                 'cannot create lock "%s": more than one instance running '
                 "concurrently?" % lockfile,
