@@ -5,6 +5,9 @@
 ---------------------
 
 - fix Component.require_one raising a configuration error with strict=False
+- The error message shown when a batou deployment fails to start due to another
+  deployment running at the same time, now correctly informs the user that
+  another deployment is running instead of showing a traceback. (#446)
 
 
 ## 2.5.0 (2024-09-04)
