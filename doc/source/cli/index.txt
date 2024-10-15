@@ -151,3 +151,29 @@ you want to update the set of public keys fetched from a key server.
       --environments ENVIRONMENTS
                             The environments to update. Update all if not
                             specified.
+
+batou secrets decrypttostdout
+-----------------------------
+
+Decrypts a secret file to stdout.
+It's intended usage is for allowing git to decrypt secrets before displaying a diff to the user.
+You can set up the command withing your project like this:
+
+.. code-block:: console
+
+    git config diff.batou.textconv "./batou secrets decrypttostdout"
+    echo "*.gpg diff=batou" >> .gitattributes
+    echo "*.age diff=batou" >> .gitattributes
+    echo "*.age-diffable diff=batou" >> .gitattributes
+
+This only works if your batou binary is in the root of your git project.
+.. code-block:: console
+
+    usage: batou secrets decrypttostdout [-h] file
+
+    positional arguments:
+      file        The secret file to decrypt, should be contained in an
+                  environment.
+
+    optional arguments:
+      -h, --help  show this help message and exit
