@@ -56,7 +56,10 @@
 
         devShells.default = pkgs.mkShell {
           packages = [
-            (pkgs.python3.withPackages (ps: [batou ps.tox]))
+            (pkgs.python3.withPackages (ps: [ps.tox ps.setuptools ps.pytest]))
+            pkgs.mercurial
+            pkgs.age
+            pkgs.subversion
           ];
 
           shellHook = ''
