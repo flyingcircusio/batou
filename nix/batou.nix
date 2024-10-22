@@ -41,8 +41,8 @@ buildPythonPackage {
   nativeCheckInputs = [
     pytestCheckHook
 
-    py
     mock
+    py
     pytest-cov
     pytest-instafail
     pytest-timeout
@@ -60,12 +60,27 @@ buildPythonPackage {
   PY_IGNORE_IMPORTMISMATCH = 1;
 
   disabledTests = [
-    "test_runs_buildout_successfully"
-    "test_runs_buildout3_successfully"
+    # requires internet access
+    "test_manage__2_age"
+    "test_manage__reencrypt__1"
+
+    # requires access to /usr/bin/hdiutil
+    "test_dmg_extracts_archive_to_target_directory"
+
+    # cannot resolve hosts in sandbox
+    "test_address_netloc_attributes"
+    "test_address_resolves_listen_address"
   ];
 
   disabledTestPaths = [
+    # requires internet access for download / pip install
+    "src/batou/lib/tests/test_appenv.py"
+    "src/batou/lib/tests/test_buildout.py"
+    "src/batou/lib/tests/test_download.py"
     "src/batou/lib/tests/test_supervisor.py"
+
+    # bad interpreter `/usr/bin/env python3` in appenv.py
+    "src/batou/tests/test_endtoend.py"
   ];
 
   pname = "batou";
