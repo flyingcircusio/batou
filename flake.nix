@@ -56,7 +56,25 @@
 
         devShells.default = pkgs.mkShell {
           packages = [
-            (pkgs.python3.withPackages (ps: [ps.tox ps.setuptools ps.pytest]))
+            #(pkgs.python3.withPackages (ps: [ps.tox ps.setuptools ps.pytest]))
+            (pkgs.python3.withPackages (ps: [
+              ps.mock
+              ps.pytest
+              ps.pytest-cov
+              ps.pytest-instafail
+              ps.pytest-timeout
+
+              ps.requests
+              ps.pyyaml
+              ps.execnet
+              ps.importlib-metadata
+              ps.importlib-resources
+              ps.remote-pdb
+              ps.py
+              ps.configupdater
+              ps.setuptools
+              ps.jinja2
+            ]))
             pkgs.mercurial
             pkgs.age
             pkgs.subversion

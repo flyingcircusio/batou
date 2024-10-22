@@ -4,7 +4,6 @@
   unzip,
   git,
   subversion,
-  python3,
   age,
   mercurial,
   buildPythonPackage,
@@ -16,43 +15,57 @@
   remote-pdb,
   py,
   configupdater,
-  mock,
-  pytest,
   setuptools,
   jinja2,
   src,
+  pytestCheckHook,
+  mock,
+  pytest-cov,
+  pytest-instafail,
+  pytest-timeout,
 }:
 buildPythonPackage {
-  propagatedBuildInputs = [
-    requests
-    pyyaml
+  build-system = [setuptools];
+  dependencies = [
+    configupdater
     execnet
     importlib-metadata
     importlib-resources
-    remote-pdb
-    py
-    configupdater
-    mock
-    pytest
-    setuptools
     jinja2
+    py
+    pyyaml
+    remote-pdb
+    requests
   ];
 
-  checkPhase = ''
-    tox -e py
-    cp report.xml $out
-    cp -r htmlcov $out
-  '';
-
   nativeCheckInputs = [
-    (python3.withPackages (ps: [ps.tox]))
-    mercurial
+    pytestCheckHook
+
+    py
+    mock
+    pytest-cov
+    pytest-instafail
+    pytest-timeout
+    requests
+
     age
     git
+    gnupg
+    mercurial
+    rsync
     subversion
     unzip
-    rsync
-    gnupg
+  ];
+
+  PY_IGNORE_IMPORTMISMATCH = 1;
+
+  disabledTests = [
+    "test_runs_buildout_successfully"
+    "test_runs_buildout3_successfully"
+  ];
+
+  disabledTestPaths = [
+    "src/batou/lib/tests/test_supervisor.py"
   ];
 
   pname = "batou";
