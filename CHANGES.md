@@ -1,16 +1,9 @@
-## Changelog
 
 
 ## 2.5.1 (unreleased)
 ---------------------
 
-- fix Component.require_one raising a configuration error with strict=False
-- Adds command `./batou secrets decrypttostdout` to decrypt a secrets file to stdout.
-  - Useful for integration with git diff using textconv, see documentation for installation instructions.
-- The error message shown when a batou deployment fails to start due to another
-  deployment running at the same time, now correctly informs the user that
-  another deployment is running instead of showing a traceback. (#446)
-
+- Nothing changed yet.
 
 ## 2.5.0 (2024-09-04)
 -----------------------
@@ -87,7 +80,7 @@
 ## 2.4 (2023-12-06)
 ----------------------
 
-- Nothing changed yet.
+- No changes since 2.4rc2.
 
 
 ## 2.4rc2 (2023-11-29)

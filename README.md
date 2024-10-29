@@ -84,6 +84,11 @@ The project is licensed under the 2-clause BSD license.
 * Set up GPG for the examples with `export GNUPGHOME=<DIRECTORY OF BATOU HERE>/src/batou/secrets/tests/fixture/gnupg`
 * Make sure [age](https://github.com/FiloSottile/age) is installed and in `$PATH` for age encryption support.
 
+## Development and release process
+
+* Changes should be accompanied with a changelog entry. Use `./changelog.sh` to create one.
+* Releasing will create a tag and publishes the package to pypi. Use `./release-this.sh` to create a release.
+
 ## Changelog
 
 See [CHANGES.md](./CHANGES.md).
