@@ -19,7 +19,11 @@ repos:
         exclude: |
             (?x)^(
                 src/batou/insecure-private.key|
-                src/batou/secrets/tests/fixture/age/id_ed25519
+                src/batou/secrets/tests/fixture/age/id_ed25519|
+                examples/sensitive-values/ssh-keys/client_ed25519|
+                examples/sensitive-values/ssh-keys/host_ed25519|
+                examples/sensitive-values/ssh-keys/host_rsa|
+                examples/sensitive-values/secrets.cfg.age.clear
             )$
 
 -   repo: https://github.com/pycqa/isort
