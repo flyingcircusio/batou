@@ -38,30 +38,6 @@ def test_remote_bundle_breaks_on_missing_head(sample_service):
     )
 
 
-def test_git_remote_bundle_fails_if_needed(tmp_path):
-    env = mock.Mock()
-    env.base_dir = tmp_path
-    env.branch = "master"
-    host = mock.Mock()
-    host.rpc.git_current_head.return_value.decode.return_value = "HEAD"
-    from batou.repository import GitBundleRepository
-
-    os.chdir(tmp_path)
-    cmd("git init")
-    cmd("touch foo")
-    cmd("git add foo")
-    cmd("git commit -m 'initial commit'")
-    repository = GitBundleRepository(env)
-    assert repository._ship(host) is None
-
-    # now destroy the repository state
-    head_commit = cmd("git rev-parse HEAD")[0].strip()
-    cmd(f"rm -rf .git/objects/{head_commit[:2]}/{head_commit[2:]}")
-    with pytest.raises(CmdExecutionError) as e:
-        repository._ship(host)
-    assert "Invalid revision range" in str(e.value)
-
-
 def test_remotehost_start(sample_service):
     env = Environment("test-with-env-config")
     env.load()

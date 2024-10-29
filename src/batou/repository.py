@@ -386,13 +386,20 @@ class GitPullRepository(GitRepository):
 class GitBundleRepository(GitRepository):
     def _ship(self, host):
         head = host.rpc.git_current_head()
+        if head:
+            # check if head is in local branch, if not, bundle everything and ignore remote head
+            try:
+                cmd(
+                    f"git branch {self.branch} --contains {head}",
+                    acceptable_returncodes=[0],
+                )
+            except CmdExecutionError:
+                head = None
         if head is None:
             bundle_range = self.branch
         else:
             head = head.decode("ascii")
-            bundle_range = "{head}..{branch}".format(
-                head=head, branch=self.branch
-            )
+            bundle_range = f"{head}..{self.branch}"
         fd, bundle_file = tempfile.mkstemp()
         os.close(fd)
         try:
