@@ -1,6 +1,6 @@
 
 
-## 2.5.1 (unreleased)
+## 2.5.1 (2024-11-08)
 ---------------------
 
 - Add release process with changelog support using scriv
