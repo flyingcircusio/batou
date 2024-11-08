@@ -3,11 +3,11 @@ set -euxo pipefail
 
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 
-if [ "$current_branch" != "master" ]; then
+if [ "$current_branch" != "main" ]; then
     set +x
     echo
     echo
-    echo "ERROR: can only release from master. We are on $current_branch"
+    echo "ERROR: can only release from main. We are on $current_branch"
     echo
     exit 1
 fi
