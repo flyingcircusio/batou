@@ -3,7 +3,30 @@
 ## 2.5.1 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Add release process with changelog support using scriv
+
+- fix Component.require_one raising a configuration error with strict=False
+
+- Adds command `./batou secrets decrypttostdout` to decrypt a secrets file to stdout.
+  - Useful for integration with git diff using textconv, see documentation for installation instructions.
+
+- The error message shown when a batou deployment fails to start due to another
+  deployment running at the same time, now correctly informs the user that
+  another deployment is running instead of showing a traceback. (#446)
+
+- When shipping a repository to the remote host using `git-bundle`, previously, when
+  the history of the repository was rewritten, the bundle would fail to be created, due
+  to the remote `HEAD` not being a predecessor of the local `HEAD`. This has been fixed
+  by creating the bundle using the whole branch history, instead of just the changes between
+  remote `HEAD` and branch `HEAD` when the remote `HEAD` is not a part of the branch.
+
+- `File` Component: Converted `sensitive_data` flag to a tri-state variable. This allows manual overriding of automatic sensitivity detection logic for file diffs. The new possible states are:
+  - `None`: Default automatic detection of sensitive data.
+  - `True`: Always mark the file as sensitive and avoid printing the diff.
+  - `False`: Always print the file diff, even if sensitive data is detected.
+
+- Devhost provisioning: Add `release` attribute to provisioner config
+  to allow using release metadata URLs instead of `hydra_eval`
 
 ## 2.5.0 (2024-09-04)
 -----------------------
