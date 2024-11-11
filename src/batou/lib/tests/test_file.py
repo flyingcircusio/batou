@@ -504,7 +504,7 @@ def test_content_large_diff_logged(output, root):
 
     assert output.backend.output == Ellipsis(
         """\
-localhost > MyComponent > Content('work/mycomponent/path')
+localhost > MyComponent > Content('work/mycomponent/path'): update
 More than 20 lines of diff. Showing first and last 5 lines.
 see ... for the full diff.
   path ---
@@ -549,7 +549,7 @@ def test_json_diff(output, root):
 
     assert output.backend.output == Ellipsis(
         """\
-localhost > MyComponent > JSONContent('work/mycomponent/target.json')
+localhost > MyComponent > JSONContent('work/mycomponent/target.json'): update
   target.json ---
   target.json +++
   target.json @@ -1,3 +1,4 @@
@@ -574,7 +574,7 @@ def test_json_diff_not_for_sensitive(output, root):
 
     assert output.backend.output == Ellipsis(
         """\
-localhost > MyComponent > JSONContent('work/mycomponent/target.json')
+localhost > MyComponent > JSONContent('work/mycomponent/target.json'): update
 Not showing diff as it contains sensitive data.
 """
     )
@@ -731,7 +731,7 @@ def test_yaml_diff(output, root):
 
     # fmt: off
     assert output.backend.output == Ellipsis("""\
-localhost > MyComponent > YAMLContent(\'work/mycomponent/target.yaml\')
+localhost > MyComponent > YAMLContent(\'work/mycomponent/target.yaml\'): update
   target.yaml ---
   target.yaml +++
   target.yaml @@ -1,3 +1,2 @@
@@ -757,7 +757,7 @@ def test_yaml_diff_not_for_sensitive(output, root):
 
     assert output.backend.output == Ellipsis(
         """\
-localhost > MyComponent > YAMLContent('work/mycomponent/target.yaml')
+localhost > MyComponent > YAMLContent('work/mycomponent/target.yaml'): update
 Not showing diff as it contains sensitive data.
 """
     )
