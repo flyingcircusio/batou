@@ -283,12 +283,12 @@ main: Loading secrets ...
 localhost: Connecting via local (1/1)
 ================================== Deploying ===================================
 localhost: Scheduling component hello ...
-localhost > Hello > File('work/hello/hello') > Presence('hello')
-localhost > Hello > File('work/hello/hello') > Content('hello')
+localhost > Hello > File('work/hello/hello') > Presence('hello'): update
+localhost > Hello > File('work/hello/hello') > Content('hello'): update
 Not showing diff as it contains sensitive data,
 see ...diff for the diff.
-localhost > Hello > File('work/hello/other-secrets.yaml') > Presence('other-secrets.yaml')
-localhost > Hello > File('work/hello/other-secrets.yaml') > Content('other-secrets.yaml')
+localhost > Hello > File('work/hello/other-secrets.yaml') > Presence('other-secrets.yaml'): update
+localhost > Hello > File('work/hello/other-secrets.yaml') > Content('other-secrets.yaml'): update
 Not showing diff as it contains sensitive data,
 see ...diff for the diff.
 =================================== Summary ====================================
@@ -325,29 +325,29 @@ main: Loading secrets ...
 localhost: Connecting via local (1/1)
 ================================== Deploying ===================================
 localhost: Scheduling component sensitivevalues ...
-localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.key') > Presence('client_ed25519.key')
-localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.key') > Content('client_ed25519.key')
+localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.key') > Presence('client_ed25519.key'): update
+localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.key') > Content('client_ed25519.key'): update
 Not showing diff as it contains sensitive data,
 see ...diff for the diff.
-localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.pub') > Presence('client_ed25519.pub')
-localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.pub') > Content('client_ed25519.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.pub') > Presence('client_ed25519.pub'): update
+localhost > SensitiveValues > File('work/sensitivevalues/client_ed25519.pub') > Content('client_ed25519.pub'): update
 Not showing diff as it contains sensitive data,
 see ...diff for the diff.
-localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_rsa.pub') > Presence('hostkey_sensitive_auto_rsa.pub')
-localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_rsa.pub') > Content('hostkey_sensitive_auto_rsa.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_rsa.pub') > Presence('hostkey_sensitive_auto_rsa.pub'): update
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_rsa.pub') > Content('hostkey_sensitive_auto_rsa.pub'): update
   hostkey_sensitive_auto_rsa.pub ---
   hostkey_sensitive_auto_rsa.pub +++
   hostkey_sensitive_auto_rsa.pub @@ -0,0 +1 @@
   hostkey_sensitive_auto_rsa.pub +ssh-rsa ... batou-example-host
-localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_ed25519.pub') > Presence('hostkey_sensitive_auto_ed25519.pub')
-localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_ed25519.pub') > Content('hostkey_sensitive_auto_ed25519.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_ed25519.pub') > Presence('hostkey_sensitive_auto_ed25519.pub'): update
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_auto_ed25519.pub') > Content('hostkey_sensitive_auto_ed25519.pub'): update
 Not showing diff as it contains sensitive data,
 see ...diff for the diff.
-localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_masked_rsa.pub') > Presence('hostkey_sensitive_masked_rsa.pub')
-localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_masked_rsa.pub') > Content('hostkey_sensitive_masked_rsa.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_masked_rsa.pub') > Presence('hostkey_sensitive_masked_rsa.pub'): update
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_masked_rsa.pub') > Content('hostkey_sensitive_masked_rsa.pub'): update
 Not showing diff as it contains sensitive data.
-localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_clear_ed25519.pub') > Presence('hostkey_sensitive_clear_ed25519.pub')
-localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_clear_ed25519.pub') > Content('hostkey_sensitive_clear_ed25519.pub')
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_clear_ed25519.pub') > Presence('hostkey_sensitive_clear_ed25519.pub'): update
+localhost > SensitiveValues > File('work/sensitivevalues/hostkey_sensitive_clear_ed25519.pub') > Content('hostkey_sensitive_clear_ed25519.pub'): update
   hostkey_sensitive_clear_ed25519.pub ---
   hostkey_sensitive_clear_ed25519.pub +++
   hostkey_sensitive_clear_ed25519.pub @@ -0,0 +1 @@
@@ -373,7 +373,7 @@ main: Loading secrets ...
 localhost: Connecting via local (1/1)
 ================================== Deploying ===================================
 localhost: Scheduling component takeslongtime ...
-localhost > Takeslongtime [total=...s, verify=...s, update=NaN, sub=NaN]
+localhost > Takeslongtime [total=...s, verify=...s, update=NaN, sub=NaN] verify took too long
 =================================== Summary ====================================
 Deployment took total=...s, connect=...s, deploy=...s
 ============================= DEPLOYMENT FINISHED ==============================
