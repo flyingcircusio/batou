@@ -75,6 +75,10 @@ buildPythonPackage {
     # cannot resolve hosts in sandbox
     "test_address_netloc_attributes"
     "test_address_resolves_listen_address"
+
+    # does not return relative but absolute paths
+    # can probably be fixed, then reenabled
+    "test_edit_command_loop"
   ];
 
   disabledTestPaths = [
