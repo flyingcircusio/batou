@@ -23,6 +23,7 @@
   pytest-cov,
   pytest-instafail,
   pytest-timeout,
+  python,
 }:
 buildPythonPackage {
   build-system = [setuptools];
@@ -58,6 +59,10 @@ buildPythonPackage {
   ];
 
   PY_IGNORE_IMPORTMISMATCH = 1;
+
+  preCheck = ''
+    export PYTHONPATH=${py}/${python.sitePackages}:$PYTHONPATH
+  '';
 
   disabledTests = [
     # requires internet access
