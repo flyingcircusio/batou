@@ -417,7 +417,7 @@ Not showing diff as it contains sensitive data,
 see .../examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
 =================================== Summary ====================================
 Deployment took total=...s, connect=...s, deploy=...s
-======================= DEPLOYMENT PREDICTION FINISHED =========================
+======================== DEPLOYMENT PREDICTION FINISHED ========================
 """
     )
 
