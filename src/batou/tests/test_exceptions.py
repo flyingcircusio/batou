@@ -56,7 +56,7 @@ def test_configurationerrors_can_be_sorted(root):
 
     errors.append(UnusedResources.from_context({"asdf": {root: 1}}))
 
-    errors.append(UnsatisfiedResources.from_context({"asdf": [root]}))
+    errors.append(UnsatisfiedResources.from_context({("asdf", None): [root]}))
 
     errors.append(MissingEnvironment.from_context(root.environment))
 

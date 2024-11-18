@@ -567,9 +567,9 @@ class UnsatisfiedResources(ConfigurationError):
     def from_context(cls, resources):
         self = cls()
         self.unsatisfied_resources = []
-        for key in sorted(resources.keys()):
+        for (key, host), res_for_key in sorted(resources.items()):
             self.unsatisfied_resources.append(
-                (key, [r.name for r in resources[key]])
+                (key, host, [r.name for r in res_for_key])
             )
         return self
 
@@ -578,13 +578,20 @@ class UnsatisfiedResources(ConfigurationError):
 
     def report(self):
         output.error("Unsatisfied resource requirements")
-        for key, resources in self.unsatisfied_resources:
-            output.line(
-                '    Resource "{}" required by {}'.format(
-                    key, ",".join(resources)
-                ),
-                red=True,
-            )
+        for key, host, resources in self.unsatisfied_resources:
+            if host is None:
+                msg = (
+                    f'    Resource "{key}" required by '
+                    f'{",".join(resources)}'
+                )
+
+            else:
+                msg = (
+                    f'    Resource "{key}" on "{host}" required by '
+                    f'{",".join(resources)}'
+                )
+
+            output.line(msg, red=True)
 
 
 class MissingEnvironment(ConfigurationError):

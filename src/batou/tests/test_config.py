@@ -122,7 +122,7 @@ def test_config_exceptions_orderable(env):
         ),
         batou.UnknownComponentConfigurationError.from_context(c.root, ex, tb),
         batou.UnusedResources.from_context({"asdf": {c.root: 1}}),
-        batou.UnsatisfiedResources.from_context({"asdf": [c.root]}),
+        batou.UnsatisfiedResources.from_context({("asdf", None): [c.root]}),
         batou.MissingEnvironment.from_context(env),
         batou.MissingComponent.from_context("asdf", "localhost"),
         batou.SuperfluousSection.from_context("asdf"),

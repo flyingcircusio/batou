@@ -34,4 +34,7 @@ def test_mentions_missing_requirement_with_host_requirement(sample_service):
     assert len(errors) == 2
     assert isinstance(errors[0], UnsatisfiedResources)
     assert isinstance(errors[1], NonConvergingWorkingSet)
-    assert "key" in str(errors[0].__dict__)
+    assert errors[0].unsatisfied_resources == [
+        ("key", "host1", []),
+        ("unrelated", None, ["component1"]),
+    ]

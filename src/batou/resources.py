@@ -153,7 +153,7 @@ class Resources(object):
             if not any(s.strict for s in subscribers):
                 continue
             if key not in self.resources:
-                unsatisfied.add(key)
+                unsatisfied.add((key, None))
                 continue
             for s in subscribers:
                 if s.host is None:
@@ -162,25 +162,25 @@ class Resources(object):
                     resource_root.host is s.host
                     for resource_root in self.resources[key]
                 ):
-                    unsatisfied.add(key)
+                    unsatisfied.add((key, s.host.name))
                     break
         return unsatisfied
 
     @property
     def unsatisfied_components(self):
         components = set()
-        for resource in self.unsatisfied:
+        for resource, host in self.unsatisfied:
             components.update(
-                [s.root for s in self._subscriptions(resource, None)]
+                [s.root for s in self._subscriptions(resource, host)]
             )
         return components
 
     @property
     def unsatisfied_keys_and_components(self):
         keys = {}
-        for resource in self.unsatisfied:
-            keys[resource] = set(
-                [s.root for s in self._subscriptions(resource, None)]
+        for resource, host in self.unsatisfied:
+            keys[(resource, host)] = set(
+                [s.root for s in self._subscriptions(resource, host)]
             )
         return keys
 
