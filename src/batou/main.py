@@ -77,6 +77,13 @@ def main(args: Optional[list] = None) -> None:
         "Do not change anything.",
     )
     p.add_argument(
+        "--check-and-predict-local",
+        action="store_true",
+        help="When running in consistency-only or predict-only mode, "
+        "do not connect to the remote host, but check and predict "
+        "using the local host's state.",
+    )
+    p.add_argument(
         "-j",
         "--jobs",
         type=int,

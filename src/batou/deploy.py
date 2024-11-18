@@ -112,10 +112,15 @@ class Deployment(object):
         dirty,
         jobs,
         predict_only=False,
+        check_and_predict_local=False,
         provision_rebuild=False,
     ):
         self.environment = Environment(
-            environment, timeout, platform, provision_rebuild=provision_rebuild
+            environment,
+            timeout,
+            platform,
+            provision_rebuild=provision_rebuild,
+            check_and_predict_local=check_and_predict_local,
         )
         self.environment.deployment = self
 
@@ -345,6 +350,7 @@ def main(
     dirty,
     consistency_only,
     predict_only,
+    check_and_predict_local,
     jobs,
     provision_rebuild,
 ):
@@ -361,6 +367,14 @@ def main(
     else:
         ACTION = "DEPLOYMENT"
         SUCCESS_FORMAT = {"green": True}
+    if check_and_predict_local:
+        if (not consistency_only) and (not predict_only):
+            output.error(
+                "The --check-and-predict-local option is only to be used with --consistency-only or --predict-only."
+            )
+            sys.exit(1)
+        ACTION += " (local)"
+
     with locked(".batou-lock", exit_on_failure=True):
         deployment = Deployment(
             environment,
@@ -369,6 +383,7 @@ def main(
             dirty,
             jobs,
             predict_only,
+            check_and_predict_local,
             provision_rebuild,
         )
         environment = deployment.environment
