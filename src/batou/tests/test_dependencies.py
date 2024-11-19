@@ -84,12 +84,12 @@ def test_consumer_retrieves_value_from_provider_order1(env):
 
 def test_provider_with_consumer_limited_by_host_raises_error(env):
     env.add_root("provider", Host("test2", env))
+    env.add_root("consumer", Host("test2", env))
     env.add_root("samehostconsumer", Host("test", env))
     errors = env.configure()
-    assert len(errors) == 3
+    assert len(errors) == 2
     assert isinstance(errors[0], UnsatisfiedResources)
     assert isinstance(errors[1], NonConvergingWorkingSet)
-    assert isinstance(errors[2], UnusedResources)
 
 
 def test_consumer_retrieves_value_from_provider_order2(env):
@@ -106,7 +106,7 @@ def test_consumer_without_provider_raises_error(env):
     for exc in env.exceptions:
         if isinstance(exc, UnsatisfiedResources):
             assert set(["the-answer"]) == set(
-                [key for key, _ in exc.unsatisfied_resources]
+                [key for key, _, _ in exc.unsatisfied_resources]
             )
             break
     else:
@@ -119,7 +119,7 @@ def test_aggressive_consumer_raises_unsatisfiedrequirement(env):
     for exc in env.exceptions:
         if isinstance(exc, UnsatisfiedResources):
             assert set(["the-answer"]) == set(
-                [key for key, _ in exc.unsatisfied_resources]
+                [key for key, _, _ in exc.unsatisfied_resources]
             )
             break
     else:
