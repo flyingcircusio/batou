@@ -203,19 +203,22 @@ class Component(object):
     _prepared = False
 
     def __init__(self, namevar=None, **kw):
-        init_stack = inspect.stack()
-        init_stack.reverse()
         init_breadcrumbs = []
-        call_site = init_stack[-2]
-        self._init_file_path = call_site.filename
-        self._init_line_number = call_site.lineno
-        for frame in init_stack:
+        call_site = sys._getframe(2)
+        self._init_file_path = call_site.f_code.co_filename
+        self._init_line_number = call_site.f_code.co_firstlineno
+        for n in range(20):  # limit how deep we look
+            try:
+                frame = sys._getframe(n)
+            except ValueError:
+                # End of stack
+                break
             if (
-                "self" in frame.frame.f_locals
-                and isinstance(frame.frame.f_locals["self"], Component)
-                and frame.frame.f_code.co_name == "configure"
+                "self" in frame.f_locals
+                and isinstance(frame.f_locals["self"], Component)
+                and frame.f_code.co_name == "configure"
             ):
-                component = frame.frame.f_locals["self"]
+                component = frame.f_locals["self"]
                 try:
                     init_breadcrumbs.append(component._breadcrumb)
                 except AttributeError:
@@ -227,7 +230,7 @@ class Component(object):
                         )
                     init_breadcrumbs.append(breadcrumb)
 
-        self._init_breadcrumbs = init_breadcrumbs
+        self._init_breadcrumbs = reversed(init_breadcrumbs)
 
         Component._instances.append(self)
         self.timer = batou.utils.Timer(self.__class__.__name__)
