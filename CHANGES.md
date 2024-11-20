@@ -3,7 +3,13 @@
 ## 2.5.2 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Improve deployment performance when there are many components.
+
+  Improves the performance of `Component.__init__` which is called very often.
+
+- Fix unused component detection
+
+  There was a bug in unused component detection which was triggered occasionally. It is not entirely clear what triggered it, but it "helped" to have a lot of components.
 
 
 ## 2.5.1 (2024-11-08)
