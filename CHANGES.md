@@ -1,6 +1,6 @@
 
 
-## 2.5.2 (unreleased)
+## 2.5.2 (2024-11-20)
 ---------------------
 
 - Improve deployment performance when there are many components.
