@@ -370,7 +370,7 @@ def main(
     if check_and_predict_local:
         if (not consistency_only) and (not predict_only):
             output.error(
-                "The --check-and-predict-local option is only to be used with --consistency-only or --predict-only."
+                "The --local option is only to be used with --consistency-only or --predict-only."
             )
             sys.exit(1)
         ACTION += " (local)"

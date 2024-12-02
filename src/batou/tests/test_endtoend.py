@@ -424,9 +424,7 @@ Deployment took total=...s, connect=...s, deploy=...s
 
 def test_check_consistency_works_with_local():
     os.chdir("examples/tutorial-secrets")
-    out, _ = cmd(
-        "./batou deploy gocept --consistency-only --check-and-predict-local"
-    )
+    out, _ = cmd("./batou deploy gocept --consistency-only --local")
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)
@@ -446,9 +444,7 @@ Deployment took total=...s, connect=...s, deploy=NaN
 
 def test_predicting_deployment_works_with_local():
     os.chdir("examples/tutorial-secrets")
-    out, _ = cmd(
-        "./batou deploy gocept --predict-only --check-and-predict-local"
-    )
+    out, _ = cmd("./batou deploy gocept --predict-only --local")
     assert out == Ellipsis(
         """\
 batou/2... (cpython 3...)

@@ -31,7 +31,7 @@ batou deploy
 .. code-block:: console
 
   usage: batou deploy [-h] [-p PLATFORM] [-t TIMEOUT] [-D] [-c] [-P]
-                      [--check-and-predict-local] [-j JOBS]
+                      [--local] [-j JOBS]
                       [--provision-rebuild]
                       environment
 
@@ -52,7 +52,7 @@ batou deploy
                           Does not touch anything.
     -P, --predict-only    Only predict what updates would happen. Do not change
                           anything.
-    --check-and-predict-local
+    --local
                           When running in consistency-only or predict-only mode,
                           do not connect to the remote host, but check and
                           predict using the local host's state.
