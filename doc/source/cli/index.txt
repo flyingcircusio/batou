@@ -52,8 +52,7 @@ batou deploy
                           Does not touch anything.
     -P, --predict-only    Only predict what updates would happen. Do not change
                           anything.
-    --local
-                          When running in consistency-only or predict-only mode,
+    -L, --local           When running in consistency-only or predict-only mode,
                           do not connect to the remote host, but check and
                           predict using the local host's state.
     -j JOBS, --jobs JOBS  Defines number of jobs running parallel to deploy. The
