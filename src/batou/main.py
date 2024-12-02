@@ -1,11 +1,10 @@
 import argparse
+import importlib.metadata
 import os
 import os.path
 import sys
 import textwrap
 from typing import Optional
-
-import importlib_resources
 
 import batou
 import batou.deploy
@@ -18,12 +17,7 @@ from batou._output import TerminalBackend, output
 
 def main(args: Optional[list] = None) -> None:
     os.chdir(os.environ["APPENV_BASEDIR"])
-    version = (
-        importlib_resources.files("batou")
-        .joinpath("version.txt")
-        .read_text()
-        .strip()
-    )
+    version = importlib.metadata.version("batou")
     parser = argparse.ArgumentParser(
         description=(
             "batou v{}: multi-(host|component|environment|version|platform)"
