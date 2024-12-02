@@ -18,6 +18,7 @@ def test_main_with_errors(capsys):
             dirty=False,
             consistency_only=False,
             predict_only=False,
+            check_and_predict_local=False,
             jobs=None,
             provision_rebuild=False,
         )
@@ -81,6 +82,7 @@ def test_main_fails_if_no_host_in_environment(capsys):
             dirty=False,
             consistency_only=False,
             predict_only=False,
+            check_and_predict_local=False,
             jobs=None,
             provision_rebuild=False,
         )

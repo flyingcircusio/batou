@@ -372,3 +372,116 @@ Deployment took total=...s, connect=...s, deploy=...s
 ============================= DEPLOYMENT FINISHED ==============================
 """
     )
+
+
+def test_check_consistency_works():
+    os.chdir("examples/tutorial-secrets")
+    out, _ = cmd("./batou deploy tutorial --consistency-only")
+    assert out == Ellipsis(
+        """\
+batou/2... (cpython 3...)
+================================== Preparing ===================================
+main: Loading environment `tutorial`...
+main: Verifying repository ...
+main: Loading secrets ...
+================== Connecting hosts and configuring model ... ==================
+localhost: Connecting via local (1/1)
+=================================== Summary ====================================
+Deployment took total=...s, connect=...s, deploy=NaN
+========================== CONSISTENCY CHECK FINISHED ==========================
+"""
+    )
+
+
+def test_predicting_deployment_works():
+    os.chdir("examples/tutorial-secrets")
+    out, _ = cmd("./batou deploy tutorial --predict-only")
+    assert out == Ellipsis(
+        """\
+batou/2... (cpython 3...)
+================================== Preparing ===================================
+main: Loading environment `tutorial`...
+main: Verifying repository ...
+main: Loading secrets ...
+================== Connecting hosts and configuring model ... ==================
+localhost: Connecting via local (1/1)
+======================== Predicting deployment actions =========================
+localhost: Scheduling component hello ...
+localhost > Hello > File('work/hello/hello') > Presence('hello')
+localhost > Hello > File('work/hello/hello') > Content('hello')
+Not showing diff as it contains sensitive data,
+see .../examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
+localhost > Hello > File('work/hello/other-secrets.yaml') > Presence('other-secrets.yaml')
+localhost > Hello > File('work/hello/other-secrets.yaml') > Content('other-secrets.yaml')
+Not showing diff as it contains sensitive data,
+see .../examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
+=================================== Summary ====================================
+Deployment took total=...s, connect=...s, deploy=...s
+======================== DEPLOYMENT PREDICTION FINISHED ========================
+"""
+    )
+
+
+def test_check_consistency_works_with_local():
+    os.chdir("examples/tutorial-secrets")
+    out, _ = cmd("./batou deploy gocept --consistency-only --local")
+    assert out == Ellipsis(
+        """\
+batou/2... (cpython 3...)
+================================== Preparing ===================================
+main: Loading environment `gocept`...
+main: Verifying repository ...
+main: Loading secrets ...
+================== Connecting hosts and configuring model ... ==================
+test01: Connecting via local (1/2)
+test02: Connecting via local (2/2)
+=================================== Summary ====================================
+Deployment took total=...s, connect=...s, deploy=NaN
+====================== CONSISTENCY CHECK (local) FINISHED ======================
+"""
+    )
+
+
+def test_predicting_deployment_works_with_local():
+    os.chdir("examples/tutorial-secrets")
+    out, _ = cmd("./batou deploy gocept --predict-only --local")
+    assert out == Ellipsis(
+        """\
+batou/2... (cpython 3...)
+================================== Preparing ===================================
+main: Loading environment `gocept`...
+main: Verifying repository ...
+main: Loading secrets ...
+================== Connecting hosts and configuring model ... ==================
+test01: Connecting via local (1/2)
+test02: Connecting via local (2/2)
+======================== Predicting deployment actions =========================
+test01: Scheduling component hello ...
+test02: Scheduling component hello ...
+test01 > Hello > File('work/hello/hello') > Presence('hello')
+test01 > Hello > File('work/hello/hello') > Content('hello')
+  hello ---
+  hello +++
+  hello @@ -0,0 +1,2 @@
+  hello +The magic word is None.
+  hello +The other word is None.
+test01 > Hello > File('work/hello/other-secrets.yaml') > Presence('other-secrets.yaml')
+test01 > Hello > File('work/hello/other-secrets.yaml') > Content('other-secrets.yaml')
+Not showing diff as it contains sensitive data,
+see .../batou/examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
+test02 > Hello > File('work/hello/hello') > Presence('hello')
+test02 > Hello > File('work/hello/hello') > Content('hello')
+  hello ---
+  hello +++
+  hello @@ -0,0 +1,2 @@
+  hello +The magic word is None.
+  hello +The other word is None.
+test02 > Hello > File('work/hello/other-secrets.yaml') > Presence('other-secrets.yaml')
+test02 > Hello > File('work/hello/other-secrets.yaml') > Content('other-secrets.yaml')
+Not showing diff as it contains sensitive data,
+see .../batou/examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
+=================================== Summary ====================================
+Deployment took total=...s, connect=...s, deploy=...s
+==================== DEPLOYMENT PREDICTION (local) FINISHED ====================
+"""
+    )
