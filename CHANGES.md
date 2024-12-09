@@ -1,6 +1,6 @@
 
 
-## 2.5.3 (unreleased)
+## 2.6.0a1 (2024-12-09)
 ---------------------
 
 - Adds a `--local` flag to `./batou deploy`, which can
