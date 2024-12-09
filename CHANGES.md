@@ -3,7 +3,10 @@
 ## 2.5.3 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Adds a `--local` flag to `./batou deploy`, which can
+  be used in tandem with `--consistency-only` or `--predict-only` to
+  check and predict using the local host's state, without connecting to
+  the remote host.
 
 
 ## 2.5.2 (2024-11-20)
