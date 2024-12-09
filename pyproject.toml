@@ -5,3 +5,61 @@ target-version = ['py37', 'py38', 'py39', 'py310', 'py311', 'py312']
 [tool.isort]
 profile = "black"
 line_length = 80
+
+[tool.poetry]
+name = "batou"
+version = "2.5.3.dev0"
+description = "A utility for automating multi-host, multi-environment software builds and deployments."
+authors = ["Christian Theune <ct@flyingcircus.io>"]
+license = "BSD (2-clause)"
+readme = "README.md"
+repository = "https://github.com/flyingcircusio/batou"
+documentation = "https://batou.readthedocs.io/"
+keywords = ["deployment"]
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+]
+packages = [{ include = "batou", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+configupdater = ">=3.2"
+jinja2 = ">=3.1.4"
+requests = "*"
+setuptools = ">=66.1.0"
+execnet = ">=1.8.1"
+importlib-metadata = "*"
+importlib-resources = "*"
+py = ">=1.11.0"
+PyYAML = "*"
+remote-pdb = "^2.1.0"
+
+[tool.poetry.group.test.dependencies]
+mock = "^5.1.0"
+pytest = ">=7.0.0"
+pytest-coverage = "^0.0"
+pytest-instafail = "^0.5.0"
+pytest-timeout = "^2.3.1"
+
+[tool.poetry.scripts]
+batou = "batou.main:main"
+
+[tool.poetry.plugins."zc.buildout"]
+requirements = "batou.buildout:Requirements"
+
+[tool.poetry.plugins."batou.provisioners"]
+fc-nixos-dev-container = "batou.provision:FCDevContainer"
+fc-nixos-dev-vm = "batou.provision:FCDevVM"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
