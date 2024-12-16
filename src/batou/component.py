@@ -377,7 +377,7 @@ class Component(object):
 
         output.buffer(
             "annotate",
-            f"{self.host.name}: {self._breadcrumbs}: update",
+            f"{self.host.name}: {self._breadcrumbs}",
             icon="🚀",
         )
 
@@ -391,7 +391,8 @@ class Component(object):
                         self.verify, predicting=predict_only
                     )
             except AssertionError:
-                # avoid nested exception messages, when running `update()` in except block
+                # avoid nested exception messages, when running `update()` in
+                # except block
                 require_update = True
 
             if require_update:
@@ -411,10 +412,9 @@ class Component(object):
         )
         if took_too_long:
             output.annotate(
-                f"{self.host.name} > {self._breadcrumbs} [{self.timer.humanize('total', 'verify', 'update', 'sub')}] "
-                + ", ".join(steps_too_long)
-                + " took too long",
-                icon="⏳",
+                f"{self.host.name}: {self._breadcrumbs} "
+                "[{self.timer.humanize('total', 'verify', 'update', 'sub')}]",
+                icon="💤",
             )
 
     def verify(self):
