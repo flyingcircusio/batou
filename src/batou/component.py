@@ -413,7 +413,7 @@ class Component(object):
         if took_too_long:
             output.annotate(
                 f"{self.host.name}: {self._breadcrumbs} "
-                "[{self.timer.humanize('total', 'verify', 'update', 'sub')}]",
+                f"[{self.timer.humanize('total', 'verify', 'update', 'sub')}]",
                 icon="💤",
             )
 

@@ -57,7 +57,7 @@ class Output(object):
         if icon:
             icon = f"{icon} "
         else:
-            icon = ""
+            icon = "  "
         self.flush_buffer()
         self.backend.line(f"{icon}{message}", **format)
 
