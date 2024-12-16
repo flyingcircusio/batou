@@ -51,19 +51,21 @@ class Output(object):
         self.clear_buffer()
         self._flushing = False
 
-    def line(self, message, debug=False, **format):
+    def line(self, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
             return
+        if icon is None:
+            icon = " "
         self.flush_buffer()
-        self.backend.line(message, **format)
+        self.backend.line(f"{icon} {message}", **format)
 
-    def annotate(self, message, debug=False, **format):
+    def annotate(self, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
         lines = message.split("\n")
         message = "\n".join(lines)
-        self.line(message, **format)
+        self.line(message, icon=icon, **format)
 
     def tabular(self, key, value, separator=": ", debug=False, **kw):
         if debug and not self.enable_debug:
@@ -84,13 +86,13 @@ class Output(object):
         self.flush_buffer()
         return self.backend.sep(sep, title, **format)
 
-    def step(self, context, message, debug=False, **format):
+    def step(self, context, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
         _format = {"bold": True}
         _format.update(format)
-        self.line("{}: {}".format(context, message), **_format)
+        self.line(f"{context}: {message}", icon=icon, **_format)
 
     def error(self, message, exc_info=None, debug=False):
         if debug and not self.enable_debug:

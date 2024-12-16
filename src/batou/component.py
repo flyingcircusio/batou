@@ -376,7 +376,9 @@ class Component(object):
                 self.changed = True
 
         output.buffer(
-            "annotate", f"🚀 {self.host.name} > {self._breadcrumbs}: update"
+            "annotate",
+            f"{self.host.name} > {self._breadcrumbs}: update",
+            icon="🚀",
         )
 
         if not os.path.exists(self.workdir):
@@ -409,9 +411,10 @@ class Component(object):
         )
         if took_too_long:
             output.annotate(
-                f"⏳ {self.host.name} > {self._breadcrumbs} [{self.timer.humanize('total', 'verify', 'update', 'sub')}] "
+                f"{self.host.name} > {self._breadcrumbs} [{self.timer.humanize('total', 'verify', 'update', 'sub')}] "
                 + ", ".join(steps_too_long)
                 + " took too long",
+                icon="⏳",
             )
 
     def verify(self):
