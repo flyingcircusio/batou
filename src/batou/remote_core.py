@@ -54,8 +54,10 @@ class Output(object):
     def line(self, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
             return
-        if icon is not None:
+        if icon:
             icon = f"{icon} "
+        else:
+            icon = ""
         self.flush_buffer()
         self.backend.line(f"{icon}{message}", **format)
 
