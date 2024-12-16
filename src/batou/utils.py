@@ -632,12 +632,12 @@ def format_duration(duration: Optional[float]) -> str:
     ```
     format_duration(1.23124) == "1.23s"
     format_duration(61) == "1m1s"
-    format_duration(None) == "NaN"
+    format_duration(None) == "∅"
     ```
     """
 
     if duration is None:
-        return "NaN"
+        return "∅"
 
     minutes, seconds = divmod(duration, 60)
 
