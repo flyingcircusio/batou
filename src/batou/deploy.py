@@ -269,7 +269,6 @@ class Deployment(object):
             output.step(
                 hostname,
                 "Skipping component {} ... (Host ignored)".format(component),
-                icon="⏭️",
                 red=True,
             )
         elif info["ignore"]:
@@ -278,14 +277,12 @@ class Deployment(object):
                 "Skipping component {} ... (Component ignored)".format(
                     component
                 ),
-                icon="⏩",
                 red=True,
             )
         else:
             output.step(
                 hostname,
                 "Scheduling component {} ...".format(component),
-                icon="➡️",
             )
             await self.loop.run_in_executor(
                 None, host.deploy_component, component, self.predict_only
