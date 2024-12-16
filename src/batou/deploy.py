@@ -187,7 +187,7 @@ class Deployment(object):
                 continue
             output.step(
                 hostname,
-                "Connecting via {} ({}/{})".format(
+                "🌐 Connecting via {} ({}/{})".format(
                     self.environment.connect_method,
                     i,
                     len(self.environment.hosts),
@@ -266,20 +266,20 @@ class Deployment(object):
         if host.ignore:
             output.step(
                 hostname,
-                "Skipping component {} ... (Host ignored)".format(component),
+                "⏭️ Skipping component {} ... (Host ignored)".format(component),
                 red=True,
             )
         elif info["ignore"]:
             output.step(
                 hostname,
-                "Skipping component {} ... (Component ignored)".format(
+                "⏩ Skipping component {} ... (Component ignored)".format(
                     component
                 ),
                 red=True,
             )
         else:
             output.step(
-                hostname, "Scheduling component {} ...".format(component)
+                hostname, "➡️ Scheduling component {} ...".format(component)
             )
             await self.loop.run_in_executor(
                 None, host.deploy_component, component, self.predict_only
