@@ -377,7 +377,7 @@ class Component(object):
 
         output.buffer(
             "annotate",
-            f"{self.host.name} > {self._breadcrumbs}: update",
+            f"{self.host.name}: {self._breadcrumbs}: update",
             icon="🚀",
         )
 
