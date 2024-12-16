@@ -166,6 +166,7 @@ class Deployment(object):
                         host.provisioner.name,
                         "(Rebuild)" if host.provisioner.rebuild else "",
                     ),
+                    icon="🧱",
                 )
                 host.provisioner.provision(host)
 
@@ -187,11 +188,12 @@ class Deployment(object):
                 continue
             output.step(
                 hostname,
-                "🌐 Connecting via {} ({}/{})".format(
+                "Connecting via {} ({}/{})".format(
                     self.environment.connect_method,
                     i,
                     len(self.environment.hosts),
                 ),
+                icon="🌐",
             )
             c = Connector(host, sem)
             c.start()
@@ -266,20 +268,24 @@ class Deployment(object):
         if host.ignore:
             output.step(
                 hostname,
-                "⏭️ Skipping component {} ... (Host ignored)".format(component),
+                "Skipping component {} ... (Host ignored)".format(component),
+                icon="⏭️",
                 red=True,
             )
         elif info["ignore"]:
             output.step(
                 hostname,
-                "⏩ Skipping component {} ... (Component ignored)".format(
+                "Skipping component {} ... (Component ignored)".format(
                     component
                 ),
+                icon="⏩",
                 red=True,
             )
         else:
             output.step(
-                hostname, "➡️ Scheduling component {} ...".format(component)
+                hostname,
+                "Scheduling component {} ...".format(component),
+                icon="➡️",
             )
             await self.loop.run_in_executor(
                 None, host.deploy_component, component, self.predict_only
