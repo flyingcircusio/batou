@@ -58,11 +58,12 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         if icon is None:
-            icon = f"{icon} "
+            icon = "  "
         elif icon is _no_icon:
             icon = ""
         else:
-            icon = "  "
+            icon = f"{icon} "
+
         self.flush_buffer()
         self.backend.line(f"{icon}{message}", **format)
 
