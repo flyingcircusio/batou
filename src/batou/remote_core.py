@@ -21,6 +21,9 @@ deployment_base = ""
 # bootstrapping we define it here and then re-import in the _output module.
 
 
+_no_icon = object()
+
+
 class Output(object):
     """Manage the output of various parts of batou to achieve
     consistency wrt to formatting and display.
@@ -51,19 +54,26 @@ class Output(object):
         self.clear_buffer()
         self._flushing = False
 
-    def line(self, message, debug=False, **format):
+    def line(self, message, debug=False, icon=_no_icon, **format):
         if debug and not self.enable_debug:
             return
-        self.flush_buffer()
-        self.backend.line(message, **format)
+        if icon is None:
+            icon = "  "
+        elif icon is _no_icon:
+            icon = ""
+        else:
+            icon = f"{icon} "
 
-    def annotate(self, message, debug=False, **format):
+        self.flush_buffer()
+        self.backend.line(f"{icon}{message}", **format)
+
+    def annotate(self, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
         lines = message.split("\n")
         message = "\n".join(lines)
-        self.line(message, **format)
+        self.line(message, icon=icon, **format)
 
     def tabular(self, key, value, separator=": ", debug=False, **kw):
         if debug and not self.enable_debug:
@@ -84,13 +94,13 @@ class Output(object):
         self.flush_buffer()
         return self.backend.sep(sep, title, **format)
 
-    def step(self, context, message, debug=False, **format):
+    def step(self, context, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
         _format = {"bold": True}
         _format.update(format)
-        self.line("{}: {}".format(context, message), **_format)
+        self.line(f"{context}: {message}", icon=icon, **_format)
 
     def error(self, message, exc_info=None, debug=False):
         if debug and not self.enable_debug:
