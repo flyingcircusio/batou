@@ -64,7 +64,7 @@ class Output(object):
         else:
             icon = "  "
         self.flush_buffer()
-        self.backend.line(f"{icon}{message}", icon="", **format)
+        self.backend.line(f"{icon}{message}", **format)
 
     def annotate(self, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
