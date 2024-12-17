@@ -285,7 +285,7 @@ class Deployment(object):
             output.step(
                 hostname,
                 "Scheduling component {} ...".format(component),
-                icon="⏳",
+                icon="•",
             )
             await self.loop.run_in_executor(
                 None, host.deploy_component, component, self.predict_only
