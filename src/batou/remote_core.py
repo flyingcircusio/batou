@@ -21,6 +21,9 @@ deployment_base = ""
 # bootstrapping we define it here and then re-import in the _output module.
 
 
+_no_icon = object()
+
+
 class Output(object):
     """Manage the output of various parts of batou to achieve
     consistency wrt to formatting and display.
@@ -51,11 +54,13 @@ class Output(object):
         self.clear_buffer()
         self._flushing = False
 
-    def line(self, message, debug=False, icon=None, **format):
+    def line(self, message, debug=False, icon=_no_icon, **format):
         if debug and not self.enable_debug:
             return
         if icon is None:
             icon = f"{icon} "
+        elif icon is _no_icon:
+            icon = ""
         else:
             icon = "  "
         self.flush_buffer()
