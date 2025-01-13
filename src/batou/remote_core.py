@@ -58,7 +58,7 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         if icon is None:
-            icon = "  "
+            icon = "   "
         elif icon is _no_icon:
             icon = ""
         else:
