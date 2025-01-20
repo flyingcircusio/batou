@@ -1,0 +1,1 @@
+- When using --local with --predict-only or --consistency-only, the provisioning step is now skipped. Previously, the provisioning step was always executed, even when using --predict-only or --consistency-only.
