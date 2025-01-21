@@ -1,4 +1,6 @@
+*.orig
 *.pyc
+*.status
 *.sublime-*
 *src/batou.egg-info/
 .batou
@@ -10,11 +12,15 @@
 .vagrant
 /.tox
 /bin
+/build/
 /develop-eggs
 /doc/build
 /eggs
-/examples/*/work
+/examples/**/hostmap.json
+/examples/**/insecure-private.key
 /examples/*/.appenv
+/examples/*/ssh_config_*
+/examples/*/work
 /htmlcov
 /include
 /lib
@@ -25,12 +31,6 @@
 /src/batou/secrets/tests/fixture/gnupg/random_seed
 __pycache__
 pip-selfcheck.json
+pip-wheel-metadata
 pyvenv.cfg
 report.xml
-pip-wheel-metadata
-/examples/*/ssh_config_*
-/examples/**/hostmap.json
-/examples/**/insecure-private.key
-*.status
-*.orig
-/build/
