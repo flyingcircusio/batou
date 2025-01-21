@@ -34,6 +34,10 @@ class FCDevProvisioner(Provisioner):
     target_host = None
     aliases = ()
 
+    def __init__(self, name):
+        super().__init__(name)
+        self._known_ssh_hosts = {}
+
     def _prepare_ssh(self, host):
         # XXX application / user-specific files
         # https://unix.stackexchange.com/questions/312988/understanding-home-configuration-file-locations-config-and-local-sha
@@ -61,7 +65,7 @@ class FCDevProvisioner(Provisioner):
                 f_target.write(f_packaged.read())
         os.chmod(local_insecure_key, 0o600)
 
-        ssh_config.append(
+        self._known_ssh_hosts[host.name] = (
             """
 Host {hostname} {aliases}
     HostName {hostname}
@@ -78,6 +82,11 @@ Host {hostname} {aliases}
                 insecure_private_key=local_insecure_key,
             )
         )
+
+        # Gather all known hosts together - otherwise we can only access
+        # one provisioned host per environment.
+        for section in self._known_ssh_hosts.values():
+            ssh_config.append(section)
 
         # More generic includes need to go last because parameters are
         # set by a match-first and things like User settings for * may
