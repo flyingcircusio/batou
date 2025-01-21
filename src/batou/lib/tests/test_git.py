@@ -29,9 +29,9 @@ def repos_path2(root, name="upstream2"):
 
 
 @pytest.mark.slow
-def test_runs_git_to_clone_repository(root, repos_path):
+def test_runs_git_to_clone_repository(root, repos_path, git_main_branch):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master"
+        repos_path, target="clone", branch=git_main_branch
     )
     root.component.deploy()
     assert os.path.isfile(
@@ -65,9 +65,11 @@ def test_directly_after_clone_nothing_is_merged(root, repos_path):
 
 
 @pytest.mark.slow
-def test_setting_branch_updates_on_incoming_changes(root, repos_path):
+def test_setting_branch_updates_on_incoming_changes(
+    root, repos_path, git_main_branch
+):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master"
+        repos_path, target="clone", branch=git_main_branch
     )
     root.component.deploy()
     cmd(
@@ -149,8 +151,12 @@ def test_tag_does_switch_tag(root, repos_path):
 
 
 @pytest.mark.slow
-def test_has_changes_counts_changes_to_tracked_files(root, repos_path):
-    clone = batou.lib.git.Clone(repos_path, target="clone", branch="master")
+def test_has_changes_counts_changes_to_tracked_files(
+    root, repos_path, git_main_branch
+):
+    clone = batou.lib.git.Clone(
+        repos_path, target="clone", branch=git_main_branch
+    )
     root.component += clone
     root.component.deploy()
     assert not clone.has_changes()
@@ -160,8 +166,12 @@ def test_has_changes_counts_changes_to_tracked_files(root, repos_path):
 
 
 @pytest.mark.slow
-def test_has_changes_counts_untracked_files_as_changes(root, repos_path):
-    clone = batou.lib.git.Clone(repos_path, target="clone", branch="master")
+def test_has_changes_counts_untracked_files_as_changes(
+    root, repos_path, git_main_branch
+):
+    clone = batou.lib.git.Clone(
+        repos_path, target="clone", branch=git_main_branch
+    )
     root.component += clone
     root.component.deploy()
     assert not clone.has_changes()
@@ -170,9 +180,13 @@ def test_has_changes_counts_untracked_files_as_changes(root, repos_path):
 
 
 @pytest.mark.slow
-def test_clean_clone_updates_on_incoming_changes(root, repos_path):
+def test_clean_clone_updates_on_incoming_changes(
+    root, repos_path, git_main_branch
+):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master"
+        repos_path,
+        target="clone",
+        branch=git_main_branch,
     )
     root.component.deploy()
     cmd(
@@ -185,9 +199,11 @@ def test_clean_clone_updates_on_incoming_changes(root, repos_path):
 
 
 @pytest.mark.slow
-def test_no_clobber_changes_protected_on_update_with_incoming(root, repos_path):
+def test_no_clobber_changes_protected_on_update_with_incoming(
+    root, repos_path, git_main_branch
+):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master"
+        repos_path, target="clone", branch=git_main_branch
     )
     root.component.deploy()
     cmd(
@@ -205,10 +221,10 @@ def test_no_clobber_changes_protected_on_update_with_incoming(root, repos_path):
 
 @pytest.mark.slow
 def test_no_clobber_changes_protected_on_update_without_incoming(
-    root, repos_path
+    root, repos_path, git_main_branch
 ):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master"
+        repos_path, target="clone", branch=git_main_branch
     )
     root.component.deploy()
     cmd("cd {dir}/clone; echo foobar >foo".format(dir=root.workdir))
@@ -220,9 +236,11 @@ def test_no_clobber_changes_protected_on_update_without_incoming(
 
 
 @pytest.mark.slow
-def test_no_clobber_untracked_files_are_kept_on_update(root, repos_path):
+def test_no_clobber_untracked_files_are_kept_on_update(
+    root, repos_path, git_main_branch
+):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master"
+        repos_path, target="clone", branch=git_main_branch
     )
     root.component.deploy()
     cmd(
@@ -238,9 +256,11 @@ def test_no_clobber_untracked_files_are_kept_on_update(root, repos_path):
 
 
 @pytest.mark.slow
-def test_clobber_changes_lost_on_update_with_incoming(root, repos_path):
+def test_clobber_changes_lost_on_update_with_incoming(
+    root, repos_path, git_main_branch
+):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master", clobber=True
+        repos_path, target="clone", branch=git_main_branch, clobber=True
     )
     root.component.deploy()
     cmd(
@@ -256,9 +276,11 @@ def test_clobber_changes_lost_on_update_with_incoming(root, repos_path):
 
 
 @pytest.mark.slow
-def test_clobber_changes_lost_on_update_without_incoming(root, repos_path):
+def test_clobber_changes_lost_on_update_without_incoming(
+    root, repos_path, git_main_branch
+):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master", clobber=True
+        repos_path, target="clone", branch=git_main_branch, clobber=True
     )
     root.component.deploy()
     cmd("cd {dir}/clone; echo foobar >foo".format(dir=root.workdir))
@@ -268,9 +290,11 @@ def test_clobber_changes_lost_on_update_without_incoming(root, repos_path):
 
 
 @pytest.mark.slow
-def test_clobber_untracked_files_are_removed_on_update(root, repos_path):
+def test_clobber_untracked_files_are_removed_on_update(
+    root, repos_path, git_main_branch
+):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master", clobber=True
+        repos_path, target="clone", branch=git_main_branch, clobber=True
     )
     root.component.deploy()
     cmd(
@@ -283,9 +307,11 @@ def test_clobber_untracked_files_are_removed_on_update(root, repos_path):
 
 
 @pytest.mark.slow
-def test_clean_clone_vcs_update_false_leaves_changes_intact(root, repos_path):
+def test_clean_clone_vcs_update_false_leaves_changes_intact(
+    root, repos_path, git_main_branch
+):
     root.component += batou.lib.git.Clone(
-        repos_path, target="clone", branch="master", vcs_update=False
+        repos_path, target="clone", branch=git_main_branch, vcs_update=False
     )
     root.component.deploy()
     cmd(
@@ -300,8 +326,12 @@ def test_clean_clone_vcs_update_false_leaves_changes_intact(root, repos_path):
 
 
 @pytest.mark.slow
-def test_changed_remote_is_updated(root, repos_path, repos_path2):
-    git = batou.lib.git.Clone(repos_path, target="clone", branch="master")
+def test_changed_remote_is_updated(
+    root, repos_path, repos_path2, git_main_branch
+):
+    git = batou.lib.git.Clone(
+        repos_path, target="clone", branch=git_main_branch
+    )
     root.component += git
 
     # Fresh, unrelated repo
@@ -318,8 +348,10 @@ def test_changed_remote_is_updated(root, repos_path, repos_path2):
 
 
 @pytest.mark.slow
-def test_clone_into_workdir_works(root, repos_path, repos_path2):
-    git = batou.lib.git.Clone(repos_path, branch="master")
+def test_clone_into_workdir_works(
+    root, repos_path, repos_path2, git_main_branch
+):
+    git = batou.lib.git.Clone(repos_path, branch=git_main_branch)
     with open(root.component.map("asdf"), "w") as f:
         f.write("foo")
     root.component += git
@@ -328,7 +360,7 @@ def test_clone_into_workdir_works(root, repos_path, repos_path2):
 
 
 @pytest.mark.slow
-def test_can_read_untracked_files_correctly(root, repos_path):
+def test_can_read_untracked_files_correctly(root, repos_path, git_main_branch):
     fun_strings = [
         "this string has spaces in it",
         "this string has a ' in it",
@@ -338,7 +370,7 @@ def test_can_read_untracked_files_correctly(root, repos_path):
         "this string has a \\ and a ' in it",
         "this string has a \\ and a & in it",
     ]
-    git = batou.lib.git.Clone(repos_path, branch="master")
+    git = batou.lib.git.Clone(repos_path, branch=git_main_branch)
     root.component += git
     root.component.deploy()
     for s in fun_strings:
