@@ -3,6 +3,7 @@
 *.status
 *.sublime-*
 *src/batou.egg-info/
+.appenv
 .batou
 .batou-lock
 .coverage
