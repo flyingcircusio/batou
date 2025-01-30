@@ -160,10 +160,10 @@ Host {hostname} {aliases}
 
         rsync_path = ""
         if host.environment.service_user:
-            rsync_path = (
-                f'--rsync-path="sudo -u {host.environment.service_user} '
-                f'rsync"'
-            )
+            user_prefix = f"sudo -u {host.environment.service_user}"
+            ssh_cmd_prefix = user_prefix
+            rsync_path = f'--rsync-path="{user_prefix} rsync"'
+
         env = self._initial_provision_env(host)
         env["SSH_CONFIG"] = self.ssh_config_file
         env["RSYNC_RSH"] = "ssh -F {}".format(self.ssh_config_file)
@@ -254,6 +254,7 @@ Host {hostname} {aliases}
                     self.SEED_TEMPLATE.format(
                         seed_script=seed_script,
                         rsync_path=rsync_path,
+                        ssh_cmd_prefix=ssh_cmd_prefix,
                         ENV=batou.utils.export_environment_variables(env),
                     )
                 )
@@ -313,7 +314,7 @@ ECHO() {{
 
 RUN() {{
     cmd=$@
-    ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
+    ssh -F $SSH_CONFIG $PROVISION_CONTAINER "{ssh_cmd_prefix} $cmd"
 }}
 
 COPY() {{
@@ -394,7 +395,7 @@ ECHO() {{
 
 RUN() {{
     cmd=$@
-    ssh -F $SSH_CONFIG $PROVISION_VM "$cmd"
+    ssh -F $SSH_CONFIG $PROVISION_VM "{ssh_cmd_prefix} $cmd"
 }}
 
 COPY() {{
