@@ -343,6 +343,8 @@ class Environment(object):
 
     def load_provisioners(self, config):
         self.provisioners = {}
+        if self.check_and_predict_local:
+            return
         for section in config:
             if not section.startswith("provisioner:"):
                 continue

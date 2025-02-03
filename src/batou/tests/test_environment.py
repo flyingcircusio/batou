@@ -342,3 +342,12 @@ def test_unused_components_get_reported(sample_service, output):
     e.configure()
 
     assert "'Unused': BadUnused" in output.backend.output
+
+
+def test_environment_with_check_local_does_not_load_provisioners(
+    sample_service,
+):
+    e = Environment("test-with-check-local", check_and_predict_local=True)
+    e.load()
+
+    assert not e.provisioners
