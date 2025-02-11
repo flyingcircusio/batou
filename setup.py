@@ -23,6 +23,9 @@ setup(
         "py>=1.11.0",
         "pyyaml",
         "remote-pdb",
+        "pyrage",
+        "cryptography",
+        "bcrypt",
     ],
     extras_require={
         "test": [
