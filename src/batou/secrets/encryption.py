@@ -7,7 +7,7 @@ import pty
 import subprocess
 import sys
 import tempfile
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import pyrage
 from configupdater import ConfigUpdater
@@ -39,7 +39,9 @@ class EncryptedFile:
         if self._decrypted is None:
             self._decrypted = self.decrypt()
         if self._decrypted is None:
-            raise ValueError("No decrypted data available")
+            raise ValueError(
+                f"No decrypted data available for file `{self.path}`"
+            )
         return self._decrypted
 
     def decrypt(self) -> bytes:
@@ -271,11 +273,17 @@ def get_identities():
             print(f"Found identities: {paths}", file=sys.stderr)
 
         def load(id_path):
-            priv_key = serialization.load_ssh_private_key(
-                open(id_path, "rb").read(),
-                get_passphrase(id_path).encode("utf-8"),
-                default_backend(),
-            )
+            with open(id_path, "rb") as f:
+                key_content = f.read()
+            try:
+                priv_key = serialization.load_ssh_private_key(key_content, None)
+            except ValueError:
+                passphrase = get_passphrase(id_path).encode("utf-8")
+                priv_key = serialization.load_ssh_private_key(
+                    key_content,
+                    passphrase,
+                )
+
             pkey = priv_key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.OpenSSH,
@@ -289,8 +297,7 @@ def get_identities():
                 x = load(p)
                 identities.append(x)
             except Exception as e:
-                if debug:
-                    print(e)
+                print(e, file=sys.stderr)
                 continue
 
     return identities
@@ -336,10 +343,10 @@ class AGEEncryptedFile(EncryptedFile):
 
         for identity in get_identities():
             try:
-                encrypted_content = open(self.path, "rb").read()
-                result = pyrage.decrypt(encrypted_content, [identity])
-
-                if result:
+                with open(self.path, "rb") as f:
+                    encrypted_content = f.read()
+                if encrypted_content:
+                    result = pyrage.decrypt(encrypted_content, [identity])
                     return result
             except Exception as e:
                 print(f"error: {e}")
@@ -353,21 +360,56 @@ class AGEEncryptedFile(EncryptedFile):
         if not self.writeable:
             raise ValueError("File is not writeable")
 
-        recipients = [pyrage.ssh.Recipient.from_str(rec) for rec in recipients]
-        b = pyrage.encrypt(content, recipients)
+        try:
+            recipients = [
+                pyrage.ssh.Recipient.from_str(rec) for rec in recipients
+            ]
+            b = pyrage.encrypt(content, recipients)
 
-        with open(self.path, "wb") as f:
-            f.write(b)
+            with open(self.path, "wb") as f:
+                f.write(b)
+            self.is_new = False
+        except pyrage.RecipientError:
+            self.write_legacy(content, recipients, reencrypt)
+
+    def write_legacy(
+        self, content: bytes, recipients: List[str], reencryt: bool = False
+    ):
+        """
+        Fallback to writing secrets with the age binary via subprocesses
+        """
+        args = ["age", "-e"]
+        for recipient in recipients:
+            args.extend(["-r", recipient])
+        args.extend(["-o", str(self.path)])
+
+        if debug:
+            print(f"Running `{args}`", file=sys.stderr)
+
+        try:
+            subprocess.run(
+                args,
+                input=content,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            raise AgeCallError.from_context(e.cmd, e.returncode, e.stderr)
+        except OSError:
+            raise RuntimeError(
+                "Could not find age binary. Is age installed? I tried looking for: `age`"
+            )
         self.is_new = False
 
 
 class DiffableAGEEncryptedFile(EncryptedFile):
     file_ending = ".age-diffable"
+    _decrypted_content: ConfigUpdater
+    _encrypted_content: ConfigUpdater
 
     def __init__(self, path: "pathlib.Path", writeable: bool = False):
         super().__init__(path, writeable)
-        self._decrypted_content = None
-        self._encrypted_content = None
 
     def decrypt_age_string(self, content: str, ident) -> str:
         b = base64.b64decode(content)
@@ -379,15 +421,21 @@ class DiffableAGEEncryptedFile(EncryptedFile):
         b = pyrage.encrypt(content.encode("utf-8"), recipients)
         return base64.b64encode(b).decode("utf-8")
 
+    def encrypt_age_string_legacy(
+        self, content: str, recipients: List[str]
+    ) -> str:
+        # tmpfile -> AGEEncryptedFile -> write plaintext -> read ciphertext -> base64
+        with tempfile.NamedTemporaryFile() as temp_file:
+            with AGEEncryptedFile(pathlib.Path(temp_file.name), True) as ef:
+                ef.write_legacy(content.encode("utf-8"), recipients)
+            with open(temp_file.name, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+
     def decrypt(self):
         # read the entire file, parse as ConfigUpdater
 
         for ident in get_identities():
             try:
-                # TODO improve identity handling
-                identities = get_identities()
-                ident = identities[0]
-
                 if not self.locked:
                     raise ValueError("File is not locked")
 
@@ -423,7 +471,7 @@ class DiffableAGEEncryptedFile(EncryptedFile):
 
             except Exception as e:
                 print(f"error: {e}")
-                continue
+                raise e
 
     def _write(
         self, content: bytes, recipients: List[str], reencrypt: bool = False
@@ -432,7 +480,13 @@ class DiffableAGEEncryptedFile(EncryptedFile):
         config = ConfigUpdater()
         config.read_string(content.decode("utf-8"))
 
-        recipients = [pyrage.ssh.Recipient.from_str(rec) for rec in recipients]
+        try:
+            recipients = [
+                pyrage.ssh.Recipient.from_str(rec) for rec in recipients
+            ]
+            encrypt_method = self.encrypt_age_string
+        except pyrage.RecipientError:
+            encrypt_method = self.encrypt_age_string_legacy
 
         # for each section
         for section in config.sections():
@@ -452,13 +506,11 @@ class DiffableAGEEncryptedFile(EncryptedFile):
                 value_has_changed = new_value != old_value
 
                 if reencrypt or value_has_changed:
-                    new_encrypted_value = self.encrypt_age_string(
-                        new_value, recipients
-                    )
+                    new_encrypted_value = encrypt_method(new_value, recipients)
                 else:
-                    new_encrypted_value = self._encrypted_content[section][
-                        option
-                    ].value
+                    new_encrypted_value = (
+                        self._encrypted_content[section][option].value or ""
+                    )
 
                 config[section][option].value = new_encrypted_value
 
@@ -469,7 +521,7 @@ class DiffableAGEEncryptedFile(EncryptedFile):
         self.is_new = False
 
 
-all_encrypted_file_types = [
+all_encrypted_file_types: List[type[EncryptedFile]] = [
     NoBackingEncryptedFile,
     GPGEncryptedFile,
     AGEEncryptedFile,
