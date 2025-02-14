@@ -63,6 +63,12 @@ def ensure_age_identity(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def ensure_git_isolated(monkeypatch):
+    monkeypatch.setitem(os.environ, "GIT_CONFIG_GLOBAL", "")
+    monkeypatch.setitem(os.environ, "GIT_CONFIG_SYSTEM", "")
+
+
+@pytest.fixture(autouse=True)
 def reset_address_defaults():
     v4, v6 = batou.utils.Address.require_v4, batou.utils.Address.require_v6
     yield
