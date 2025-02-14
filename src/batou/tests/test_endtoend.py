@@ -122,7 +122,7 @@ batou/2... (cpython 3...)
 ERROR: Component usage error
         Message: SyncDirectory requires a source to sync from.
 Traceback (most recent call last):
-  File ".../examples/errors2/components/component1/component.py", line ..., in configure
+  File ".../examples/errors2/components/component1/component.py", line 37, in configure
     self += SyncDirectory("foo")
 
 
@@ -132,7 +132,7 @@ ERROR: Trying to access address family IPv6 which is not configured for localhos
 ERROR: crontab: No cron jobs found.
  Affected hosts: localhost
 
-ERROR: malformed node or strin...: ...
+ERROR: malformed node or strin...: <...Name object at 0x...>
       Attribute: Component1.do_what_is_needed
      Conversion: convert_literal('false')
  Affected hosts: localhost
@@ -394,7 +394,7 @@ batou/2... (cpython 3...)
 ... Connecting hosts and configuring model ... ...
 🌐 localhost: Connecting via local (1/1)
 ... Summary ...
-Consistency check took total=...s
+Deployment took total=...s, connect=...s, deploy=∅
 ... CONSISTENCY CHECK FINISHED ...
 """
     )
@@ -439,9 +439,11 @@ batou/2... (cpython 3...)
 📦 main: Loading environment `gocept`...
 🔍 main: Verifying repository ...
 🔑 main: Loading secrets ...
-... LOCAL CONSISTENCY CHECK ...
+... Connecting hosts and configuring model ... ...
+🌐 test01: Connecting via local (1/2)
+🌐 test02: Connecting via local (2/2)
 ... Summary ...
-Consistency check took total=...s
+Deployment took total=...s, connect=...s, deploy=∅
 ... CONSISTENCY CHECK (local) FINISHED ...
 """
     )
