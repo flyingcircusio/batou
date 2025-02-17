@@ -7,7 +7,7 @@ import pty
 import subprocess
 import sys
 import tempfile
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Type
 
 import pyrage
 from configupdater import ConfigUpdater
@@ -521,7 +521,7 @@ class DiffableAGEEncryptedFile(EncryptedFile):
         self.is_new = False
 
 
-all_encrypted_file_types: List[type[EncryptedFile]] = [
+all_encrypted_file_types: List[Type[EncryptedFile]] = [
     NoBackingEncryptedFile,
     GPGEncryptedFile,
     AGEEncryptedFile,
