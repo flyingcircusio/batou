@@ -3,6 +3,7 @@ import os
 import os.path
 import sys
 import textwrap
+import tracemalloc
 from typing import Optional
 
 import importlib_resources
@@ -17,6 +18,7 @@ from batou._output import TerminalBackend, output
 
 
 def main(args: Optional[list] = None) -> None:
+    tracemalloc.start()
     os.chdir(os.environ["APPENV_BASEDIR"])
     version = (
         importlib_resources.files("batou")

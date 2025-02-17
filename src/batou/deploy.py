@@ -5,6 +5,7 @@ import sys
 import threading
 import time
 import traceback
+import tracemalloc
 from concurrent.futures import ThreadPoolExecutor
 
 from batou import (
@@ -217,6 +218,13 @@ class Deployment(object):
             raise ConfigurationError.from_context(
                 "No host found in environment."
             )
+
+        snapshot = tracemalloc.take_snapshot()
+        top_stats = snapshot.statistics("lineno")
+
+        print("[ Top 10 ]")
+        for stat in top_stats[:10]:
+            print(stat)
         # if there are no errors, we're done
         if not all_errors:
             return
