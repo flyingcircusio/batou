@@ -1,0 +1,1 @@
+- rewrite secret handling internals to improve de- and encrypting perfomance
