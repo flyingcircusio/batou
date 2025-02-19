@@ -1,4 +1,4 @@
-# appenv-requirements-hash: 92e251bc834f921c996b9af42180afdf00414e12ee57291b199a6127ff5e6897
+# appenv-requirements-hash: 74d5bb54e4d2a63186008bba11682322569972db5811e81bf41bc371ed891342
 -e ../../
 ConfigUpdater==3.2
 Jinja2==3.1.5
@@ -15,7 +15,7 @@ importlib_metadata==8.6.1
 importlib_resources==6.5.2
 py==1.11.0
 pycparser==2.22
-pyrage==1.2.3
+pyrage==1.2.4
 remote-pdb==2.1.0
 requests==2.32.3
 setuptools==75.8.0

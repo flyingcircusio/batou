@@ -15,7 +15,7 @@ importlib_metadata==8.6.1
 importlib_resources==6.5.2
 py==1.11.0
 pycparser==2.22
-pyrage==1.2.3
+pyrage==1.2.4
 remote-pdb==2.1.0
 requests==2.32.3
 setuptools==75.8.0
