@@ -81,7 +81,7 @@ def test_migrate__migrate__1(migrations, output):
     given version.
     """
     assert migrate(2300) == 2411
-    assert "Version: 2301\n\nVersion: 2411\n\n" == output.backend.output
+    assert "•  Version: 2301\n\n•  Version: 2411\n\n" == output.backend.output
 
 
 def test_migrate__migrate__2(migrations, output):

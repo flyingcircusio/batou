@@ -21,9 +21,6 @@ deployment_base = ""
 # bootstrapping we define it here and then re-import in the _output module.
 
 
-_no_icon = object()
-
-
 class Output(object):
     """Manage the output of various parts of batou to achieve
     consistency wrt to formatting and display.
@@ -54,25 +51,29 @@ class Output(object):
         self.clear_buffer()
         self._flushing = False
 
-    def line(self, message, debug=False, icon=_no_icon, **format):
+    def line(self, message, debug=False, icon=False, **format):
         if debug and not self.enable_debug:
             return
+        self.flush_buffer()
+
         if icon is None:
             icon = "   "
-        elif icon is _no_icon:
+        elif icon is False:
             icon = ""
         else:
             icon = f"{icon} "
-
-        self.flush_buffer()
-        self.backend.line(f"{icon}{message}", **format)
+        message = f"{icon}{message}"
+        if not message.strip():
+            # Clean out lines which only contain whitespace.
+            message = ""
+        self.backend.line(message, **format)
 
     def annotate(self, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        lines = message.split("\n")
-        message = "\n".join(lines)
+        # lines = message.split("\n")
+        # message = "\n".join(lines)
         self.line(message, icon=icon, **format)
 
     def tabular(self, key, value, separator=": ", debug=False, **kw):
@@ -106,7 +107,7 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        self.step("ERROR", message, red=True)
+        self.step("ERROR", message, icon=_no_icon, red=True)
         if exc_info:
             if self.enable_debug:
                 out = traceback.format_exception(*exc_info)
