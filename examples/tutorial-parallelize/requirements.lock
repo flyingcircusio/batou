@@ -2,7 +2,7 @@
 -e ../../
 ConfigUpdater==3.2
 Jinja2==3.1.5
-MarkupSafe==3.0.2
+MarkupSafe==2.1.5
 PyYAML==6.0.2
 bcrypt==4.2.1
 certifi==2025.1.31
@@ -11,13 +11,13 @@ charset-normalizer==3.4.1
 cryptography==44.0.1
 execnet==2.1.1
 idna==3.10
-importlib_metadata==8.6.1
-importlib_resources==6.5.2
+importlib_metadata==8.5.0
+importlib_resources==6.4.5
 py==1.11.0
 pycparser==2.22
-pyrage==1.2.4
+pyrage==1.2.1
 remote-pdb==2.1.0
 requests==2.32.3
-setuptools==75.8.0
-urllib3==2.3.0
-zipp==3.21.0
+setuptools==75.3.0
+urllib3==2.2.3
+zipp==3.20.2
