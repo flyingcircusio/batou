@@ -12,12 +12,12 @@ from ._output import output
 with open(os.path.dirname(__file__) + "/version.txt") as f:
     __version__ = f.read().strip()
 
-# Configure `remote-pdb` to be used with `breakpoint()` in Python 3.7+:
-os.environ["PYTHONBREAKPOINT"] = "remote_pdb.set_trace"
-if not os.environ.get("REMOTE_PDB_HOST", None):
-    os.environ["REMOTE_PDB_HOST"] = "127.0.0.1"
-if not os.environ.get("REMOTE_PDB_PORT", None):
-    os.environ["REMOTE_PDB_PORT"] = "4444"
+# # Configure `remote-pdb` to be used with `breakpoint()` in Python 3.7+:
+# os.environ["PYTHONBREAKPOINT"] = "remote_pdb.set_trace"
+# if not os.environ.get("REMOTE_PDB_HOST", None):
+#     os.environ["REMOTE_PDB_HOST"] = "127.0.0.1"
+# if not os.environ.get("REMOTE_PDB_PORT", None):
+#     os.environ["REMOTE_PDB_PORT"] = "4444"
 
 
 def prepare_error(error):
