@@ -91,6 +91,9 @@ def decrypt_to_stdout(file: str):
     file_path = pathlib.Path(file).absolute()
     with get_encrypted_file(file_path) as encrypted_file:
         decrypted = encrypted_file.decrypt()
-    sys.stdout.buffer.write(decrypted)
+    if decrypted:
+        sys.stdout.buffer.write(decrypted)
+    else:
+        print("(unable to decrypt content)")
     sys.stdout.flush()
     return 0

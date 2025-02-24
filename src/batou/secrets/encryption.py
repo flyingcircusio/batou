@@ -279,11 +279,7 @@ def get_passphrase(identity: str) -> str:
     op = os.environ.get("BATOU_AGE_IDENTITY_PASSPHRASE")
 
     if op and not op.startswith("op://"):
-        raise ValueError(
-            "The environment variable BATOU_AGE_IDENTITY_PASSPHRASE is set, "
-            "but it's not an 1password url"
-        )
-
+        passphrase = op
     if op:
         op_process = subprocess.run(
             ["op", "read", op],
