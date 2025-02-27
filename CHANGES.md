@@ -1,6 +1,6 @@
 
 
-## 2.6.0a2 (unreleased)
+## 2.6.0a2 (2025-02-27)
 -----------------------
 
 - When using --local with --predict-only or --consistency-only, the provisioning step is now skipped. Previously, the provisioning step was always executed, even when using --predict-only or --consistency-only.
