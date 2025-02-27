@@ -1,1 +1,2 @@
 - rewrite secret handling internals to improve de- and encrypting perfomance
+- breaking: drop support for python 3.7
