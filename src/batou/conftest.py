@@ -1,4 +1,6 @@
 import os.path
+import subprocess
+import tempfile
 
 import pytest
 
@@ -31,3 +33,18 @@ def reset_address_defaults():
     v4, v6 = batou.utils.Address.require_v4, batou.utils.Address.require_v6
     yield
     batou.utils.Address.require_v4, batou.utils.Address.require_v6 = v4, v6
+
+
+@pytest.fixture(scope="session")
+def git_main_branch() -> str:
+    if initial_branch := subprocess.check_output(
+        ["git", "config", "get", "init.defaultbranch"]
+    ).decode("ascii"):
+        return initial_branch
+    with tempfile.TemporaryDirectory() as tmpdir:
+        subprocess.check_call("git init .", shell=True)
+        return (
+            subprocess.check_output(["git", "branch", "--show-current"])
+            .decode("ascii")
+            .strip()
+        )

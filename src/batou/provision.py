@@ -34,6 +34,10 @@ class FCDevProvisioner(Provisioner):
     target_host = None
     aliases = ()
 
+    def __init__(self, name):
+        super().__init__(name)
+        self._known_ssh_hosts = {}
+
     def _prepare_ssh(self, host):
         # XXX application / user-specific files
         # https://unix.stackexchange.com/questions/312988/understanding-home-configuration-file-locations-config-and-local-sha
@@ -61,7 +65,7 @@ class FCDevProvisioner(Provisioner):
                 f_target.write(f_packaged.read())
         os.chmod(local_insecure_key, 0o600)
 
-        ssh_config.append(
+        self._known_ssh_hosts[host.name] = (
             """
 Host {hostname} {aliases}
     HostName {hostname}
@@ -78,6 +82,11 @@ Host {hostname} {aliases}
                 insecure_private_key=local_insecure_key,
             )
         )
+
+        # Gather all known hosts together - otherwise we can only access
+        # one provisioned host per environment.
+        for section in self._known_ssh_hosts.values():
+            ssh_config.append(section)
 
         # More generic includes need to go last because parameters are
         # set by a match-first and things like User settings for * may
@@ -151,10 +160,10 @@ Host {hostname} {aliases}
 
         rsync_path = ""
         if host.environment.service_user:
-            rsync_path = (
-                f'--rsync-path="sudo -u {host.environment.service_user} '
-                f'rsync"'
-            )
+            user_prefix = f"sudo -u {host.environment.service_user}"
+            ssh_cmd_prefix = user_prefix
+            rsync_path = f'--rsync-path="{user_prefix} rsync"'
+
         env = self._initial_provision_env(host)
         env["SSH_CONFIG"] = self.ssh_config_file
         env["RSYNC_RSH"] = "ssh -F {}".format(self.ssh_config_file)
@@ -245,6 +254,7 @@ Host {hostname} {aliases}
                     self.SEED_TEMPLATE.format(
                         seed_script=seed_script,
                         rsync_path=rsync_path,
+                        ssh_cmd_prefix=ssh_cmd_prefix,
                         ENV=batou.utils.export_environment_variables(env),
                     )
                 )
@@ -304,13 +314,13 @@ ECHO() {{
 
 RUN() {{
     cmd=$@
-    ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
+    ssh -F $SSH_CONFIG $PROVISION_CONTAINER "{ssh_cmd_prefix} $cmd"
 }}
 
 COPY() {{
     what=${{1?what to copy}}
     where=${{2?where to copy}}
-    rsync -avz --no-l --safe-links {rsync_path} $what $PROVISION_CONTAINER:$where
+    rsync -avz --no-owner --no-group --no-l --safe-links {rsync_path} $what $PROVISION_CONTAINER:$where
 }}
 
 if [ ${{PROVISION_REBUILD+x}} ]; then
@@ -385,13 +395,13 @@ ECHO() {{
 
 RUN() {{
     cmd=$@
-    ssh -F $SSH_CONFIG $PROVISION_VM "$cmd"
+    ssh -F $SSH_CONFIG $PROVISION_VM "{ssh_cmd_prefix} $cmd"
 }}
 
 COPY() {{
     what=${{1?what to copy}}
     where=${{2?where to copy}}
-    rsync -avz --no-l --safe-links {rsync_path} $what $PROVISION_VM:$where
+    rsync -avz --no-owner --no-group --no-l --safe-links {rsync_path} $what $PROVISION_VM:$where
 }}
 
 if [ ${{PROVISION_REBUILD+x}} ]; then
