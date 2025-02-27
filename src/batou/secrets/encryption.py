@@ -280,7 +280,7 @@ def get_passphrase(identity: str) -> str:
 
     if op and not op.startswith("op://"):
         passphrase = op
-    if op:
+    elif op:
         op_process = subprocess.run(
             ["op", "read", op],
             stdout=subprocess.PIPE,
