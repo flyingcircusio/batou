@@ -199,12 +199,19 @@ class Deployment(object):
             yield c
 
     def connect(self):
+        snapshot = tracemalloc.take_snapshot()
+        top_stats = snapshot.statistics("lineno")
         output.section("Connecting hosts and configuring model ...")
+
         # Consume the connection iterator to start all remaining connections
         # but do not wait for them to be joined.
         with self.timer.step("connect"):
             self.connections = list(self._connections())
             [c.join() for c in self.connections]
+
+        snapshot = tracemalloc.take_snapshot()
+        top_stats = snapshot.statistics("lineno")
+
         all_errors = []
         all_reporting_hostnames = set()
         for c in self.connections:
