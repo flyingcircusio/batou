@@ -1,6 +1,6 @@
 
 
-## 2.5.3 (unreleased)
+## 2.5.3 (2025-03-05)
 -----------------------
 
 - Fix git bundle shipping: Due to a bug, the entire branch was shipped on every deployment. This also required a lot of memory (#490)
