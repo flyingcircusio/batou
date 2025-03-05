@@ -3,7 +3,7 @@
 ## 2.5.4 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Fix git bundle shipping with an empty remote (introduced in 2.5.3)
 
 
 ## 2.5.3 (2025-03-05)
