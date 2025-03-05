@@ -385,8 +385,9 @@ class GitPullRepository(GitRepository):
 
 class GitBundleRepository(GitRepository):
     def _ship(self, host):
-        head = host.rpc.git_current_head().decode("ascii")
+        head = host.rpc.git_current_head()
         if head:
+            head = head.decode("ascii")
             # check if head is in local branch, if not, bundle everything and ignore remote head
             try:
                 cmd(
