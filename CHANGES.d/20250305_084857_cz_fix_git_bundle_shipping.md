@@ -1,0 +1,1 @@
+- Fix git bundle shipping: Due to a bug, the entire branch was shipped on every deployment. This also required a lot of memory (#490)
