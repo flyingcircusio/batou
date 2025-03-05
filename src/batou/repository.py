@@ -385,7 +385,7 @@ class GitPullRepository(GitRepository):
 
 class GitBundleRepository(GitRepository):
     def _ship(self, host):
-        head = host.rpc.git_current_head()
+        head = host.rpc.git_current_head().decode("ascii")
         if head:
             # check if head is in local branch, if not, bundle everything and ignore remote head
             try:
@@ -398,7 +398,6 @@ class GitBundleRepository(GitRepository):
         if head is None:
             bundle_range = self.branch
         else:
-            head = head.decode("ascii")
             bundle_range = f"{head}..{self.branch}"
         fd, bundle_file = tempfile.mkstemp()
         os.close(fd)
