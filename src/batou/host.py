@@ -120,6 +120,7 @@ class Host(object):
     ignore = False
     platform = None
     _provisioner = None
+    _provision_info: dict
     remap = False
     ignore = False
 
@@ -149,6 +150,7 @@ class Host(object):
             config.get("provision-dynamic-hostname", "False")
         )
         self._provisioner = config.get("provisioner")
+        self._provision_info = {}
         if self.provisioner:
             self.provisioner.configure_host(self, config)
 
