@@ -29,7 +29,7 @@ class Provisioner(object):
         return name
 
 
-class FCDevProvisioner(Provisioner):
+class FCDevVM(Provisioner):
 
     target_host = None
     aliases = ()
