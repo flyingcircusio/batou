@@ -5,6 +5,7 @@ import os.path
 import mock
 import pytest
 
+import batou.utils
 from batou import remote_core
 
 
@@ -309,6 +310,8 @@ def test_Deployment_sets_os_environ_on_load(monkeypatch):
         env_name="tutorial",
         host_name="localhost",
         overrides={},
+        resolve_override={},
+        resolve_v6_override={},
         secret_files=None,
         secret_data=None,
         host_data={},
@@ -319,3 +322,28 @@ def test_Deployment_sets_os_environ_on_load(monkeypatch):
     dep.load()
 
     assert os.environ["MY_ENV_VAR"] == "MY-VALUE"
+
+
+def test_Deployment_sets_resolver_overrides(monkeypatch):
+    monkeypatch.chdir("examples/tutorial-helloworld")
+
+    assert "asdf" not in batou.utils.resolve_override
+    assert "asdf" not in batou.utils.resolve_v6_override
+
+    dep = remote_core.Deployment(
+        env_name="tutorial",
+        host_name="localhost",
+        overrides={},
+        resolve_override={"asdf": "127.0.0.1"},
+        resolve_v6_override={"asdf": "::1"},
+        secret_files=None,
+        secret_data=None,
+        host_data={},
+        timeout=None,
+        platform=None,
+        os_env={"MY_ENV_VAR": "MY-VALUE"},
+    )
+    dep.load()
+
+    assert batou.utils.resolve_override["asdf"] == "127.0.0.1"
+    assert batou.utils.resolve_v6_override["asdf"] == "::1"

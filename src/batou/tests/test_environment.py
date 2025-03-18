@@ -315,7 +315,7 @@ localhost: <Hello (localhost) "Hello"> verify: asdf=None\
     )
 
 
-def test_resolver_overrides(sample_service):
+def test_resolve_overrides(sample_service):
     e = Environment("test-resolver")
     e.load()
     assert {"localhost": "127.0.0.2"} == e._resolve_override
@@ -325,7 +325,7 @@ def test_resolver_overrides(sample_service):
     assert "::2" == batou.utils.resolve_v6("localhost", 0)
 
 
-def test_resolver_overrides_invalid_address(sample_service):
+def test_resolve_overrides_invalid_address(sample_service):
     e = Environment("test-resolver-invalid")
     e.load()
 
