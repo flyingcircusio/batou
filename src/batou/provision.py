@@ -378,7 +378,7 @@ Host {hostname} {aliases}
         vm_info, _ = cmd(
             f"ssh {self.target_host} cat /etc/devhost/vm-configs/{host.name}.json"
         )
-        host._provision_info = json.loads(vm_info)["srv-ip"]
+        host._provision_info = json.loads(vm_info)
         # Seed our resolver overrides for the deployment name and the real name
         # so that all other hosts can see either when using the `Address` utility
         # API, independent of specific DNS situations during bootstrapping.
@@ -387,7 +387,7 @@ Host {hostname} {aliases}
 
     @classmethod
     def from_config_section(cls, name, section):
-        instance = FCDevProvisioner(name)
+        instance = FCDevVM(name)
         instance.target_host = section["host"]
         instance.memory = section["memory"]
         instance.cores = section["cores"]
