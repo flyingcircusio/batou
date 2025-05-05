@@ -422,8 +422,6 @@ class UnknownComponentConfigurationError(ConfigurationError):
         self.root_name = root.name
         self.root_host_name = root.host.name
         self.exception_repr = prepare_error(exception)
-        stack = traceback.extract_tb(tb)
-        from batou import component, environment
 
         self.traceback = prepare_traceback(tb)
         return self
