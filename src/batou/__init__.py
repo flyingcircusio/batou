@@ -25,24 +25,32 @@ def prepare_error(error):
 
 
 def prepare_traceback(tb):
-    from batou import component, environment
-
     stack = traceback.extract_tb(tb)
+
+    return prepare_traceback_from_stack(stack)
+
+
+def prepare_traceback_from_stack(stack):
+    from batou import component, environment, remote_core
+
+    new_stack = []
+
     while stack:
-        # Delete remoting-internal stack frames.'
+        # Delete remoting-internal stack frames.
         line = stack.pop(0)
         if line[0] in [
             "<string>",
             "<remote exec>",
-            environment.__file__.rstrip("c"),
-            component.__file__.rstrip("c"),
+            environment.__file__,
+            component.__file__,
+            remote_core.__file__,
         ]:
             continue
-        stack.insert(0, line)
+        new_stack.append(line)
         break
-    if not stack:
+    if not new_stack:
         return "<no-non-remote-internal-traceback-lines-found>"
-    return "".join(traceback.format_list(stack))
+    return "".join(traceback.format_list(new_stack))
 
 
 class ReportingException(Exception):
@@ -981,3 +989,29 @@ class TemplatingError(ReportingException):
 
     def report(self):
         output.error(str(self))
+
+
+class ComponentUsageError(ConfigurationError):
+    """A component was used incorrectly."""
+
+    sort_key = (0,)
+
+    @classmethod
+    def from_context(cls, message):
+        self = cls()
+        self.message = message
+        # get a traceback to the point where the error was raised
+        tb = traceback.extract_stack()
+        # prepare the traceback for output
+        self.traceback = prepare_traceback_from_stack(tb)
+
+        return self
+
+    def __str__(self):
+        return "Component usage error: " + self.message + "\n" + self.traceback
+
+    def report(self):
+        output.error("Component usage error")
+        output.tabular("Message", self.message, red=True)
+        output.annotate("Traceback (most recent call last):", red=True)
+        output.annotate(self.traceback, red=True)

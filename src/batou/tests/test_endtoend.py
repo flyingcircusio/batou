@@ -122,6 +122,13 @@ localhost: Connecting via local (1/1)
 ERROR: Trying to access address family IPv6 which is not configured for localhost:22.
            Hint: Use `require_v6=True` when instantiating the Address object.
 
+ERROR: Component usage error
+        Message: SyncDirectory requires a source to sync from.
+Traceback (most recent call last):
+  File "/Users/elikoga/batou/examples/errors2/components/component1/component.py", line 36, in configure
+    self += SyncDirectory("foo")
+
+
 ERROR: crontab: No cron jobs found.
  Affected hosts: localhost
 
