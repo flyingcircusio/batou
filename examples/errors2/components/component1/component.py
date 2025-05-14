@@ -1,4 +1,5 @@
 from batou.component import Attribute, Component
+from batou.lib.file import SyncDirectory
 
 
 class Component1(Component):
@@ -29,6 +30,11 @@ class Component5(Component):
 
     def configure(self):
         print(self.attribute_cannot_be_expanded)
+
+
+class Component6(Component):
+    def configure(self):
+        self += SyncDirectory("foo")
 
 
 class SubComponent(Component):

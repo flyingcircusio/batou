@@ -1,0 +1,1 @@
+- Add ComponentUsageError for SyncDirectory that is raised when source is not given. Displays traceback to component usage.

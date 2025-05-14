@@ -119,6 +119,13 @@ main: Loading secrets ...
 localhost: Connecting via local (1/1)
 
 
+ERROR: Component usage error
+        Message: SyncDirectory requires a source to sync from.
+Traceback (most recent call last):
+  File ".../examples/errors2/components/component1/component.py", line 37, in configure
+    self += SyncDirectory("foo")
+
+
 ERROR: Trying to access address family IPv6 which is not configured for localhost:22.
            Hint: Use `require_v6=True` when instantiating the Address object.
 
@@ -164,8 +171,8 @@ cycle1 depends on
 cycle2 depends on
         cycle1
 
-ERROR: 10 remaining unconfigured component(s): component1, component2, component4, component5, crontab, cycle1, cycle2, dnsproblem, dnsproblem2, filemode
-======================= 11 ERRORS - CONFIGURATION FAILED =======================
+ERROR: 11 remaining unconfigured component(s): component1, component2, component4, component5, component6, crontab, cycle1, cycle2, dnsproblem, dnsproblem2, filemode
+======================= 12 ERRORS - CONFIGURATION FAILED =======================
 ====================== DEPLOYMENT FAILED (during connect) ======================
 """
     )  # noqa: E501 line too long
