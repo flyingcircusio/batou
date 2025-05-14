@@ -994,7 +994,9 @@ class TemplatingError(ReportingException):
 class ComponentUsageError(ConfigurationError):
     """A component was used incorrectly."""
 
-    sort_key = (0,)
+    @property
+    def sort_key(self):
+        return (-1, self.message)
 
     @classmethod
     def from_context(cls, message):
