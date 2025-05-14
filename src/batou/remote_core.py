@@ -144,6 +144,8 @@ class Deployment(object):
         env_name,
         host_name,
         overrides,
+        resolve_override,
+        resolve_v6_override,
         secret_files,
         secret_data,
         host_data,
@@ -154,6 +156,8 @@ class Deployment(object):
         self.env_name = env_name
         self.host_name = host_name
         self.overrides = overrides
+        self.resolve_override = resolve_override
+        self.resolve_v6_override = resolve_v6_override
         self.host_data = host_data
         self.secret_files = secret_files
         self.secret_data = secret_data
@@ -172,6 +176,12 @@ class Deployment(object):
         self.environment.deployment = self
         self.environment.load()
         self.environment.overrides = self.overrides
+
+        from batou.utils import resolve_override, resolve_v6_override
+
+        resolve_override.update(self.resolve_override)
+        resolve_v6_override.update(self.resolve_v6_override)
+
         for hostname, data in self.host_data.items():
             self.environment.hosts[hostname].data.update(data)
         self.environment.secret_files = self.secret_files

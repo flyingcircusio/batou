@@ -26,7 +26,6 @@ def exactly_one(*args):
 
 
 class Clone(Component):
-
     namevar = "url"
     target = "."
     revision = None
@@ -34,6 +33,7 @@ class Clone(Component):
     tag = None
     vcs_update = True
     clobber = False
+    url: str
 
     def configure(self):
         if not exactly_one(self.revision, self.branch, self.tag):

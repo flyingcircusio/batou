@@ -5,6 +5,7 @@ import os.path
 import mock
 import pytest
 
+import batou.utils
 from batou import remote_core
 
 
@@ -146,7 +147,6 @@ def test_whoami():
 
 
 class DummyChannel(object):
-
     _closed = False
 
     def __init__(self):
@@ -263,7 +263,7 @@ def test_channelexec_handle_exception(remote_core_mod):
         next(response)
 
 
-def test_git_remote_init_bundle(tmpdir):
+def test_git_remote_init_bundle(tmpdir, git_main_branch):
     source = tmpdir.mkdir("source")
     dest = tmpdir.mkdir("dest")
     with source.as_cwd():
@@ -271,18 +271,17 @@ def test_git_remote_init_bundle(tmpdir):
         source.join("foo.txt").write("bar")
         remote_core.cmd("git add foo.txt")
         remote_core.cmd("git commit -m bar")
-        remote_core.cmd(
-            "git bundle create {} master ".format(dest.join("batou-bundle.git"))
-        )
+        destination = dest.join("batou-bundle.git")
+        remote_core.cmd(f"git bundle create {destination} {git_main_branch}")
 
     remote_core.ensure_repository(str(dest), "git-bundle")
     remote_core.git_unbundle_code()
-    remote_core.git_update_working_copy("master")
+    remote_core.git_update_working_copy(git_main_branch)
 
     assert "bar" == dest.join("foo.txt").read()
 
 
-def test_git_remote_init_pull(tmpdir):
+def test_git_remote_init_pull(tmpdir, git_main_branch):
     source = tmpdir.mkdir("source")
     dest = tmpdir.mkdir("dest")
     with source.as_cwd():
@@ -292,8 +291,8 @@ def test_git_remote_init_pull(tmpdir):
         remote_core.cmd("git commit -m bar")
 
         remote_core.ensure_repository(str(dest), "git-bundle")
-        remote_core.git_pull_code(str(source), "master")
-        remote_core.git_update_working_copy("master")
+        remote_core.git_pull_code(str(source), git_main_branch)
+        remote_core.git_update_working_copy(git_main_branch)
 
     assert "bar" == dest.join("foo.txt").read()
 
@@ -311,6 +310,8 @@ def test_Deployment_sets_os_environ_on_load(monkeypatch):
         env_name="tutorial",
         host_name="localhost",
         overrides={},
+        resolve_override={},
+        resolve_v6_override={},
         secret_files=None,
         secret_data=None,
         host_data={},
@@ -321,3 +322,28 @@ def test_Deployment_sets_os_environ_on_load(monkeypatch):
     dep.load()
 
     assert os.environ["MY_ENV_VAR"] == "MY-VALUE"
+
+
+def test_Deployment_sets_resolver_overrides(monkeypatch):
+    monkeypatch.chdir("examples/tutorial-helloworld")
+
+    assert "asdf" not in batou.utils.resolve_override
+    assert "asdf" not in batou.utils.resolve_v6_override
+
+    dep = remote_core.Deployment(
+        env_name="tutorial",
+        host_name="localhost",
+        overrides={},
+        resolve_override={"asdf": "127.0.0.1"},
+        resolve_v6_override={"asdf": "::1"},
+        secret_files=None,
+        secret_data=None,
+        host_data={},
+        timeout=None,
+        platform=None,
+        os_env={"MY_ENV_VAR": "MY-VALUE"},
+    )
+    dep.load()
+
+    assert batou.utils.resolve_override["asdf"] == "127.0.0.1"
+    assert batou.utils.resolve_v6_override["asdf"] == "::1"

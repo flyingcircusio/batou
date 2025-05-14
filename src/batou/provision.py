@@ -1,7 +1,6 @@
+import json
 import os
 import os.path
-import shlex
-import socket
 import tempfile
 import textwrap
 import uuid
@@ -30,9 +29,81 @@ class Provisioner(object):
         return name
 
 
-class FCDevProvisioner(Provisioner):
+class FCDevVM(Provisioner):
+
     target_host = None
     aliases = ()
+    memory = None
+    cores = None
+
+    hydra_eval = ""  # deprecated
+    channel_url = ""
+    image_url = ""
+
+    SEED_TEMPLATE = """\
+#/bin/sh
+set -e
+
+{ENV}
+
+ECHO() {{
+    what=${{1?what to echo}}
+    where=${{2?where to echo}}
+    RUN "echo $what > $where"
+}}
+
+RUN() {{
+    cmd=$@
+    ssh -F $SSH_CONFIG $PROVISION_VM "{ssh_cmd_prefix} $cmd"
+}}
+
+COPY() {{
+    what=${{1?what to copy}}
+    where=${{2?where to copy}}
+    rsync -avz --no-owner --no-group --safe-links {rsync_path} $what $PROVISION_VM:$where
+}}
+
+if [ ${{PROVISION_REBUILD+x}} ]; then
+    ssh $PROVISION_HOST sudo fc-devhost destroy $PROVISION_VM
+fi
+
+cli_args="--memory $PROVISION_VM_MEMORY\\
+  --cpu $PROVISION_VM_CORES \\
+  --aliases \\"'$PROVISION_ALIASES'\\""
+
+# Error handling is done in the python part
+if [ -n "$PROVISION_HYDRA_EVAL" ]; then
+    cli_args="${{cli_args}} --hydra-eval $PROVISION_HYDRA_EVAL"
+else
+    cli_args="${{cli_args}} --image-url $PROVISION_IMAGE --channel-url $PROVISION_CHANNEL"
+fi
+
+ssh $PROVISION_HOST sudo fc-devhost ensure \\
+    $cli_args \\
+    $PROVISION_VM
+
+{seed_script}
+
+# We experimented with hiding errors in this fc-manage run to allow
+# partially defective NixOS configurations to be repaired with subsequent
+# deployment actions, so we do have to continue here.
+# However, we need to show if something goes wrong so that users have an
+# indication that the cause might be here. Especially if provisioning
+# is half-baked. Unfortunately we cant' decide whether the error is caused
+# by the provisioning or the deployment step.
+
+set +e
+RUN sudo -i fc-manage -c
+result=$?
+if [ "$result" -ne "0" ]; then
+    echo "__FC_MANAGE_DEFECT_INDICATOR__"
+fi
+
+"""  # noqa: E501 line too long
+
+    def __init__(self, name):
+        super().__init__(name)
+        self._known_ssh_hosts = {}
 
     def _prepare_ssh(self, host):
         # XXX application / user-specific files
@@ -61,7 +132,7 @@ class FCDevProvisioner(Provisioner):
                 f_target.write(f_packaged.read())
         os.chmod(local_insecure_key, 0o600)
 
-        ssh_config.append(
+        self._known_ssh_hosts[host.name] = (
             """
 Host {hostname} {aliases}
     HostName {hostname}
@@ -78,6 +149,11 @@ Host {hostname} {aliases}
                 insecure_private_key=local_insecure_key,
             )
         )
+
+        # Gather all known hosts together - otherwise we can only access
+        # one provisioned host per environment.
+        for section in self._known_ssh_hosts.values():
+            ssh_config.append(section)
 
         # More generic includes need to go last because parameters are
         # set by a match-first and things like User settings for * may
@@ -144,17 +220,26 @@ Host {hostname} {aliases}
             output.line(f" 🌐 https://{fqdn}/")
 
     def _initial_provision_env(self, host):
-        return NotImplemented
+        return {
+            "PROVISION_VM": host.name,
+            "PROVISION_HOST": self.target_host,
+            "PROVISION_ALIASES": " ".join(host.aliases.keys()),
+            "PROVISION_HYDRA_EVAL": self.hydra_eval,
+            "PROVISION_CHANNEL": self.channel_url,
+            "PROVISION_IMAGE": self.image_url,
+            "PROVISION_VM_MEMORY": self.memory,
+            "PROVISION_VM_CORES": self.cores,
+        }
 
     def provision(self, host):
         self._prepare_ssh(host)
 
         rsync_path = ""
         if host.environment.service_user:
-            rsync_path = (
-                f'--rsync-path="sudo -u {host.environment.service_user} '
-                f'rsync"'
-            )
+            user_prefix = f"sudo -u {host.environment.service_user}"
+            ssh_cmd_prefix = user_prefix
+            rsync_path = f'--rsync-path="{user_prefix} rsync"'
+
         env = self._initial_provision_env(host)
         env["SSH_CONFIG"] = self.ssh_config_file
         env["RSYNC_RSH"] = "ssh -F {}".format(self.ssh_config_file)
@@ -245,6 +330,7 @@ Host {hostname} {aliases}
                     self.SEED_TEMPLATE.format(
                         seed_script=seed_script,
                         rsync_path=rsync_path,
+                        ssh_cmd_prefix=ssh_cmd_prefix,
                         ENV=batou.utils.export_environment_variables(env),
                     )
                 )
@@ -288,157 +374,16 @@ Host {hostname} {aliases}
                     )
                     os.unlink(f.name)
 
-
-class FCDevContainer(FCDevProvisioner):
-    SEED_TEMPLATE = """\
-#/bin/sh
-set -e
-
-{ENV}
-
-ECHO() {{
-    what=${{1?what to echo}}
-    where=${{2?where to echo}}
-    RUN "echo $what > $where"
-}}
-
-RUN() {{
-    cmd=$@
-    ssh -F $SSH_CONFIG $PROVISION_CONTAINER "$cmd"
-}}
-
-COPY() {{
-    what=${{1?what to copy}}
-    where=${{2?where to copy}}
-    rsync -avz --no-l --safe-links {rsync_path} $what $PROVISION_CONTAINER:$where
-}}
-
-if [ ${{PROVISION_REBUILD+x}} ]; then
-    ssh $PROVISION_HOST sudo fc-build-dev-container destroy $PROVISION_CONTAINER
-fi
-
-ssh $PROVISION_HOST sudo fc-build-dev-container ensure $PROVISION_CONTAINER $PROVISION_CHANNEL "'$PROVISION_ALIASES'"
-
-{seed_script}
-
-# We experimented with hiding errors in this fc-manage run to allow
-# partially defective NixOS configurations to be repaired with subsequent
-# deployment actions, so we do have to continue here.
-# However, we need to show if something goes wrong so that users have an
-# indication that the cause might be here. Especially if provisioning
-# is half-baked. Unfortunately we cant' decide whether the error is caused
-# by the provisioning or the deployment step.
-
-set +e
-RUN sudo -i fc-manage -c
-result=$?
-if [ "$result" -ne "0" ]; then
-    echo "__FC_MANAGE_DEFECT_INDICATOR__"
-fi
-
-"""  # noqa: E501 line too long
-    target_host = None
-    channel = None
-    aliases = ()
-
-    @classmethod
-    def from_config_section(cls, name, section):
-        instance = FCDevContainer(name)
-        instance.target_host = section["host"]
-        instance.channel = section["channel"]
-        return instance
-
-    def suggest_name(self, name):
-        config = "-F ssh_config" if os.path.exists("ssh_config") else ""
-        out, _ = cmd(
-            "ssh {config} {target_host} 'nixos-container list'".format(
-                config=config, target_host=self.target_host
-            )
+        # Retrieve the VM information from the remote side.
+        vm_info, _ = cmd(
+            f"ssh {self.target_host} cat /etc/devhost/vm-configs/{host.name}.json"
         )
-        names = filter(None, [x.strip() for x in out.splitlines()])
-        while True:
-            name = uuid.uuid4().hex[:11]
-            if name not in names:
-                return name
-
-    def _initial_provision_env(self, host):
-        return {
-            "PROVISION_CONTAINER": host.name,
-            "PROVISION_HOST": self.target_host,
-            "PROVISION_CHANNEL": self.channel,
-            "PROVISION_ALIASES": " ".join(host.aliases.keys()),
-        }
-
-
-class FCDevVM(FCDevProvisioner):
-    SEED_TEMPLATE = """\
-#/bin/sh
-set -e
-
-{ENV}
-
-ECHO() {{
-    what=${{1?what to echo}}
-    where=${{2?where to echo}}
-    RUN "echo $what > $where"
-}}
-
-RUN() {{
-    cmd=$@
-    ssh -F $SSH_CONFIG $PROVISION_VM "$cmd"
-}}
-
-COPY() {{
-    what=${{1?what to copy}}
-    where=${{2?where to copy}}
-    rsync -avz --no-l --safe-links {rsync_path} $what $PROVISION_VM:$where
-}}
-
-if [ ${{PROVISION_REBUILD+x}} ]; then
-    ssh $PROVISION_HOST sudo fc-devhost destroy $PROVISION_VM
-fi
-
-cli_args="--memory $PROVISION_VM_MEMORY\\
-  --cpu $PROVISION_VM_CORES \\
-  --aliases \\"'$PROVISION_ALIASES'\\""
-
-# Error handling is done in the python part
-if [ -n "$PROVISION_HYDRA_EVAL" ]; then
-    cli_args="${{cli_args}} --hydra-eval $PROVISION_HYDRA_EVAL"
-else
-    cli_args="${{cli_args}} --image-url $PROVISION_IMAGE --channel-url $PROVISION_CHANNEL"
-fi
-
-ssh $PROVISION_HOST sudo fc-devhost ensure \\
-    $cli_args \\
-    $PROVISION_VM
-
-{seed_script}
-
-# We experimented with hiding errors in this fc-manage run to allow
-# partially defective NixOS configurations to be repaired with subsequent
-# deployment actions, so we do have to continue here.
-# However, we need to show if something goes wrong so that users have an
-# indication that the cause might be here. Especially if provisioning
-# is half-baked. Unfortunately we cant' decide whether the error is caused
-# by the provisioning or the deployment step.
-
-set +e
-RUN sudo -i fc-manage -c
-result=$?
-if [ "$result" -ne "0" ]; then
-    echo "__FC_MANAGE_DEFECT_INDICATOR__"
-fi
-
-"""  # noqa: E501 line too long
-    target_host = None
-    aliases = ()
-    memory = None
-    cores = None
-
-    hydra_eval = ""  # deprecated
-    channel_url = ""
-    image_url = ""
+        host._provision_info = json.loads(vm_info)
+        # Seed our resolver overrides for the deployment name and the real name
+        # so that all other hosts can see either when using the `Address` utility
+        # API, independent of specific DNS situations during bootstrapping.
+        for alias in host._aliases + [host.name]:
+            batou.utils.resolve_override[alias] = host._provision_info["srv-ip"]
 
     @classmethod
     def from_config_section(cls, name, section):
@@ -469,15 +414,3 @@ fi
             name = uuid.uuid4().hex[:8]
             if name not in names and not name.isnumeric():
                 return name
-
-    def _initial_provision_env(self, host):
-        return {
-            "PROVISION_VM": host.name,
-            "PROVISION_HOST": self.target_host,
-            "PROVISION_ALIASES": " ".join(host.aliases.keys()),
-            "PROVISION_HYDRA_EVAL": self.hydra_eval,
-            "PROVISION_CHANNEL": self.channel_url,
-            "PROVISION_IMAGE": self.image_url,
-            "PROVISION_VM_MEMORY": self.memory,
-            "PROVISION_VM_CORES": self.cores,
-        }

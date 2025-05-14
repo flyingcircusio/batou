@@ -6,6 +6,7 @@ import sys
 import execnet.gateway_io
 import yaml
 
+import batou.utils
 from batou import DeploymentError, SilentConfigurationError, output, remote_core
 from batou.utils import BagOfAttributes
 
@@ -119,6 +120,7 @@ class Host(object):
     ignore = False
     platform = None
     _provisioner = None
+    _provision_info: dict
     remap = False
     ignore = False
 
@@ -148,6 +150,7 @@ class Host(object):
             config.get("provision-dynamic-hostname", "False")
         )
         self._provisioner = config.get("provisioner")
+        self._provision_info = {}
         if self.provisioner:
             self.provisioner.configure_host(self, config)
 
@@ -235,6 +238,8 @@ class LocalHost(Host):
             env.name,
             self.name,
             env.overrides,
+            batou.utils.resolve_override,
+            batou.utils.resolve_v6_override,
             env.secret_files,
             env.secret_data,
             env._host_data(),
@@ -357,6 +362,8 @@ class RemoteHost(Host):
             env.name,
             self.name,
             env.overrides,
+            batou.utils.resolve_override,
+            batou.utils.resolve_v6_override,
             env.secret_files,
             env.secret_data,
             env._host_data(),
