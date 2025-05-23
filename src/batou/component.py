@@ -375,7 +375,11 @@ class Component(object):
             if sub_component.changed:
                 self.changed = True
 
-        output.buffer("annotate", self.host.name + " > " + self._breadcrumbs)
+        output.buffer(
+            "annotate",
+            f"{self.host.name}: {self._breadcrumbs}",
+            icon="🚀",
+        )
 
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
@@ -387,7 +391,8 @@ class Component(object):
                         self.verify, predicting=predict_only
                     )
             except AssertionError:
-                # avoid nested exception messages, when running `update()` in except block
+                # avoid nested exception messages, when running `update()` in
+                # except block
                 require_update = True
 
             if require_update:
@@ -402,9 +407,14 @@ class Component(object):
 
         output.clear_buffer()
 
-        if self.timer.above_threshold(verify=1, update=1, total=10):
+        took_too_long, steps_too_long = self.timer.above_threshold(
+            verify=1, update=1, total=10
+        )
+        if took_too_long:
             output.annotate(
-                f"{self.host.name} > {self._breadcrumbs} [{self.timer.humanize('total', 'verify', 'update', 'sub')}]"
+                f"{self.host.name}: {self._breadcrumbs} "
+                f"[{self.timer.humanize('total', 'verify', 'update', 'sub')}]",
+                icon="💤",
             )
 
     def verify(self):
