@@ -490,7 +490,7 @@ def test_call_with_optional_args():
 def test_format_duration():
     assert format_duration(1.23124) == "1.23s"
     assert format_duration(61) == "1m1s"
-    assert format_duration(None) == "NaN"
+    assert format_duration(None) == "∅"
 
 
 def test_export_environment_variables():
