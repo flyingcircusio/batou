@@ -68,7 +68,7 @@ class Output(object):
             message = ""
         self.backend.line(message, **format)
 
-    def annotate(self, message, debug=False, icon=False, **format):
+    def annotate(self, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
