@@ -66,7 +66,7 @@ def migrate(base_version: int) -> int:
         module = importlib.import_module(
             f"{MIGRATION_MODULE}.migrations.{step}"
         )
-        output.line(f"Version: {step}", bold=True)
+        output.line(f"Version: {step}", bold=True, icon="⚪")
         output.line("")
         module.migrate(output_migration_step)
     return step
