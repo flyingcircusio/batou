@@ -68,12 +68,10 @@ class Output(object):
             message = ""
         self.backend.line(message, **format)
 
-    def annotate(self, message, debug=False, icon=None, **format):
+    def annotate(self, message, debug=False, icon=False, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        # lines = message.split("\n")
-        # message = "\n".join(lines)
         self.line(message, icon=icon, **format)
 
     def tabular(self, key, value, separator=": ", debug=False, **kw):
@@ -107,7 +105,7 @@ class Output(object):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        self.step("ERROR", message, icon=_no_icon, red=True)
+        self.step("ERROR", message, icon=False, red=True)
         if exc_info:
             if self.enable_debug:
                 out = traceback.format_exception(*exc_info)
