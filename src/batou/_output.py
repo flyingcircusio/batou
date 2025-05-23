@@ -1,3 +1,4 @@
+import os
 import sys
 
 from batou.remote_core import Output
@@ -8,6 +9,9 @@ class TerminalBackend(object):
         import py.io
 
         self._tw = py.io.TerminalWriter(sys.stdout)
+
+        if os.environ.get("IN_TOX_TEST") == "1":
+            self._tw.fullwidth = 80
 
     def line(self, message, **format):
         self._tw.line(message, **format)
