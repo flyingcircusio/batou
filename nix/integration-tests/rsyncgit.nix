@@ -3,6 +3,7 @@ let
   ssh-pubkey = ../../src/batou/secrets/tests/fixture/age/id_ed25519.pub;
   ssh-key = ../../src/batou/secrets/tests/fixture/age/id_ed25519;
   batou-src = ../..;
+in
 {
   name = "batou-rsync-git";
   nodes = {
