@@ -21,10 +21,10 @@ def output_migration_step(
     elif status == "automatic":
         label = "✅"
         args = {"green": True}
-    output.annotate(f"{label} {title}", **args)
-    output.line("")
-    output.line(textwrap.dedent(text).strip())
-    output.line("")
+    output.annotate(title, icon=label, **args)
+    output.annotate("")
+    output.annotate(textwrap.dedent(text).strip())
+    output.annotate("")
 
 
 def read_config() -> int:
@@ -66,7 +66,7 @@ def migrate(base_version: int) -> int:
         module = importlib.import_module(
             f"{MIGRATION_MODULE}.migrations.{step}"
         )
-        output.annotate(f"Version: {step}", bold=True)
+        output.line(f"Version: {step}", bold=True, icon="⚪")
         output.line("")
         module.migrate(output_migration_step)
     return step
@@ -114,8 +114,8 @@ def main(*, bootstrap: bool = False) -> None:
         return
     output.backend = TerminalBackend()
     base_version = get_current_version()
-    output.annotate(f"Current version: {base_version}", bold=True)
+    output.line(f"Current version: {base_version}", bold=True)
     new_version = migrate(base_version)
     if new_version != base_version:
         write_config(new_version)
-    output.annotate(f"Reached version: {new_version}", bold=True, green=True)
+    output.line(f"Reached version: {new_version}", bold=True, green=True)
