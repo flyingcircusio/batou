@@ -13,7 +13,7 @@ import tempfile
 import yaml
 
 import batou
-from batou import output
+from batou import ComponentUsageError, output
 from batou.component import Attribute, Component
 from batou.utils import dict_merge
 
@@ -217,6 +217,10 @@ class SyncDirectory(Component):
 
     def configure(self):
         self.path = self.map(self.path)
+        if self.source is None:
+            raise ComponentUsageError.from_context(
+                "SyncDirectory requires a source to sync from."
+            )
         self.source = os.path.normpath(
             os.path.join(self.root.defdir, self.source)
         )
