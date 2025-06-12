@@ -61,6 +61,8 @@ in
     start_all()
 
     deploytarget.wait_for_unit("sshd", timeout=30);
+    controlhost.sleep(5);
+    controlhost.systemctl("status place-files");
     controlhost.wait_for_unit("place-files", timeout=30);
 
     with subtest("can-deploy"):
