@@ -40,15 +40,15 @@ in
           script = ''
             mkdir -p /home/deployinguser/.ssh
             cp ${ssh-pubkey} /home/deployinguser/.ssh/id_ed25519.pub
-            chown deployinguser:deployinguser /home/deployinguser/.ssh/id_ed25519.pub
+            chown deployinguser:users /home/deployinguser/.ssh/id_ed25519.pub
             chmod 600 /home/deployinguser/.ssh/id_ed25519.pub
             cp ${ssh-key} /home/deployinguser/.ssh/id_ed25519
             chown deployinguser:deployinguser /home/deployinguser/.ssh/id_ed25519
 
             mkdir -p /home/deployinguser/batou-src
-            chown deployinguser:deployinguser /home/deployinguser/batou-src
+            chown deployinguser:users /home/deployinguser/batou-src
             cp -r ${batou-src} /home/deployinguser/batou-src
-            chown -R deployinguser:deployinguser /home/deployinguser/batou-src
+            chown -R deployinguser:users /home/deployinguser/batou-src
             chmod -R 700 /home/deployinguser/batou-deployment
           '';
         };
