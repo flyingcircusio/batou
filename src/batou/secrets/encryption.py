@@ -277,7 +277,7 @@ def get_identities():
                 key_content = f.read()
             try:
                 priv_key = serialization.load_ssh_private_key(key_content, None)
-            except ValueError:
+            except (ValueError, TypeError):
                 passphrase = get_passphrase(id_path).encode("utf-8")
                 priv_key = serialization.load_ssh_private_key(
                     key_content,
