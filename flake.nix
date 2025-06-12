@@ -48,6 +48,7 @@
         packages = rec {
           default = batou;
           inherit batou;
+          rsyncgit-check = pkgs.testers.runNixOSTest ./nix/integration-tests/rsyncgit.nix;
         };
 
         checks = {
