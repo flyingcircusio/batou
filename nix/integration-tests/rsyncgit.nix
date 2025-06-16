@@ -49,7 +49,7 @@ in
             chown deployinguser:users /home/deployinguser/batou-src
             cp -r ${batou-src} /home/deployinguser/batou-src
             chown -R deployinguser:users /home/deployinguser/batou-src
-            chmod -R 700 /home/deployinguser/batou-deployment
+            chmod -R 700 /home/deployinguser/batou-src
           '';
         };
       };
