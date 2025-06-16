@@ -101,13 +101,19 @@ def notify_send(title, description):
     subprocess.call(["notify-send", title, description])
 
 
+def escape_macosx_string(s):
+    """Escape a string for use in an osascript command."""
+    return s.replace('"', '\\"')
+
+
 def notify_macosx(title, description):
     subprocess.call(
         [
             "osascript",
             "-e",
             'display notification "{}" with title "{}"'.format(
-                description, title
+                escape_macosx_string(description),
+                escape_macosx_string(title),
             ),
         ]
     )

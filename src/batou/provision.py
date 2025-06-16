@@ -60,7 +60,7 @@ RUN() {{
 COPY() {{
     what=${{1?what to copy}}
     where=${{2?where to copy}}
-    rsync -avz --no-owner --no-group --safe-links {rsync_path} $what $PROVISION_VM:$where
+    rsync -avz --no-owner --no-group --no-links --safe-links {rsync_path} $what $PROVISION_VM:$where
 }}
 
 if [ ${{PROVISION_REBUILD+x}} ]; then
