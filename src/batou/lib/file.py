@@ -512,7 +512,7 @@ class ManagedContentBase(FileComponent):
         )
 
         if contains_secrets:
-            output.line(
+            output.annotate(
                 "Not showing diff as it contains sensitive data,",
                 yellow=True,
             )

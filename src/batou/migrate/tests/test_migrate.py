@@ -81,7 +81,7 @@ def test_migrate__migrate__1(migrations, output):
     given version.
     """
     assert migrate(2300) == 2411
-    assert "Version: 2301\n\nVersion: 2411\n\n" == output.backend.output
+    assert "⚪ Version: 2301\n\n⚪ Version: 2411\n\n" == output.backend.output
 
 
 def test_migrate__migrate__2(migrations, output):
@@ -135,13 +135,13 @@ def test_migrate__main__1(tmp_path, migrations, capsys):
         capsys.readouterr().out
         == """\
 Current version: 0
-Version: 2299
+⚪ Version: 2299
 
-Version: 2300
+⚪ Version: 2300
 
-Version: 2301
+⚪ Version: 2301
 
-Version: 2411
+⚪ Version: 2411
 
 Reached version: 2411
 """
