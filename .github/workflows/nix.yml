@@ -16,5 +16,5 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: cachix/install-nix-action@v20
-    - run: nix build
+    - run: nix build -L
     - run: nix flake check
