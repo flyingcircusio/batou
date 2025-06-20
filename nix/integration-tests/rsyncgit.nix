@@ -33,6 +33,7 @@ in
 
         environment.systemPackages = with pkgs; [
           python3
+          git
         ];
 
         systemd.services.place-files = {
