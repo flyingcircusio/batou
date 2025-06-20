@@ -168,6 +168,59 @@ class RSyncExtRepository(Repository):
         )
 
 
+class RsyncCommandSender:
+    IGNORE_LIST = (
+        ".appenv",
+        ".batou",
+        ".batou-lock",
+        ".git",
+        ".hg",
+        ".kitchen",
+        ".vagrant",
+        "work",
+    )
+
+    SYNC_OPTS = [
+        "--recursive",
+        "--links",
+        "--delete",
+    ]
+
+    # has .send() method just like execnet.RSync, but calls
+    # rsync itself instead of using execnet
+    # this source parameter is not appended with a trailing slash.
+    def __init__(self, source, target, dest, ssh_config=None, use_ignore=True):
+        self.source = source
+        self.target = target
+        self.dest = dest
+        self.ssh_config = ssh_config
+        self.rsync_args = self.SYNC_OPTS.copy()
+        if ssh_config:
+            self.rsync_args.append(f"--rsh='ssh -F {ssh_config}'")
+        if use_ignore:
+            for ignore in self.IGNORE_LIST:
+                self.rsync_args.append(f"--exclude='{ignore}'")
+        if self.target.require_sudo:
+            self.rsync_args.append(
+                "--rsync-path='sudo -ni -u {} rsync'".format(
+                    self.target.service_user
+                )
+            )
+        self.rsync_args.append(f"{self.source} {self.target.fqdn}:{self.dest}")
+        self.rsync_args = " ".join(self.rsync_args)
+        self.rsync_cmd = f"rsync {self.rsync_args}"
+
+    def send(self):
+        output.annotate("rsync command: {}".format(self.rsync_cmd), debug=True)
+        try:
+            cmd(self.rsync_cmd)
+        except CmdExecutionError as e:
+            output.error(
+                "Unable to send files to {}: {}".format(self.target.fqdn, e)
+            )
+            raise DeploymentError("Rsync failed") from e
+
+
 def hg_cmd(hgcmd):
     output, _ = cmd(hgcmd + " -Tjson")
     output = json.loads(output)
@@ -281,9 +334,12 @@ class MercurialBundleRepository(MercurialRepository):
         output.annotate(
             "Sending {} bytes of changes".format(change_size), debug=True
         )
-        rsync = execnet.RSync(bundle_file, verbose=False)
-        rsync.add_target(
-            host.gateway, host.remote_repository + "/batou-bundle.hg"
+        rsync = RsyncCommandSender(
+            bundle_file,
+            host.gateway,
+            host.remote_repository + "/batou-bundle.hg",
+            ssh_config=self.environment.ssh_config,
+            use_ignore=False,
         )
         rsync.send()
         os.unlink(bundle_file)
@@ -425,9 +481,12 @@ class GitBundleRepository(GitRepository):
         output.annotate(
             "Sending {} bytes of changes".format(change_size), debug=True
         )
-        rsync = execnet.RSync(bundle_file, verbose=False)
-        rsync.add_target(
-            host.gateway, host.remote_repository + "/batou-bundle.git"
+        rsync = RsyncCommandSender(
+            bundle_file,
+            host.gateway,
+            host.remote_repository + "/batou-bundle.git",
+            ssh_config=self.environment.ssh_config,
+            use_ignore=False,
         )
         rsync.send()
         os.unlink(bundle_file)
