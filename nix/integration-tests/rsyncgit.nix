@@ -65,7 +65,7 @@ in
     print(controlhost.systemctl("status place-files"));
     # controlhost.wait_for_unit("place-files", timeout=30);
     def check_finished(_last_try: bool) -> bool:
-      state = controlhost.get_unit_property("place-files", "ActiveState", user)
+      state = controlhost.get_unit_property("place-files", "ActiveState", None)
       if state == "inactive":
         return True
       elif state == "active":
