@@ -12,6 +12,7 @@ in
       { ... }:
 
       {
+        virtualisation.vlans = [ 1 ];
         networking.useNetworkd = true;
         networking.useDHCP = false;
         systemd.network.networks."01-eth1" = {
@@ -32,6 +33,8 @@ in
       { ... }:
 
       {
+        virtualisation.vlans = [ 1 ];
+
         users.users.deployinguser = {
           isNormalUser = true;
           description = "Deploying User";
