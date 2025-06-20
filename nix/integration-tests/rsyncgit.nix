@@ -31,6 +31,10 @@ in
           description = "Deploying User";
         };
 
+        environment.systemPackages = with pkgs; [
+          python3
+        ];
+
         systemd.services.place-files = {
           description = "Place files for rsyncgit test";
           wantedBy = [ "multi-user.target" ];
