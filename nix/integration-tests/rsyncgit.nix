@@ -81,7 +81,7 @@ in
 
     with subtest("can-deploy"):
       controlhost.succeed(
-        "sudo -u deployinguser sh -c 'cd /home/deployinguser/batou-src/nix/integration-tests/rsyncgit/batou-deployment && batou deploy targetenv'"
+        "sudo -u deployinguser sh -c 'cd /home/deployinguser/batou-src/nix/integration-tests/rsyncgit/batou-deployment && ./batou deploy targetenv'"
       );
 
   '';
