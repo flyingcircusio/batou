@@ -65,14 +65,16 @@ in
     print(controlhost.systemctl("status place-files"));
     # controlhost.wait_for_unit("place-files", timeout=30);
     def check_finished(_last_try: bool) -> bool:
-      state = self.get_unit_property("place-files", "ActiveState", user)
+      state = controlhost.get_unit_property("place-files", "ActiveState", user)
       if state == "inactive":
         return True
       elif state == "active":
         return False
       elif state == "failed":
         raise Exception("place-files failed")
-    with self.nested("waiting for place-files to finish"):
+      else:
+        return False
+    with controlhost.nested("waiting for place-files to finish"):
       retry(check_finished, timeout=900)
 
 
