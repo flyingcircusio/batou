@@ -86,7 +86,7 @@ in
 
     with subtest("can-deploy"):
       controlhost.succeed(
-        "sudo -u deployinguser sh -c 'cd /home/deployinguser/batou-src/nix/integration-tests/rsyncgit/batou-deployment && git init . && git add . && git commit -m initial'"
+        "sudo -u deployinguser sh -c 'cd /home/deployinguser/batou-src/nix/integration-tests/rsyncgit/batou-deployment && git init . && git add . && git config --global user.email ci@example.com && git config --global user.name CI && git commit -m initial'"
       );
       controlhost.succeed(
         "sudo -u deployinguser sh -c 'cd /home/deployinguser/batou-src/nix/integration-tests/rsyncgit/batou-deployment && ./batou deploy targetenv'"
