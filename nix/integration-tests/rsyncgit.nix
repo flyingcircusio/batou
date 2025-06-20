@@ -12,6 +12,12 @@ in
       { ... }:
 
       {
+        networking.useNetworkd = true;
+        networking.useDHCP = false;
+        systemd.network.networks."01-eth1" = {
+          name = "eth1";
+          networkConfig.Address = "10.0.0.1/24";
+        };
         services.openssh.enable = true;
         users.users.serviceuser = {
             isNormalUser = true;
@@ -29,6 +35,10 @@ in
         users.users.deployinguser = {
           isNormalUser = true;
           description = "Deploying User";
+        };
+
+        networking.hosts = {
+          "10.0.0.1" = [ "deploytarget.testdomain" ];
         };
 
         environment.systemPackages = with pkgs; [
