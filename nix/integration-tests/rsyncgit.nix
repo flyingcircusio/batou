@@ -36,7 +36,7 @@ in
           ];
         };
         environment.systemPackages = with pkgs; [
-          python3
+          python310
         ];
       };
 
@@ -56,7 +56,7 @@ in
         };
 
         environment.systemPackages = with pkgs; [
-          python3
+          python310
           git
         ];
 
