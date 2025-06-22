@@ -30,6 +30,7 @@ in
         users.users.deployinguser = {
           isNormalUser = true;
           description = "Deploying User";
+          linger = true;
           openssh.authorizedKeys.keys = [
               (builtins.readFile ssh-pubkey)
           ];
