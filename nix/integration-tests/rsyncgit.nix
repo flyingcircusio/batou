@@ -82,20 +82,22 @@ in
     controlhost.sleep(5);
     print(controlhost.systemctl("status place-files"));
     # controlhost.wait_for_unit("place-files", timeout=30);
-    # def check_finished(_last_try: bool) -> bool:
-    #   state = controlhost.get_unit_property("place-files", "ActiveState", None)
-    #   if state == "inactive":
-    #     return True
-    #   elif state == "active":
-    #     return False
-    #   elif state == "failed":
-    #     raise Exception("place-files failed")
-    #   else:
-    #     return False
-    # with controlhost.nested("waiting for place-files to finish"):
-    #   retry(check_finished, timeout=900)
+    def check_finished(_last_try: bool) -> bool:
+      state = controlhost.get_unit_property("place-files", "ActiveState", None)
+      if state == "inactive":
+        return True
+      elif state == "active":
+        return False
+      elif state == "failed":
+        raise Exception("place-files failed")
+      else:
+        return False
+    with controlhost.nested("waiting for place-files to finish"):
+      retry(check_finished, timeout=900)
 
     print(controlhost.execute("ls -lah /home/deployinguser/batou-src"));
+    print(controlhost.execute("ping 10.0.0.1 -c 1"));
+    print(controlhost.execute("ping deploytarget -c 1"));
 
     with subtest("can-deploy"):
       controlhost.succeed(
