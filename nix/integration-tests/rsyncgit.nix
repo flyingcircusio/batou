@@ -62,6 +62,7 @@ in
             chmod 600 /home/deployinguser/.ssh/id_ed25519.pub
             cp ${ssh-key} /home/deployinguser/.ssh/id_ed25519
             chown deployinguser:users /home/deployinguser/.ssh/id_ed25519
+            chmod 600 /home/deployinguser/.ssh/id_ed25519
 
             mkdir -p /home/deployinguser/batou-src
             chown deployinguser:users /home/deployinguser/batou-src
