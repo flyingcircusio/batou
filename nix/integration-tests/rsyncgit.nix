@@ -12,13 +12,13 @@ in
       { ... }:
 
       {
-        virtualisation.vlans = [ 1 ];
-        networking.useNetworkd = true;
-        networking.useDHCP = false;
-        systemd.network.networks."01-eth1" = {
-          name = "eth1";
-          networkConfig.Address = "10.0.0.1/24";
-        };
+        # virtualisation.vlans = [ 1 ];
+        # networking.useNetworkd = true;
+        # networking.useDHCP = false;
+        # systemd.network.networks."01-eth1" = {
+        #   name = "eth1";
+        #   networkConfig.Address = "10.0.0.1/24";
+        # };
         services.openssh.enable = true;
         users.users.serviceuser = {
             isNormalUser = true;
@@ -33,7 +33,7 @@ in
       { ... }:
 
       {
-        virtualisation.vlans = [ 1 ];
+        # virtualisation.vlans = [ 1 ];
 
         users.users.deployinguser = {
           isNormalUser = true;
@@ -41,7 +41,7 @@ in
         };
 
         networking.hosts = {
-          "10.0.0.1" = [ "deploytarget.testdomain" ];
+          "192.168.1.2" = [ "deploytarget.testdomain" ];
         };
 
         environment.systemPackages = with pkgs; [
