@@ -108,7 +108,7 @@ in
     print(controlhost.execute("ls -lah /home/deployinguser/batou-src"));
     print(controlhost.execute("ping 10.0.0.1 -c 1"));
     print(controlhost.execute("ping deploytarget -c 1"));
-    print(controlhost.execute("ssh -vvv deploytarget.testdomain 'echo hello'"));
+    print(controlhost.execute("sudo -u deployinguser ssh -vvv deploytarget.testdomain 'echo hello'"));
 
     with subtest("can-deploy"):
       controlhost.succeed(
