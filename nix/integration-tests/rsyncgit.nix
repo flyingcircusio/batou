@@ -23,9 +23,16 @@ in
         users.users.serviceuser = {
             isNormalUser = true;
             description = "Service User";
-            openssh.authorizedKeys.keys = [
-                (builtins.readFile ssh-pubkey)
-            ];
+            # openssh.authorizedKeys.keys = [
+            #     (builtins.readFile ssh-pubkey)
+            # ];
+        };
+        users.users.deployinguser = {
+          isNormalUser = true;
+          description = "Deploying User";
+          openssh.authorizedKeys.keys = [
+              (builtins.readFile ssh-pubkey)
+          ];
         };
       };
 
