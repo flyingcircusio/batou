@@ -34,6 +34,9 @@ in
               (builtins.readFile ssh-pubkey)
           ];
         };
+        environment.systemPackages = with pkgs; [
+          python3
+        ];
       };
 
     controlhost =
