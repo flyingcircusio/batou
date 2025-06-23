@@ -134,7 +134,9 @@ class Deployment(object):
         output.section("Preparing")
 
         output.step(
-            "main", "Loading environment `{}`...".format(self.environment.name)
+            "main",
+            "Loading environment `{}`...".format(self.environment.name),
+            icon="📦",
         )
         self.environment.load()
 
@@ -144,14 +146,16 @@ class Deployment(object):
             self.jobs = int(self.environment.jobs)
         else:
             self.jobs = 1
-        output.step("main", "Number of jobs: %s" % self.jobs, debug=True)
+        output.step(
+            "main", "Number of jobs: %s" % self.jobs, debug=True, icon="⚙️"
+        )
 
         # This is located here to avoid duplicating the verification check
         # when loading the repository on the remote environment object.
-        output.step("main", "Verifying repository ...")
+        output.step("main", "Verifying repository ...", icon="🔍")
         self.environment.repository.verify()
 
-        output.step("main", "Loading secrets ...")
+        output.step("main", "Loading secrets ...", icon="🔑")
         self.environment.load_secrets()
 
     def provision(self):
@@ -166,6 +170,7 @@ class Deployment(object):
                         host.provisioner.name,
                         "(Rebuild)" if host.provisioner.rebuild else "",
                     ),
+                    icon="🧱",
                 )
                 host.provisioner.provision(host)
 
@@ -183,6 +188,7 @@ class Deployment(object):
                     ),
                     bold=False,
                     red=True,
+                    icon="⏭️",
                 )
                 continue
             output.step(
@@ -192,6 +198,7 @@ class Deployment(object):
                     i,
                     len(self.environment.hosts),
                 ),
+                icon="🌐",
             )
             c = Connector(host, sem)
             c.start()
@@ -267,6 +274,7 @@ class Deployment(object):
             output.step(
                 hostname,
                 "Skipping component {} ... (Host ignored)".format(component),
+                icon="⏭️",
                 red=True,
             )
         elif info["ignore"]:
@@ -275,11 +283,14 @@ class Deployment(object):
                 "Skipping component {} ... (Component ignored)".format(
                     component
                 ),
+                icon="⏭️",
                 red=True,
             )
         else:
             output.step(
-                hostname, "Scheduling component {} ...".format(component)
+                hostname,
+                "Scheduling component {} ...".format(component),
+                icon="⚪",
             )
             await self.loop.run_in_executor(
                 None, host.deploy_component, component, self.predict_only

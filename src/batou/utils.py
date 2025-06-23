@@ -551,17 +551,19 @@ class Timer(object):
 
     def above_threshold(self, **thresholds):
         """
-        Return true if any of the steps took longer than the given threshold.
+        Return tuple with true if any of the steps took longer than the given threshold.
         "total" is a special step that is the sum of all other steps.
+        Second element is a list of the steps that took longer than the threshold.
         """
 
         total = sum(self.durations.values())
+        took_longer = []
         for note, duration in self.durations.items():
             if note in thresholds and duration > thresholds[note]:
-                return True
+                took_longer.append(note)
         if "total" in thresholds and total > thresholds["total"]:
-            return True
-        return False
+            took_longer.append("total")
+        return bool(took_longer), took_longer
 
     def humanize(self, *steps):
         """
@@ -630,12 +632,12 @@ def format_duration(duration: Optional[float]) -> str:
     ```
     format_duration(1.23124) == "1.23s"
     format_duration(61) == "1m1s"
-    format_duration(None) == "NaN"
+    format_duration(None) == "∅"
     ```
     """
 
     if duration is None:
-        return "NaN"
+        return "∅"
 
     minutes, seconds = divmod(duration, 60)
 

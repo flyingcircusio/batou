@@ -51,19 +51,28 @@ class Output(object):
         self.clear_buffer()
         self._flushing = False
 
-    def line(self, message, debug=False, **format):
+    def line(self, message, debug=False, icon=False, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
+
+        if icon is None:
+            icon = "   "
+        elif icon is False:
+            icon = ""
+        else:
+            icon = f"{icon} "
+        message = f"{icon}{message}"
+        if not message.strip():
+            # Clean out lines which only contain whitespace.
+            message = ""
         self.backend.line(message, **format)
 
-    def annotate(self, message, debug=False, **format):
+    def annotate(self, message, debug=False, icon=False, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        lines = message.split("\n")
-        message = "\n".join(lines)
-        self.line(message, **format)
+        self.line(message, icon=icon, **format)
 
     def tabular(self, key, value, separator=": ", debug=False, **kw):
         if debug and not self.enable_debug:
@@ -84,19 +93,19 @@ class Output(object):
         self.flush_buffer()
         return self.backend.sep(sep, title, **format)
 
-    def step(self, context, message, debug=False, **format):
+    def step(self, context, message, debug=False, icon=None, **format):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
         _format = {"bold": True}
         _format.update(format)
-        self.line("{}: {}".format(context, message), **_format)
+        self.line(f"{context}: {message}", icon=icon, **_format)
 
     def error(self, message, exc_info=None, debug=False):
         if debug and not self.enable_debug:
             return
         self.flush_buffer()
-        self.step("ERROR", message, red=True)
+        self.step("ERROR", message, icon=False, red=True)
         if exc_info:
             if self.enable_debug:
                 out = traceback.format_exception(*exc_info)

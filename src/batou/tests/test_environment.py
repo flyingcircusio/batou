@@ -308,7 +308,7 @@ Post sub"""
     log = "\n".join(c[0][0].strip() for c in output.call_args_list)
     assert (
         """\
-localhost > Hello
+localhost: Hello
 localhost: <Hello (localhost) "Hello"> verify: asdf=None\
 """
         == log
