@@ -1,6 +1,6 @@
 
 
-## 2.6.0a4 (unreleased)
+## 2.6.0 (2025-06-23)
 -----------------------
 
 - Improve showing why a line was shown in deployment log
