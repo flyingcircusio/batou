@@ -1,2 +1,0 @@
-- Development: Limit terminal column width to 80 characters for tests
-    - Ensures consistent test output formatting

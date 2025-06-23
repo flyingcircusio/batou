@@ -3,7 +3,21 @@
 ## 2.6.0a4 (unreleased)
 -----------------------
 
-- Nothing changed yet.
+- Improve showing why a line was shown in deployment log
+    - When a component is eligible to update or takes too long to execute, the
+      line in the deployment log now shows the reason why the line was shown.
+      This disambiguates the log output and helps the user understand which
+      of the two cases is happening. (#474)
+
+- Correctly record all hosts in the SSH config file when provisioning
+  with the devhost provisioner.
+
+- Fix git bundle shipping with an empty remote (introduced in 2.5.3)
+
+- Add ComponentUsageError for SyncDirectory that is raised when source is not given. Displays traceback to component usage.
+
+- Development: Limit terminal column width to 80 characters for tests
+    - Ensures consistent test output formatting
 
 
 ## 2.6.0a3 (2025-03-05)
