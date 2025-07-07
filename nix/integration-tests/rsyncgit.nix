@@ -121,15 +121,15 @@ in
 
       # ls /home/deployinguser/batou-src/src/remote_core.py
       print(controlhost.execute(
-        "sudo -u deployinguser sh -c 'ls -lah /home/deployinguser/batou-src/src/remote_core.py'"
+        "sudo -u deployinguser sh -c 'ls -lah /home/deployinguser/batou-src/src/batou/remote_core.py'"
       ));
       # cat
       print(controlhost.execute(
-        "sudo -u deployinguser sh -c 'cat /home/deployinguser/batou-src/src/remote_core.py'"
+        "sudo -u deployinguser sh -c 'cat /home/deployinguser/batou-src/src/batou/remote_core.py'"
       ));
       # hexdump
       print(controlhost.execute(
-        "sudo -u deployinguser sh -c 'hexdump -C /home/deployinguser/batou-src/src/remote_core.py'"
+        "sudo -u deployinguser sh -c 'hexdump -C /home/deployinguser/batou-src/src/batou/remote_core.py'"
       ));
       controlhost.succeed(
         "sudo -u deployinguser sh -c 'cd /home/deployinguser/batou-src/nix/integration-tests/rsyncgit/batou-deployment && ./batou deploy targetenv'"
