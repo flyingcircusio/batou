@@ -118,6 +118,19 @@ in
       controlhost.succeed(
         "sudo -u deployinguser sh -c 'cd /home/deployinguser/batou-src/nix/integration-tests/rsyncgit/batou-deployment && git init . && git add . && git config --global user.email ci@example.com && git config --global user.name CI && git commit -m initial'"
       );
+
+      # ls /home/deployinguser/batou-src/src/remote_core.py
+      print(controlhost.execute(
+        "sudo -u deployinguser sh -c 'ls -lah /home/deployinguser/batou-src/src/remote_core.py'"
+      ));
+      # cat
+      print(controlhost.execute(
+        "sudo -u deployinguser sh -c 'cat /home/deployinguser/batou-src/src/remote_core.py'"
+      ));
+      # hexdump
+      print(controlhost.execute(
+        "sudo -u deployinguser sh -c 'hexdump -C /home/deployinguser/batou-src/src/remote_core.py'"
+      ));
       controlhost.succeed(
         "sudo -u deployinguser sh -c 'cd /home/deployinguser/batou-src/nix/integration-tests/rsyncgit/batou-deployment && ./batou deploy targetenv'"
       );
