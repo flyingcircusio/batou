@@ -3,7 +3,9 @@
 ## 2.7.0 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Fix a bug where reading the password for age-encrypted secrets from 1pw was attempted even when the password was provided directly
+
+- fix provision for 2.6 line by removing `-i` for `sudo` in provision script
 
 
 ## 2.6.0 (2025-06-23)

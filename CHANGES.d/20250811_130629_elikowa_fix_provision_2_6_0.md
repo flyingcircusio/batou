@@ -1,1 +1,0 @@
-- fix provision for 2.6 line by removing `-i` for `sudo` in provision script
