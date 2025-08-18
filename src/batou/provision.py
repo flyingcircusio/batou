@@ -93,7 +93,7 @@ ssh $PROVISION_HOST sudo fc-devhost ensure \\
 # by the provisioning or the deployment step.
 
 set +e
-RUN sudo -i fc-manage -c
+RUN sudo fc-manage -c
 result=$?
 if [ "$result" -ne "0" ]; then
     echo "__FC_MANAGE_DEFECT_INDICATOR__"
