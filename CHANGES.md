@@ -1,6 +1,6 @@
 
 
-## 2.7.0 (unreleased)
+## 2.6.1 (2025-08-18)
 ---------------------
 
 - Fix a bug where reading the password for age-encrypted secrets from 1pw was attempted even when the password was provided directly.
