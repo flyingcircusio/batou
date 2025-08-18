@@ -1,0 +1,1 @@
+- Fix a bug where reading the password for age-encrypted secrets from 1pw was attempted even when the password was provided directly
