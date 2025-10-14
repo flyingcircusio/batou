@@ -18,6 +18,7 @@ def test_fc_dev_vm_provisioner_from_config():
             "host": "dummy",
             "memory": "8192",
             "cores": "1",
+            "disk_size": "50G",
             "release": "https://my.flyingcircus.io/releases/metadata/fc-24.05-production/2025_006",
         },
     )
@@ -25,6 +26,7 @@ def test_fc_dev_vm_provisioner_from_config():
     assert provisioner.target_host == "dummy"
     assert provisioner.memory == "8192"
     assert provisioner.cores == "1"
+    assert provisioner.disk_size == "50G"
     assert (
         provisioner.channel_url
         == "https://hydra.flyingcircus.io/build/4385779/download/1/nixexprs.tar.xz"
@@ -33,3 +35,22 @@ def test_fc_dev_vm_provisioner_from_config():
         provisioner.image_url
         == "https://hydra.flyingcircus.io/build/4385780/download/1"
     )
+
+
+def test_fc_dev_vm_provisioner_from_config_without_disk_size():
+    from batou.provision import FCDevVM
+
+    provisioner = FCDevVM.from_config_section(
+        "foobar",
+        {
+            "host": "dummy",
+            "memory": "8192",
+            "cores": "1",
+            "release": "https://my.flyingcircus.io/releases/metadata/fc-24.05-production/2025_006",
+        },
+    )
+
+    assert provisioner.target_host == "dummy"
+    assert provisioner.memory == "8192"
+    assert provisioner.cores == "1"
+    assert provisioner.disk_size is None
