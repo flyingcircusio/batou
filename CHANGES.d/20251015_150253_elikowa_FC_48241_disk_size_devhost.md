@@ -1,0 +1,1 @@
+- Allow setting disk sizes for devhost VMs different from the default 25G FC-48241
