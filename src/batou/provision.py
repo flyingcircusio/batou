@@ -35,6 +35,7 @@ class FCDevVM(Provisioner):
     aliases = ()
     memory = None
     cores = None
+    disk_size = None
 
     hydra_eval = ""  # deprecated
     channel_url = ""
@@ -70,6 +71,11 @@ fi
 cli_args="--memory $PROVISION_VM_MEMORY\\
   --cpu $PROVISION_VM_CORES \\
   --aliases \\"'$PROVISION_ALIASES'\\""
+
+# Add disk size if specified
+if [ -n "$PROVISION_VM_DISK_SIZE" ]; then
+    cli_args="${{cli_args}} --disk-size $PROVISION_VM_DISK_SIZE"
+fi
 
 # Error handling is done in the python part
 if [ -n "$PROVISION_HYDRA_EVAL" ]; then
@@ -229,6 +235,7 @@ Host {hostname} {aliases}
             "PROVISION_IMAGE": self.image_url,
             "PROVISION_VM_MEMORY": self.memory,
             "PROVISION_VM_CORES": self.cores,
+            "PROVISION_VM_DISK_SIZE": self.disk_size,
         }
 
     def provision(self, host):
@@ -391,6 +398,7 @@ Host {hostname} {aliases}
         instance.target_host = section["host"]
         instance.memory = section["memory"]
         instance.cores = section["cores"]
+        instance.disk_size = section.get("disk_size", None)
 
         if "release" in section:
             resp = requests.get(section["release"])
