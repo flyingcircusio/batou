@@ -1,6 +1,6 @@
 
 
-## 2.7.0 (unreleased)
+## 2.6.2 (2025-10-27)
 ---------------------
 
 - Allow setting disk sizes for devhost VMs different from the default 25G FC-48241
