@@ -9,10 +9,18 @@ import batou.utils
 
 @pytest.fixture(autouse=True)
 def ensure_gpg_homedir(monkeypatch):
-    home = os.path.join(
+    old_home = os.path.join(
         os.path.dirname(__file__), "secrets", "tests", "fixture", "gnupg"
     )
-    monkeypatch.setitem(os.environ, "GNUPGHOME", home)
+
+    with tempfile.TemporaryDirectory() as home:
+        os.system(f"cp -r {old_home}/* {home}")
+        os.system(f"gpg-agent --homedir='{home}' --daemon")
+        monkeypatch.setitem(os.environ, "GNUPGHOME", home)
+
+        yield
+
+        os.system(f"gpgconf --homedir='{home}' --kill gpg-agent")
 
 
 @pytest.fixture(autouse=True)
@@ -26,6 +34,12 @@ def ensure_age_identity(monkeypatch):
         "id_ed25519",
     )
     monkeypatch.setitem(os.environ, "BATOU_AGE_IDENTITIES", key)
+
+
+@pytest.fixture(autouse=True)
+def ensure_git_isolated(monkeypatch):
+    monkeypatch.setitem(os.environ, "GIT_CONFIG_GLOBAL", "")
+    monkeypatch.setitem(os.environ, "GIT_CONFIG_SYSTEM", "")
 
 
 @pytest.fixture(autouse=True)
