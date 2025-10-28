@@ -105,6 +105,15 @@ if [ "$result" -ne "0" ]; then
     echo "__FC_MANAGE_DEFECT_INDICATOR__"
 fi
 
+# if the disk size is given, run the resize command
+if [ -n "$PROVISION_VM_DISK_SIZE" ]; then
+RUN sudo fc-resize-disk
+result=$?
+if [ "$result" -ne "0" ]; then
+    echo "__FC_MANAGE_DEFECT_INDICATOR__"
+fi
+fi
+
 """  # noqa: E501 line too long
 
     def __init__(self, name):
