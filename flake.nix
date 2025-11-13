@@ -18,6 +18,7 @@
       systems = [
         "x86_64-linux"
         "aarch64-darwin"
+        "aarch64-linux"
       ];
 
       perSystem = {
@@ -56,7 +57,12 @@
 
         devShells.default = pkgs.mkShell {
           packages = [
-            (pkgs.python3.withPackages (ps: [batou ps.tox]))
+            pkgs.uv
+
+            # for the tests
+            pkgs.gnupg
+            pkgs.mercurial
+            pkgs.subversion
           ];
 
           shellHook = ''
