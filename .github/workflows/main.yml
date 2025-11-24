@@ -6,16 +6,16 @@ name: Unit tests
 # events but only for the main branch
 on:
   push:
-    branches: [ main, 'batou-*' ]
+    branches: [main, "batou-*"]
   pull_request:
-    branches: [ main, 'batou-*' ]
+    branches: [main, "batou-*"]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9', '3.10', '3.11', '3.12' ]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
     # The type of runner that the job will run on
     runs-on: ubuntu-22.04
@@ -39,5 +39,8 @@ jobs:
       - name: Show environment
         run: set
 
-      - name: Test
+      - name: Test without pyrage
         run: bin/tox -e py -- -vv
+
+      - name: Test with pyrage
+        run: bin/tox -e pyrage -- -vv

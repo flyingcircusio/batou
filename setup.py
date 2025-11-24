@@ -23,15 +23,18 @@ setup(
         "py>=1.11.0",
         "pyyaml",
         "remote-pdb",
+        "cryptography",
+        "bcrypt",
     ],
     extras_require={
+        "pyrage": ["pyrage"],
         "test": [
             "mock",
             "pytest",
             "pytest-coverage",
             "pytest-instafail",
             "pytest-timeout",
-        ]
+        ],
     },
     entry_points="""
         [console_scripts]
