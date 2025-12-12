@@ -757,7 +757,7 @@ class Purge(Component):
 
     def update(self):
         for filename in glob.glob(self.pattern):
-            if os.path.isdir(filename):
+            if os.path.isdir(filename) and not os.path.islink(filename):
                 shutil.rmtree(filename)
             else:
                 os.remove(filename)

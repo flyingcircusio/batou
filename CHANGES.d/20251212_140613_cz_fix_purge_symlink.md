@@ -1,0 +1,1 @@
+- Fix `file.Purge` for symlinks pointing to directories.
