@@ -27,6 +27,7 @@ def test_fc_dev_vm_provisioner_from_config():
     assert provisioner.memory == "8192"
     assert provisioner.cores == "1"
     assert provisioner.disk_size == "50G"
+    assert provisioner.update_channel
     assert (
         provisioner.channel_url
         == "https://hydra.flyingcircus.io/build/4385779/download/1/nixexprs.tar.xz"
@@ -35,6 +36,19 @@ def test_fc_dev_vm_provisioner_from_config():
         provisioner.image_url
         == "https://hydra.flyingcircus.io/build/4385780/download/1"
     )
+
+    provisioner = FCDevVM.from_config_section(
+        "foobar",
+        {
+            "host": "dummy",
+            "memory": "8192",
+            "cores": "1",
+            "disk_size": "50G",
+            "release": "https://my.flyingcircus.io/releases/metadata/fc-24.05-production/2025_006",
+            "update_channel": "false",
+        },
+    )
+    assert not provisioner.update_channel
 
 
 def test_fc_dev_vm_provisioner_from_config_without_disk_size():
