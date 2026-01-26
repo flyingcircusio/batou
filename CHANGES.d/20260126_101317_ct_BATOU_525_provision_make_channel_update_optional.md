@@ -1,0 +1,1 @@
+- provisioning/devhost: make updating the channel from the outside optional (#515)
