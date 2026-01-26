@@ -4,12 +4,18 @@ import os.path
 import tempfile
 import textwrap
 import uuid
+from configparser import RawConfigParser
 
 import requests
 
 import batou.utils
 from batou import output
 from batou.utils import cmd
+
+
+def bool_arg(arg: str, state: bool) -> str:
+    toggle = "no" if not state else ""
+    return f"--{toggle}-{arg}"
 
 
 class Provisioner(object):
@@ -30,7 +36,6 @@ class Provisioner(object):
 
 
 class FCDevVM(Provisioner):
-
     target_host = None
     aliases = ()
     memory = None
@@ -39,6 +44,7 @@ class FCDevVM(Provisioner):
 
     hydra_eval = ""  # deprecated
     channel_url = ""
+    update_channel: bool = True
     image_url = ""
 
     SEED_TEMPLATE = """\
@@ -81,7 +87,7 @@ fi
 if [ -n "$PROVISION_HYDRA_EVAL" ]; then
     cli_args="${{cli_args}} --hydra-eval $PROVISION_HYDRA_EVAL"
 else
-    cli_args="${{cli_args}} --image-url $PROVISION_IMAGE --channel-url $PROVISION_CHANNEL"
+    cli_args="${{cli_args}} --image-url $PROVISION_IMAGE --channel-url $PROVISION_CHANNEL $PROVISION_UPDATE_CHANNEL"
 fi
 
 ssh $PROVISION_HOST sudo fc-devhost ensure \\
@@ -232,6 +238,9 @@ Host {hostname} {aliases}
             "PROVISION_ALIASES": " ".join(host.aliases.keys()),
             "PROVISION_HYDRA_EVAL": self.hydra_eval,
             "PROVISION_CHANNEL": self.channel_url,
+            "PROVISION_UPDATE_CHANNEL": bool_arg(
+                "update-channel", self.update_channel
+            ),
             "PROVISION_IMAGE": self.image_url,
             "PROVISION_VM_MEMORY": self.memory,
             "PROVISION_VM_CORES": self.cores,
@@ -399,6 +408,10 @@ Host {hostname} {aliases}
         instance.memory = section["memory"]
         instance.cores = section["cores"]
         instance.disk_size = section.get("disk_size", None)
+        c = RawConfigParser()
+        instance.update_channel = c._convert_to_boolean(
+            section.get("update_channel", "true")
+        )
 
         if "release" in section:
             resp = requests.get(section["release"])
