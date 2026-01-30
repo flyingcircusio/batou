@@ -489,21 +489,13 @@ def test_content_large_diff_logged(output, root):
     root.component.deploy()
     log = os.listdir(p.diff_dir)[0]
     with open(os.path.join(p.diff_dir, log)) as f:
-        assert (
-            f.read()
-            == """\
+        assert f.read() == """\
 ---
 +++
 @@ -1,21 +1,21 @@
-"""
-            + "\n".join(["-bsdf"] * 21)
-            + "\n"
-            + "\n".join(["+asdf"] * 21)
-            + "\n"
-        )
+""" + "\n".join(["-bsdf"] * 21) + "\n" + "\n".join(["+asdf"] * 21) + "\n"
 
-    assert output.backend.output == Ellipsis(
-        """\
+    assert output.backend.output == Ellipsis("""\
 🚀 localhost: MyComponent > Content('work/mycomponent/path')
 More than 20 lines of diff. Showing first and last 5 lines.
 see ... for the full diff.
@@ -518,21 +510,17 @@ see ... for the full diff.
   path +asdf
   path +asdf
   path +asdf
-"""
-    )
+""")
 
 
 def test_json_content_data_given(root):
     p = JSONContent("target.json", data={"asdf": 1})
     root.component += p
     root.component.deploy()
-    assert (
-        p.content
-        == b"""\
+    assert p.content == b"""\
 {
     "asdf": 1
 }"""
-    )
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -547,8 +535,7 @@ def test_json_diff(output, root):
 
     p.deploy()
 
-    assert output.backend.output == Ellipsis(
-        """\
+    assert output.backend.output == Ellipsis("""\
 🚀 localhost: MyComponent > JSONContent('work/mycomponent/target.json')
   target.json ---
   target.json +++
@@ -557,8 +544,7 @@ def test_json_diff(output, root):
   target.json +    "asdf": 1,
   target.json      "bsdf": 2
   target.json  }
-"""
-    )
+""")
 
 
 def test_json_diff_not_for_sensitive(output, root):
@@ -572,12 +558,10 @@ def test_json_diff_not_for_sensitive(output, root):
 
     p.deploy()
 
-    assert output.backend.output == Ellipsis(
-        """\
+    assert output.backend.output == Ellipsis("""\
 🚀 localhost: MyComponent > JSONContent('work/mycomponent/target.json')
 Not showing diff as it contains sensitive data.
-"""
-    )
+""")
 
 
 def test_json_content_data_given_compact(root):
@@ -597,16 +581,13 @@ def test_json_content_source_given(root):
     p = JSONContent("target.json", source="source.json")
     root.component += p
     root.component.deploy()
-    assert (
-        p.content
-        == b"""\
+    assert p.content == b"""\
 [
     1,
     2,
     3,
     4
 ]"""
-    )
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -620,16 +601,13 @@ def test_json_content_delayed_source_given(root):
         f.write(json.dumps([1, 2, 3, 4]))
 
     root.component.deploy()
-    assert (
-        p.content
-        == b"""\
+    assert p.content == b"""\
 [
     1,
     2,
     3,
     4
 ]"""
-    )
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -709,12 +687,9 @@ def test_yaml_content_data_given(root):
     p = YAMLContent("target.yaml", data={"asdf": 1})
     root.component += p
     root.component.deploy()
-    assert (
-        p.content
-        == b"""\
+    assert p.content == b"""\
 asdf: 1
 """
-    )
 
     with open(p.path, "rb") as f:
         assert f.read() == p.content
@@ -755,12 +730,10 @@ def test_yaml_diff_not_for_sensitive(output, root):
 
     p.deploy()
 
-    assert output.backend.output == Ellipsis(
-        """\
+    assert output.backend.output == Ellipsis("""\
 🚀 localhost: MyComponent > YAMLContent('work/mycomponent/target.yaml')
 Not showing diff as it contains sensitive data.
-"""
-    )
+""")
 
 
 def test_yaml_content_source_given(root):

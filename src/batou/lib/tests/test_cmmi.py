@@ -76,11 +76,7 @@ install:
 '''
 
 open('Makefile', 'w').write(Makefile_template)
-""".format(
-    sys.executable
-).encode(
-    "ascii"
-)
+""".format(sys.executable).encode("ascii")
 
 
 @pytest.fixture

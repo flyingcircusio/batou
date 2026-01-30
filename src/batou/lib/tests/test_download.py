@@ -13,9 +13,10 @@ class DownloadTest(unittest.TestCase):
 
         component = Download("url", checksum="foobar:1234")
         component.configure()
-        with mock.patch("os.path.exists") as exists, mock.patch(
-            "batou.utils.hash"
-        ) as buh:
+        with (
+            mock.patch("os.path.exists") as exists,
+            mock.patch("batou.utils.hash") as buh,
+        ):
             exists.return_value = True
             try:
                 component.verify()
@@ -32,11 +33,11 @@ class DownloadTest(unittest.TestCase):
     def test_update_should_raise_AssertionError_on_checksum_mismatch(self):
         download = Download("url", checksum="foobar:1234")
         download.configure()
-        with mock.patch(
-            "batou.lib.download.urlretrieve"
-        ) as retrieve, mock.patch("batou.utils.hash") as buh, self.assertRaises(
-            AssertionError
-        ) as err:
+        with (
+            mock.patch("batou.lib.download.urlretrieve") as retrieve,
+            mock.patch("batou.utils.hash") as buh,
+            self.assertRaises(AssertionError) as err,
+        ):
             retrieve.return_value = "url", []
             buh.return_value = "4321"
             download.update()

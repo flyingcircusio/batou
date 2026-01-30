@@ -102,14 +102,11 @@ def test_resolve_v6_does_not_return_link_local_addresses(output, monkeypatch):
     output.backend.output = ""
     assert resolve_v6("foo.example.com", 80) == "2a02::1"
 
-    assert (
-        """\
+    assert """\
 resolving (v6) `foo.example.com`
 resolved (v6) `foo.example.com` to [(None, None, None, None, ('fe80::feaa:14ff:fe8f:94ba', 80, None, None)), (None, None, None, None, ('2a02::1', 80, None, None))]
 selected (v6) foo.example.com, 2a02::1
-"""
-        == output.backend.output
-    )  # noqa: E501 line too long
+""" == output.backend.output  # noqa: E501 line too long
 
 
 def test_address_without_implicit_or_explicit_port_fails():
@@ -505,9 +502,7 @@ def test_export_environment_variables():
         "_1": "${}",
         "_ABBA_": r"\\",
     }
-    assert (
-        export_environment_variables(environ)
-        == """\
+    assert export_environment_variables(environ) == """\
 export AB1=''"'"''
 export AB=True
 export B=None
@@ -515,7 +510,6 @@ export _1='${}'
 export _A='"'
 export _ABBA_='\\\\'
 export a=1"""
-    )
 
     environ = {"1a": None}
     with pytest.raises(ValueError) as e:
