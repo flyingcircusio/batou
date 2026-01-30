@@ -51,19 +51,13 @@ setup(
 License :: OSI Approved :: BSD License
 Programming Language :: Python
 Programming Language :: Python :: 3
-Programming Language :: Python :: 3.8
-Programming Language :: Python :: 3.9
 Programming Language :: Python :: 3.10
 Programming Language :: Python :: 3.11
 Programming Language :: Python :: 3.12
 Programming Language :: Python :: 3.13
 Programming Language :: Python :: 3.14
 Programming Language :: Python :: 3 :: Only
-"""[
-        :-1
-    ].split(
-        "\n"
-    ),
+"""[:-1].split("\n"),
     description=__doc__.strip(),
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -72,5 +66,5 @@ Programming Language :: Python :: 3 :: Only
     include_package_data=True,
     zip_safe=False,
     test_suite="batou.tests",
-    python_requires=">=3.6",
+    python_requires=">=3.10",
 )
