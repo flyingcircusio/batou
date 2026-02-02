@@ -16,5 +16,5 @@ six==1.17.0
 toml==0.10.2
 tox==4.34.1
 virtualenv==20.36.1
-sphinx==9.1.0
+sphinx==8.1.3  # 9.x requires Python 3.12+
 recommonmark==0.7.1
