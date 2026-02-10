@@ -1147,6 +1147,14 @@ def test_purge_globs_and_deletes_files(root):
     assert sorted(os.listdir("work/mycomponent")) == []
 
 
+def test_purge_deletes_symlink_to_directory(root):
+    os.mkdir("work/mycomponent/somedir")
+    os.symlink("work/mycomponent/somedir", "work/mycomponent/mylink")
+    root.component += Purge("mylink")
+    root.component.deploy()
+    assert sorted(os.listdir("work/mycomponent")) == ["somedir"]
+
+
 def test_syncdirectory_needs_update_on_nonexisting_target(root):
     os.mkdir("work/mycomponent/existing_dir")
     open("work/mycomponent/existing_dir/test_file", "w").close()
