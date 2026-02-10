@@ -542,7 +542,6 @@ class Timer(object):
                 f"Timer {self.timer.tag}: {self.note} took {delta:.2f} seconds",
                 debug=True,
             )
-            self.timer.durations[self.note] += time.time() - self.start
 
     def step(self, note):
         if note == "total":

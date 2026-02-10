@@ -394,7 +394,7 @@ batou/2... (cpython 3...)
 ================== Connecting hosts and configuring model ... ==================
 🌐 localhost: Connecting via local (1/1)
 =================================== Summary ====================================
-Deployment took total=...s, connect=...s, deploy=∅
+Consistency check took total=...s
 ========================== CONSISTENCY CHECK FINISHED ==========================
 """
     )
@@ -439,11 +439,9 @@ batou/2... (cpython 3...)
 📦 main: Loading environment `gocept`...
 🔍 main: Verifying repository ...
 🔑 main: Loading secrets ...
-================== Connecting hosts and configuring model ... ==================
-🌐 test01: Connecting via local (1/2)
-🌐 test02: Connecting via local (2/2)
+=========================== LOCAL CONSISTENCY CHECK ============================
 =================================== Summary ====================================
-Deployment took total=...s, connect=...s, deploy=∅
+Consistency check took total=...s
 ====================== CONSISTENCY CHECK (local) FINISHED ======================
 """
     )

@@ -1,0 +1,2 @@
+- Speed up local consistency checks (--local --consistency-only) and reduce resource consumption by evaluating only one host.
+- Fix deployment duration calculation. The timer was counting execution times twice.

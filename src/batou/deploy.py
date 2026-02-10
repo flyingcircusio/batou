@@ -111,6 +111,7 @@ class Deployment(object):
         timeout,
         dirty,
         jobs,
+        consistency_only=False,
         predict_only=False,
         check_and_predict_local=False,
         provision_rebuild=False,
@@ -125,10 +126,17 @@ class Deployment(object):
         self.environment.deployment = self
 
         self.dirty = dirty
+        self.consistency_only = consistency_only
         self.predict_only = predict_only
         self.jobs = jobs
 
         self.timer = Timer("deployment")
+
+    @property
+    def local_consistency_check(self):
+        return (
+            self.consistency_only and self.environment.check_and_predict_local
+        )
 
     def load(self):
         output.section("Preparing")
@@ -176,7 +184,10 @@ class Deployment(object):
 
     def _connections(self):
         self.environment.prepare_connect()
-        hosts = sorted(self.environment.hosts)
+        if self.local_consistency_check:
+            hosts = sorted(self.environment.hosts)[:1]
+        else:
+            hosts = sorted(self.environment.hosts)
         sem = threading.Semaphore(5)
         for i, hostname in enumerate(hosts, 1):
             host = self.environment.hosts[hostname]
@@ -191,21 +202,25 @@ class Deployment(object):
                     icon="⏭️",
                 )
                 continue
-            output.step(
-                hostname,
-                "Connecting via {} ({}/{})".format(
-                    self.environment.connect_method,
-                    i,
-                    len(self.environment.hosts),
-                ),
-                icon="🌐",
-            )
+            if not self.local_consistency_check:
+                output.step(
+                    hostname,
+                    "Connecting via {} ({}/{})".format(
+                        self.environment.connect_method,
+                        i,
+                        len(hosts),
+                    ),
+                    icon="🌐",
+                )
             c = Connector(host, sem)
             c.start()
             yield c
 
     def connect(self):
-        output.section("Connecting hosts and configuring model ...")
+        if self.consistency_only and self.environment.check_and_predict_local:
+            output.section("LOCAL CONSISTENCY CHECK")
+        else:
+            output.section("Connecting hosts and configuring model ...")
         # Consume the connection iterator to start all remaining connections
         # but do not wait for them to be joined.
         with self.timer.step("connect"):
@@ -344,9 +359,15 @@ class Deployment(object):
         output.section("Summary")
         for node in list(self.environment.hosts.values()):
             node.summarize()
-        output.annotate(
-            f"Deployment took {self.timer.humanize('total', 'connect', 'deploy')}"
-        )
+
+        if self.consistency_only:
+            output.annotate(
+                f"Consistency check took {self.timer.humanize('total')}"
+            )
+        else:
+            output.annotate(
+                f"Deployment took {self.timer.humanize('total', 'connect', 'deploy')}"
+            )
 
     def disconnect(self):
         output.step("main", "Disconnecting from nodes ...", debug=True)
@@ -393,6 +414,7 @@ def main(
             timeout,
             dirty,
             jobs,
+            consistency_only,
             predict_only,
             check_and_predict_local,
             provision_rebuild,
