@@ -199,12 +199,13 @@ def test_address_v6_only(monkeypatch):
     assert address.require_v6
 
 
-def test_address_fails_when_name_cannot_be_looked_up_at_all():
+def test_address_lookup_failure_v4():
     with pytest.raises(batou.GetAddressInfoError) as excinfo:
         a = Address("does-not-exist.example.com:1234")
         a.listen
     assert_resolver_error(excinfo)
 
+def test_address_lookup_failure_v6():
     with pytest.raises(batou.GetAddressInfoError) as excinfo:
         a = Address(
             "does-not-exist.example.com:1234", require_v4=False, require_v6=True
@@ -212,6 +213,7 @@ def test_address_fails_when_name_cannot_be_looked_up_at_all():
         a.listen_v6
     assert_resolver_error(excinfo)
 
+def test_address_lookup_failure_both_required_v4():
     with pytest.raises(batou.GetAddressInfoError) as excinfo:
         a = Address(
             "does-not-exist.example.com:1234", require_v4=True, require_v6=True
@@ -219,6 +221,7 @@ def test_address_fails_when_name_cannot_be_looked_up_at_all():
         a.listen
     assert_resolver_error(excinfo)
 
+def test_address_lookup_failure_both_required_v6():
     with pytest.raises(batou.GetAddressInfoError) as excinfo:
         a = Address(
             "does-not-exist.example.com:1234", require_v4=True, require_v6=True
