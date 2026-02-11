@@ -35,6 +35,22 @@ RESOLVER_ERRORS = [
 ]
 
 
+def assert_resolver_error(excinfo):
+    """Assert that the exception contains a known resolver error message."""
+    error_message = str(excinfo.value)
+    matching_errors = [e for e in RESOLVER_ERRORS if e in error_message]
+
+    if matching_errors:
+        print(f"Error message OK: '{error_message}'")
+    else:
+        pytest.fail(
+            f"\nExpected resolver error message to contain one of:\n"
+            f"  {RESOLVER_ERRORS}\n\n"
+            f"But got:\n"
+            f"  '{error_message}'"
+        )
+
+
 @mock.patch("socket.getaddrinfo")
 def test_host_without_port_resolves(ghbn):
     ghbn.return_value = [(None, None, None, None, ("127.0.0.1", 0, None, None))]
@@ -173,41 +189,45 @@ def test_address_v6_only(monkeypatch):
 
     monkeypatch.setitem(resolve_v6_override, hostname, "::346")
 
-    with pytest.raises(batou.GetAddressInfoError) as f:
+    with pytest.raises(batou.GetAddressInfoError) as excinfo:
         a = Address(hostname, 1234)
         a.listen
-
-    assert any(x in str(f.value) for x in RESOLVER_ERRORS)
+    assert_resolver_error(excinfo)
 
     address = Address(hostname, 1234, require_v4=False, require_v6=True)
     assert address.listen_v6.host == "::346"
     assert address.require_v6
 
 
-def test_address_fails_when_name_cannot_be_looked_up_at_all():
-    with pytest.raises(batou.GetAddressInfoError) as f:
+def test_address_lookup_failure_v4():
+    with pytest.raises(batou.GetAddressInfoError) as excinfo:
         a = Address("does-not-exist.example.com:1234")
         a.listen
-    assert any(x in str(f.value) for x in RESOLVER_ERRORS)
+    assert_resolver_error(excinfo)
 
-    with pytest.raises(batou.GetAddressInfoError) as f:
+def test_address_lookup_failure_v6():
+    with pytest.raises(batou.GetAddressInfoError) as excinfo:
         a = Address(
             "does-not-exist.example.com:1234", require_v4=False, require_v6=True
         )
         a.listen_v6
-    assert any(x in str(f.value) for x in RESOLVER_ERRORS)
+    assert_resolver_error(excinfo)
 
-    with pytest.raises(batou.GetAddressInfoError) as f:
+def test_address_lookup_failure_both_required_v4():
+    with pytest.raises(batou.GetAddressInfoError) as excinfo:
         a = Address(
             "does-not-exist.example.com:1234", require_v4=True, require_v6=True
         )
         a.listen
-    with pytest.raises(batou.GetAddressInfoError) as f:
+    assert_resolver_error(excinfo)
+
+def test_address_lookup_failure_both_required_v6():
+    with pytest.raises(batou.GetAddressInfoError) as excinfo:
         a = Address(
             "does-not-exist.example.com:1234", require_v4=True, require_v6=True
         )
         a.listen_v6
-    assert any(x in str(f.value) for x in RESOLVER_ERRORS)
+    assert_resolver_error(excinfo)
 
 
 def test_address_optional_when_name_cannot_be_looked_up_at_all():
