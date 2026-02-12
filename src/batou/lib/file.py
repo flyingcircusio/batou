@@ -351,26 +351,24 @@ def limited_buffer(iterator, limit, lead, separator="...", logdir="/tmp"):
     # This is a memory optimization: don't ever keep the whole iterator in
     # memory!
     end_buffer = []
-    _, diff_log = tempfile.mkstemp(suffix=".diff", dir=logdir)
-    diff_log_file = open(diff_log, "a+")
-    for line in start_buffer:
-        diff_log_file.write(line + "\n")
-    try:
+    with tempfile.NamedTemporaryFile(
+        "a+", suffix=".diff", dir=logdir, delete=False
+    ) as diff_log_file:
+        for line in start_buffer:
+            diff_log_file.write(line + "\n")
         for line in iterator:
             line = line.rstrip()
             diff_log_file.write(line + "\n")
             end_buffer.append(line)
             if len(end_buffer) > lead:
                 end_buffer.pop(0)
-    finally:
-        diff_log_file.close()
     # If we ended up with output in the end buffer, we need to merge the
     # output.
     if end_buffer:
         start_buffer = start_buffer[:lead] + [separator] + end_buffer
         limit_triggered = True
 
-    return start_buffer, limit_triggered, diff_log
+    return start_buffer, limit_triggered, diff_log_file.name
 
 
 class ManagedContentBase(FileComponent):
