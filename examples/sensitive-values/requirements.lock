@@ -1,19 +1,18 @@
-# appenv-requirements-hash: 92e251bc834f921c996b9af42180afdf00414e12ee57291b199a6127ff5e6897
+# appenv-requirements-hash: c3910787f9454456670405d816954ab6cde3b6a7dcd37bfe1f054cea0e9f2f42
 -e ../../
 ConfigUpdater==3.2
-Jinja2==3.1.4
-MarkupSafe==2.1.5
-PyYAML==6.0.1
-certifi==2024.8.30
-charset-normalizer==3.3.2
-execnet==2.0.2
-idna==3.8
-importlib-metadata==6.7.0
-importlib-resources==5.12.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+PyYAML==6.0.3
+certifi==2026.1.4
+charset-normalizer==3.4.4
+execnet==2.1.2
+idna==3.11
+importlib_metadata==8.7.1
+importlib_resources==6.5.2
 py==1.11.0
 remote-pdb==2.1.0
-requests==2.31.0
-setuptools==68.0.0
-typing_extensions==4.7.1
-urllib3==2.0.7
-zipp==3.15.0
+requests==2.32.5
+setuptools==80.10.1
+urllib3==2.6.3
+zipp==3.23.0

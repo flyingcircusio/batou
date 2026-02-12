@@ -54,12 +54,10 @@ def test_migrate__read_config__4(tmp_path):
 @pytest.fixture(scope="function")
 def migrations(tmp_path):
     """Create some simple migrations."""
-    TEMPLATE = textwrap.dedent(
-        """
+    TEMPLATE = textwrap.dedent("""
         def migrate(output):
             pass
-    """
-    )
+    """)
     os.chdir(tmp_path)
     package = tmp_path / "package"
     package.mkdir()
@@ -131,9 +129,7 @@ def test_migrate__main__1(tmp_path, migrations, capsys):
     """
     main()
     # We explicitly test the output to the TerminalBackend.
-    assert (
-        capsys.readouterr().out
-        == """\
+    assert capsys.readouterr().out == """\
 Current version: 0
 ⚪ Version: 2299
 
@@ -145,7 +141,6 @@ Current version: 0
 
 Reached version: 2411
 """
-    )
     assert (tmp_path / CONFIG_FILE_NAME).exists()
     assert read_config() == 2411
 
@@ -155,13 +150,10 @@ def test_migrate__main__2(migrations, capsys):
     write_config(2411)
     main()
     # We explicitly test the output to the TerminalBackend.
-    assert (
-        """\
+    assert """\
 Current version: 2411
 Reached version: 2411
-"""
-        == capsys.readouterr().out
-    )
+""" == capsys.readouterr().out
     assert read_config() == 2411
 
 

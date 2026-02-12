@@ -69,15 +69,12 @@ def test_jinja2_large_template_str(output):
 
     log = "\n".join(c[0][0].strip() for c in output.call_args_list)
 
-    assert (
-        """\
+    assert """\
 ERROR: You are trying to render a template that is bigger than 100KiB we've \
 seen that Jinja can crash at large templates and suggest you find \
 alternatives for this. The affected template starts with:
 hello {{hello}}hello {{hello}}hello {{hello}}hello {{hello}}hello \
-{{hello}}hello {{hello}}hello {{he"""
-        == log
-    )
+{{hello}}hello {{hello}}hello {{he""" == log
 
 
 def test_jinja2_unknown_variable_should_fail():
