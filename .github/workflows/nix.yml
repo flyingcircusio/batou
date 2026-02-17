@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: cachix/install-nix-action@v20
+    - uses: cachix/install-nix-action@v31
     - run: nix build
     - run: nix flake check
+    - run: nix build .#rsyncgit-check --option sandbox false --print-build-logs
