@@ -28,8 +28,8 @@ class Command(Component):
         self.unless = self.expand(self.unless)
 
     def _mysql(self, cmd):
-        _, self.tmp = tempfile.mkstemp(suffix="sql")
-        with open(self.tmp, "w") as f:
+        with tempfile.NamedTemporaryFile("w", suffix="sql", delete=False) as f:
+            self.tmp = f.name
             f.write(cmd + "\n")
 
         command = []
