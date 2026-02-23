@@ -79,13 +79,11 @@ class Database(Component):
     admin_password = None
 
     def configure(self):
-        create_db = self.expand(
-            """\
+        create_db = self.expand("""\
 CREATE DATABASE IF NOT EXISTS
     {{component.database}}
     DEFAULT CHARACTER SET = '{{component.charset}}';
-"""
-        )
+""")
         self += Command(create_db, admin_password=self.admin_password)
 
         if self.base_import_file:
@@ -112,21 +110,17 @@ SET PASSWORD FOR
 
     def configure(self):
 
-        create = self.expand(
-            """\
+        create = self.expand("""\
 CREATE USER '{{component.user}}'@'{{component.allow_from_hostname}}';
-"""
-        )
-        create_unless = self.expand(
-            """\
+""")
+        create_unless = self.expand("""\
 SELECT *
 FROM user
 WHERE
     User = '{{component.user}}'
     AND
     Host = '{{component.allow_from_hostname}}';
-"""
-        )
+""")
         self += Command(
             create, unless=create_unless, admin_password=self.admin_password
         )

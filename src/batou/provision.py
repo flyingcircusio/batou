@@ -138,8 +138,7 @@ fi
                 f_target.write(f_packaged.read())
         os.chmod(local_insecure_key, 0o600)
 
-        self._known_ssh_hosts[host.name] = (
-            """
+        self._known_ssh_hosts[host.name] = """
 Host {hostname} {aliases}
     HostName {hostname}
     ProxyJump {target_host}
@@ -148,12 +147,11 @@ Host {hostname} {aliases}
     StrictHostKeyChecking no
     UserKnownHostsFile {known_hosts}
 """.format(
-                hostname=host.name,
-                aliases=" ".join(host._aliases),
-                target_host=self.target_host,
-                known_hosts=KNOWN_HOSTS_FILE,
-                insecure_private_key=local_insecure_key,
-            )
+            hostname=host.name,
+            aliases=" ".join(host._aliases),
+            target_host=self.target_host,
+            known_hosts=KNOWN_HOSTS_FILE,
+            insecure_private_key=local_insecure_key,
         )
 
         # Gather all known hosts together - otherwise we can only access
@@ -283,16 +281,14 @@ Host {hostname} {aliases}
         if os.path.exists(seed_script_file):
             output.annotate(f"    Including {seed_script_file}")
             seed_raw_script = open(seed_script_file).read()
-            seed_script += textwrap.dedent(
-                f"""\
+            seed_script += textwrap.dedent(f"""\
                 # BEGIN CUSTOM SEED SCRIPT
                 (
                     cd {seed_basedir}
                     {seed_raw_script}
                 )
                 # END CUSTOM SEED SCRIPT
-                """
-            )
+                """)
 
         seed_nixos_file = f"environments/{host.environment.name}/provision.nix"
         if (
@@ -300,19 +296,14 @@ Host {hostname} {aliases}
             and "provision.nix" not in seed_script
         ):
             output.annotate(f"    Including {seed_nixos_file}")
-            seed_script = (
-                textwrap.dedent(
-                    f"""\
+            seed_script = textwrap.dedent(f"""\
                 # BEGIN AUTOMATICALLY INCLUDED provision.nix
                 (
                     cd {seed_basedir}
                     COPY provision.nix /etc/local/nixos/provision-container.nix
                 )
                 # END AUTOMATICALLY INCLUDED provision.nix
-                """
-                )
-                + seed_script
-            )
+                """) + seed_script
 
         seed_script = seed_script.strip()
         if not seed_script:

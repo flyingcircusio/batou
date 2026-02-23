@@ -40,24 +40,20 @@ def test_repository_hg_show_upstream(tmpdir):
         repository.upstream
 
     with open(".hg/hgrc", "w") as f:
-        f.write(
-            """\
+        f.write("""\
 [paths]
 foobar = 1234
-"""
-        )
+""")
 
     with pytest.raises(AssertionError):
         repository.upstream
 
     with open(".hg/hgrc", "w") as f:
-        f.write(
-            """\
+        f.write("""\
 [paths]
 foobar = 1234
 default = ssh://test@example.com/repos
-"""
-        )
+""")
 
     assert repository.upstream == "ssh://test@example.com/repos"
     # Trigger cached access
@@ -79,14 +75,10 @@ def test_repository_hg_verify(tmpdir):
 
     # Create a second repo as target
     with open(".hg/hgrc", "w") as f:
-        f.write(
-            """\
+        f.write("""\
 [paths]
 default = file:///{}/remote
-""".format(
-                tmpdir
-            )
-        )
+""".format(tmpdir))
 
     repository = MercurialRepository(environment)
     # Clean repositories are fine

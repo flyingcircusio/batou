@@ -67,8 +67,7 @@ def test_edit_command_loop(tmpdir, capsys):
 
     out, err = capsys.readouterr()
     assert err == ""
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 
 
 An error occurred: gpg is broken
@@ -139,8 +138,7 @@ Your changes are still available. You can try:
 \tedit       -- opens editor with current data again
 \tencrypt    -- tries to encrypt current data again
 \tquit       -- quits and loses your changes
-"""
-    )
+""")
 
 
 def test_edit_file_has_secret_prefix_gpg(tmpdir, encrypted_file):

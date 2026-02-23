@@ -20,8 +20,7 @@ def test_service_early_resource():
 def test_example_errors_early():
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `errors`...
@@ -57,16 +56,14 @@ ERROR: Attribute override found both in environment and secrets
 ERROR: Secrets section for unknown component found
       Component: another-nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
-"""
-    )  # noqa: E501 line too long
+""")  # noqa: E501 line too long
 
 
 def test_example_errors_gpg_cannot_decrypt(monkeypatch):
     monkeypatch.setitem(os.environ, "GNUPGHOME", "")
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `errors`...
@@ -101,15 +98,13 @@ ERROR: Superfluous section in environment configuration
 ERROR: Override section for unknown component found
       Component: nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
-"""
-    )  # noqa: E501 line too long
+""")  # noqa: E501 line too long
 
 
 def test_example_errors_late():
     os.chdir("examples/errors2")
     out, _ = cmd("./batou deploy errors", acceptable_returncodes=[1])
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `errors`...
@@ -174,15 +169,13 @@ cycle2 depends on
 ERROR: 11 remaining unconfigured component(s): component1, component2, component4, component5, component6, crontab, cycle1, cycle2, dnsproblem, dnsproblem2, filemode
 ======================= 12 ERRORS - CONFIGURATION FAILED =======================
 ====================== DEPLOYMENT FAILED (during connect) ======================
-"""
-    )  # noqa: E501 line too long
+""")  # noqa: E501 line too long
 
 
 def test_example_errors_missing_environment():
     os.chdir("examples/errors")
     out, _ = cmd("./batou deploy production", acceptable_returncodes=[1])
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `production`...
@@ -190,15 +183,13 @@ batou/2... (cpython 3...)
 ERROR: Missing environment
     Environment: production
 ======================= DEPLOYMENT FAILED (during load) ========================
-"""
-    )  # noqa: E501 line too long
+""")  # noqa: E501 line too long
 
 
 def test_example_ignores():
     os.chdir("examples/ignores")
     out, _ = cmd("./batou deploy ignores")
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `ignores`...
@@ -214,8 +205,7 @@ batou/2... (cpython 3...)
 =================================== Summary ====================================
 Deployment took total=...s, connect=...s, deploy=...s
 ============================= DEPLOYMENT FINISHED ==============================
-"""
-    )  # noqa: E501 line too long
+""")  # noqa: E501 line too long
 
 
 def test_example_async_sync_deployment():
@@ -272,8 +262,7 @@ def test_diff_is_not_shown_for_keys_in_secrets(tmp_path, monkeypatch, capsys):
         if os.path.exists("work"):
             shutil.rmtree("work")
         # shutil.rmtree("work")
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `tutorial`...
@@ -294,8 +283,7 @@ see ...diff for the diff.
 =================================== Summary ====================================
 Deployment took total=...s, connect=...s, deploy=...s
 ============================= DEPLOYMENT FINISHED ==============================
-"""
-    )  # noqa: E501 line too long
+""")  # noqa: E501 line too long
 
 
 def test_diff_for_keys_in_secrets_overridable(tmp_path, monkeypatch, capsys):
@@ -314,8 +302,7 @@ def test_diff_for_keys_in_secrets_overridable(tmp_path, monkeypatch, capsys):
     finally:
         if os.path.exists("work"):
             shutil.rmtree("work")
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `local`...
@@ -355,15 +342,13 @@ Not showing diff as it contains sensitive data.
 =================================== Summary ====================================
 Deployment took total=...s, connect=...s, deploy=...s
 ============================= DEPLOYMENT FINISHED ==============================
-"""
-    )
+""")
 
 
 def test_durations_are_shown_for_components():
     os.chdir("examples/durations")
     out, _ = cmd("./batou deploy default")
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `default`...
@@ -377,15 +362,13 @@ batou/2... (cpython 3...)
 =================================== Summary ====================================
 Deployment took total=...s, connect=...s, deploy=...s
 ============================= DEPLOYMENT FINISHED ==============================
-"""
-    )
+""")
 
 
 def test_check_consistency_works():
     os.chdir("examples/tutorial-secrets")
     out, _ = cmd("./batou deploy tutorial --consistency-only")
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `tutorial`...
@@ -396,15 +379,13 @@ batou/2... (cpython 3...)
 =================================== Summary ====================================
 Consistency check took total=...s
 ========================== CONSISTENCY CHECK FINISHED ==========================
-"""
-    )
+""")
 
 
 def test_predicting_deployment_works():
     os.chdir("examples/tutorial-secrets")
     out, _ = cmd("./batou deploy tutorial --predict-only")
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `tutorial`...
@@ -425,15 +406,13 @@ see .../examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
 =================================== Summary ====================================
 Deployment took total=...s, connect=...s, deploy=...s
 ======================== DEPLOYMENT PREDICTION FINISHED ========================
-"""
-    )
+""")
 
 
 def test_check_consistency_works_with_local():
     os.chdir("examples/tutorial-secrets")
     out, _ = cmd("./batou deploy gocept --consistency-only --local")
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `gocept`...
@@ -443,15 +422,13 @@ batou/2... (cpython 3...)
 =================================== Summary ====================================
 Consistency check took total=...s
 ====================== CONSISTENCY CHECK (local) FINISHED ======================
-"""
-    )
+""")
 
 
 def test_predicting_deployment_works_with_local():
     os.chdir("examples/tutorial-secrets")
     out, _ = cmd("./batou deploy gocept --predict-only --local")
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `gocept`...
@@ -488,5 +465,4 @@ see .../batou/examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
 =================================== Summary ====================================
 Deployment took total=...s, connect=...s, deploy=...s
 ==================== DEPLOYMENT PREDICTION (local) FINISHED ====================
-"""
-    )
+""")

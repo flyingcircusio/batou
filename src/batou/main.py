@@ -111,11 +111,9 @@ def main(args: Optional[list] = None) -> None:
     # SECRETS
     secrets = subparsers.add_parser(
         "secrets",
-        help=textwrap.dedent(
-            """
+        help=textwrap.dedent("""
             Manage encrypted secret files. Relies on age (or GPG) being installed and
-            configured correctly. """
-        ),
+            configured correctly. """),
     )
     secrets.set_defaults(func=secrets.print_usage)
 
@@ -123,13 +121,11 @@ def main(args: Optional[list] = None) -> None:
 
     p = sp.add_parser(
         "edit",
-        help=textwrap.dedent(
-            """
+        help=textwrap.dedent("""
             Encrypted secrets file editor utility. Decrypts file,
             invokes the editor, and encrypts the file again. If called with a
             non-existent file name, a new encrypted file is created.
-        """
-        ),
+        """),
     )
     p.set_defaults(func=p.print_usage)
 
@@ -205,13 +201,11 @@ def main(args: Optional[list] = None) -> None:
     # migrate
     migrate = subparsers.add_parser(
         "migrate",
-        help=textwrap.dedent(
-            """
+        help=textwrap.dedent("""
             Migrate the configuration to be compatible with the batou version
             used. Requires to commit the changes afterwards. Might show some
             additional upgrade steps which cannot be performed automatically.
-        """
-        ),
+        """),
     )
     migrate.set_defaults(func=migrate.print_usage)
     migrate.add_argument(

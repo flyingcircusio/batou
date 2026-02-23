@@ -79,8 +79,7 @@ def test_manage__summary__1(capsys, monkeypatch):
     monkeypatch.chdir("examples/errors")
     assert summary() == 0  # exit code
     out, err = capsys.readouterr()
-    expected = textwrap.dedent(
-        """\
+    expected = textwrap.dedent("""\
         errors
         \t members
         \t\t- 03C7E67FC9FD9364
@@ -88,8 +87,7 @@ def test_manage__summary__1(capsys, monkeypatch):
         \t secret files
         \t\t(none)
 
-    """
-    )
+    """)
     assert out == expected
     assert err == ""
 

@@ -244,14 +244,12 @@ Please commit and push first.
         try:
             cmd("hg -q outgoing -l 1", acceptable_returncodes=[1])
         except CmdExecutionError:
-            output.error(
-                """\
+            output.error("""\
 Your repository has outgoing changes.
 
 I am refusing to deploy in this situation as the results will be unpredictable.
 Please push first.
-"""
-            )
+""")
             raise DeploymentError("Outgoing changes")
 
 
@@ -363,18 +361,14 @@ Please commit and push first.
             acceptable_returncodes=[0, 128],
         )
         if outgoing.strip():
-            output.error(
-                """\
+            output.error("""\
 Your repository has outgoing changes on branch {branch}:
 
 {outgoing}
 
 I am refusing to deploy in this situation as the results will be unpredictable.
 Please push first.
-""".format(
-                    branch=self.branch, outgoing=outgoing
-                )
-            )
+""".format(branch=self.branch, outgoing=outgoing))
             raise DeploymentError()
 
 

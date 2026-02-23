@@ -28,8 +28,7 @@ def test_main_with_errors(capsys):
     out, err = capsys.readouterr()
     assert err == ""
     # save the output to a file to compare it with the expected output
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `errors`...
@@ -65,8 +64,7 @@ ERROR: Attribute override found both in environment and secrets
 ERROR: Secrets section for unknown component found
       Component: another-nonexisting-component-section
 ======================= DEPLOYMENT FAILED (during load) ========================
-"""
-    )  # noqa: E501 line too long
+""")  # noqa: E501 line too long
 
 
 def test_main_fails_if_no_host_in_environment(capsys):
@@ -91,8 +89,7 @@ def test_main_fails_if_no_host_in_environment(capsys):
 
     out, err = capsys.readouterr()
     assert err == ""
-    assert out == Ellipsis(
-        """\
+    assert out == Ellipsis("""\
 batou/2... (cpython 3...)
 ================================== Preparing ===================================
 📦 main: Loading environment `errorsnohost`...
@@ -102,5 +99,4 @@ batou/2... (cpython 3...)
 
 ERROR: No host found in environment.
 ====================== DEPLOYMENT FAILED (during connect) ======================
-"""
-    )  # noqa: E501 line too long
+""")  # noqa: E501 line too long
