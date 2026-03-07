@@ -335,10 +335,12 @@ class ConfigFileSecretProvider(SecretProvider):
                 secret_files[filename] = file.decrypted
         return secret_files
 
-    def write_secret_files(self, secret_files: Dict[str, bytes]):
+    def write_secret_files(
+        self, secret_files: Dict[str, bytes], reencrypt: bool = False
+    ):
         for name, content in secret_files.items():
             with self._get_file(name, writeable=True) as file:
-                self.write_file(file, content)
+                self.write_file(file, content, reencrypt)
 
     def purge(self, except_files: Dict[str, EncryptedFile] = {}):
         for name, file in self.iter_secret_files(writeable=True).items():
@@ -379,14 +381,16 @@ class ConfigFileSecretProvider(SecretProvider):
     def _get_file(self, name: str, writeable: bool) -> EncryptedFile:
         raise NotImplementedError("_get_file() not implemented.")
 
-    def write_file(self, file: EncryptedFile, content: bytes):
+    def write_file(
+        self, file: EncryptedFile, content: bytes, reencrypt: bool = False
+    ):
         recipients = self._get_recipients_for_encryption()
         if not recipients:
             raise ValueError(
                 "No recipients found for environment. "
                 "Please add a 'batou.members' section to the secrets file."
             )
-        file.write(content, recipients)
+        file.write(content, recipients, reencrypt)
 
     def write_config_new(self, content: bytes):
         self.config_file.writeable = True
@@ -443,6 +447,29 @@ class GPGSecretProvider(ConfigFileSecretProvider):
     def _get_recipients_for_encryption(self) -> List[str]:
         return self._get_recipients()
 
+    def _check_keys_changed(self, recipients: List[str]) -> bool:
+        """Check if the recipients have changed compared to the encrypted file.
+
+        Returns True if keys have changed or if we cannot determine.
+        """
+        if not self.config_file.path.exists():
+            return True
+
+        old_recipients = self.config_file._extract_recipients()
+        if old_recipients is None:
+            return True
+
+        old_keyids = set(old_recipients)
+        new_keyids = set()
+
+        for recipient in recipients:
+            keyid = self.config_file._recipient_to_keyid(recipient)
+            if not keyid:
+                return True
+            new_keyids.add(keyid)
+
+        return old_keyids != new_keyids
+
     def write_config(self, content: bytes, force_reencrypt: bool = False):
         config = ConfigUpdater().read_string(content.decode("utf-8"))
         secret_provider = config.get("batou", "secret_provider", fallback=None)
@@ -464,12 +491,16 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             raise ValueError(
                 "Please add at least one recipient to the secrets file."
             )
+        keys_changed = self._check_keys_changed(recipients)
         self.config_file.write(
             str(config).encode("utf-8"),
             recipients,
-            reencrypt=force_reencrypt,
+            reencrypt=keys_changed or force_reencrypt,
         )
-        self.write_secret_files(self.read_secret_files())
+
+        self.write_secret_files(
+            self.read_secret_files(), reencrypt=keys_changed or force_reencrypt
+        )
 
 
 def process_age_recipients(members, environment_path):
@@ -627,8 +658,9 @@ class AGESecretProvider(ConfigFileSecretProvider):
             recipients,
             reencrypt=keys_changed or force_reencrypt,
         )
-        if keys_changed or force_reencrypt:
-            self.write_secret_files(self.read_secret_files())
+        self.write_secret_files(
+            self.read_secret_files(), reencrypt=keys_changed or force_reencrypt
+        )
 
 
 class DiffableAGESecretProvider(AGESecretProvider):
