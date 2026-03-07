@@ -443,6 +443,30 @@ class GPGSecretProvider(ConfigFileSecretProvider):
     def _get_recipients_for_encryption(self) -> List[str]:
         return self._get_recipients()
 
+    def _check_keys_changed(self, recipients: List[str]) -> bool:
+        """Check if the recipients have changed compared to the encrypted file.
+
+        Returns True if keys have changed or if we cannot determine.
+        """
+        if not self.config_file.path.exists():
+            return True
+
+        old_recipients = self.config_file._extract_recipients()
+        if old_recipients is None:
+            return True
+
+        old_keyids = set(old_recipients)
+        new_keyids = set()
+
+        for recipient in recipients:
+            recipient = recipient.strip()
+            if len(recipient) >= 8:
+                new_keyids.add(recipient[-8:])
+            else:
+                new_keyids.add(recipient)
+
+        return old_keyids != new_keyids
+
     def write_config(self, content: bytes, force_reencrypt: bool = False):
         config = ConfigUpdater().read_string(content.decode("utf-8"))
         secret_provider = config.get("batou", "secret_provider", fallback=None)
@@ -464,12 +488,14 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             raise ValueError(
                 "Please add at least one recipient to the secrets file."
             )
+        keys_changed = self._check_keys_changed(recipients)
         self.config_file.write(
             str(config).encode("utf-8"),
             recipients,
-            reencrypt=force_reencrypt,
+            reencrypt=keys_changed or force_reencrypt,
         )
-        self.write_secret_files(self.read_secret_files())
+        if keys_changed or force_reencrypt:
+            self.write_secret_files(self.read_secret_files())
 
 
 def process_age_recipients(members, environment_path):

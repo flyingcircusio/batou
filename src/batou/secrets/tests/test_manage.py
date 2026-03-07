@@ -126,6 +126,11 @@ def test_manage__reencrypt__1(tmp_path, monkeypatch, capsys):
 
     monkeypatch.chdir(tmp_path / "tutorial-secrets")
 
+    # Delete age_keys.txt files to force key change detection
+    # This simulates the scenario where keys have changed
+    for path in glob.glob("environments/*/age_keys.txt"):
+        os.remove(path)
+
     # read files environments/*/secret*
     # and make sure all of them change
     # when we re-encrypt
@@ -145,6 +150,25 @@ def test_manage__reencrypt__1(tmp_path, monkeypatch, capsys):
         assert old[path] != new[path]
 
     assert set(old) == set(new)
+
+    # Re-encrypt again without changing keys - files should not change
+    old2 = {}
+    for path in glob.glob("environments/*/secret*"):
+        with open(path, "rb") as f:
+            old2[path] = f.read()
+
+    reencrypt("")
+    new2 = {}
+    for path in glob.glob("environments/*/secret*"):
+        with open(path, "rb") as f:
+            new2[path] = f.read()
+
+    for path in old2:
+        assert (
+            old2[path] == new2[path]
+        ), f"File {path} changed without key change"
+
+    assert set(old2) == set(new2)
 
 
 def test_manage__decrypt_to_stdout__1(encrypted_file, capsys):
