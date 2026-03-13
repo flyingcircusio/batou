@@ -26,8 +26,7 @@ def main(args: Optional[list] = None) -> None:
     )
     parser = argparse.ArgumentParser(
         description=(
-            "batou v{}: multi-(host|component|environment|version|platform)"
-            " deployment"
+            "batou v{}: multi-(host|component|environment|version|platform) deployment"
         ).format(version),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -73,8 +72,7 @@ def main(args: Optional[list] = None) -> None:
         "-P",
         "--predict-only",
         action="store_true",
-        help="Only predict what updates would happen. "
-        "Do not change anything.",
+        help="Only predict what updates would happen. Do not change anything.",
     )
     p.add_argument(
         "-L",
@@ -188,6 +186,12 @@ def main(args: Optional[list] = None) -> None:
         "--environments",
         default="",
         help="The environments to update. Update all if not specified.",
+    )
+    p.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="Force re-encryption even if keys have not changed.",
     )
     p.set_defaults(func=batou.secrets.manage.reencrypt)
 

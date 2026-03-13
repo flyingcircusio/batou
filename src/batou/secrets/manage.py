@@ -69,10 +69,11 @@ def remove_user(keyid, environments, **kw):
             )
 
 
-def reencrypt(environments, **kw):
+def reencrypt(environments, force=False, **kw):
     """Re-encrypt all secrets in given environments.
 
     If environments is not given, all secrets are re-encrypted.
+    Only re-encrypts if keys have changed, unless force=True.
 
     """
     environments_ = Environment.filter(environments)
@@ -82,7 +83,7 @@ def reencrypt(environments, **kw):
         with environment.secret_provider.edit():
             config = environment.secret_provider.config
             environment.secret_provider.write_config(
-                str(config).encode("utf-8"), force_reencrypt=True
+                str(config).encode("utf-8"), force_reencrypt=force
             )
 
 

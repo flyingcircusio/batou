@@ -118,18 +118,22 @@ def test_manage__summary__3(capsys, monkeypatch):
 
 @pytest.mark.skipif(
     sys.version_info < (3, 7),
-    reason="age is available in tests with python 3.7 only",
+    reason="age is not available with python<3.7.",
 )
-def test_manage__reencrypt__1(tmp_path, monkeypatch, capsys):
+def test_manage__reencrypt__1(tmp_path, monkeypatch):
     """It re-encrypts all files with the current members."""
     shutil.copytree("examples/tutorial-secrets", tmp_path / "tutorial-secrets")
 
     monkeypatch.chdir(tmp_path / "tutorial-secrets")
 
+    # Delete age_keys.txt files to force key change detection
+    # This simulates the scenario where keys have changed
+    for path in glob.glob("environments/*/age_keys.txt"):
+        os.remove(path)
+
     # read files environments/*/secret*
     # and make sure all of them change
     # when we re-encrypt
-
     old = {}
     for path in glob.glob("environments/*/secret*"):
         with open(path, "rb") as f:
@@ -142,7 +146,62 @@ def test_manage__reencrypt__1(tmp_path, monkeypatch, capsys):
             new[path] = f.read()
 
     for path in old:
-        assert old[path] != new[path]
+        if path.endswith(".gpg"):
+            # GPG will not be re-encrypted since we have no separate tracking
+            # of keys.
+            continue
+        assert old[path] != new[path], f"File {path} not changed."
+
+    assert set(old) == set(new)
+
+    # Re-encrypt again without changing keys - files should not change
+    old2 = {}
+    for path in glob.glob("environments/*/secret*"):
+        with open(path, "rb") as f:
+            old2[path] = f.read()
+
+    reencrypt("")
+    new2 = {}
+    for path in glob.glob("environments/*/secret*"):
+        with open(path, "rb") as f:
+            new2[path] = f.read()
+
+    for path in old2:
+        assert (
+            old2[path] == new2[path]
+        ), f"File {path} changed without key change"
+
+    assert set(old2) == set(new2)
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 7),
+    reason="age is not available with python<3.7.",
+)
+def test_manage__reencrypt__force(tmp_path, monkeypatch):
+    """It re-encrypts all files when force=True even if keys have not changed."""
+    shutil.copytree("examples/tutorial-secrets", tmp_path / "tutorial-secrets")
+
+    monkeypatch.chdir(tmp_path / "tutorial-secrets")
+
+    # Read files before reencrypt
+    old = {}
+    for path in glob.glob("environments/*/secret*"):
+        with open(path, "rb") as f:
+            old[path] = f.read()
+
+    # Force re-encrypt even though keys have not changed
+    reencrypt("", force=True)
+
+    new = {}
+    for path in glob.glob("environments/*/secret*"):
+        with open(path, "rb") as f:
+            new[path] = f.read()
+
+    for path in old:
+        assert (
+            old[path] != new[path]
+        ), f"File {path} not changed with force=True."
 
     assert set(old) == set(new)
 

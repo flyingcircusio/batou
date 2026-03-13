@@ -156,6 +156,87 @@ class GPGEncryptedFile(EncryptedFile):
             ) from e
         return p.stdout
 
+    def _extract_recipients(self) -> Optional[List[str]]:
+        """Extract recipient keyids from the encrypted file.
+
+        Returns list of 8-char keyids, or None if extraction fails.
+        """
+        if not self.path.exists() or self.path.stat().st_size == 0:
+            return None
+
+        try:
+            result = subprocess.run(
+                [
+                    self.gpg(),
+                    "--list-packets",
+                    "--list-options",
+                    "show-unusable-subkeys",
+                    str(self.path),
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            output = result.stdout.decode("utf-8")
+            recipients = []
+            for line in output.splitlines():
+                if "keyid" in line:
+                    keyid = line.split("keyid")[-1].strip()
+                    if keyid and len(keyid) >= 8:
+                        # Extract the last 8 characters (keyid is at least 8 chars)
+                        recipients.append(keyid[-8:])
+            return recipients if recipients else None
+        except Exception:
+            return None
+
+    def _recipient_to_keyid(self, recipient: str) -> Optional[str]:
+        """Convert a recipient (email, keyid, or fingerprint) to 8-char keyid.
+
+        Returns None if recipient cannot be found in keyring.
+        """
+        recipient = recipient.strip()
+        # If it's already a short keyid (8 chars), return it
+        if len(recipient) == 8 and recipient.isalnum():
+            return recipient
+        # If it's a longer keyid or fingerprint, extract the last 8 chars
+        if len(recipient) >= 8 and recipient.replace(" ", "").isalnum():
+            return recipient[-8:]
+
+        # For email addresses or other formats, look up in GPG keyring
+        try:
+            result = subprocess.run(
+                [self.gpg(), "--list-keys", "--with-colons", recipient],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            output = result.stdout.decode("utf-8")
+            for line in output.splitlines():
+                # Look for fingerprint field (fpr:) and extract last 8 chars
+                if line.startswith("fpr:"):
+                    parts = line.split(":")
+                    if len(parts) > 9:
+                        fpr = parts[9]
+                        if fpr and len(fpr) >= 8:
+                            keyid = fpr[-8:]
+                            # If this keyid matches our recipient (in case it's a short keyid),
+                            # return it to handle the case where a short keyid is used in config
+                            # but the actual full keyid/fingerprint is in the keyring
+                            if keyid == recipient:
+                                return keyid
+            # Return the last fingerprint's keyid if no exact match found
+            for line in reversed(output.splitlines()):
+                if line.startswith("fpr:"):
+                    parts = line.split(":")
+                    if len(parts) > 9:
+                        fpr = parts[9]
+                        if fpr and len(fpr) >= 8:
+                            return fpr[-8:]
+        except Exception:
+            pass
+
+        return None
+
     def _write(
         self, content: bytes, recipients: List[str], reencrypt: bool = False
     ):
@@ -163,6 +244,27 @@ class GPGEncryptedFile(EncryptedFile):
             raise RuntimeError("File not locked")
         if not self.writeable:
             raise RuntimeError("File not writeable")
+
+        # If not forcing reencrypt, check if content has changed
+        if not reencrypt and self.path.exists():
+            try:
+                # Use the cached decrypted content if available
+                old_content = self._decrypted
+                if old_content is None:
+                    # If not cached, try to decrypt
+                    self._decrypted = self.decrypt()
+                    old_content = self._decrypted
+                if old_content == content:
+                    if debug:
+                        print(
+                            f"Content unchanged, skipping re-encryption of `{self.path}`",
+                            file=sys.stderr,
+                        )
+                    return
+            except Exception:
+                # If we can't decrypt or compare, proceed with reencryption
+                pass
+
         self.path.rename(str(self.path) + ".old")
         old_path = pathlib.Path(str(self.path) + ".old")
         # starting with python 3.8, pathlib.Path's rename() method
@@ -405,7 +507,23 @@ class AGEEncryptedFile(EncryptedFile):
         if not self.locked:
             raise ValueError("File is not locked")
         if not self.writeable:
-            raise ValueError("File is not writeable")
+            raise ValueError("File is not writable")
+
+        # If not forcing reencrypt, check if content has changed
+        if not reencrypt:
+            try:
+                old_content = self.decrypted
+                if old_content == content:
+                    if debug:
+                        print(
+                            f"Content unchanged, skipping re-encryption of `{self.path}`",
+                            file=sys.stderr,
+                        )
+                    return
+            except Exception:
+                # If we can't decrypt or compare, proceed with reencryption
+                pass
+
         args = [self.age(), "-e"]
         for recipient in recipients:
             args.extend(["-r", recipient])
