@@ -1,1 +1,0 @@
-- Fix "too many open files" issues in MySQL and File components caused by leaking file descriptors. (FC-51547)

@@ -3,7 +3,20 @@
 ## 2.7.0 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Drop python 3.7 support to allow for the use of newer features of python 3.8+.
+
+- Fix `file.Purge` for symlinks pointing to directories.
+
+- provisioning/devhost: make updating the channel from the outside optional (#515)
+
+- Speed up local consistency checks (--local --consistency-only) and reduce resource consumption by evaluating only one host.
+- Fix deployment duration calculation. The timer was counting execution times twice.
+
+- Fix "too many open files" issues in MySQL and File components caused by leaking file descriptors. (FC-51547)
+
+- `./batou secrets reencrypt` only re-encrypts if the keys change.
+
+  This allows to automatically run reencrypt to update keys retrieved from URLs.
 
 
 ## 2.6.2 (2025-10-27)
