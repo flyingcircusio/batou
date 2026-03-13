@@ -44,11 +44,10 @@ setup(
     """,
     author="Christian Theune",
     author_email="ct@flyingcircus.io",
-    license="BSD (2-clause)",
+    license="BSD-2-Clause",
     url="https://batou.readthedocs.io/en/latest/",
     keywords="deployment",
     classifiers="""\
-License :: OSI Approved :: BSD License
 Programming Language :: Python
 Programming Language :: Python :: 3
 Programming Language :: Python :: 3.8
