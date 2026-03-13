@@ -69,5 +69,5 @@ Programming Language :: Python :: 3 :: Only
     include_package_data=True,
     zip_safe=False,
     test_suite="batou.tests",
-    python_requires=">=3.6",
+    python_requires=">=3.8",
 )
