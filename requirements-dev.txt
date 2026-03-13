@@ -35,6 +35,6 @@ pyproject-api==1.5.3
 six==1.15.0
 toml==0.10.2
 tox==4.7.0
-virtualenv==20.26.6
+virtualenv==20.36.1
 sphinx==5.3.0
 recommonmark==0.7.1
