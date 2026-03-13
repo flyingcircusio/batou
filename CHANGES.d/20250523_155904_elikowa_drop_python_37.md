@@ -1,1 +1,0 @@
-- Drop python 3.7 support to allow for the use of newer features of python 3.8+.
