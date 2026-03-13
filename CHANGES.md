@@ -1,6 +1,6 @@
 
 
-## 2.7.0 (unreleased)
+## 2.7.0 (2026-03-13)
 ---------------------
 
 - Drop python 3.7 support to allow for the use of newer features of python 3.8+.
