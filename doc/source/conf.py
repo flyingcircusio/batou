@@ -12,11 +12,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import os
-import sys
+from importlib.metadata import version as get_version
 
-sys.path.insert(0, os.path.abspath("../.."))
-from batou import __version__  # noqa: E402 import not at top of file
+_version = get_version("batou")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -57,7 +55,7 @@ copyright = "2015-2021, Flying Circus Internet Operations GmbH"
 # built documents.
 #
 # The short X.Y version.
-version = __version__
+version = _version
 # The full version, including alpha/beta/rc tags.
 release = version
 

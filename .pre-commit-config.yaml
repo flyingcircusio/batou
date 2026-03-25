@@ -1,41 +1,41 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
-repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
-    hooks:
-    -   id: trailing-whitespace
-        exclude: ^(.*\.age|.*\.gpg)
-    -   id: end-of-file-fixer
-        # These are non-anchored regular rexpressions
-        exclude: ^(.*/encrypted.cfg|.*/secrets.cfg|.*/secret-foobar.yaml|.*\.age|.*\.gpg)
-    -   id: check-added-large-files
-    -   id: check-json
-    -   id: check-xml
-    -   id: check-toml
-    -   id: check-yaml
-        exclude: "examples/tutorial-secrets/environments/tutorial/secret-foobar.yaml"
-    -   id: detect-private-key
-        exclude: |
-            (?x)^(
-                src/batou/insecure-private.key|
-                src/batou/secrets/tests/fixture/age/id_ed25519|
-                examples/sensitive-values/ssh-keys/client_ed25519|
-                examples/sensitive-values/ssh-keys/host_ed25519|
-                examples/sensitive-values/ssh-keys/host_rsa|
-                examples/sensitive-values/secrets.cfg.age.clear
-            )$
 
--   repo: https://github.com/pycqa/isort
+exclude: ./appenv.py
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: detect-private-key
+        exclude: |
+          (?x)^(
+            src/batou/insecure-private.key|
+            src/batou/secrets/tests/fixture/age/id_ed25519|
+            examples/sensitive-values/ssh-keys/client_ed25519|
+            examples/sensitive-values/ssh-keys/host_ed25519|
+            examples/sensitive-values/ssh-keys/host_rsa|
+            examples/sensitive-values/secrets.cfg.age.clear
+          )$
+      - id: check-added-large-files
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+        exclude: |
+          (?x)^(examples/.*/secret.*)$
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+
+  - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
         name: isort (python)
         args: ["--profile", "black", "--filter-files"]
 
--   repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black
     rev: 24.4.2
     hooks:
-    -   id: black
+      - id: black
         exclude:
             examples/errors/components/component5/component.py

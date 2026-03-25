@@ -15,8 +15,6 @@ import time
 from collections import defaultdict
 from typing import Optional
 
-import importlib_metadata
-
 from batou import (
     DeploymentError,
     GetAddressInfoError,
@@ -41,13 +39,20 @@ class BagOfAttributes(dict):
 
 
 def self_id():
+    from importlib.metadata import PackageNotFoundError
+    from importlib.metadata import version as get_version
+
     template = "batou/{version} ({python}, {system})"
     system = os.uname()
     system = " ".join([system[0], system[2], system[4]])
-    version = importlib_metadata.version("batou")
+    try:
+        ver = get_version("batou")
+    except PackageNotFoundError:
+        ver = "0.0.0.dev0"
     python = sys.implementation.name
-    python += " {0}.{1}.{2}-{3}{4}".format(*sys.version_info)
-    return template.format(**locals())
+    python += f" {sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}-{sys.version_info[3]}{sys.version_info[4]}"
+
+    return template.format(version=ver, python=python, system=system)
 
 
 class MultiFile(object):

@@ -74,11 +74,11 @@ def test_edit_command_loop(tmpdir, capsys):
 An error occurred: gpg is broken
 Traceback:
 Traceback (most recent call last):
-  File ".../src/batou/secrets/edit.py", line ..., in interact
+  File ".../batou/secrets/edit.py", line ..., in interact
     self.process_cmd(cmd)
-  File ".../src/batou/secrets/edit.py", line ..., in process_cmd
+  File ".../batou/secrets/edit.py", line ..., in process_cmd
     self.edit()
-  File ".../src/batou/secrets/tests/test_editor.py", line ..., in broken_cmd
+  File ".../batou/secrets/tests/test_editor.py", line ..., in broken_cmd
     raise RuntimeError("gpg is broken")
 RuntimeError: gpg is broken
 
@@ -92,11 +92,11 @@ Your changes are still available. You can try:
 An error occurred: gpg is broken
 Traceback:
 Traceback (most recent call last):
-  File ".../src/batou/secrets/edit.py", line ..., in interact
+  File ".../batou/secrets/edit.py", line ..., in interact
     self.process_cmd(cmd)
-  File ".../src/batou/secrets/edit.py", line ..., in process_cmd
+  File ".../batou/secrets/edit.py", line ..., in process_cmd
     self.edit()
-  File ".../src/batou/secrets/tests/test_editor.py", line ..., in broken_cmd
+  File ".../batou/secrets/tests/test_editor.py", line ..., in broken_cmd
     raise RuntimeError("gpg is broken")
 RuntimeError: gpg is broken
 
@@ -110,9 +110,9 @@ Your changes are still available. You can try:
 An error occurred: unknown command `asdf`
 Traceback:
 Traceback (most recent call last):
-  File ".../src/batou/secrets/edit.py", line ..., in interact
+  File ".../batou/secrets/edit.py", line ..., in interact
     self.process_cmd(cmd)
-  File ".../src/batou/secrets/edit.py", line ..., in process_cmd
+  File ".../batou/secrets/edit.py", line ..., in process_cmd
     raise ValueError("unknown command `{}`".format(cmd))
 ValueError: unknown command `asdf`
 
@@ -126,11 +126,11 @@ Your changes are still available. You can try:
 An error occurred: gpg is broken
 Traceback:
 Traceback (most recent call last):
-  File ".../src/batou/secrets/edit.py", line ..., in interact
+  File ".../batou/secrets/edit.py", line ..., in interact
     self.process_cmd(cmd)
-  File ".../src/batou/secrets/edit.py", line ..., in process_cmd
+  File ".../batou/secrets/edit.py", line ..., in process_cmd
     self.encrypt()
-  File ".../src/batou/secrets/tests/test_editor.py", line ..., in broken_cmd
+  File ".../batou/secrets/tests/test_editor.py", line ..., in broken_cmd
     raise RuntimeError("gpg is broken")
 RuntimeError: gpg is broken
 
