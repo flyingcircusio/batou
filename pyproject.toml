@@ -65,10 +65,11 @@ test = [
   "pytest-instafail",
   "pytest-timeout",
 ]
-doc = [
+docs = [
+  "furo",
   "recommonmark",
   "sphinx",
-  "sphinx-rtd-theme",
+  "sphinx-copybutton",
 ]
 lint = [
   "black",
