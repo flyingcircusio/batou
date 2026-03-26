@@ -52,8 +52,7 @@ fc-nixos-dev-vm = "batou.provision:FCDevVM"
 dev = [
   "scriv",
   "tox",
-  "tox-extra",
-  "tox-uv",
+  "tox-uv-bare",
   { include-group = "test" },
 ]
 test = [
