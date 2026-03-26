@@ -3,6 +3,7 @@ import os
 import os.path
 import pathlib
 import shutil
+import subprocess
 import tempfile
 
 import mock
@@ -28,20 +29,41 @@ def encrypted_file(tmpdir):
     return pathlib.Path(shutil.copy(FIXTURE_ENCRYPTED_CONFIG, tmpdir))
 
 
-@pytest.fixture(scope="session", autouse=True)
-def cleanup_gpg_sockets():
-    yield
-    for path in [
-        "S.dirmngr",
-        "S.gpg-agent",
-        "S.gpg-agent.browser",
-        "S.gpg-agent.extra",
-        "S.gpg-agent.ssh",
-    ]:
+GPG_SOCKETS = [
+    "S.dirmngr",
+    "S.gpg-agent",
+    "S.gpg-agent.browser",
+    "S.gpg-agent.extra",
+    "S.gpg-agent.ssh",
+    "S.scdaemon",
+]
+
+
+def _cleanup_gpg_artifacts():
+    """Kill GPG agents and remove socket files from the test fixture."""
+    gnupg_home = FIXTURE / "gnupg"
+    # Kill any GPG agents using this GNUPGHOME
+    try:
+        subprocess.run(
+            ["gpgconf", "--homedir", str(gnupg_home), "--kill", "all"],
+            check=False,
+            capture_output=True,
+        )
+    except FileNotFoundError:
+        pass  # gpgconf not available
+    # Remove socket files
+    for path in GPG_SOCKETS:
         try:
-            (FIXTURE / "gnupg" / path).unlink()
+            (gnupg_home / path).unlink()
         except OSError:
             pass
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cleanup_gpg_sockets():
+    _cleanup_gpg_artifacts()
+    yield
+    _cleanup_gpg_artifacts()
 
 
 def test_error_message_no_gpg_found(encrypted_file):

@@ -1,14 +1,16 @@
 name: pre-commit
 
 on:
-  pull_request:
   push:
-    branches: [ main ]
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-    - uses: pre-commit/action@v3.0.1
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+      - run: uv tool install pre-commit --with pre-commit-uv --force-reinstall
+      - run: pre-commit run --all-files

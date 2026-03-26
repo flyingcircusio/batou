@@ -12,11 +12,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import os
-import sys
+from importlib.metadata import version as get_version
 
-sys.path.insert(0, os.path.abspath("../.."))
-from batou import __version__  # noqa: E402 import not at top of file
+_version = get_version("batou")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -30,7 +28,12 @@ from batou import __version__  # noqa: E402 import not at top of file
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ["sphinx.ext.todo", "sphinx.ext.autodoc", "recommonmark"]
+extensions = [
+    "sphinx.ext.todo",
+    "sphinx.ext.autodoc",
+    "recommonmark",
+    "sphinx_copybutton",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -57,7 +60,7 @@ copyright = "2015-2021, Flying Circus Internet Operations GmbH"
 # built documents.
 #
 # The short X.Y version.
-version = __version__
+version = _version
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -100,8 +103,7 @@ pygments_style = "sphinx"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "alabaster"
-html_style = "batou.css"
+html_theme = "furo"
 html_extra_path = ["extra"]
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -142,22 +144,8 @@ html_static_path = ["_static"]
 # html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
+# Furo uses its own sidebar structure.
 # html_sidebars = {}
-html_sidebars = {
-    "index": [
-        "sidebarintro.html",
-        "localtoc.html",
-        "sourcelink.html",
-        "searchbox.html",
-    ],
-    "**": [
-        "sidebarlogo.html",
-        "localtoc.html",
-        "relations.html",
-        "sourcelink.html",
-        "searchbox.html",
-    ],
-}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.

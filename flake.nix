@@ -25,6 +25,8 @@
         pkgs,
         ...
       }: let
+        pyproject = builtins.fromTOML (builtins.readFile "${inputs.self}/pyproject.toml");
+        version = pyproject.project.version;
         src = inputs.nix-filter.lib {
           root = inputs.self;
           exclude = [
@@ -32,7 +34,8 @@
             "flake.lock"
           ];
         };
-        batou = pkgs.python3Packages.callPackage ./nix/batou.nix {inherit src;};
+        batou = pkgs.python3Packages.callPackage ./nix/batou.nix {inherit src version;};
+        tox-uv = pkgs.python3Packages.callPackage ./nix/tox-uv.nix {};
       in {
         treefmt = {
           projectRootFile = "flake.nix";
@@ -47,7 +50,7 @@
 
         packages = rec {
           default = batou;
-          inherit batou;
+          inherit batou tox-uv;
         };
 
         checks = {
@@ -56,7 +59,7 @@
 
         devShells.default = pkgs.mkShell {
           packages = [
-            (pkgs.python3.withPackages (ps: [batou ps.tox]))
+            (pkgs.python3.withPackages (ps: [batou tox-uv ps.tox]))
           ];
 
           shellHook = ''

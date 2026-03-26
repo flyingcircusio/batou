@@ -30,8 +30,8 @@ def test_main_with_errors(capsys):
     # save the output to a file to compare it with the expected output
     assert out == Ellipsis(
         """\
-batou/2... (cpython 3...)
-================================== Preparing ===================================
+batou/... (cpython 3...)
+... Preparing ...
 📦 main: Loading environment `errors`...
 🔍 main: Verifying repository ...
 🔑 main: Loading secrets ...
@@ -64,7 +64,7 @@ ERROR: Attribute override found both in environment and secrets
 
 ERROR: Secrets section for unknown component found
       Component: another-nonexisting-component-section
-======================= DEPLOYMENT FAILED (during load) ========================
+... DEPLOYMENT FAILED (during load) ...
 """
     )  # noqa: E501 line too long
 
@@ -93,14 +93,14 @@ def test_main_fails_if_no_host_in_environment(capsys):
     assert err == ""
     assert out == Ellipsis(
         """\
-batou/2... (cpython 3...)
-================================== Preparing ===================================
+batou/... (cpython 3...)
+... Preparing ...
 📦 main: Loading environment `errorsnohost`...
 🔍 main: Verifying repository ...
 🔑 main: Loading secrets ...
-================== Connecting hosts and configuring model ... ==================
+... Connecting hosts and configuring model ... ...
 
 ERROR: No host found in environment.
-====================== DEPLOYMENT FAILED (during connect) ======================
+... DEPLOYMENT FAILED (during connect) ...
 """
     )  # noqa: E501 line too long

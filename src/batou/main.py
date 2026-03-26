@@ -3,6 +3,8 @@ import os
 import os.path
 import sys
 import textwrap
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as get_version
 from typing import Optional
 
 import importlib_resources
@@ -18,12 +20,10 @@ from batou._output import TerminalBackend, output
 
 def main(args: Optional[list] = None) -> None:
     os.chdir(os.environ["APPENV_BASEDIR"])
-    version = (
-        importlib_resources.files("batou")
-        .joinpath("version.txt")
-        .read_text()
-        .strip()
-    )
+    try:
+        version = get_version("batou")
+    except PackageNotFoundError:
+        version = "0.0.0.dev0"
     parser = argparse.ArgumentParser(
         description=(
             "batou v{}: multi-(host|component|environment|version|platform) deployment"

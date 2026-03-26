@@ -9,9 +9,6 @@ import jinja2
 
 from ._output import output
 
-with open(os.path.dirname(__file__) + "/version.txt") as f:
-    __version__ = f.read().strip()
-
 # Configure `remote-pdb` to be used with `breakpoint()` in Python 3.7+:
 os.environ["PYTHONBREAKPOINT"] = "remote_pdb.set_trace"
 if not os.environ.get("REMOTE_PDB_HOST", None):
@@ -586,15 +583,12 @@ class UnsatisfiedResources(ConfigurationError):
         output.error("Unsatisfied resource requirements")
         for key, host, resources in self.unsatisfied_resources:
             if host is None:
-                msg = (
-                    f'    Resource "{key}" required by '
-                    f'{",".join(resources)}'
-                )
+                msg = f'    Resource "{key}" required by {",".join(resources)}'
 
             else:
                 msg = (
                     f'    Resource "{key}" on "{host}" required by '
-                    f'{",".join(resources)}'
+                    f"{','.join(resources)}"
                 )
 
             output.line(msg, red=True)

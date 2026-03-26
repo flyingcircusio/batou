@@ -1,11 +1,7 @@
-#!/bin/sh
-
-set -ex
+#!/bin/bash
+set -euo pipefail
 
 cd $(dirname $0)
-chmod u+w bin/*ctivate* || true
-python3 -m venv .
-bin/pip install scriv
 
 mkdir -p CHANGES.d
-exec bin/scriv create --edit
+exec uv run scriv create --edit

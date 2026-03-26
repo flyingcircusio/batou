@@ -79,7 +79,7 @@ The project is licensed under the 2-clause BSD license.
 
 * Make sure `mercurial` and `subversion` are installed and in `$PATH`.
 * Run `./develop.sh` to create a local virtualenv with everything set up.
-* Run the test suite using: `bin/tox`
+* Run the test suite using: `uv run tox`
 * Build the documentation using: `cd doc; make`
 * Set up GPG for the examples with `export GNUPGHOME=<DIRECTORY OF BATOU HERE>/src/batou/secrets/tests/fixture/gnupg`
 * Make sure [age](https://github.com/FiloSottile/age) is installed and in `$PATH` for age encryption support.
