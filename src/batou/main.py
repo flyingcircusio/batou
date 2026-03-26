@@ -7,8 +7,6 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as get_version
 from typing import Optional
 
-import importlib_resources
-
 import batou
 import batou.deploy
 import batou.migrate
