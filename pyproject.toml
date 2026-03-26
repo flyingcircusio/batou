@@ -72,8 +72,6 @@ docs = [
   "sphinx-copybutton",
 ]
 lint = [
-  "black",
-  "isort",
   "pre-commit",
   "ruff",
 ]
@@ -81,28 +79,18 @@ release = [
   "zest.releaser",
 ]
 
-[tool.black]
-line-length = 80
-
-[tool.isort]
-profile = "black"
-line_length = 80
-
 [tool.ruff]
-target-version = "py310"
 line-length = 80
-exclude = ["appenv.py"]
-
-[tool.ruff.lint]
-select = ["E", "F", "I"]
-ignore = [
-  "E501",  # line too long
+exclude = [
+  "appenv.py",
+  "examples/errors/components/component5/component.py",
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"**/tests/**/*.py" = [
-  "N802",  # Function names like test_..._TRUE
-  "N806",  # Variables like TEMPLATE - test constants
+[tool.ruff.lint]
+select = ["I"]
+ignore = [
+  "F401", # imported but unused
+  "E501",  # line too long
 ]
 
 [tool.pytest.ini_options]
