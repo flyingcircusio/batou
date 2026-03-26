@@ -1,5 +1,6 @@
 import os
 import pathlib
+import re
 import sys
 
 import pytest
@@ -9,6 +10,17 @@ from batou.secrets.edit import Editor
 from batou.tests.ellipsis import Ellipsis
 
 from .test_secrets import encrypted_file
+
+
+def _filter_python313_traceback_markers(text):
+    """Filter Python 3.13+ traceback marker lines (~~~ and ^^^^)."""
+    lines = text.split("\n")
+    filtered = [
+        line
+        for line in lines
+        if not (line.strip() and all(c in "~^ " for c in line.strip()))
+    ]
+    return "\n".join(filtered)
 
 
 def test_edit_gpg(tmpdir):
@@ -67,7 +79,7 @@ def test_edit_command_loop(tmpdir, capsys):
 
     out, err = capsys.readouterr()
     assert err == ""
-    assert out == Ellipsis(
+    assert _filter_python313_traceback_markers(out) == Ellipsis(
         """\
 
 
