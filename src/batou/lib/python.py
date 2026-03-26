@@ -80,20 +80,6 @@ class VirtualEnvPyBase(Component):
             )
         except CmdExecutionError:
             raise batou.UpdateNeeded()
-        # Is the package usable? Is the package a module?  This might be
-        # overspecific - I'm looking for a way to deal with:
-        # https://github.com/pypa/pip/issues/3 if a namespace package was not
-        # installed cleanly. This only works (currently), when the package name
-        # corresponds with what it contains. I.E. it works for zc.buildout but
-        # not for distribute, which installs a setuptools package.
-        if pkg.check_package_is_module:
-            try:
-                self.cmd(
-                    'bin/python -c "import pkg_resources; '
-                    'import {0};{0}.__file__"'.format(pkg.package)
-                )
-            except CmdExecutionError:
-                raise batou.UpdateNeeded()
 
     def update_pkg(self, pkg):
         if self.installer == "pip":
@@ -226,7 +212,6 @@ class Package(Component):
 
     namevar = "package"
     version = None
-    check_package_is_module = True
     timeout = None
     dependencies = True
     env = None

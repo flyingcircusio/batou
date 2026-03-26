@@ -52,7 +52,6 @@ class Buildout(Component):
             venv += Package(
                 "distribute",
                 version=self.distribute,
-                check_package_is_module=False,
             )
 
         if self.setuptools:
