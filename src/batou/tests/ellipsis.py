@@ -3,7 +3,6 @@ import re
 
 
 class Report(object):
-
     matches = None
 
     def __init__(self):
@@ -49,7 +48,6 @@ def match(pattern, line):
 
 
 class Ellipsis(object):
-
     # other = other.replace('\t', ' '*8) oder allgemein white-space unsensibel
     # multi-line support
 

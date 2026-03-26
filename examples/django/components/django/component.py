@@ -20,6 +20,6 @@ class Django(Component):
             deployment="cold",
             options={"stopasgroup": "true"},
             args=self.expand(
-                "mysite/manage.py runserver " " {{component.address.listen}}"
+                "mysite/manage.py runserver  {{component.address.listen}}"
             ),
         )

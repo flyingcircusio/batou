@@ -7,7 +7,6 @@ from batou.lib.python import Package, VirtualEnv
 
 
 class Buildout(Component):
-
     timeout = None
     use_default = True
     config = None

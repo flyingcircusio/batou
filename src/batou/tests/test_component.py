@@ -136,7 +136,6 @@ def test_op_orassignment_ignores_already_preapred_component(root):
 
 def test_prepare_calls_configure(mockroot):
     class TestComponent(Component):
-
         cwd = None
 
         def configure(self):
@@ -218,7 +217,6 @@ def test_sub_components_are_deployed_first(root):
 
 def test_log_in_configure_is_stored_on_root_for_later(root):
     class MyComponent(Component):
-
         namevar = "id"
 
         def configure(self):
@@ -231,7 +229,6 @@ def test_log_in_configure_is_stored_on_root_for_later(root):
 
 def test_log_in_verify(root):
     class MyComponent(Component):
-
         namevar = "id"
 
         def verify(self):
@@ -625,7 +622,6 @@ def test_attribute_conversion_default(default, expected, root):
 
 
 class EventHandlingComponent(Component):
-
     namevar = "x"
     perform_update = True
 

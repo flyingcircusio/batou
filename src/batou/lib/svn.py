@@ -6,7 +6,6 @@ from batou.lib.file import Directory
 
 
 class Checkout(Component):
-
     namevar = "url"
     target = "."
     revision = None

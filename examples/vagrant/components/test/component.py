@@ -5,7 +5,6 @@ from batou.utils import Address
 
 
 class Test(Component):
-
     address = Attribute(Address, "default:8080")
 
     def configure(self):

@@ -51,7 +51,7 @@ class UnknownEnvironmentError(ValueError):
         self.names = names
 
     def __str__(self):
-        return f'Unknown environment(s): {", ".join(self.names)}'
+        return f"Unknown environment(s): {', '.join(self.names)}"
 
 
 class ConfigSection(dict):

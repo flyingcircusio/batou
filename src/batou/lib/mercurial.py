@@ -8,7 +8,6 @@ from batou.utils import CmdExecutionError
 
 
 class Clone(Component):
-
     namevar = "url"
     target = "."
     revision = None

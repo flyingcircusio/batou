@@ -122,7 +122,7 @@ batou/2... (cpython 3...)
 ERROR: Component usage error
         Message: SyncDirectory requires a source to sync from.
 Traceback (most recent call last):
-  File ".../examples/errors2/components/component1/component.py", line 37, in configure
+  File ".../examples/errors2/components/component1/component.py", line ..., in configure
     self += SyncDirectory("foo")
 
 

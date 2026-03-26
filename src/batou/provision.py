@@ -144,8 +144,7 @@ fi
                 f_target.write(f_packaged.read())
         os.chmod(local_insecure_key, 0o600)
 
-        self._known_ssh_hosts[host.name] = (
-            """
+        self._known_ssh_hosts[host.name] = """
 Host {hostname} {aliases}
     HostName {hostname}
     ProxyJump {target_host}
@@ -154,12 +153,11 @@ Host {hostname} {aliases}
     StrictHostKeyChecking no
     UserKnownHostsFile {known_hosts}
 """.format(
-                hostname=host.name,
-                aliases=" ".join(host._aliases),
-                target_host=self.target_host,
-                known_hosts=KNOWN_HOSTS_FILE,
-                insecure_private_key=local_insecure_key,
-            )
+            hostname=host.name,
+            aliases=" ".join(host._aliases),
+            target_host=self.target_host,
+            known_hosts=KNOWN_HOSTS_FILE,
+            insecure_private_key=local_insecure_key,
         )
 
         # Gather all known hosts together - otherwise we can only access

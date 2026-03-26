@@ -4,7 +4,6 @@ from batou.utils import Address
 
 
 class Hello(Component):
-
     password = "averysecretpassword"
 
     def configure(self):

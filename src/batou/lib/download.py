@@ -14,7 +14,6 @@ except ImportError:
 
 
 class Download(Component):
-
     namevar = "uri"
 
     target = None  # Filename where the download will be stored.
@@ -49,9 +48,7 @@ class Download(Component):
             self._update_urllib()
 
         target_checksum = batou.utils.hash(self.target, self.checksum_function)
-        assert (
-            self.checksum == target_checksum
-        ), """\
+        assert self.checksum == target_checksum, """\
 Checksum mismatch!
 expected: %s
 got: %s""" % (

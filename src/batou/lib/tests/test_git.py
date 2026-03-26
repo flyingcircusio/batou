@@ -130,8 +130,9 @@ def test_tag_does_switch_tag(root, repos_path):
         """cd {dir}; git tag -a v1.0 -m "version 1.0" """.format(dir=repos_path)
     )
     cmd(
-        "cd {dir}; touch bar; git add .;"
-        'git commit -m "commit branch"'.format(dir=repos_path)
+        'cd {dir}; touch bar; git add .;git commit -m "commit branch"'.format(
+            dir=repos_path
+        )
     )
     cmd(
         """cd {dir}; git tag -a v1.1 -m "version 1.1" """.format(dir=repos_path)
@@ -336,8 +337,9 @@ def test_changed_remote_is_updated(
 
     # Fresh, unrelated repo
     cmd(
-        "cd {dir}; echo baz >bar; git add .;"
-        'git commit -m "commit"'.format(dir=repos_path2)
+        'cd {dir}; echo baz >bar; git add .;git commit -m "commit"'.format(
+            dir=repos_path2
+        )
     )
 
     root.component.deploy()

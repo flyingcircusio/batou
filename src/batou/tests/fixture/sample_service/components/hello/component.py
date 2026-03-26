@@ -5,7 +5,6 @@ from batou.component import Component
 
 
 class Hello(Component):
-
     asdf = None
 
     prov = None

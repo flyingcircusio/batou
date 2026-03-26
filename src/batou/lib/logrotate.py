@@ -7,7 +7,6 @@ from batou.lib.file import File
 
 
 class RotatedLogfile(HookComponent):
-
     namevar = "path"
     key = "batou.lib.logrotate:RotatedLogfile"
 
@@ -23,7 +22,6 @@ class RotatedLogfile(HookComponent):
 
 
 class Logrotate(Component):
-
     common_config = b""
     logrotate_template = (
         importlib_resources.files(__name__)
