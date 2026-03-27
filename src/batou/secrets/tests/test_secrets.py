@@ -1,12 +1,9 @@
 import configparser
 import os
-import os.path
 import pathlib
 import shutil
-import subprocess
 import tempfile
 
-import mock
 import pytest
 
 import batou
@@ -23,47 +20,10 @@ cleartext_file = FIXTURE / "cleartext.cfg"
 FIXTURE_ENCRYPTED_CONFIG = FIXTURE / "encrypted.cfg.gpg"
 
 
-@pytest.fixture(scope="function")
-def encrypted_file(tmpdir):
-    """Provide a temporary copy of the encrypted confi."""
-    return pathlib.Path(shutil.copy(FIXTURE_ENCRYPTED_CONFIG, tmpdir))
-
-
-GPG_SOCKETS = [
-    "S.dirmngr",
-    "S.gpg-agent",
-    "S.gpg-agent.browser",
-    "S.gpg-agent.extra",
-    "S.gpg-agent.ssh",
-    "S.scdaemon",
-]
-
-
-def _cleanup_gpg_artifacts():
-    """Kill GPG agents and remove socket files from the test fixture."""
-    gnupg_home = FIXTURE / "gnupg"
-    # Kill any GPG agents using this GNUPGHOME
-    try:
-        subprocess.run(
-            ["gpgconf", "--homedir", str(gnupg_home), "--kill", "all"],
-            check=False,
-            capture_output=True,
-        )
-    except FileNotFoundError:
-        pass  # gpgconf not available
-    # Remove socket files
-    for path in GPG_SOCKETS:
-        try:
-            (gnupg_home / path).unlink()
-        except OSError:
-            pass
-
-
-@pytest.fixture(scope="session", autouse=True)
-def cleanup_gpg_sockets():
-    _cleanup_gpg_artifacts()
-    yield
-    _cleanup_gpg_artifacts()
+@pytest.fixture
+def encrypted_file(tmp_path):
+    """Provide a temporary copy of the encrypted config."""
+    return pathlib.Path(shutil.copy(FIXTURE_ENCRYPTED_CONFIG, tmp_path))
 
 
 def test_error_message_no_gpg_found(encrypted_file):
@@ -134,8 +94,7 @@ def test_open_nonexistent_file_for_write_should_create_empty_lock_file():
 
 
 def test_write(encrypted_file):
-    # encrypted = EncryptedConfigFile(encrypted_file, write_lock=True)
-    encrypted = GPGEncryptedFile(pathlib.Path(encrypted_file), writeable=True)
+    encrypted = GPGEncryptedFile(encrypted_file, writeable=True)
     with encrypted as secrets:
         secrets.write(
             b"""\
@@ -151,8 +110,10 @@ x = 1
     assert 0 != encrypted_file.stat().st_size
 
 
-def test_write_fails_if_recipient_key_is_missing_keeps_old_file(encrypted_file):
-    encrypted = GPGEncryptedFile(pathlib.Path(encrypted_file), writeable=True)
+def test_write_fails_if_recipient_key_is_missing_keeps_old_file(
+    encrypted_file,
+):
+    encrypted = GPGEncryptedFile(encrypted_file, writeable=True)
     with encrypted as secrets:
         with pytest.raises(batou.GPGCallError):
             secrets.write(
