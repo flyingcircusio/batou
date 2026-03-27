@@ -111,7 +111,7 @@ allowlist_externals = ["git"]
 [tool.tox.env_run_base]
 runner = "uv-venv-lock-runner"
 package = "wheel"
-setenv = { APPENV_BEST_PYTHON = "{envpython}", COLUMNS = "80", IN_TOX_TEST = "1"}
+setenv = { APPENV_BEST_PYTHON = "{envpython}", IN_TOX_TEST = "1"}
 dependency_groups = ["test"]
 commands = [["pytest", { replace = "posargs", extend = true }]]
 
