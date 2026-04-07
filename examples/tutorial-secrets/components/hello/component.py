@@ -3,7 +3,6 @@ from batou.lib.file import File
 
 
 class Hello(Component):
-
     magic_word = None
     other_word = None
 

@@ -167,9 +167,9 @@ def test_manage__reencrypt__1(tmp_path, monkeypatch):
             new2[path] = f.read()
 
     for path in old2:
-        assert (
-            old2[path] == new2[path]
-        ), f"File {path} changed without key change"
+        assert old2[path] == new2[path], (
+            f"File {path} changed without key change"
+        )
 
     assert set(old2) == set(new2)
 
@@ -199,9 +199,9 @@ def test_manage__reencrypt__force(tmp_path, monkeypatch):
             new[path] = f.read()
 
     for path in old:
-        assert (
-            old[path] != new[path]
-        ), f"File {path} not changed with force=True."
+        assert old[path] != new[path], (
+            f"File {path} not changed with force=True."
+        )
 
     assert set(old) == set(new)
 

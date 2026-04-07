@@ -54,7 +54,6 @@ def ensure_path_nonexistent(path: str) -> None:
 
 
 class File(Component):
-
     namevar = "path"
 
     ensure = "file"  # or: directory, symlink
@@ -167,13 +166,11 @@ class File(Component):
 
 
 class BinaryFile(File):
-
     is_template = False
     encoding = None
 
 
 class Presence(Component):
-
     namevar = "path"
     leading = False
 
@@ -207,7 +204,6 @@ class Presence(Component):
 
 
 class SyncDirectory(Component):
-
     namevar = "path"
     source = None
     exclude = ()
@@ -266,7 +262,6 @@ class SyncDirectory(Component):
 
 
 class Directory(Component):
-
     namevar = "path"
     leading = False
     source = None
@@ -319,7 +314,6 @@ class Directory(Component):
 
 
 class FileComponent(Component):
-
     namevar = "path"
     leading = False
 
@@ -564,7 +558,6 @@ class Content(ManagedContentBase):
 
 
 class JSONContent(ManagedContentBase):
-
     # Data to be used.
     data = None
 
@@ -599,7 +592,6 @@ class JSONContent(ManagedContentBase):
 
 
 class YAMLContent(ManagedContentBase):
-
     # Data to be used.
     data = None
 
@@ -618,7 +610,6 @@ class YAMLContent(ManagedContentBase):
 
 
 class Owner(FileComponent):
-
     owner = None
 
     def verify(self):
@@ -633,7 +624,6 @@ class Owner(FileComponent):
 
 
 class Group(FileComponent):
-
     group = None
 
     def verify(self):
@@ -678,7 +668,6 @@ def convert_mode(string: str) -> int:
 
 
 class Mode(FileComponent):
-
     mode = Attribute(default=None)
 
     def configure(self):
@@ -725,7 +714,6 @@ class Mode(FileComponent):
 
 
 class Symlink(Component):
-
     namevar = "target"
     source = None
 

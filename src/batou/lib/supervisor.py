@@ -13,7 +13,6 @@ from batou.utils import Address, CmdExecutionError
 
 
 class Program(Component):
-
     program_section = """
 [program:{{component.name}}]
 command = {{component.command}} {{component.args}}
@@ -136,7 +135,6 @@ redirect_stderr = true
 
 
 class Eventlistener(Program):
-
     program_section = """
 [eventlistener:{{component.name}}]
 command = {{component.command}} {{component.args}}
@@ -167,11 +165,11 @@ process_name={{component.name}}
 
 
 class Supervisor(Component):
-
     address = Attribute(Address, default=ConfigString("localhost:9001"))
-    buildout_version = Attribute(default="3.0.1")
+    buildout_version = Attribute(default="5.1.1")
     setuptools_version = Attribute(default="68.0.0")
     wheel_version = Attribute(default="0.40.0")
+    packaging_version = Attribute(default="24.0")
     buildout_cfg = os.path.join(
         os.path.dirname(__file__), "resources", "supervisor.buildout.cfg"
     )
@@ -213,6 +211,7 @@ class Supervisor(Component):
             config=buildout_cfg,
             python="3",
             wheel=self.wheel_version,
+            packaging=self.packaging_version,
         )
 
         self.program_config_dir = Directory("etc/supervisor.d", leading=True)
@@ -267,7 +266,6 @@ class RunningHelper(Component):
 
 
 class RunningSupervisor(RunningHelper):
-
     action = None
     reload_timeout = 60
 

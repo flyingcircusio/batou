@@ -43,7 +43,6 @@ class VirtualEnv(Component):
 
 
 class VirtualEnvPyBase(Component):
-
     venv_version = None
     venv_checksum = None
     venv_options = ()
@@ -81,20 +80,6 @@ class VirtualEnvPyBase(Component):
             )
         except CmdExecutionError:
             raise batou.UpdateNeeded()
-        # Is the package usable? Is the package a module?  This might be
-        # overspecific - I'm looking for a way to deal with:
-        # https://github.com/pypa/pip/issues/3 if a namespace package was not
-        # installed cleanly. This only works (currently), when the package name
-        # corresponds with what it contains. I.E. it works for zc.buildout but
-        # not for distribute, which installs a setuptools package.
-        if pkg.check_package_is_module:
-            try:
-                self.cmd(
-                    'bin/python -c "import pkg_resources; '
-                    'import {0};{0}.__file__"'.format(pkg.package)
-                )
-            except CmdExecutionError:
-                raise batou.UpdateNeeded()
 
     def update_pkg(self, pkg):
         if self.installer == "pip":
@@ -109,8 +94,9 @@ class VirtualEnvPyBase(Component):
             options += ("--no-deps",)
         options = " ".join(options)
         self.cmd(
-            "bin/pip --timeout={} install {} "
-            '"{}=={}"'.format(pkg.timeout, options, pkg.package, pkg.version),
+            'bin/pip --timeout={} install {} "{}=={}"'.format(
+                pkg.timeout, options, pkg.package, pkg.version
+            ),
             env=pkg.env if pkg.env else {},
         )
 
@@ -126,14 +112,14 @@ class VirtualEnvPyBase(Component):
         # XXX does not implement timeout. could we just do this on
         # 'cmd' instead?
         self.cmd(
-            "bin/easy_install {} "
-            '"{}=={}"'.format(options, pkg.package, pkg.version),
+            'bin/easy_install {} "{}=={}"'.format(
+                options, pkg.package, pkg.version
+            ),
             env=pkg.env if pkg.env else {},
         )
 
 
 class VirtualEnvPy2_7(VirtualEnvPyBase):
-
     venv_version = "16.7.10"
     venv_checksum = (
         "sha256:e88fdcb08b0ecb11da97868f463dd"
@@ -226,7 +212,6 @@ class Package(Component):
 
     namevar = "package"
     version = None
-    check_package_is_module = True
     timeout = None
     dependencies = True
     env = None

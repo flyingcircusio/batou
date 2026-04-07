@@ -27,6 +27,7 @@ def test_main__main__2(tmp_path, monkeypatch, capsys):
 def test_main__main__3(tmp_path, monkeypatch, capsys):
     """It has useful usage-message if no arguments are given."""
     monkeypatch.setenv("APPENV_BASEDIR", str(tmp_path))
+    monkeypatch.setenv("NO_COLOR", "1")  # Python 3.14 argparse colors output
     calling_args = [
         [],
         ["deploy"],

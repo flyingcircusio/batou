@@ -3,7 +3,6 @@ from batou.lib.file import File
 
 
 class SensitiveValues(Component):
-
     # SSH keys loaded from age-encrypted secrets
     ssh_client_privkey = None
     ssh_client_pubkey = None

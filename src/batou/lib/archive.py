@@ -11,7 +11,6 @@ from batou.utils import cmd
 
 
 class Extract(Component):
-
     namevar = "archive"
 
     create_target_dir = True
@@ -46,7 +45,6 @@ class Extract(Component):
 
 
 class Extractor(Component):
-
     namevar = "archive"
 
     _supports_strip = False
@@ -110,7 +108,6 @@ class Extractor(Component):
 
 
 class Unzip(Extractor):
-
     suffixes = (".zip",)
 
     def get_names_from_archive(self):
@@ -126,7 +123,6 @@ class Unzip(Extractor):
 
 
 class Untar(Extractor):
-
     suffixes = (".tar.gz", ".tar", ".tar.bz2", ".tgz", "tar.xz")
     exclude = ("._*",)
     _supports_strip = True
@@ -201,7 +197,6 @@ class DMGVolume(object):
 
 
 class DMGExtractor(Extractor):
-
     suffixes = (".dmg",)
 
     def __enter__(self):

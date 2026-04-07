@@ -28,6 +28,7 @@ coverage.json
 /include
 /lib
 /lib64
+/tmp/
 /src/batou/secrets/tests/fixture/gnupg/.gpg-v21-migrated
 /src/batou/secrets/tests/fixture/gnupg/crls.d
 /src/batou/secrets/tests/fixture/gnupg/private-keys*/*.key

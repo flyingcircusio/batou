@@ -2,13 +2,11 @@ from batou.component import Attribute, Component
 
 
 class Component1(Component):
-
     do_what_is_needed = Attribute("literal", default=None)
     my_attribute = None
 
 
 class Component2(Component):
-
     this_does_exist = Attribute("literal", default=None)
 
 
@@ -25,7 +23,6 @@ class Component4(Component):
 
 
 class SubComponent(Component):
-
     namevar = "aname"
 
     def configure(self):

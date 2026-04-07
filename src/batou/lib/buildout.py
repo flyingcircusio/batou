@@ -7,7 +7,6 @@ from batou.lib.python import Package, VirtualEnv
 
 
 class Buildout(Component):
-
     timeout = None
     use_default = True
     config = None
@@ -20,6 +19,7 @@ class Buildout(Component):
     setuptools = None
     wheel = None
     pip = None
+    packaging = None
     version = None
 
     build_env = {}  # XXX not frozen. :/
@@ -52,7 +52,6 @@ class Buildout(Component):
             venv += Package(
                 "distribute",
                 version=self.distribute,
-                check_package_is_module=False,
             )
 
         if self.setuptools:
@@ -63,6 +62,9 @@ class Buildout(Component):
 
         if self.pip:
             venv += Package("pip", version=self.pip)
+
+        if self.packaging:
+            venv += Package("packaging", version=self.packaging)
 
         # Install without dependencies (that's just setuptools anyway), since
         # that could cause pip to pull in the latest version of setuptools,

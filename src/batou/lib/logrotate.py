@@ -1,13 +1,11 @@
+import importlib.resources
 import os.path
-
-import importlib_resources
 
 from batou.component import Component, HookComponent, platform
 from batou.lib.file import File
 
 
 class RotatedLogfile(HookComponent):
-
     namevar = "path"
     key = "batou.lib.logrotate:RotatedLogfile"
 
@@ -23,10 +21,9 @@ class RotatedLogfile(HookComponent):
 
 
 class Logrotate(Component):
-
     common_config = b""
     logrotate_template = (
-        importlib_resources.files(__name__)
+        importlib.resources.files(__package__)
         .joinpath("resources/logrotate.in")
         .read_bytes()
     )

@@ -294,9 +294,7 @@ class ConfigFileSecretProvider(SecretProvider):
     def read(self):
         host_data = {}  # associate hostnames with their data
         component_overrides = {}  # associate component names with their data
-        secret_data = (
-            set()
-        )  # set of all secret data, used to check for secrets when outputting diffs
+        secret_data = set()  # set of all secret data, used to check for secrets when outputting diffs
         with self.config_file:
             for section in self.config.sections():
                 if section == "batou":

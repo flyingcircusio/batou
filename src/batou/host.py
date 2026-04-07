@@ -114,7 +114,6 @@ _no_value_marker = object()
 
 
 class Host(object):
-
     service_user = None
     require_sudo = None
     ignore = False
@@ -253,7 +252,6 @@ class LocalHost(Host):
 
 
 class RemoteHost(Host):
-
     gateway = None
 
     def _makegateway(self, interpreter):

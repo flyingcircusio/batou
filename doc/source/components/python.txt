@@ -67,16 +67,6 @@ Packages must be added to a virtual environment.
 
     [Default: depends on the Python/virtualenv version in use]
 
-.. py:attribute:: check_package_is_module
-
-    Verify that the package is installed by trying to ``import`` it (more
-    precisely, the first component of its dotted name). This is a stopgap
-    against https://github.com/pypa/pip/issues/3, but should be pretty safe to
-    disable if it causes trouble for specific packages (``distribute`` is a
-    notable example, since it installs a Python module named ``setuptools``).
-
-    [Default: True]
-
 .. py:attribute:: timeout
 
     A timeout (in seconds) that the installer should use to limit stalling

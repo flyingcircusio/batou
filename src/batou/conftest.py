@@ -1,18 +1,52 @@
-import os.path
+import os
+import shutil
+import stat
 import subprocess
 import tempfile
+from pathlib import Path
 
 import pytest
 
 import batou.utils
 
 
-@pytest.fixture(autouse=True)
-def ensure_gpg_homedir(monkeypatch):
-    home = os.path.join(
-        os.path.dirname(__file__), "secrets", "tests", "fixture", "gnupg"
+def _ignore_socket_files(directory, contents):
+    """Ignore socket files when copying gnupg directory."""
+    dir_path = Path(directory)
+    ignored = []
+    for name in contents:
+        path = dir_path / name
+        if path.is_socket():
+            ignored.append(name)
+    return ignored
+
+
+@pytest.fixture(autouse=True, scope="session")
+def ensure_gpg_homedir(tmp_path_factory):
+    fixture_gnupg = Path(__file__).parent / "secrets/tests/fixture/gnupg"
+    tmp_base = Path(__file__).parent.parent.parent / "tmp"
+    tmp_base.mkdir(exist_ok=True)
+    tmp_gnupg = Path(tempfile.mkdtemp(prefix="gpg-", dir=tmp_base))
+    shutil.copytree(
+        fixture_gnupg,
+        tmp_gnupg,
+        dirs_exist_ok=True,
+        ignore=_ignore_socket_files,
     )
-    monkeypatch.setitem(os.environ, "GNUPGHOME", home)
+    # GPG requires strict permissions (0700) on its homedir
+    tmp_gnupg.chmod(0o700)
+    os.environ["GNUPGHOME"] = str(tmp_gnupg)
+
+    yield
+
+    # Kill gpg-agent and clean up temp directory
+    subprocess.run(["gpgconf", "--kill", "gpg-agent"], check=False)
+    shutil.rmtree(tmp_gnupg, ignore_errors=True)
+    # Remove tmp_base if empty
+    try:
+        os.rmdir(tmp_base)
+    except OSError:
+        pass
 
 
 @pytest.fixture(autouse=True)

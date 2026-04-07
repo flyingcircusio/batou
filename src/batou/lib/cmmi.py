@@ -37,7 +37,6 @@ class Configure(Component):
 
 
 class Make(Component):
-
     namevar = "path"
     build_environment = None
 

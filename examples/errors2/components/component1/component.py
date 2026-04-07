@@ -3,13 +3,11 @@ from batou.lib.file import SyncDirectory
 
 
 class Component1(Component):
-
     do_what_is_needed = Attribute("literal", default=None)
     my_attribute = None
 
 
 class Component2(Component):
-
     this_does_exist = Attribute("literal", default=None)
 
 
@@ -38,7 +36,6 @@ class Component6(Component):
 
 
 class SubComponent(Component):
-
     namevar = "aname"
 
     def configure(self):

@@ -12,7 +12,6 @@ from batou.lib.file import File
 
 
 class CronJob(HookComponent):
-
     namevar = "command"
     key = "batou.lib.cron:CronJob"
 
@@ -40,7 +39,6 @@ def ignore_comments(data):
 
 
 class CronTab(Component):
-
     crontab_template = os.path.join(
         os.path.dirname(__file__), "resources", "crontab"
     )

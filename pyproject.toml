@@ -9,24 +9,22 @@ readme = "README.md"
 keywords = ["deployment"]
 license = "BSD-2-Clause"
 authors = [{ name = "Christian Theune", email = "ct@flyingcircus.io" }]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 version = "2.8.0.dev0"
 dependencies = [
   "ConfigUpdater>=3.2",
   "Jinja2>=3.1.4",
   "execnet>=1.8.1",
-  "importlib_metadata",
-  "importlib_resources",
   "py>=1.11.0",
   "pyyaml",
   "remote-pdb",
@@ -54,8 +52,7 @@ fc-nixos-dev-vm = "batou.provision:FCDevVM"
 dev = [
   "scriv",
   "tox",
-  "tox-extra",
-  "tox-uv",
+  "tox-uv-bare",
   { include-group = "test" },
 ]
 test = [
@@ -72,8 +69,6 @@ docs = [
   "sphinx-copybutton",
 ]
 lint = [
-  "black",
-  "isort",
   "pre-commit",
   "ruff",
 ]
@@ -81,28 +76,18 @@ release = [
   "zest.releaser",
 ]
 
-[tool.black]
-line-length = 80
-
-[tool.isort]
-profile = "black"
-line_length = 80
-
 [tool.ruff]
-target-version = "py38"
 line-length = 80
-exclude = ["appenv.py"]
-
-[tool.ruff.lint]
-select = ["E", "F", "I"]
-ignore = [
-  "E501",  # line too long
+exclude = [
+  "appenv.py",
+  "examples/errors/components/component5/component.py",
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"**/tests/**/*.py" = [
-  "N802",  # Function names like test_..._TRUE
-  "N806",  # Variables like TEMPLATE - test constants
+[tool.ruff.lint]
+select = ["I"]
+ignore = [
+  "F401", # imported but unused
+  "E501",  # line too long
 ]
 
 [tool.pytest.ini_options]
@@ -119,19 +104,19 @@ markers = [
 ]
 
 [tool.tox]
-env_list = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+env_list = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 skip_missing_interpreters = true
 allowlist_externals = ["git"]
 
 [tool.tox.env_run_base]
 runner = "uv-venv-lock-runner"
 package = "wheel"
-setenv = { APPENV_BEST_PYTHON = "{envpython}", COLUMNS = "80", IN_TOX_TEST = "1"}
+setenv = { APPENV_BEST_PYTHON = "{envpython}", IN_TOX_TEST = "1"}
 dependency_groups = ["test"]
 commands = [["pytest", { replace = "posargs", extend = true }]]
 
 [tool.tox.env.cov]
-base_python = [ "3.12" ]
+base_python = [ "3.14" ]
 package = "wheel"
 runner = "uv-venv-lock-runner"
 setenv = { APPENV_BEST_PYTHON = "{envpython}" }

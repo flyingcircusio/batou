@@ -10,7 +10,6 @@ USE_SUDO = object()
 
 
 class Command(Component):
-
     namevar = "statement"
     admin_password = ""
     admin_user = "root"
@@ -72,7 +71,6 @@ class Command(Component):
 
 
 class Database(Component):
-
     namevar = "database"
     charset = "UTF8"
     base_import_file = None
@@ -98,7 +96,6 @@ CREATE DATABASE IF NOT EXISTS
 
 
 class User(Component):
-
     namevar = "user"
     password = None
     allow_from_hostname = "localhost"
@@ -137,7 +134,6 @@ WHERE
 
 
 class Grant(Command):
-
     namevar = "grant_db"
     user = ""
     allow_from_hostname = "localhost"

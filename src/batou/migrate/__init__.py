@@ -1,9 +1,8 @@
 import importlib
+import importlib.resources
 import json
 import textwrap
 from typing import List
-
-import importlib_resources
 
 from batou._output import TerminalBackend, output
 
@@ -42,7 +41,7 @@ def read_config() -> int:
 def get_migration_steps() -> List[int]:
     """Return the sorted list of all known migration steps."""
     migration_files = (
-        importlib_resources.files(MIGRATION_MODULE)
+        importlib.resources.files(MIGRATION_MODULE)
         .joinpath("migrations")
         .iterdir()
     )

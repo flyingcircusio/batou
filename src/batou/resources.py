@@ -5,7 +5,6 @@ from batou.utils import flatten
 
 
 class Subscription(object):
-
     # Dirty on the subscription means: I am OK to be dirty and _not_
     # get updated. The default is False: I want to be updated.
 
