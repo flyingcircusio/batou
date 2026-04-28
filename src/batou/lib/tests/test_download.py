@@ -14,8 +14,8 @@ class DownloadTest(unittest.TestCase):
         component = Download("url", checksum="foobar:1234")
         component.configure()
         with (
-            mock.patch("os.path.exists") as exists,
-            mock.patch("batou.utils.hash") as buh,
+            mock.patch("os.path.exists", autospec=True) as exists,
+            mock.patch("batou.utils.hash", autospec=True) as buh,
         ):
             exists.return_value = True
             try:
@@ -34,8 +34,10 @@ class DownloadTest(unittest.TestCase):
         download = Download("url", checksum="foobar:1234")
         download.configure()
         with (
-            mock.patch("batou.lib.download.urlretrieve") as retrieve,
-            mock.patch("batou.utils.hash") as buh,
+            mock.patch(
+                "batou.lib.download.urlretrieve", autospec=True
+            ) as retrieve,
+            mock.patch("batou.utils.hash", autospec=True) as buh,
             self.assertRaises(AssertionError) as err,
         ):
             retrieve.return_value = "url", []

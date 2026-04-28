@@ -1,0 +1,3 @@
+from collections.abc import Callable
+
+def migrate(output: Callable[..., None]) -> None: ...
