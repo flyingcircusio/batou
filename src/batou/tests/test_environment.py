@@ -125,7 +125,7 @@ def test_parse_host_components():
     }
 
 
-@mock.patch("batou.environment.Environment.add_root")
+@mock.patch("batou.environment.Environment.add_root", autospec=True)
 def test_load_hosts_should_merge_single_and_multi_definition(add_root):
     e = Environment("name")
     config = Config(None)
@@ -139,12 +139,12 @@ components = bar
     )
     e.load_hosts(config)
     assert [
-        mock.call("bar", e.hosts["foo"], [], False),
-        mock.call("bar", e.hosts["baz"], [], False),
+        mock.call(e, "bar", e.hosts["foo"], [], False),
+        mock.call(e, "bar", e.hosts["baz"], [], False),
     ] == add_root.call_args_list
 
 
-@mock.patch("batou.environment.Environment.add_root")
+@mock.patch("batou.environment.Environment.add_root", autospec=True)
 def test_load_hosts_should_load_single_hosts_section(add_root):
     e = Environment("name")
     config = Config(None)
@@ -155,10 +155,10 @@ foo = bar
     """
     )
     e.load_hosts(config)
-    add_root.assert_called_once_with("bar", e.hosts["foo"], [], False)
+    add_root.assert_called_once_with(e, "bar", e.hosts["foo"], [], False)
 
 
-@mock.patch("batou.environment.Environment.add_root")
+@mock.patch("batou.environment.Environment.add_root", autospec=True)
 def test_load_hosts_should_load_multi_hosts_section(add_root):
     pass
     e = Environment("name")
@@ -170,10 +170,10 @@ components = bar
     """
     )
     e.load_hosts(config)
-    add_root.assert_called_once_with("bar", e.hosts["foo"], [], False)
+    add_root.assert_called_once_with(e, "bar", e.hosts["foo"], [], False)
 
 
-@mock.patch("batou.environment.Environment.add_root")
+@mock.patch("batou.environment.Environment.add_root", autospec=True)
 def test_load_hosts_multi_should_use_ignore_flag(add_root):
     pass
     e = Environment("name")
@@ -189,7 +189,7 @@ ignore = True
     assert e.hosts["foo"].ignore
 
 
-@mock.patch("batou.environment.Environment.add_root")
+@mock.patch("batou.environment.Environment.add_root", autospec=True)
 def test_load_hosts_should_break_on_duplicate_definition(add_root):
     e = Environment("name")
     config = Config(None)
@@ -206,7 +206,7 @@ components = bar
     assert "foo" == e.exceptions[0].affected_hostname
 
 
-@mock.patch("batou.environment.Environment.add_root")
+@mock.patch("batou.environment.Environment.add_root", autospec=True)
 def test_load_hosts_multi_should_use_env_platform(add_root):
     e = Environment("name")
     e.platform = mock.sentinel.platform
@@ -222,7 +222,7 @@ ignore = True
     assert e.hosts["foo"].platform == mock.sentinel.platform
 
 
-@mock.patch("batou.environment.Environment.add_root")
+@mock.patch("batou.environment.Environment.add_root", autospec=True)
 def test_load_hosts_multi_should_use_host_platform_if_given(add_root):
     pass
     e = Environment("name")
@@ -239,7 +239,7 @@ platform = specific
     assert e.hosts["foo"].platform == "specific"
 
 
-@mock.patch("batou.environment.Environment.add_root")
+@mock.patch("batou.environment.Environment.add_root", autospec=True)
 def test_load_hosts_single_should_use_env_platform(add_root):
     e = Environment("name")
     e.platform = mock.sentinel.platform
@@ -285,12 +285,12 @@ def test_components_for_host_can_be_retrieved_from_environment(sample_service):
     assert "hello3" not in localhost.components
 
 
-@mock.patch("batou.remote_core.Output.line")
+@mock.patch("batou.remote_core.Output.line", autospec=True)
 def test_log_in_component_configure_is_put_out(output, sample_service):
     e = Environment("test-with-provide-require")
     e.load()
     e.configure()
-    log = "\n".join(c[0][0].strip() for c in output.call_args_list)
+    log = "\n".join(c[0][1].strip() for c in output.call_args_list)
     # Provide is *always* logged first, due to provide/require ordering.
     assert (
         """\
@@ -305,7 +305,7 @@ Post sub"""
     for root in e.root_dependencies():
         root.component.deploy(True)
 
-    log = "\n".join(c[0][0].strip() for c in output.call_args_list)
+    log = "\n".join(c[0][1].strip() for c in output.call_args_list)
     assert (
         """\
 localhost: Hello

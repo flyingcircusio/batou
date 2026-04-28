@@ -48,20 +48,28 @@ def assert_resolver_error(excinfo):
     )
 
 
-@mock.patch("socket.getaddrinfo")
+@mock.patch("socket.getaddrinfo", autospec=True)
 def test_host_without_port_resolves(ghbn):
     ghbn.return_value = [(None, None, None, None, ("127.0.0.1", 0, None, None))]
     assert resolve("localhost") == "127.0.0.1"
 
 
-@mock.patch("socket.getaddrinfo", side_effect=socket.gaierror("lookup failed"))
+@mock.patch(
+    "socket.getaddrinfo",
+    autospec=True,
+    side_effect=socket.gaierror("lookup failed"),
+)
 def test_resolve_v4_socket_error_returns_none(ghbn):
     with pytest.raises(socket.gaierror) as f:
         resolve("localhost", 80)
     assert "lookup failed" == str(f.value)
 
 
-@mock.patch("socket.getaddrinfo", side_effect=socket.gaierror("lookup failed"))
+@mock.patch(
+    "socket.getaddrinfo",
+    autospec=True,
+    side_effect=socket.gaierror("lookup failed"),
+)
 def test_resolve_v6_raises_on_socket_error(gai):
     with pytest.raises(socket.gaierror) as f:
         resolve_v6("localhost", 22)
@@ -251,7 +259,7 @@ def test_address_format_with_port():
     assert str(Address("127.0.0.1:8080").listen) == "127.0.0.1:8080"
 
 
-@mock.patch("socket.getaddrinfo")
+@mock.patch("socket.getaddrinfo", autospec=True)
 def test_address_should_contain_v6_address_if_available(gai):
     gai.return_value = [(None, None, None, None, ("::1", None, None, None))]
     address = Address("localhost:8080", require_v6=True)
@@ -346,7 +354,7 @@ class LockfileContextManagerTests(unittest.TestCase):
         with open(lockfile, "r") as f:
             self.assertEqual("", f.read())
 
-    @mock.patch("fcntl.lockf", side_effect=fake_lock)
+    @mock.patch("fcntl.lockf", autospec=True, side_effect=fake_lock)
     def test_lock_cant_lock_twice(self, lockf):
         lockfile = self.tempfile()
         with locked(lockfile):
@@ -364,11 +372,11 @@ class NotifyTests(unittest.TestCase):
     #     notify('foo', 'bar')
     #     call.assert_called_with(['notify-send', 'foo', 'bar'])
 
-    @mock.patch("subprocess.check_call", side_effect=OSError)
+    @mock.patch("subprocess.check_call", autospec=True, side_effect=OSError)
     def test_notify_does_not_fail_if_os_call_fails(self, call):
         notify("foo", "bar")
 
-    @mock.patch("subprocess.call")
+    @mock.patch("subprocess.call", autospec=True)
     def test_macos_notify_gets_escaped(self, event_mocked):
         notify_text = (
             "This is a test with a 'single quote' and a \"double quote\"."
@@ -440,25 +448,25 @@ class Checksum(unittest.TestCase):
         )
 
 
-@mock.patch("subprocess.Popen")
+@mock.patch("subprocess.Popen", autospec=True)
 def test_cmd_joins_list_args(popen):
-    popen().communicate.return_value = (b"", b"")
-    popen().returncode = 0
+    popen.return_value.communicate.return_value = (b"", b"")
+    popen.return_value.returncode = 0
     cmd(["cat", "foo", "bar"])
     assert popen.call_args[0] == ("cat foo bar",)
 
 
-@mock.patch("subprocess.Popen")
+@mock.patch("subprocess.Popen", autospec=True)
 def test_cmd_quotes_spacey_args(popen):
-    popen().communicate.return_value = (b"", b"")
-    popen().returncode = 0
+    popen.return_value.communicate.return_value = (b"", b"")
+    popen.return_value.returncode = 0
     cmd(["cat", "foo", "bar bz baz"])
     assert popen.call_args[0] == ("cat foo 'bar bz baz'",)
     cmd(["cat", "foo", "bar 'bz baz"])
     assert popen.call_args[0] == (r"cat foo 'bar \'bz baz'",)
 
 
-@mock.patch("subprocess.Popen")
+@mock.patch("subprocess.Popen", autospec=True)
 def test_cmd_ignores_specified_returncodes(popen):
     popen.return_value.returncode = 4
     popen.return_value.communicate.return_value = b"", b""
@@ -467,12 +475,12 @@ def test_cmd_ignores_specified_returncodes(popen):
     cmd("asdf", acceptable_returncodes=[0, 4])
 
 
-@mock.patch("subprocess.Popen")
+@mock.patch("subprocess.Popen", autospec=True)
 def test_cmd_returns_process_if_no_communicate(popen):
     process = mock.Mock()
     popen.return_value = process
     p = cmd(["asdf"], communicate=False)
-    assert popen.communicate.call_count == 0
+    assert process.communicate.call_count == 0
     assert p is process
 
 

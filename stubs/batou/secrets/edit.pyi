@@ -1,0 +1,25 @@
+from typing import Literal
+
+from batou.environment import Environment
+
+NEW_FILE_TEMPLATE: str
+
+def main(
+    editor: str,
+    environment: Environment,
+    edit_file: str | None = ...,
+    **kw: object,
+) -> None: ...
+
+class Editor:
+    def __init__(
+        self,
+        editor_cmd: str,
+        environment: Environment,
+        edit_file: str | None = ...,
+    ) -> None: ...
+    def edit(self) -> None: ...
+    def encrypt(self) -> None: ...
+    def interact(self) -> None: ...
+    def main(self) -> None: ...
+    def process_cmd(self, cmd: Literal["edit", "encrypt", "quit"]) -> None: ...
