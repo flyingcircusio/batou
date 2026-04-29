@@ -3,7 +3,7 @@
 ## 2.7.1 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Replace pkg_resources with importlib.
 
 
 ## 2.7.0 (2026-03-13)
