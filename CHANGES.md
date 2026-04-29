@@ -1,6 +1,6 @@
 
 
-## 2.7.1 (unreleased)
+## 2.7.1 (2026-04-29)
 ---------------------
 
 - Replace pkg_resources with importlib.
