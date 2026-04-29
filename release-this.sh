@@ -3,11 +3,11 @@ set -euxo pipefail
 
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 
-if [ "$current_branch" != "main" ]; then
+if [ "$current_branch" != "main" ] && ! echo "$current_branch" | grep -qE '^[0-9]+\.[0-9]+$'; then
     set +x
     echo
     echo
-    echo "ERROR: can only release from main. We are on $current_branch"
+    echo "ERROR: can only release from main or a version branch (e.g. 2.7). We are on $current_branch"
     echo
     exit 1
 fi
