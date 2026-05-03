@@ -2,7 +2,6 @@ import importlib
 import importlib.resources
 import json
 import textwrap
-from typing import List
 
 from batou._output import TerminalBackend, output
 
@@ -10,9 +9,7 @@ CONFIG_FILE_NAME = ".batou.json"
 MIGRATION_MODULE = "batou.migrate"
 
 
-def output_migration_step(
-    title: str, text: str, status: str = "manual"
-) -> None:
+def output_migration_step(title, text, status="manual"):
     """Print the information of migration step in a formatted way."""
     if status == "manual":
         label = "🔧"
@@ -26,7 +23,7 @@ def output_migration_step(
     output.annotate("")
 
 
-def read_config() -> int:
+def read_config():
     """Read the migration configuration file.
 
     Return the current migration version number.
@@ -38,7 +35,7 @@ def read_config() -> int:
         return int(json.load(f)["migration"]["version"])
 
 
-def get_migration_steps() -> List[int]:
+def get_migration_steps():
     """Return the sorted list of all known migration steps."""
     migration_files = (
         importlib.resources.files(MIGRATION_MODULE)
@@ -53,7 +50,7 @@ def get_migration_steps() -> List[int]:
     )
 
 
-def migrate(base_version: int) -> int:
+def migrate(base_version):
     """Run the migration.
 
     Return the new migration version number.
@@ -71,7 +68,7 @@ def migrate(base_version: int) -> int:
     return step
 
 
-def write_config(version: int) -> None:
+def write_config(version):
     """Write the version number back the migration configuration file.
 
     Overwrites already existing configuration file.
@@ -81,7 +78,7 @@ def write_config(version: int) -> None:
         f.write("\n")
 
 
-def get_current_version() -> int:
+def get_current_version():
     """Get the version number stored in the configuration file.
 
     Return `0` if there is no configuration file.
@@ -93,12 +90,12 @@ def get_current_version() -> int:
     return version
 
 
-def get_expected_version() -> int:
+def get_expected_version():
     """Get the highest version number deduced from migration files."""
     return get_migration_steps()[-1]
 
 
-def assert_up_to_date() -> bool:
+def assert_up_to_date():
     """Assert that the current migration version matches the expected one."""
     if get_current_version() == get_expected_version():
         return True
@@ -106,7 +103,7 @@ def assert_up_to_date() -> bool:
     raise SystemExit(-153)
 
 
-def main(*, bootstrap: bool = False) -> None:
+def main(*, bootstrap=False):
     """Run the ``migrate`` batou subcommand."""
     if bootstrap:
         write_config(get_expected_version())

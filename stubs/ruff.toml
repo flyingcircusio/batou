@@ -1,0 +1,44 @@
+# Ruff config for type stubs - hypermodern & strict
+# This directory uses Python 3.14 syntax
+
+target-version = "py314"
+line-length = 130
+
+[lint]
+# flake8-pyi Y-codes (not built into ruff, used via flake8 --select=Y0)
+external = ["Y029", "Y090"]
+
+# Enable ALL the things and ignore selected codes
+select = ["ALL"]
+
+ignore = [
+    # Stubs don't have implementations
+    "ANN201",  # missing-return-type-undocumented-public-function
+    "ANN204",  # missing-return-type-special-method
+    "ANN401",  # dynamically-typed-any - necessary for tb (traceback) params
+    "COM812",  # conflicts with ruff format
+    "CPY001",  # missing copyright headers
+    "D100",    # undocumented-public-module
+    "D101",    # undocumented-public-class
+    "D102",    # undocumented-public-method
+    "D103",    # undocumented-public-function
+    "D104",    # undocumented-public-package
+    "D105",    # undocumented-magic-method
+    "D106",    # undocumented-public-nested-class
+    "D107",    # undocumented-public-init
+    "ARG001",  # unused-function-argument (stubs define signatures)
+    "ARG002",  # unused-method-argument
+    "ERA001",  # commented-out code (stubs often have examples)
+    "N818",    # exception naming - batou convention (ReportingException, etc.)
+]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.isort]
+known-first-party = ["batou"]
+
+[lint.per-file-ignores]
+"**/*.pyi" = [
+    "PYI021",  # docstring-in-stub (we want examples!)
+]

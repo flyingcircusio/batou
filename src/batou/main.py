@@ -5,7 +5,6 @@ import sys
 import textwrap
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as get_version
-from typing import Optional
 
 import batou
 import batou.deploy
@@ -16,7 +15,7 @@ import batou.secrets.manage
 from batou._output import TerminalBackend, output
 
 
-def main(args: Optional[list] = None) -> None:
+def main(args=None):
     os.chdir(os.environ["APPENV_BASEDIR"])
     try:
         version = get_version("batou")

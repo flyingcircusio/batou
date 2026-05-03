@@ -100,7 +100,7 @@ redirect_stderr = true
                 self.ctl("stop {}".format(self.name))
             return
         if self.supervisor.wait_for_running:
-            for retry in range(self.options["startsecs"]):
+            for retry in range(int(self.options["startsecs"])):
                 time.sleep(1)
                 if self.is_running():
                     return

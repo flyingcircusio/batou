@@ -13,7 +13,6 @@ import subprocess
 import sys
 import time
 from collections import defaultdict
-from typing import Optional
 
 from batou import (
     DeploymentError,
@@ -157,7 +156,9 @@ def resolve(host, port=0, resolve_override=resolve_override):
         output.annotate(
             "resolved (v4) `{}` to {}".format(host, responses), debug=True
         )
-        address = responses[0][4][0]
+        address = str(
+            responses[0][4][0]
+        )  # typeshed: sockaddr[0] is str | int; runtime is always the address string
         output.annotate(
             "selected (v4) {}, {}".format(host, address), debug=True
         )
@@ -179,7 +180,9 @@ def resolve_v6(host, port=0, resolve_override=resolve_v6_override):
         )
         address = None
         for _, _, _, _, sockaddr in responses:
-            addr = sockaddr[0]
+            addr = str(
+                sockaddr[0]
+            )  # typeshed: sockaddr[0] is str | int; runtime is always the address string
             if addr.startswith("fe80:"):
                 continue
             address = addr
@@ -222,7 +225,6 @@ class Address(object):
 
     #: The connect address as it should be used when configuring clients.
     #: This is a :py:class:`batou.utils.NetLoc` object.
-    connect: "NetLoc"
 
     # The dance with the ADDR_DEFAULT is to allow overriding the class-based
     # defaults on an environment level.
@@ -356,7 +358,6 @@ class NetLoc(object):
     """
 
     #: The host part of this network location. Can be a hostname or IP address.
-    host: str
     #: The port of this network location. Can be ``None`` or an integer.
     port = None
 
@@ -628,7 +629,7 @@ def dict_merge(a, b):
     return result
 
 
-def format_duration(duration: Optional[float]) -> str:
+def format_duration(duration):
     """
     Formats a duration (in seconds) into a human readable string.
 
