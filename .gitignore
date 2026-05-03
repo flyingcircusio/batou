@@ -35,6 +35,8 @@ coverage.json
 /src/batou/secrets/tests/fixture/gnupg/random_seed
 /src/batou/secrets/tests/fixture/gnupg/S.*
 __pycache__
+batou-stubs/ruff_rules
+monkeytype.sqlite3
 pip-selfcheck.json
 pip-wheel-metadata
 pyvenv.cfg
