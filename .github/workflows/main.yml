@@ -1,4 +1,4 @@
-name: Unit tests
+name: Tox Tests
 
 on:
   push:
@@ -11,12 +11,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Install age
+      - name: Install age + subversion
         run: |
           sudo apt-get update
           sudo apt-get install -y age
@@ -35,7 +35,10 @@ jobs:
       - name: Show environment
         run: set
 
-      - name: Test
-        run: uv tool install tox --with tox-uv-bare --with tox-gh
+      - name: Install tox
+        run: uv tool install --python ${{ matrix.python-version }} tox --with tox-uv-bare --with tox-gh
 
-      - run: tox
+      - name: Run tests
+        run: tox
+        env:
+          TOXENV: "${{ matrix.python-version }}"
