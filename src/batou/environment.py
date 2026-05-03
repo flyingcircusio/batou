@@ -7,7 +7,6 @@ import pathlib
 import sys
 from configparser import RawConfigParser
 from importlib.metadata import entry_points
-from typing import Dict, List, Set
 
 import batou.c
 import batou.utils
@@ -32,8 +31,7 @@ from batou import (
     UnusedResources,
 )
 from batou._output import output
-from batou.component import Component, ComponentDefinition, RootComponent
-from batou.provision import Provisioner
+from batou.component import Component, RootComponent
 from batou.repository import Repository
 from batou.utils import CycleError, cmd
 
@@ -46,7 +44,7 @@ from .secrets import SecretProvider
 class UnknownEnvironmentError(ValueError):
     """There is/are no environment(s) for this name(s)."""
 
-    def __init__(self, names: list):
+    def __init__(self, names):
         self.names = names
 
     def __str__(self):
@@ -134,32 +132,32 @@ class Environment(object):
         provision_rebuild=False,
         check_and_predict_local=False,
     ):
-        self.name: str = name
-        self.hosts: Dict[str, Host] = {}
+        self.name = name
+        self.hosts = {}
         self.resources = Resources()
-        self.overrides: Dict[str, Dict[str, str]] = {}
-        self.secret_data: Set[str] = set()
-        self.exceptions: List[Exception] = []
+        self.overrides = {}
+        self.secret_data = set()
+        self.exceptions = []
         self.timeout = timeout
         self.platform = platform
         self.provision_rebuild = provision_rebuild
         self.check_and_predict_local = check_and_predict_local
 
-        self.hostname_mapping: Dict[str, str] = {}
+        self.hostname_mapping = {}
 
         # These are the component classes, decorated with their
         # name.
-        self.components: Dict[str, "ComponentDefinition"] = {}
+        self.components = {}
         # These are the components assigned to hosts.
-        self.root_components: List[RootComponent] = []
+        self.root_components = []
 
         self.base_dir = os.path.abspath(basedir)
         self.workdir_base = os.path.join(self.base_dir, "work")
 
         # Additional secrets files as placed in secrets/<env>-<name>
-        self.secret_files: Dict[str, str] = {}
+        self.secret_files = {}
 
-        self.provisioners: Dict[str, Provisioner] = {}
+        self.provisioners = {}
 
     @classmethod
     def all(cls):

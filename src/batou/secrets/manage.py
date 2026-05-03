@@ -87,7 +87,7 @@ def reencrypt(environments, force=False, **kw):
             )
 
 
-def decrypt_to_stdout(file: str):
+def decrypt_to_stdout(file):
     """Decrypt a file and write the content to stdout."""
     file_path = pathlib.Path(file).absolute()
     with get_encrypted_file(file_path) as encrypted_file:

@@ -1,0 +1,102 @@
+# The single ty config — `ty check` auto-discovers it, the tox typing gate
+# and the pre-commit hooks run it bare. Known noise (test mocks, unannotated
+# src inference, examples) lives in .ty/baseline.json, a shrinkable worklist:
+# after fixing diagnostics, run
+#     uv run --group typing ty check --update-baseline
+# ty.strict.toml is the loud view for type-fixers: same scope and overrides,
+# no baseline.
+#
+# Overrides are reserved for genuine checker limitations and every block must
+# name one (Self@ inference, execnet monkey-patching, Attribute-descriptor
+# inference, ty#1306 stub-vs-src type identity). Everything else belongs in
+# the baseline: an override silences a rule for a whole file forever, while a
+# baseline entry disappears once the diagnostic is fixed.
+
+baseline = ".ty/baseline.json"
+
+[environment]
+python-version = "3.14"
+extra-paths = ["stubs"]
+
+[src]
+include = ["src", "examples", "stubs", "typing_tests"]
+exclude = [
+  "examples/errors/components/component5/component.py",
+]
+
+# =============================================================================
+# Checker-limitation overrides — the only dampeners in this config.
+# =============================================================================
+
+# Self@ inference: on the unannotated src, ty cannot bind Self@method to the
+# defining class, so the class type is lost at the call/assignment site.
+[[overrides]]
+include = ["src/batou/deploy.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"  # Self@__init__ vs Deployment | None
+
+[[overrides]]
+include = ["src/batou/remote_core.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"  # Self@load vs Deployment | None
+
+[[overrides]]
+include = ["src/batou/environment.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"  # Self@method not recognized as Environment subtype
+
+# Self@ + Attribute-descriptor inference: `url` is an Attribute descriptor;
+# Self@configure/verify cannot see the class attribute at all
+[[overrides]]
+include = ["src/batou/lib/git.py"]
+
+[overrides.rules]
+missing-attribute = "ignore"  # git.py:41,58 self.url on Self@configure/verify
+
+# execnet monkey-patching: host.py swaps module attributes at runtime —
+# uninferable by design
+[[overrides]]
+include = ["src/batou/host.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+missing-argument = "ignore"
+
+# ty#1306: a nominal type from a stub file is not equivalent to the same
+# nominal type from src — checking both trees in one run splits every
+# batou class into a stub and a src identity.
+[[overrides]]
+include = ["src/batou/component.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"  # from_context(): stub vs src type identity, Self@_overrides
+
+[[overrides]]
+include = ["src/batou/lib/supervisor.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"  # Self@method + stub vs src type identity
+
+# Attribute-descriptor inference: Attribute(default=None)/Attribute(default=())
+# read as literal None / tuple[()] class attrs, not descriptor unions.
+[[overrides]]
+include = ["src/batou/lib/file.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"  # Attribute(default=None) -> None|Unknown unions vs typed call targets (file.py:538,556,623)
+redundant-condition = "ignore"  # Attribute default () infers literal tuple[()] — false positive on locked ty 0.0.100
+
+[[overrides]]
+include = ["src/batou/lib/archive.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"  # archive.py:170 volume_path Attribute(default=None) -> None|Unknown vs copytree
+
+[[overrides]]
+include = ["src/batou/lib/download.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"  # download.py:36,39 target/checksum_function Attribute(default=None) -> None|Unknown

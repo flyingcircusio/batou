@@ -1,0 +1,29 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling>=1.27"]
+
+[project]
+name = "batou-stubs"
+version = "2.8.0.dev0"
+description = "Type stubs for batou"
+readme = "README.md"
+license = "BSD-2-Clause"
+requires-python = ">=3.10"
+dependencies = [
+    "batou==2.8.0.dev0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["batou"]
+
+[tool.hatch.build.targets.sdist]
+include = ["batou"]
+
+[tool.uv.sources]
+batou = { workspace = true }
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true

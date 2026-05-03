@@ -7,7 +7,6 @@ import os.path
 import sys
 import types
 import weakref
-from typing import List
 
 import batou
 import batou.c
@@ -152,14 +151,14 @@ class Component(object):
     #:
     #: During verify() and apply() batou automatically switches the current
     #: working directory to this.
-    workdir: str = None
+    workdir = None
 
     #: A list of all component instances that have been created. When
     #: a component is created (__init__) it is added to this list.
     #: After the configuration phase, this list is checked for
     #: components that have component._prepared == False and
     #: warns about them.
-    _instances: List["Component"] = []
+    _instances = []
 
     @property
     def defdir(self):

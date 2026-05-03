@@ -120,7 +120,6 @@ class Host(object):
     ignore = False
     platform = None
     _provisioner = None
-    _provision_info: dict
     remap = False
     ignore = False
 

@@ -7,7 +7,6 @@ import pty
 import subprocess
 import sys
 import tempfile
-from typing import Dict, List, Optional
 
 from configupdater import ConfigUpdater
 
@@ -20,15 +19,15 @@ debug = False
 class EncryptedFile:
     file_ending = None
 
-    def __init__(self, path: "pathlib.Path", writeable: bool = False):
+    def __init__(self, path, writeable=False):
         self.path = path
         self.writeable = writeable
         self.fd = None
-        self.is_new: Optional[bool] = None
-        self._decrypted: Optional[bytes] = None
+        self.is_new = None
+        self._decrypted = None
 
     @property
-    def decrypted(self) -> bytes:
+    def decrypted(self):
         if self.is_new:
             self._decrypted = b""
         if self.path.stat().st_size == 0:
@@ -39,20 +38,18 @@ class EncryptedFile:
             raise ValueError("No decrypted data available")
         return self._decrypted
 
-    def decrypt(self) -> bytes:
+    def decrypt(self):
         raise NotImplementedError("decrypt() not implemented")
 
     @property
-    def cleartext(self) -> str:
+    def cleartext(self):
         return self.decrypted.decode("utf-8")
 
     @property
-    def locked(self) -> bool:
+    def locked(self):
         return self.fd is not None
 
-    def write(
-        self, content: bytes, recipients: List[str], reencrypt: bool = False
-    ):
+    def write(self, content, recipients, reencrypt=False):
         if debug:
             print(
                 f"EncryptedFile({self.path}).write({content}, {recipients}, {reencrypt})",
@@ -62,9 +59,7 @@ class EncryptedFile:
         self._write(content, recipients, reencrypt)
         self._decrypted = content
 
-    def _write(
-        self, content: bytes, recipients: List[str], reencrypt: bool = False
-    ):
+    def _write(self, content, recipients, reencrypt=False):
         raise NotImplementedError("_write() not implemented")
 
     def __enter__(self):
@@ -156,7 +151,7 @@ class GPGEncryptedFile(EncryptedFile):
             ) from e
         return p.stdout
 
-    def _extract_recipients(self) -> Optional[List[str]]:
+    def _extract_recipients(self):
         """Extract recipient keyids from the encrypted file.
 
         Returns list of 8-char keyids, or None if extraction fails.
@@ -189,7 +184,7 @@ class GPGEncryptedFile(EncryptedFile):
         except Exception:
             return None
 
-    def _recipient_to_keyid(self, recipient: str) -> Optional[str]:
+    def _recipient_to_keyid(self, recipient):
         """Convert a recipient (email, keyid, or fingerprint) to 8-char keyid.
 
         Returns None if recipient cannot be found in keyring.
@@ -237,9 +232,7 @@ class GPGEncryptedFile(EncryptedFile):
 
         return None
 
-    def _write(
-        self, content: bytes, recipients: List[str], reencrypt: bool = False
-    ):
+    def _write(self, content, recipients, reencrypt=False):
         if not self.locked:
             raise RuntimeError("File not locked")
         if not self.writeable:
@@ -370,10 +363,10 @@ def get_identities():
     return identities
 
 
-known_passphrases: Dict[str, str] = {}
+known_passphrases = {}
 
 
-def get_passphrase(identity: str) -> str:
+def get_passphrase(identity):
     """Prompt the user for a passphrase if necessary."""
     if identity in known_passphrases:
         return known_passphrases[identity]
@@ -501,9 +494,7 @@ class AGEEncryptedFile(EncryptedFile):
             f"Could not decrypt {self.path} with any of the identities {identities}"
         )
 
-    def _write(
-        self, content: bytes, recipients: List[str], reencrypt: bool = False
-    ):
+    def _write(self, content, recipients, reencrypt=False):
         if not self.locked:
             raise ValueError("File is not locked")
         if not self.writeable:
@@ -574,12 +565,12 @@ class AGEEncryptedFile(EncryptedFile):
 class DiffableAGEEncryptedFile(EncryptedFile):
     file_ending = ".age-diffable"
 
-    def __init__(self, path: "pathlib.Path", writeable: bool = False):
+    def __init__(self, path, writeable=False):
         super().__init__(path, writeable)
         self._decrypted_content = None
         self._encrypted_content = None
 
-    def decrypt_age_string(self, content: str) -> str:
+    def decrypt_age_string(self, content):
         # base64 -> tmpfile -> AGEEncryptedFile -> decrypt -> read
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(base64.b64decode(content))
@@ -587,7 +578,7 @@ class DiffableAGEEncryptedFile(EncryptedFile):
             with AGEEncryptedFile(pathlib.Path(temp_file.name)) as ef:
                 return ef.cleartext
 
-    def encrypt_age_string(self, content: str, recipients: List[str]) -> str:
+    def encrypt_age_string(self, content, recipients):
         # tmpfile -> AGEEncryptedFile -> write plaintext -> read ciphertext -> base64
         with tempfile.NamedTemporaryFile() as temp_file:
             with AGEEncryptedFile(pathlib.Path(temp_file.name), True) as ef:
@@ -612,9 +603,14 @@ class DiffableAGEEncryptedFile(EncryptedFile):
             # for each option
             for option in config[section]:
                 # decrypt the value
-                decrypted = self.decrypt_age_string(
-                    config[section][option].value
-                )
+                value = config[section][option].value
+                if value is None:
+                    raise ValueError(
+                        "Option '{}:{}' has no value to decrypt.".format(
+                            section, option
+                        )
+                    )
+                decrypted = self.decrypt_age_string(value)
                 if "\n" in decrypted:
                     # multiline: accounts for indents
                     config[section][option].set_values(
@@ -631,9 +627,7 @@ class DiffableAGEEncryptedFile(EncryptedFile):
         # return the decrypted content as bytes
         return str(config).encode("utf-8")
 
-    def _write(
-        self, content: bytes, recipients: List[str], reencrypt: bool = False
-    ):
+    def _write(self, content, recipients, reencrypt=False):
         # parse the content as ConfigUpdater
         config = ConfigUpdater()
         config.read_string(content.decode("utf-8"))
@@ -681,9 +675,7 @@ all_encrypted_file_types = [
 ]
 
 
-def get_encrypted_file(
-    path: "pathlib.Path", writeable: bool = False
-) -> EncryptedFile:
+def get_encrypted_file(path, writeable=False):
     """Return the appropriate EncryptedFile object for the given path."""
     for ef in all_encrypted_file_types:
         if ef.file_ending and path.name.endswith(ef.file_ending):

@@ -2,7 +2,6 @@ import os
 import pathlib
 import re
 import urllib.request
-from typing import TYPE_CHECKING, Dict, List, Optional, Set
 
 from configupdater import ConfigUpdater
 
@@ -17,19 +16,15 @@ from batou._output import output
 from .encryption import (
     AGEEncryptedFile,
     DiffableAGEEncryptedFile,
-    EncryptedFile,
     GPGEncryptedFile,
     NoBackingEncryptedFile,
     debug,
 )
 
-if TYPE_CHECKING:
-    from batou.environment import Environment
-
 
 class SecretProvider:
     @classmethod
-    def from_environment(cls, environment: "Environment") -> "SecretProvider":
+    def from_environment(cls, environment):
         """
         Inspects the environment to determine which secret provider to use.
         Returns an instance of the secret provider.
@@ -39,7 +34,7 @@ class SecretProvider:
             / "environments"
             / str(environment.name)
         )
-        secret_provider_candidates: List[SecretProvider] = []
+        secret_provider_candidates = []
 
         # check if environment has a environment.cfg file. If not, it does not
         # exist.
@@ -97,22 +92,22 @@ class SecretProvider:
 
         return secret_provider_candidates[0]
 
-    def __init__(self, environment: "Environment"):
+    def __init__(self, environment):
         self.environment = environment
 
     @property
-    def config(self) -> ConfigUpdater:
+    def config(self):
         raise NotImplementedError(
             "Cannot read encrypted config where no secret provider is configured."
         )
 
-    def read(self) -> "SecretBlob":
+    def read(self):
         """
         Read the secrets for the environment and return a SecretBlob.
         """
         raise NotImplementedError("read() not implemented.")
 
-    def read_secret_files(self) -> Dict[str, bytes]:
+    def read_secret_files(self):
         """
         Read the secret files for the environment and return a dict of
         filename -> content.
@@ -177,25 +172,25 @@ class SecretProvider:
         """
         raise NotImplementedError("summary() not implemented.")
 
-    def edit(self, edit_file: Optional[str] = None) -> EncryptedFile:
+    def edit(self, edit_file=None):
         """
         Edit the secrets.
         """
         raise NotImplementedError("edit() not implemented.")
 
-    def write_file(self, file: EncryptedFile, content: bytes):
+    def write_file(self, file, content):
         raise NotImplementedError("write_file() not implemented.")
 
-    def write_config(self, content: bytes, force_reencrypt: bool = False):
+    def write_config(self, content, force_reencrypt=False):
         raise NotImplementedError("write_config() not implemented.")
 
-    def write_config_new(self, content: bytes):
+    def write_config_new(self, content):
         raise NotImplementedError("write_config_new() not implemented.")
 
     def change_secret_provider(
         self,
-        config: ConfigUpdater,
-        old_secret_provider: "SecretProvider",
+        config,
+        old_secret_provider,
     ):
         new_secret_provider_str = config.get("batou", "secret_provider").value
         if new_secret_provider_str == "age":
@@ -221,20 +216,20 @@ class SecretProvider:
             f"Secret provider changed from {old_secret_provider.secret_provider_str} to {new_secret_provider.secret_provider_str}."
         )
 
-    def purge(self, except_files: Dict[str, EncryptedFile] = {}):
+    def purge(self, except_files={}):
         raise NotImplementedError("purge() not implemented.")
 
-    def _get_recipients(self) -> List[str]:
+    def _get_recipients(self):
         raise NotImplementedError("_get_recipients() not implemented.")
 
 
 class SecretBlob:
     def __init__(
         self,
-        host_data: Dict[str, Dict[str, str]],
-        component_overrides: Dict[str, Dict[str, str]],
-        secret_data: Set[str],
-        secret_files: Dict[str, str],
+        host_data,
+        component_overrides,
+        secret_data,
+        secret_files,
     ):
         """
         Holds the secrets for an environment.
@@ -248,7 +243,7 @@ class SecretBlob:
 class NoSecretProvider(SecretProvider):
     secret_provider_str = "none"
 
-    def __init__(self, environment: "Environment"):
+    def __init__(self, environment):
         super().__init__(environment)
 
     def read(self):
@@ -257,7 +252,7 @@ class NoSecretProvider(SecretProvider):
     def summary(self):
         print("\tNo secrets found.")
 
-    def edit(self, edit_file: Optional[str] = None):
+    def edit(self, edit_file=None):
         output.annotate(
             f"Editing secrets for environment {self.environment.name} without secret configuration.",
             debug=True,
@@ -268,7 +263,7 @@ class NoSecretProvider(SecretProvider):
             )
         return NoBackingEncryptedFile()
 
-    def write_config(self, content: bytes, force_reencrypt: bool = False):
+    def write_config(self, content, force_reencrypt=False):
         output.annotate(
             f"Writing secrets configuration for environment {self.environment.name} without secret configuration.",
             debug=True,
@@ -277,16 +272,14 @@ class NoSecretProvider(SecretProvider):
             ConfigUpdater().read_string(content.decode("utf-8")), self
         )
 
-    def read_secret_files(self) -> Dict[str, bytes]:
+    def read_secret_files(self):
         return {}
 
-    def purge(self, except_files: Dict[str, EncryptedFile] = {}):
+    def purge(self, except_files={}):
         pass
 
 
 class ConfigFileSecretProvider(SecretProvider):
-    config_file: EncryptedFile
-
     @property
     def config(self):
         return ConfigUpdater().read_string(self.config_file.cleartext)
@@ -323,24 +316,22 @@ class ConfigFileSecretProvider(SecretProvider):
             host_data, component_overrides, secret_data, secret_files
         )
 
-    def iter_secret_files(self, writeable=False) -> Dict[str, EncryptedFile]:
+    def iter_secret_files(self, writeable=False):
         raise NotImplementedError("iter_secret_files() not implemented.")
 
-    def read_secret_files(self) -> Dict[str, bytes]:
+    def read_secret_files(self):
         secret_files = {}
         for filename, file in self.iter_secret_files().items():
             with file:
                 secret_files[filename] = file.decrypted
         return secret_files
 
-    def write_secret_files(
-        self, secret_files: Dict[str, bytes], reencrypt: bool = False
-    ):
+    def write_secret_files(self, secret_files, reencrypt=False):
         for name, content in secret_files.items():
             with self._get_file(name, writeable=True) as file:
                 self.write_file(file, content, reencrypt)
 
-    def purge(self, except_files: Dict[str, EncryptedFile] = {}):
+    def purge(self, except_files={}):
         for name, file in self.iter_secret_files(writeable=True).items():
             if name not in except_files:
                 file.delete()
@@ -369,19 +360,17 @@ class ConfigFileSecretProvider(SecretProvider):
                 print("\t\t(none)")
             print()
 
-    def edit(self, edit_file: Optional[str] = None):
+    def edit(self, edit_file=None):
         if edit_file is None:
             self.config_file.writeable = True
             return self.config_file
         else:
             return self._get_file(edit_file, writeable=True)
 
-    def _get_file(self, name: str, writeable: bool) -> EncryptedFile:
+    def _get_file(self, name, writeable):
         raise NotImplementedError("_get_file() not implemented.")
 
-    def write_file(
-        self, file: EncryptedFile, content: bytes, reencrypt: bool = False
-    ):
+    def write_file(self, file, content, reencrypt=False):
         recipients = self._get_recipients_for_encryption()
         if not recipients:
             raise ValueError(
@@ -390,12 +379,12 @@ class ConfigFileSecretProvider(SecretProvider):
             )
         file.write(content, recipients, reencrypt)
 
-    def write_config_new(self, content: bytes):
+    def write_config_new(self, content):
         self.config_file.writeable = True
         with self.config_file:
             self.write_config(content)
 
-    def _get_recipients(self) -> List[str]:
+    def _get_recipients(self):
         recipients = self.config.get("batou", "members")
 
         if recipients.value is None:
@@ -408,7 +397,7 @@ class ConfigFileSecretProvider(SecretProvider):
 class GPGSecretProvider(ConfigFileSecretProvider):
     secret_provider_str = "gpg"
 
-    def __init__(self, environment: "Environment"):
+    def __init__(self, environment):
         super().__init__(environment)
         # load encrypted file
         self.config_file = GPGEncryptedFile(
@@ -418,13 +407,13 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             / "secrets.cfg.gpg"
         )
 
-    def iter_secret_files(self, writeable=False) -> Dict[str, EncryptedFile]:
+    def iter_secret_files(self, writeable=False):
         environment_path = (
             pathlib.Path(self.environment.base_dir)
             / "environments"
             / self.environment.name
         )
-        secret_files: Dict[str, EncryptedFile] = {}
+        secret_files = {}
         for file in environment_path.glob("secret-*.gpg"):
             file = environment_path / file
             if not file.is_file():
@@ -433,7 +422,7 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             secret_files[name] = GPGEncryptedFile(file, writeable)
         return secret_files
 
-    def _get_file(self, name: str, writeable: bool = False) -> EncryptedFile:
+    def _get_file(self, name, writeable=False):
         return GPGEncryptedFile(
             pathlib.Path(self.environment.base_dir)
             / "environments"
@@ -442,10 +431,10 @@ class GPGSecretProvider(ConfigFileSecretProvider):
             writeable,
         )
 
-    def _get_recipients_for_encryption(self) -> List[str]:
+    def _get_recipients_for_encryption(self):
         return self._get_recipients()
 
-    def _check_keys_changed(self, recipients: List[str]) -> bool:
+    def _check_keys_changed(self, recipients):
         """Check if the recipients have changed compared to the encrypted file.
 
         Returns True if keys have changed or if we cannot determine.
@@ -468,7 +457,7 @@ class GPGSecretProvider(ConfigFileSecretProvider):
 
         return old_keyids != new_keyids
 
-    def write_config(self, content: bytes, force_reencrypt: bool = False):
+    def write_config(self, content, force_reencrypt=False):
         config = ConfigUpdater().read_string(content.decode("utf-8"))
         secret_provider = config.get("batou", "secret_provider", fallback=None)
         if secret_provider is None or secret_provider.value is None:
@@ -582,7 +571,7 @@ class AGESecretProvider(ConfigFileSecretProvider):
     FileFactory = AGEEncryptedFile
     secret_provider_str = "age"
 
-    def __init__(self, environment: "Environment"):
+    def __init__(self, environment):
         super().__init__(environment)
         self.config_file = self.FileFactory(
             pathlib.Path(environment.base_dir)
@@ -591,13 +580,13 @@ class AGESecretProvider(ConfigFileSecretProvider):
             / "secrets.cfg.age"
         )
 
-    def iter_secret_files(self, writeable=False) -> Dict[str, EncryptedFile]:
+    def iter_secret_files(self, writeable=False):
         environment_path = (
             pathlib.Path(self.environment.base_dir)
             / "environments"
             / self.environment.name
         )
-        secret_files: Dict[str, EncryptedFile] = {}
+        secret_files = {}
         for file in environment_path.glob("secret-*.age"):
             file = environment_path / file
             if not file.is_file():
@@ -606,7 +595,7 @@ class AGESecretProvider(ConfigFileSecretProvider):
             secret_files[name] = AGEEncryptedFile(file, writeable)
         return secret_files
 
-    def _get_file(self, name: str, writeable: bool = False) -> EncryptedFile:
+    def _get_file(self, name, writeable=False):
         return AGEEncryptedFile(
             pathlib.Path(self.environment.base_dir)
             / "environments"
@@ -615,7 +604,7 @@ class AGESecretProvider(ConfigFileSecretProvider):
             writeable,
         )
 
-    def _get_recipients_for_encryption(self) -> List[str]:
+    def _get_recipients_for_encryption(self):
         recipients = self._get_recipients()
         return process_age_recipients(
             recipients,
@@ -624,7 +613,7 @@ class AGESecretProvider(ConfigFileSecretProvider):
             / self.environment.name,
         )[0]
 
-    def write_config(self, content: bytes, force_reencrypt: bool = False):
+    def write_config(self, content, force_reencrypt=False):
         config = ConfigUpdater().read_string(content.decode("utf-8"))
         secret_provider = config.get("batou", "secret_provider", fallback=None)
         if secret_provider is None or secret_provider.value is None:
@@ -665,7 +654,7 @@ class DiffableAGESecretProvider(AGESecretProvider):
     FileFactory = DiffableAGEEncryptedFile
     secret_provider_str = "age-diffable"
 
-    def __init__(self, environment: "Environment"):
+    def __init__(self, environment):
         super().__init__(environment)
         self.config_file = DiffableAGEEncryptedFile(
             pathlib.Path(environment.base_dir)

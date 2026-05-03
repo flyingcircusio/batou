@@ -329,7 +329,12 @@ class LockfileContextManagerTests(unittest.TestCase):
         list(map(os.unlink, self.files))
 
     def tempfile(self):
-        f = tempfile.mktemp()
+        # A unique path to a file that does not exist yet — what the deprecated
+        # tempfile.mktemp() promised, but race-free: mkstemp reserves the name
+        # atomically, then we remove the file again.
+        fd, f = tempfile.mkstemp()
+        os.close(fd)
+        os.unlink(f)
         self.files.append(f)
         return f
 

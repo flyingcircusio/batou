@@ -42,3 +42,24 @@ jobs:
         run: tox
         env:
           TOXENV: "${{ matrix.python-version }}"
+
+  typing:
+    # Note that type checking is only supported on Python 3.14 because stubs use modern typing features.
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install tox
+        run: uv tool install --python 3.14 tox --with tox-uv-bare --with tox-gh
+
+      - name: Run type checks
+        run: tox -e typing

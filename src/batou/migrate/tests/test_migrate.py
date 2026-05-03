@@ -72,7 +72,7 @@ def migrations(tmp_path):
     sys.path.insert(0, str(tmp_path))
     with mock.patch("batou.migrate.MIGRATION_MODULE", new="package"):
         yield
-    sys.path.pop()
+    sys.path.remove(str(tmp_path))
 
 
 def test_migrate__migrate__1(migrations, output):

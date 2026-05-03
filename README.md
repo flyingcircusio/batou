@@ -84,10 +84,55 @@ The project is licensed under the 2-clause BSD license.
 * Set up GPG for the examples with `export GNUPGHOME=<DIRECTORY OF BATOU HERE>/src/batou/secrets/tests/fixture/gnupg`
 * Make sure [age](https://github.com/FiloSottile/age) is installed and in `$PATH` for age encryption support.
 
+### Typed development
+
+Type checkers: ty and basedpyright (both check against Python 3.14 —
+the stubs rely on that and use 3.14-only syntax for accurate typing of
+batou's dynamic APIs). mypy runs in this repository only as the
+invisible engine of `mypy.stubtest`, the runtime-conformance gate for
+the stubs.
+
+`src/batou` is deliberately unannotated runtime code — do not add type
+annotations there. Exception: annotations Python evaluates at runtime
+(`NamedTuple`/`TypedDict`/dataclass fields) belong in the `.py` file;
+everything else goes into the `*.pyi` files under `stubs/`, which mirror
+`src` and ship as a separate package ([stubs/README.md](stubs/README.md)).
+Stub files have their own ruff config with a longer line length.
+
+Plain `ty check` and `basedpyright` are green by design: known noise
+sits in the baselines `.ty/baseline.json` and
+`.basedpyright/baseline.json`. The contract: you may not add NEW
+diagnostics — `uv run tox -e typing`, the CI gate and the pre-commit
+hook (bare `ty check`) fail on anything the baselines don't cover.
+
+The checkers live in the opt-in `typing` dependency group
+(`uv sync --group typing` for local checking); the third-party stubs
+(`types-mock`, `types-pyyaml`) ship in the default `dev` group so every
+synced environment type-checks test imports cleanly.
+
+To fix typing instead, use the loud views — same scope, baselines disabled,
+non-zero exit by design (the known findings are your worklist):
+
+    uv run --group typing ty check --config-file ty.strict.toml
+    uv run --group typing basedpyright -p pyrightconfig.strict.json
+
+After fixing a diagnostic, shrink the baseline so it stays fixed, and commit
+it together with your fix:
+
+    uv run --group typing ty check --update-baseline
+    uv run --group typing basedpyright --writebaseline
+
+Caution: these commands rewrite the baseline from the CURRENT diagnostics —
+run them only when you have no new errors of your own, or you absorb your
+own mistakes as known noise. Two gotchas: the end-of-file-fixer pre-commit
+hook adds a trailing newline (re-stage), and basedpyright drops fixed
+findings from its baseline automatically on green runs, so a shrinking
+baseline can show up as a dirty file.
+
 ## Development and release process
 
 * Changes should be accompanied with a changelog entry. Use `./changelog.sh` to create one.
-* Releasing will create a tag and publishes the package to pypi. Use `./release-this.sh` to create a release.
+* Releasing will create a tag and publishes both packages — `batou` and `batou-stubs` — to PyPI in lockstep: zest.releaser hooks sync the stubs version and its `batou==` pin into the release commits and upload the stubs right after batou. Use `./release-this.sh` to create a release.
 
 ## Changelog
 

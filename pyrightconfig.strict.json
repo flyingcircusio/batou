@@ -1,0 +1,18 @@
+{
+  "pythonVersion": "3.14",
+  "typeCheckingMode": "standard",
+  "include": [
+    "src",
+    "stubs",
+    "typing_tests",
+    "examples"
+  ],
+  "exclude": [
+    "examples/errors/components/component5/component.py",
+    "**/.appenv/**",
+    "**/.venv/**",
+    "**/node_modules/**"
+  ],
+  "stubPath": "stubs",
+  "baselineFile": ".basedpyright/no-baseline.json"
+}

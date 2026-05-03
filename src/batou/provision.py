@@ -13,7 +13,7 @@ from batou import output
 from batou.utils import cmd
 
 
-def bool_arg(arg: str, state: bool) -> str:
+def bool_arg(arg, state):
     toggle = "no-" if not state else ""
     return f"--{toggle}{arg}"
 
@@ -44,7 +44,7 @@ class FCDevVM(Provisioner):
 
     hydra_eval = ""  # deprecated
     channel_url = ""
-    update_channel: bool = True
+    update_channel = True
     image_url = ""
 
     SEED_TEMPLATE = """\
