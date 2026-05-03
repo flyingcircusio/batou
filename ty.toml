@@ -1,0 +1,291 @@
+[environment]
+python-version = "3.14"
+extra-paths = ["stubs"]
+
+[src]
+include = ["src", "examples"]
+exclude = [
+  "**/tests/**",
+  "**/test_*.py",
+  "**/*_test.py",
+  "examples/errors/components/component5/component.py",
+]
+
+# All stubs — mypy uses # type: ignore which ty doesn't need
+[[overrides]]
+include = ["stubs/**/*.pyi"]
+
+[overrides.rules]
+unused-type-ignore-comment = "ignore"
+
+# Core exceptions - factory pattern with dynamic attributes in from_context()
+[[overrides]]
+include = ["src/batou/__init__.py", "stubs/batou/__init__.pyi"]
+
+[overrides.rules]
+invalid-method-override = "ignore"
+unresolved-attribute = "ignore"
+unsupported-operator = "ignore"
+unused-type-ignore-comment = "ignore"
+
+# Component base - workdir:str=None pattern, _logs=None before configure
+[[overrides]]
+include = ["src/batou/component.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+invalid-argument-type = "ignore"  # from_context() type identity stub vs src, Self@_overrides
+unresolved-attribute = "ignore"
+not-iterable = "ignore"
+
+# Resources - no source annotations, ty infers Unknown | None
+[[overrides]]
+include = ["src/batou/resources.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+not-subscriptable = "ignore"
+unsupported-operator = "ignore"
+
+[[overrides]]
+include = ["src/batou/remote_core.py", "stubs/batou/remote_core.pyi"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+unresolved-reference = "ignore"
+unresolved-import = "ignore"  # OutputBackend protocol from _output.pyi
+not-subscriptable = "ignore"
+call-non-callable = "ignore"
+possibly-missing-attribute = "ignore"
+invalid-assignment = "ignore"  # Self@load vs Deployment | None
+
+# Host - execnet monkey-patching, yaml.load
+[[overrides]]
+include = ["src/batou/host.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+invalid-argument-type = "ignore"  # Attribute values seen as Unknown | None
+missing-argument = "ignore"
+
+# Environment - configparser optionxform override, Self@method inference
+[[overrides]]
+include = ["src/batou/environment.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+invalid-argument-type = "ignore"  # ty Self@method not recognized as Environment subtype
+unresolved-attribute = "ignore"  # order list elements typed as object instead of RootComponent
+
+# Deploy - deployment tracking, threading.join override
+[[overrides]]
+include = ["src/batou/deploy.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+call-non-callable = "ignore"
+invalid-method-override = "ignore"
+possibly-missing-attribute = "ignore"
+invalid-assignment = "ignore"  # Self@__init__ vs Deployment | None
+
+# Check - timing attributes
+[[overrides]]
+include = ["src/batou/check.py"]
+
+[overrides.rules]
+unsupported-operator = "ignore"
+possibly-missing-attribute = "ignore"
+unresolved-attribute = "ignore"
+
+# Utils - dynamic attributes
+[[overrides]]
+include = ["src/batou/utils.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+no-matching-overload = "ignore"
+possibly-missing-attribute = "ignore"
+invalid-assignment = "ignore"
+
+# Repository - vcs attributes
+[[overrides]]
+include = ["src/batou/repository.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+invalid-assignment = "ignore"
+
+# Provision - dynamic provisioner
+[[overrides]]
+include = ["src/batou/provision.py"]
+
+[overrides.rules]
+invalid-method-override = "ignore"
+unresolved-attribute = "ignore"  # RawConfigParser._convert_to_boolean is private
+
+# =============================================================================
+# Library components - all use configure()/verify()/update() pattern
+# =============================================================================
+
+[[overrides]]
+include = ["src/batou/lib/file.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+invalid-argument-type = "ignore"  # Attribute values seen as Unknown | None
+no-matching-overload = "ignore"
+possibly-missing-attribute = "ignore"
+invalid-assignment = "ignore"  # Attribute descriptor mode conversion
+
+[[overrides]]
+include = ["src/batou/lib/archive.py", "stubs/batou/lib/archive.pyi"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+invalid-argument-type = "ignore"  # Attribute values seen as Unknown | None
+no-matching-overload = "ignore"
+invalid-method-override = "ignore"  # DMGExtractor.__exit__ typed params vs untyped Component.__exit__
+invalid-assignment = "ignore"
+
+[[overrides]]
+include = ["src/batou/lib/goceptnet.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"  # Dynamic attributes from parent
+
+[[overrides]]
+include = ["src/batou/lib/buildout.py"]
+
+[overrides.rules]
+unsupported-operator = "ignore"  # list + Unknown
+
+[[overrides]]
+include = ["src/batou/lib/supervisor.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+not-iterable = "ignore"
+call-non-callable = "ignore"
+no-matching-overload = "ignore"
+invalid-argument-type = "ignore"  # ty Self@method + stub vs src type identity
+invalid-assignment = "ignore"
+
+[[overrides]]
+include = ["src/batou/lib/nagios.py"]
+
+[overrides.rules]
+unsupported-operator = "ignore"
+
+[[overrides]]
+include = ["src/batou/lib/cmmi.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["src/batou/lib/download.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+invalid-argument-type = "ignore"  # Attribute values seen as Unknown | None
+no-matching-overload = "ignore"
+
+[[overrides]]
+include = ["src/batou/lib/python.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+no-matching-overload = "ignore"
+unsupported-operator = "ignore"  # Attribute values seen as Unknown | None
+
+[[overrides]]
+include = ["src/batou/lib/package.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["src/batou/lib/mysql.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"  # Dynamic attribute from parent
+
+[[overrides]]
+include = ["src/batou/lib/cron.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+unknown-argument = "ignore"
+no-matching-overload = "ignore"  # encoding param not in Component.cmd() stub
+
+[[overrides]]
+include = ["src/batou/lib/appenv.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+no-matching-overload = "ignore"
+missing-argument = "ignore"
+invalid-assignment = "ignore"
+
+[[overrides]]
+include = [
+  "src/batou/lib/service.py",
+  "src/batou/lib/mercurial.py",
+  "src/batou/lib/logrotate.py",
+]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+no-matching-overload = "ignore"
+possibly-missing-attribute = "ignore"
+invalid-assignment = "ignore"
+
+[[overrides]]
+include = ["src/batou/secrets/encryption.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"  # ConfigUpdater .value descriptor
+invalid-argument-type = "ignore"  # ty#1306: Path vs str with extra-paths stub resolution
+not-subscriptable = "ignore"  # _decrypted/_encrypted_content: ConfigUpdater | None subscripted after None guard
+too-many-positional-arguments = "ignore"  # NoBackingEncryptedFile.__init__(self) vs ef(path, writeable) union call
+
+[[overrides]]
+include = ["src/batou/secrets/__init__.py", "src/batou/secrets/edit.py", "src/batou/secrets/manage.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+possibly-missing-attribute = "ignore"
+invalid-assignment = "ignore"  # ty stub vs src type identity
+
+# =============================================================================
+# Third-party workarounds
+# =============================================================================
+
+[analysis]
+allowed-unresolved-imports = ["yaml", "importlib_resources"]
+
+# =============================================================================
+# Examples — intentional errors, missing deps, tutorial code
+# =============================================================================
+
+# Other intentional errors (bad imports, undefined names)
+[[overrides]]
+include = ["examples/errors/components/component6/**"]
+
+[overrides.rules]
+unresolved-import = "ignore"
+
+# Django examples — django not installed
+[[overrides]]
+include = ["examples/django/**"]
+
+[overrides.rules]
+unresolved-import = "ignore"
+
+# Tutorial examples — stub gaps in Buildout/Service __init__, require() returns list[object]
+[[overrides]]
+include = ["examples/tutorial-*/**"]
+
+[overrides.rules]
+too-many-positional-arguments = "ignore"
+not-subscriptable = "ignore"
