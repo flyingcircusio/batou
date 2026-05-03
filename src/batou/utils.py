@@ -523,7 +523,7 @@ def cmd(
 
 
 def get_output(command, default=None):
-    stdout, stderr = cmd(command, ignore_returncode=True)  # type: ignore
+    stdout, stderr = cmd(command, ignore_returncode=True)
     return stdout or default
 
 

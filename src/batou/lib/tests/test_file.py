@@ -1067,26 +1067,26 @@ def test_directory_does_not_copy_excluded_files(root):
     assert len(os.listdir("work/mycomponent/target")) == 1
 
 
-@patch("os.chown")
+@patch("os.chown", autospec=True)
 def test_owner_lazy(chown, root):
     with open("asdf", "w"):
         pass
     file = File("asdf", owner=getpass.getuser())
     root.component += file
     root.component.deploy()
-    assert not os.chown.called
+    assert not chown.called
 
 
-@patch("os.chown")
 @patch("os.stat")
+@patch("os.chown", autospec=True)
 def test_owner_calls_chown(chown, stat, root):
-    os.stat.return_value = Mock()
-    os.stat.return_value.st_uid = 0
-    os.stat.return_value.st_mode = 0
+    # Real stat_result so genericpath.isfile (S_ISREG) works on all Pythons.
+    # st_mode=0o100644 → regular file, st_uid=0 → triggers chown.
+    stat.return_value = os.stat_result((0o100644, 0, 0, 1, 0, 0, 0, 0, 0, 0))
     file = File("asdf", owner=getpass.getuser(), content="")
     root.component += file
     root.component.deploy()
-    assert os.chown.called
+    assert chown.called
 
 
 def test_owner_is_configurable_when_user_doesnt_exist_yet(root):
@@ -1103,26 +1103,26 @@ def current_group():
             return group.gr_name
 
 
-@patch("os.chown")
+@patch("os.chown", autospec=True)
 def test_group_lazy(chown, root):
     with open("asdf", "w"):
         pass
     file = File("asdf", group=current_group())
     root.component += file
     root.component.deploy()
-    assert not os.chown.called
+    assert not chown.called
 
 
-@patch("os.chown")
 @patch("os.stat")
+@patch("os.chown", autospec=True)
 def test_group_calls_chown(chown, stat, root):
-    os.stat.return_value = Mock()
-    os.stat.return_value.st_gid = 0
-    os.stat.return_value.st_mode = 0
+    # Real stat_result so genericpath.isfile (S_ISREG) works on all Pythons.
+    # st_mode=0o100644 → regular file, st_gid=0 → triggers chown.
+    stat.return_value = os.stat_result((0o100644, 0, 0, 1, 0, 0, 0, 0, 0, 0))
     file = File("asdf", group=current_group(), content="")
     root.component += file
     root.component.deploy()
-    assert os.chown.called
+    assert chown.called
 
 
 def test_group_is_configurable_when_group_doesnt_exist_yet(root):
