@@ -1,5 +1,6 @@
 import os
 import tempfile
+from textwrap import dedent
 
 from batou import UpdateNeeded
 from batou.component import Component
@@ -78,13 +79,23 @@ class Database(Component):
 
     def configure(self):
         create_db = self.expand(
-            """\
-CREATE DATABASE IF NOT EXISTS
-    {{component.database}}
-    DEFAULT CHARACTER SET = '{{component.charset}}';
-"""
+            dedent("""\
+                    CREATE DATABASE IF NOT EXISTS
+                        {{component.database}}
+                        DEFAULT CHARACTER SET = '{{component.charset}}';
+                    """)
         )
-        self += Command(create_db, admin_password=self.admin_password)
+        unless = self.expand(
+            dedent("""\
+                    SELECT SCHEMA_NAME FROM information_schema.SCHEMATA
+                    WHERE SCHEMA_NAME = '{{component.database}}';
+                    """)
+        )
+        self += Command(
+            create_db,
+            unless=unless,
+            admin_password=self.admin_password,
+        )
 
         if self.base_import_file:
             self += Command(
