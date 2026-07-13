@@ -150,7 +150,6 @@ include = ["/src", "/README.md", "/LICENSE"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/batou"]
 artifacts = [
-  "src/batou/init-template/**/*",
   "src/batou/tests/fixture/**/*",
   "src/batou/secrets/tests/fixture/**/*",
   "src/batou/lib/resources/**/*",
