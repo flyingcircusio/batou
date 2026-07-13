@@ -267,7 +267,7 @@ def test_git_remote_init_bundle(tmpdir, git_main_branch):
     source = tmpdir.mkdir("source")
     dest = tmpdir.mkdir("dest")
     with source.as_cwd():
-        remote_core.cmd("git init")
+        remote_core.cmd(f"git init -b {git_main_branch}")
         source.join("foo.txt").write("bar")
         remote_core.cmd("git add foo.txt")
         remote_core.cmd("git commit -m bar")
@@ -285,7 +285,7 @@ def test_git_remote_init_pull(tmpdir, git_main_branch):
     source = tmpdir.mkdir("source")
     dest = tmpdir.mkdir("dest")
     with source.as_cwd():
-        remote_core.cmd("git init")
+        remote_core.cmd(f"git init -b {git_main_branch}")
         source.join("foo.txt").write("bar")
         remote_core.cmd("git add foo.txt")
         remote_core.cmd("git commit -m bar")

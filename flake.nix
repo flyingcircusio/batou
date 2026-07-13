@@ -69,6 +69,7 @@
                 ps.tox
               ]))
               pkgs.mercurial
+              pkgs.subversion
             ];
 
             shellHook = ''
