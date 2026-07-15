@@ -48,7 +48,7 @@ def self_id():
     try:
         ver = get_version("batou")
     except PackageNotFoundError:
-        ver = "0.0.0.dev0"
+        ver = "2.0.0.dev0"
     python = sys.implementation.name
     python += f" {sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}-{sys.version_info[3]}{sys.version_info[4]}"
 
