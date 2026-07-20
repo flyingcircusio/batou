@@ -37,8 +37,12 @@
               "flake.lock"
             ];
           };
-          batou = pkgs.python3Packages.callPackage ./nix/batou.nix { inherit src version; };
-          tox-uv = pkgs.python3Packages.callPackage ./nix/tox-uv.nix { };
+
+          python = pkgs.python314;
+          pythonPackages = pkgs.python314Packages;
+
+          batou = pythonPackages.callPackage ./nix/batou.nix { inherit src version; };
+          tox-uv = pythonPackages.callPackage ./nix/tox-uv.nix { };
         in
         {
           treefmt = {
@@ -63,12 +67,12 @@
 
           devShells.default = pkgs.mkShell {
             packages = [
-              (pkgs.python3.withPackages (ps: [
+              (python.withPackages (ps: [
                 batou
                 tox-uv
                 ps.tox
               ]))
-              pkgs.mercurial
+              (pkgs.mercurial.overrideAttrs { passthru = { }; })
               pkgs.subversion
             ];
 
