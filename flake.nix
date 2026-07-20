@@ -72,12 +72,13 @@
                 tox-uv
                 ps.tox
               ]))
-              (pkgs.mercurial.overrideAttrs { passthru = { }; })
+              pkgs.mercurial
               pkgs.subversion
             ];
 
             shellHook = ''
               export APPENV_BASEDIR=$PWD
+              export PYTHONPATH=
             '';
           };
         };
