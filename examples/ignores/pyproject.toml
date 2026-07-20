@@ -1,0 +1,11 @@
+[project]
+name = "ignores"
+version = "0.1.0"
+description = "Migrated Appenv project"
+dependencies = [
+    "batou",
+]
+requires-python = ">=3.10"
+
+[tool.uv.sources]
+batou = { path = "../../" }

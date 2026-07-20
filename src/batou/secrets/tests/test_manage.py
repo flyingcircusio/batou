@@ -35,23 +35,19 @@ def test_manage__2(tmp_path, monkeypatch, capsys):
 
     summary()
     out, err = capsys.readouterr()
-    assert "306151601E813A47" in out
+    assert "03C7E67FC9FD9364" in out
 
-    remove_user("306151601E813A47", "errors")
+    add_user("45121EF73BE26BEC", "errors")
     summary()
     out, err = capsys.readouterr()
-    assert "306151601E813A47" not in out
+    assert "45121EF73BE26BEC" in out
 
-    add_user("306151601E813A47", "errors")
+    remove_user("45121EF73BE26BEC", "errors")
     summary()
     out, err = capsys.readouterr()
-    assert "306151601E813A47" in out
+    assert "45121EF73BE26BEC" not in out
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7),
-    reason="age is available in tests with python 3.7 only",
-)
 def test_manage__2_age(tmp_path, monkeypatch, capsys):
     """It allows to add/remove_users in an age encrypted environment."""
     shutil.copytree("examples/tutorial-secrets", tmp_path / "tutorial-secrets")
@@ -84,7 +80,6 @@ def test_manage__summary__1(capsys, monkeypatch):
         errors
         \t members
         \t\t- 03C7E67FC9FD9364
-        \t\t- 306151601E813A47
         \t secret files
         \t\t(none)
 
@@ -116,14 +111,9 @@ def test_manage__summary__3(capsys, monkeypatch):
     assert err == ""
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7),
-    reason="age is not available with python<3.7.",
-)
-def test_manage__reencrypt__1(tmp_path, monkeypatch):
+def test_manage__reencrypt__1(tmp_path, monkeypatch, capsys):
     """It re-encrypts all files with the current members."""
     shutil.copytree("examples/tutorial-secrets", tmp_path / "tutorial-secrets")
-
     monkeypatch.chdir(tmp_path / "tutorial-secrets")
 
     # Delete age_keys.txt files to force key change detection

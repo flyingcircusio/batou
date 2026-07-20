@@ -75,6 +75,10 @@ lint = [
 release = [
   "zest.releaser",
 ]
+pyrage = [
+  "pyrage",
+  "cryptography"
+]
 
 [tool.ruff]
 line-length = 80
@@ -115,6 +119,13 @@ setenv = { APPENV_BEST_PYTHON = "{envpython}", IN_TOX_TEST = "1"}
 dependency_groups = ["test"]
 commands = [["pytest", { replace = "posargs", extend = true }]]
 
+[tool.tox.env.pyrage]
+runner = "uv-venv-lock-runner"
+package = "wheel"
+setenv = { APPENV_BEST_PYTHON = "{envpython}", IN_TOX_TEST = "1"}
+dependency_groups = ["test", "pyrage"]
+commands = [["pytest", { replace = "posargs", extend = true }]]
+
 [tool.tox.env.cov]
 base_python = [ "3.14" ]
 package = "wheel"
@@ -150,7 +161,6 @@ include = ["/src", "/README.md", "/LICENSE"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/batou"]
 artifacts = [
-  "src/batou/init-template/**/*",
   "src/batou/tests/fixture/**/*",
   "src/batou/secrets/tests/fixture/**/*",
   "src/batou/lib/resources/**/*",

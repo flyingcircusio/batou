@@ -6,26 +6,30 @@ import batou.lib.git
 from batou.utils import cmd
 
 
-def _repos_path(root, name):
+def _repos_path(root, name, git_main_branch):
     repos_path = os.path.join(root.environment.workdir_base, name)
-    cmd(
-        "mkdir {dir}; cd {dir}; git init;"
+    stdout, stderr = cmd(
+        "mkdir {dir}; cd {dir};"
+        f"git init -b {git_main_branch};"
         "git config user.name Jenkins;"
         "git config user.email jenkins@example.com;"
         "touch foo; git add .;"
         'git commit -am "foo"'.format(dir=repos_path)
     )
+    assert not stderr
+    assert stdout
+
     return repos_path
 
 
 @pytest.fixture(scope="function")
-def repos_path(root, name="upstream"):
-    return _repos_path(root, name)
+def repos_path(root, git_main_branch, name="upstream"):
+    return _repos_path(root, name, git_main_branch)
 
 
 @pytest.fixture(scope="function")
-def repos_path2(root, name="upstream2"):
-    return _repos_path(root, name)
+def repos_path2(root, git_main_branch, name="upstream2"):
+    return _repos_path(root, name, git_main_branch)
 
 
 @pytest.mark.slow

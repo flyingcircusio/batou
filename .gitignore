@@ -3,6 +3,7 @@
 *.status
 *.sublime-*
 *.lock
+!uv.lock
 *src/batou.egg-info/
 .appenv
 coverage.json

@@ -21,32 +21,27 @@ def _ignore_socket_files(directory, contents):
     return ignored
 
 
-@pytest.fixture(autouse=True, scope="session")
-def ensure_gpg_homedir(tmp_path_factory):
+@pytest.fixture(autouse=True)
+def ensure_gpg_homedir(monkeypatch, tmp_path_factory):
     fixture_gnupg = Path(__file__).parent / "secrets/tests/fixture/gnupg"
-    tmp_base = Path(__file__).parent.parent.parent / "tmp"
-    tmp_base.mkdir(exist_ok=True)
-    tmp_gnupg = Path(tempfile.mkdtemp(prefix="gpg-", dir=tmp_base))
-    shutil.copytree(
-        fixture_gnupg,
-        tmp_gnupg,
-        dirs_exist_ok=True,
-        ignore=_ignore_socket_files,
-    )
-    # GPG requires strict permissions (0700) on its homedir
-    tmp_gnupg.chmod(0o700)
-    os.environ["GNUPGHOME"] = str(tmp_gnupg)
+    with tempfile.TemporaryDirectory() as home:
+        shutil.copytree(
+            fixture_gnupg,
+            home,
+            dirs_exist_ok=True,
+            ignore=_ignore_socket_files,
+        )
 
-    yield
+        monkeypatch.setitem(os.environ, "GNUPGHOME", home)
+        os.system(f"gpg-agent --homedir='{home}' --daemon")
 
-    # Kill gpg-agent and clean up temp directory
-    subprocess.run(["gpgconf", "--kill", "gpg-agent"], check=False)
-    shutil.rmtree(tmp_gnupg, ignore_errors=True)
-    # Remove tmp_base if empty
-    try:
-        os.rmdir(tmp_base)
-    except OSError:
-        pass
+        yield
+
+        # Kill gpg-agent and clean up temp directory
+        subprocess.run(
+            ["gpgconf", f"--homedir='{home}", "--kill", "gpg-agent"],
+            check=False,
+        )
 
 
 @pytest.fixture(autouse=True)
@@ -60,6 +55,12 @@ def ensure_age_identity(monkeypatch):
         "id_ed25519",
     )
     monkeypatch.setitem(os.environ, "BATOU_AGE_IDENTITIES", key)
+
+
+@pytest.fixture(autouse=True)
+def ensure_git_isolated(monkeypatch):
+    monkeypatch.setitem(os.environ, "GIT_CONFIG_GLOBAL", "")
+    monkeypatch.setitem(os.environ, "GIT_CONFIG_SYSTEM", "")
 
 
 @pytest.fixture(autouse=True)
