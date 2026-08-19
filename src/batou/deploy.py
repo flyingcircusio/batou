@@ -111,6 +111,7 @@ class Deployment(object):
         timeout,
         dirty,
         jobs,
+        ignore_hosts=set(),
         consistency_only=False,
         predict_only=False,
         check_and_predict_local=False,
@@ -120,6 +121,7 @@ class Deployment(object):
             environment,
             timeout,
             platform,
+            ignore_hosts=ignore_hosts,
             provision_rebuild=provision_rebuild,
             check_and_predict_local=check_and_predict_local,
         )
@@ -385,6 +387,7 @@ def main(
     predict_only,
     check_and_predict_local,
     jobs,
+    ignore_hosts,
     provision_rebuild,
 ):
     output.backend = TerminalBackend()
@@ -415,6 +418,7 @@ def main(
             timeout,
             dirty,
             jobs,
+            ignore_hosts,
             consistency_only,
             predict_only,
             check_and_predict_local,
