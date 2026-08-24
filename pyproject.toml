@@ -2,6 +2,12 @@
 build-backend = "hatchling.build"
 requires = ["hatchling>=1.27"]
 
+[tool.uv.workspace]
+members = ["stubs"]
+
+[tool.uv.sources]
+stubs = { workspace = true }
+
 [project]
 name = "batou"
 description = "A utility for automating multi-host, multi-environment software builds and deployments."
@@ -72,9 +78,20 @@ lint = [
   "pre-commit",
   "ruff",
 ]
+typing = [
+  "flake8-pyi",
+  "mypy",
+  "ty",
+]
 release = [
   "zest.releaser",
 ]
+
+[tool.mypy]
+files = ["stubs"]
+[[tool.mypy.overrides]]
+module = ["pytest", "pytest.*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 80
@@ -132,6 +149,28 @@ skip_install = true
 dependency_groups = ["lint"]
 commands = [
   ["pre-commit", "run", "--all-files", "--show-diff-on-failure"]
+]
+
+[tool.tox.env.stubs]
+description = "Lint + type-check stubs (ruff, flake8-pyi, mypy, stubtest, ty)"
+skip_install = true
+setenv = { MYPYPATH = "stubs" }
+commands = [
+  ["uv", "run", "ruff", "check", "--config", "stubs/ruff.toml", "stubs/"],
+  ["uv", "run", "ruff", "format", "--config", "stubs/ruff.toml", "--check", "stubs/"],
+  ["uv", "run", "--with", "flake8-pyi", "flake8", "--select=Y0", "stubs/"],
+  ["uv", "run", "--with", "mypy", "mypy", "stubs/"],
+  ["uv", "run", "--with", "mypy", "python", "-m", "mypy.stubtest", "batou", "--allowlist", "stubs/stubtest-allowlist.txt"],
+  ["uv", "run", "--with", "ty", "ty", "check", "stubs/"],
+]
+
+[tool.tox.env.typing]
+description = "Type-check batou source code with stubs"
+skip_install = true
+setenv = { MYPYPATH = "stubs" }
+commands = [
+  ["uv", "run", "--with", "mypy", "mypy", "src/", "--strict", "--ignore-missing-imports"],
+  ["uv", "run", "--with", "ty", "ty", "check", "src/", "examples/"],
 ]
 
 [tool.scriv]

@@ -30,3 +30,12 @@ repos:
     hooks:
       - id: ruff-check
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: ty-check
+        name: ty type check
+        entry: uv run --with ty ty check src/ stubs/ examples/
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
