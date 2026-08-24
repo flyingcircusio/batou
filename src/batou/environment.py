@@ -23,6 +23,7 @@ from batou import (
     MissingComponent,
     MissingEnvironment,
     NonConvergingWorkingSet,
+    ReportingException,
     SilentConfigurationError,
     SuperfluousComponentSection,
     SuperfluousSection,
@@ -51,6 +52,24 @@ class UnknownEnvironmentError(ValueError):
 
     def __str__(self):
         return f"Unknown environment(s): {', '.join(self.names)}"
+
+
+class NonExistentIgnoredHostError(ReportingException):
+    """The manually ignored hosts do not exist in the environment."""
+
+    @classmethod
+    def from_context(cls, ignored: list):
+        self = cls()
+        self.ignored = ignored
+        return self
+
+    def __str__(self):
+        return f"Nonexistent manually ignored hosts: {', '.join(self.ignored)}"
+
+    def report(self):
+        output.error(
+            f"Nonexistent manually ignored hosts: {', '.join(self.ignored)}"
+        )
 
 
 class ConfigSection(dict):
@@ -122,12 +141,15 @@ class Environment(object):
 
     host_factory = Host
 
+    ignore_hosts = set()
+
     def __init__(
         self,
         name,
         timeout=None,
         platform=None,
         basedir=".",
+        ignore_hosts=set(),
         provision_rebuild=False,
         check_and_predict_local=False,
     ):
@@ -139,6 +161,7 @@ class Environment(object):
         self.exceptions: List[Exception] = []
         self.timeout = timeout
         self.platform = platform
+        self.ignore_hosts = ignore_hosts
         self.provision_rebuild = provision_rebuild
         self.check_and_predict_local = check_and_predict_local
 
@@ -358,6 +381,13 @@ class Environment(object):
         self._load_hosts_single_section(config)
         self._load_hosts_multi_section(config)
 
+        if self.ignore_hosts:
+            nonexistent = self.ignore_hosts.difference(set(self.hosts.keys()))
+            if nonexistent:
+                raise NonExistentIgnoredHostError.from_context(
+                    list(nonexistent)
+                )
+
         simplified_mapping = {
             k: v for k, v in self.hostname_mapping.items() if k != v
         }
@@ -378,7 +408,10 @@ class Environment(object):
                 self,
                 config={
                     "ignore": (
-                        "True" if literal_hostname.startswith("!") else "False"
+                        "True"
+                        if literal_hostname.startswith("!")
+                        or hostname in self.hosts
+                        else "False"
                     )
                 },
             )
@@ -393,7 +426,11 @@ class Environment(object):
                 continue
             hostname = section.replace("host:", "", 1)
 
-            host = self.host_factory(hostname, self, config[section])
+            config_section = config[section].copy()
+            if hostname in self.ignore_hosts:
+                config_section.update(ignore="True")
+
+            host = self.host_factory(hostname, self, config_section)
 
             # The name can now have been remapped.
             if host.name in self.hosts:

@@ -1,0 +1,1 @@
+- Add a new `-I` option to `batou deploy` to allow ignoring hosts when deploying without modifying the environment configuration.
