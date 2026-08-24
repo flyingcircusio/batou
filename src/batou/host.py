@@ -116,6 +116,7 @@ _no_value_marker = object()
 class Host(object):
     service_user = None
     require_sudo = None
+    rsync_path = None
     ignore = False
     platform = None
     _provisioner = None
@@ -144,6 +145,10 @@ class Host(object):
             self.require_sudo = ast.literal_eval(config.get("require_sudo"))
         else:
             self.require_sudo = environment.require_sudo
+
+        self.rsync_path = config.get(
+            "rsync_path", environment.remote_rsync_path
+        )
 
         self.remap = ast.literal_eval(
             config.get("provision-dynamic-hostname", "False")
