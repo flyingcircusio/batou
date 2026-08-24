@@ -10,14 +10,23 @@ oops() {
 curl -sL https://raw.githubusercontent.com/flyingcircusio/appenv/master/src/appenv.py -o appenv || oops "failed to download appenv"
 chmod +x appenv
 ln -sf appenv batou
-echo "batou>=2.4.1" >> requirements.txt
-sed -e 's!.*batou_ext.*!batou_ext @ https://github.com/flyingcircusio/batou_ext/archive/1e95cbd216d9b4891a0c9301b195de86e430fb0d.zip#sha256=4242d65a4cb0721812a308d2cfa87d647ba78f3e03ae4d189f9d2ac78157df93!' requirements.txt > requirements.txt.new
-mv requirements.txt.new requirements.txt
+cat >> pyproject.toml <<EOF
+[project]
+name = "elibrary.batou"
+version = "0.1.0"
+description = "Migrated Appenv project"
+dependencies = [
+    "batou",
+    "batou_ext",
+]
+requires-python = ">=3.12,<3.13"
+EOF
+
 ./appenv update-lockfile
 ./batou migrate --bootstrap
 ./batou --help
 if [ -d ".git" ]; then
 	echo '.appenv' >> .gitignore
-	git add .gitignore requirements.txt requirements.lock batou appenv
+	git add .gitignore pyproject.toml uv.lock batou appenv
 fi
 }
