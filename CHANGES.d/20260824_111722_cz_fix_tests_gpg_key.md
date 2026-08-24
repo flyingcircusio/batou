@@ -1,0 +1,1 @@
+- Update bootstrap script for appenv/uv.

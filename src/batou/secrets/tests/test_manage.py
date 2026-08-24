@@ -35,17 +35,17 @@ def test_manage__2(tmp_path, monkeypatch, capsys):
 
     summary()
     out, err = capsys.readouterr()
-    assert "306151601E813A47" in out
+    assert "41F5816A" in out
 
-    remove_user("306151601E813A47", "errors")
+    remove_user("41F5816A", "errors")
     summary()
     out, err = capsys.readouterr()
-    assert "306151601E813A47" not in out
+    assert "41F5816A" not in out
 
-    add_user("306151601E813A47", "errors")
+    add_user("41F5816A", "errors")
     summary()
     out, err = capsys.readouterr()
-    assert "306151601E813A47" in out
+    assert "41F5816A" in out
 
 
 @pytest.mark.skipif(
@@ -83,8 +83,8 @@ def test_manage__summary__1(capsys, monkeypatch):
         """\
         errors
         \t members
-        \t\t- 03C7E67FC9FD9364
-        \t\t- 306151601E813A47
+        \t\t- 8D58FCFB
+        \t\t- 41F5816A
         \t secret files
         \t\t(none)
 
