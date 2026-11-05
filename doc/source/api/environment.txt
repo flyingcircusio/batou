@@ -56,6 +56,20 @@ require_sudo
     always be used unconditionally. If set to `False` then `sudo` will
     never be used.
 
+rsync_path
+
+    Set the name of the external rsync binary executed on the operator's
+    machine when performing a deployment when using the `rsync-ext` update
+    method. If unspecified, batou will use the rsync program in the operator's
+    PATH.
+
+remote_rsync_path
+    Set the name of the external rsync binary executed on target machines when
+    perform a deployment using the `rsync-ext` update method. If unspecified,
+    batou wil use the rsync program in the target machine's PATH. This option
+    can be overridden on a per-host basis using the `rsync_path` host
+    configuration option.
+
 vfs mapping (TODO)
 ------------------
 

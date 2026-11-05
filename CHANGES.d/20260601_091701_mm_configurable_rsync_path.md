@@ -1,0 +1,1 @@
+- Add `rsync_path` and `remote_rsync_path` environment options and `rsync_path` host option to allow configuring the path to the local and remote rsync binaries when using the `rsync-ext` repository type.

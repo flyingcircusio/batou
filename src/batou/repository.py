@@ -137,6 +137,12 @@ class RSyncExtRepository(Repository):
     def update(self, host):
         source, dest = self.root, host.remote_repository
 
+        local_rsync = remote_rsync = "rsync"
+        if self.environment.rsync_path:
+            local_rsync = self.environment.rsync_path
+        if host.rsync_path:
+            remote_rsync = host.rsync_path
+
         rsync_args = self.SYNC_OPTS.copy()
 
         ssh_configs = [
@@ -153,13 +159,18 @@ class RSyncExtRepository(Repository):
 
         if host.require_sudo:
             rsync_args.append(
-                "--rsync-path='sudo -ni -u {} rsync'".format(host.service_user)
+                "--rsync-path='sudo -ni -u {} {}'".format(
+                    host.service_user, remote_rsync
+                )
             )
+        else:
+            rsync_args.append("--rsync-path='{}'".format(remote_rsync))
 
         output.annotate("rsync-ext: {} -> {}".format(source, dest), debug=True)
 
         cmd(
-            "rsync {opts} {source}/ {target}:{dest}".format(
+            "{rsync} {opts} {source}/ {target}:{dest}".format(
+                rsync=local_rsync,
                 opts=" ".join(rsync_args),
                 source=source,
                 target=host.fqdn,

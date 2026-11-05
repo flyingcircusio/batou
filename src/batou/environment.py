@@ -118,6 +118,9 @@ class Environment(object):
     repository_url = None
     repository_root = None
 
+    rsync_path = None
+    remote_rsync_path = None
+
     provision_rebuild = False
 
     host_factory = Host
@@ -280,6 +283,8 @@ class Environment(object):
             "timeout",
             "repository_url",
             "repository_root",
+            "rsync_path",
+            "remote_rsync_path",
             "jobs",
         ]:
             if key not in environment:
