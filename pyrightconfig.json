@@ -1,0 +1,10 @@
+{
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "standard",
+  "include": ["src", "stubs", "typing_tests", "examples"],
+  "exclude": [
+    "**/tests/**",
+    "examples/errors/components/component5/component.py"
+  ],
+  "baselineFile": ".basedpyright/baseline.json"
+}

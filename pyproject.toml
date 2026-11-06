@@ -2,6 +2,12 @@
 build-backend = "hatchling.build"
 requires = ["hatchling>=1.27"]
 
+[tool.uv.workspace]
+members = ["stubs"]
+
+[tool.uv.sources]
+stubs = { workspace = true }
+
 [project]
 name = "batou"
 description = "A utility for automating multi-host, multi-environment software builds and deployments."
@@ -72,9 +78,24 @@ lint = [
   "pre-commit",
   "ruff",
 ]
+typing = [
+  "basedpyright>=1.40.2",
+  "flake8",
+  "flake8-pyi",
+  "mypy",
+  "pytest",
+  "ty",
+]
 release = [
   "zest.releaser",
 ]
+
+[tool.mypy]
+files = ["stubs"]
+python_version = "3.14"
+[[tool.mypy.overrides]]
+module = ["pytest", "pytest.*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 80
@@ -134,6 +155,38 @@ commands = [
   ["pre-commit", "run", "--all-files", "--show-diff-on-failure"]
 ]
 
+[tool.tox.env.stubs]
+description = "Lint + type-check stubs (ruff, flake8-pyi, mypy, stubtest, ty)"
+skip_install = true
+setenv = { MYPYPATH = "stubs" }
+dependency_groups = ["typing", "lint"]
+allowlist_externals = ["sh"]
+commands = [
+  ["ruff", "check", "--config", "stubs/ruff.toml", "stubs/"],
+  ["ruff", "format", "--config", "stubs/ruff.toml", "--check", "stubs/"],
+  ["flake8", "--select=Y0", "stubs/"],
+  ["mypy", "stubs/", "typing_tests/"],
+  ["python", "-m", "mypy.stubtest", "batou", "--allowlist", "stubs/stubtest-allowlist.txt"],
+  ["sh", "-c", "ty check --error-on-warning $(find stubs -name \".pyi\" | sort)"],
+]
+
+[tool.tox.env.typing]
+description = "Type-check batou source code with ty"
+skip_install = true
+dependency_groups = ["typing"]
+allowlist_externals = ["sh"]
+commands = [
+  ["sh", "-c", "ty check --error-on-warning src/ examples/ $(find typing_tests -name \"*.py\" | sort)"],
+]
+
+[tool.tox.env.basedpyright]
+description = "Type-check full scope with basedpyright (pyrightconfig.json + baseline)"
+skip_install = true
+dependency_groups = ["typing"]
+commands = [
+  ["basedpyright"],
+]
+
 [tool.scriv]
 format = "md"
 fragment_directory = "CHANGES.d"
@@ -159,3 +212,9 @@ artifacts = [
   "src/batou/**/*.in",
   "src/batou/**/*.key",
 ]
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true

@@ -126,7 +126,7 @@ def test_build_batou_virtualenv_exists(mock_remote_core, tmpdir):
 
 
 def test_expand_deployment_base(tmpdir):
-    with mock.patch("os.path.expanduser") as expanduser:
+    with mock.patch("os.path.expanduser", autospec=True) as expanduser:
         expanduser.return_value = str(tmpdir)
         remote_core.ensure_repository("~/deployment", "rsync")
     assert remote_core.target_directory == str(tmpdir)

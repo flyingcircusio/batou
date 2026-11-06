@@ -84,6 +84,27 @@ The project is licensed under the 2-clause BSD license.
 * Set up GPG for the examples with `export GNUPGHOME=<DIRECTORY OF BATOU HERE>/src/batou/secrets/tests/fixture/gnupg`
 * Make sure [age](https://github.com/FiloSottile/age) is installed and in `$PATH` for age encryption support.
 
+### Typed development
+
+batou is typed on two layers: `src/batou` carries the inline annotations of the
+package itself, while `stubs/` is a standalone stub package released in lockstep
+with batou that provides type information to deployments on top of the released
+batou package — see [stubs/README.md](stubs/README.md).
+
+Each type checker simulates exactly one Python version; together they span the
+supported 3.10-3.14 window (runtime compatibility is the test matrix's job, not
+the typing gates'):
+
+* `ty` — src, examples and typing_tests at Python 3.14 (`ty.toml`); also runs as two pre-commit hooks.
+* `mypy` — stubs and typing_tests at Python 3.14 (`[tool.mypy]`). The `stubs` tox env sets `MYPYPATH=stubs` so `batou` resolves through the stubs; it additionally lints the `.pyi` files (ruff, flake8-pyi) and runs `stubtest`, which checks the stubs against the actual package at runtime (`stubs/stubtest-allowlist.txt` lists accepted deviations). For matching results outside tox, export `MYPYPATH=$PWD/stubs` first.
+* `basedpyright` — full scope (src, stubs, typing_tests, examples) at Python 3.10 (`pyrightconfig.json`); known diagnostics are baselined in `.basedpyright/baseline.json` and new ones fail the gate.
+
+Run all static gates via `uv run tox -e stubs,typing,basedpyright`.
+
+Shrink the baseline after fixing diagnostics: `uv run --group typing basedpyright --writebaseline` — the end-of-file-fixer pre-commit hook then adds a trailing newline; re-stage the file.
+
+Editor: point the interpreter at the project `.venv`. Zed ships both `ty` and `basedpyright`, but as of November 2026 `basedpyright` is the default Python server — switch with `"language_servers": ["!basedpyright", "ty"]` in your Zed settings to get ty's verdict. VS Code (basedpyright extension) and Neovim (nvim-lspconfig) read `pyrightconfig.json` including the baseline; Pylance does not — it will show diagnostics that the CI accepts. PyCharm reads neither `ty.toml` nor `pyrightconfig.json` — use the tox gates.
+
 ## Development and release process
 
 * Changes should be accompanied with a changelog entry. Use `./changelog.sh` to create one.

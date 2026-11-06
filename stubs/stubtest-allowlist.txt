@@ -1,0 +1,76 @@
+# stubtest allowlist — known false positives and intentionally omitted modules
+# Run: MYPYPATH=stubs mypy.stubtest batou --allowlist stubs/stubtest-allowlist.txt
+
+# Test/conftest modules — no stubs needed
+batou\.conftest
+batou\.tests
+batou\.tests\..*
+batou\.lib\.tests
+batou\.lib\.tests\..*
+batou\.secrets\.tests
+batou\.secrets\.tests\..*
+batou\.migrate\.tests
+batou\.migrate\.tests\..*
+
+# Protocol only exists in stub, not at runtime (by design)
+batou\._output\.OutputBackend
+
+# Sentinel types — stub-only classes for type narrowing, runtime uses object()
+batou\.lib\.mysql\.UseSudo
+batou\.lib\.mysql\.USE_SUDO
+
+# Attribute.__init__ overload — runtime default conversion=str is too dynamic for generic T
+batou\.component\.Attribute\.__init__
+
+# Module-level environment variable — initialized as None, set to Environment at runtime
+batou\.remote_core\.environment
+
+# Component __init__ parameter name mismatches — stubs use semantic names (path, url, etc.)
+# instead of runtime's generic "namevar" (set via metaclass ComponentAPI). These are intentional.
+batou\.lib\.appenv\.VirtualEnv\.__init__
+batou\.lib\.archive\.Extract\.__init__
+batou\.lib\.archive\.Extractor\.__init__
+batou\.lib\.buildout\.Buildout\.__init__
+batou\.lib\.cmmi\.Build\.__init__
+batou\.lib\.cmmi\.Configure\.__init__
+batou\.lib\.cmmi\.Make\.__init__
+batou\.lib\.cron\.CronJob\.__init__
+batou\.lib\.cron\.CronTab\.__init__
+batou\.lib\.debian\.Logrotate\.__init__
+batou\.lib\.debian\.Supervisor\.__init__
+batou\.lib\.download\.Download\.__init__
+batou\.lib\.file\.Content\.__init__
+batou\.lib\.file\.Directory\.__init__
+batou\.lib\.file\.File\.__init__
+batou\.lib\.file\.FileComponent\.__init__
+batou\.lib\.file\.Group\.__init__
+batou\.lib\.file\.JSONContent\.__init__
+batou\.lib\.file\.ManagedContentBase\.__init__
+batou\.lib\.file\.Mode\.__init__
+batou\.lib\.file\.Owner\.__init__
+batou\.lib\.file\.Presence\.__init__
+batou\.lib\.file\.Purge\.__init__
+batou\.lib\.file\.Symlink\.__init__
+batou\.lib\.file\.SyncDirectory\.__init__
+batou\.lib\.file\.YAMLContent\.__init__
+batou\.lib\.git\.Clone\.__init__
+batou\.lib\.logrotate\.Logrotate\.__init__
+batou\.lib\.logrotate\.RotatedLogfile\.__init__
+batou\.lib\.mercurial\.Clone\.__init__
+batou\.lib\.mysql\.Command\.__init__
+batou\.lib\.mysql\.Database\.__init__
+batou\.lib\.mysql\.Grant\.__init__
+batou\.lib\.mysql\.User\.__init__
+batou\.lib\.nagios\.NRPEService\.__init__
+batou\.lib\.nagios\.NagiosServer\.__init__
+batou\.lib\.nagios\.Service\.__init__
+batou\.lib\.package\.DPKG\.__init__
+batou\.lib\.python\.Package\.__init__
+batou\.lib\.python\.VirtualEnv\.__init__
+batou\.lib\.python\.VirtualEnvDownload\.__init__
+batou\.lib\.service\.Service\.__init__
+batou\.lib\.supervisor\.Eventlistener\.__init__
+batou\.lib\.supervisor\.Program\.__init__
+batou\.lib\.supervisor\.RunningSupervisor\.__init__
+batou\.lib\.supervisor\.Supervisor\.__init__
+batou\.lib\.svn\.Checkout\.__init__

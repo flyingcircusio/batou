@@ -30,3 +30,19 @@ repos:
     hooks:
       - id: ruff-check
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: ty-check-src
+        name: ty type check (src, examples, typing_tests)
+        entry: sh -c 'uv run --group typing ty check --error-on-warning src/ examples/ $(find typing_tests -name "*.py" | sort)'
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+      - id: ty-check-stubs
+        name: ty type check (stubs, explicit .pyi list)
+        entry: sh -c 'uv run --group typing ty check --error-on-warning $(find stubs -name "*.pyi" | sort)'
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
