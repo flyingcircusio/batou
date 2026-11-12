@@ -24,7 +24,7 @@ from batou.utils import dict_merge
 # This means: if the file wasn't there in the first place, we're fine. If the file existed and we removed it, we are fine, we don't care whether someone else might have recreated it immediately after. If the file existed and was removed by someone else, we don't care either. If the file existed and we can't remove it, we need to fail.
 
 
-def ensure_path_nonexistent(path: str) -> None:
+def ensure_path_nonexistent(path):
     """Ensure that the given path does not exist.
 
     In a multi-user/concurrent environment, it is possible that a path is created
@@ -637,7 +637,7 @@ class Group(FileComponent):
         os.chown(self.path, owner, self.group)
 
 
-def convert_mode(string: str) -> int:
+def convert_mode(string):
     """Convert ls-string representation to bitmask."""
     pattern = re.compile(
         r"""^ # ensure length

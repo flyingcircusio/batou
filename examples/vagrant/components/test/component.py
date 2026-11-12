@@ -1,11 +1,11 @@
-from batou.component import Attribute, Component
+from batou.component import Attribute, Component, ConfigString
 from batou.lib.buildout import Buildout
 from batou.lib.file import File
 from batou.utils import Address
 
 
 class Test(Component):
-    address = Attribute(Address, "default:8080")
+    address = Attribute(Address, default=ConfigString("default:8080"))
 
     def configure(self):
         self += File("test", content="asdf {{component.address.listen}}")

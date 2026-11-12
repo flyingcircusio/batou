@@ -61,13 +61,13 @@ def test_jinja2_template_file():
         assert ref.read() == result
 
 
-@mock.patch("batou.remote_core.Output.line")
+@mock.patch("batou.remote_core.Output.line", autospec=True)
 def test_jinja2_large_template_str(output):
     tmpl = TemplateEngine.get("jinja2")
     result = tmpl.expand("hello {{hello}}" * 15000, sample_dict)
     assert result.startswith("hello world")
 
-    log = "\n".join(c[0][0].strip() for c in output.call_args_list)
+    log = "\n".join(c[0][1].strip() for c in output.call_args_list)
 
     assert (
         """\

@@ -5,7 +5,6 @@ import sys
 import textwrap
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as get_version
-from typing import Optional
 
 import batou
 import batou.deploy
@@ -16,7 +15,7 @@ import batou.secrets.manage
 from batou._output import TerminalBackend, output
 
 
-def main(args: Optional[list] = None) -> None:
+def main(args=None):
     os.chdir(os.environ["APPENV_BASEDIR"])
     try:
         version = get_version("batou")
@@ -224,27 +223,26 @@ def main(args: Optional[list] = None) -> None:
     )
     migrate.set_defaults(func=batou.migrate.main)
 
-    args = parser.parse_args(args)
+    parsed = parser.parse_args(args)
 
     # Consume global arguments
-    batou.output.enable_debug = args.debug
-    batou.secrets.encryption.debug = args.debug
-    batou.secrets.manage.debug = args.debug
+    batou.output.enable_debug = parsed.debug
+    batou.secrets.encryption.debug = parsed.debug
 
     # Pass over to function
-    if args.func.__name__ == "print_usage":
-        args.func()
+    if parsed.func.__name__ == "print_usage":
+        parsed.func()
         sys.exit(1)
 
-    if args.func != batou.migrate.main:
+    if parsed.func != batou.migrate.main:
         output.backend = TerminalBackend()
         batou.migrate.assert_up_to_date()
 
-    func_args = dict(args._get_kwargs())
+    func_args = dict(parsed._get_kwargs())
     del func_args["func"]
     del func_args["debug"]
     try:
-        return args.func(**func_args)
+        return parsed.func(**func_args)
     except batou.FileLockedError as e:
         # Nicer error reporting for non-deployment commands.
         print(e)

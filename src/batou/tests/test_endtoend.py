@@ -473,7 +473,7 @@ batou/2... (cpython 3...)
 🚀 test01: Hello > File('work/hello/other-secrets.yaml') > Presence('other-secrets.yaml')
 🚀 test01: Hello > File('work/hello/other-secrets.yaml') > Content('other-secrets.yaml')
 Not showing diff as it contains sensitive data,
-see .../batou/examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
+see .../examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
 🚀 test02: Hello > File('work/hello/hello') > Presence('hello')
 🚀 test02: Hello > File('work/hello/hello') > Content('hello')
   hello ---
@@ -484,7 +484,7 @@ see .../batou/examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
 🚀 test02: Hello > File('work/hello/other-secrets.yaml') > Presence('other-secrets.yaml')
 🚀 test02: Hello > File('work/hello/other-secrets.yaml') > Content('other-secrets.yaml')
 Not showing diff as it contains sensitive data,
-see .../batou/examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
+see .../examples/tutorial-secrets/work/.batou-diffs/...diff for the diff.
 ... Summary ...
 Deployment took total=...s, connect=...s, deploy=...s
 ... DEPLOYMENT PREDICTION (local) FINISHED ...

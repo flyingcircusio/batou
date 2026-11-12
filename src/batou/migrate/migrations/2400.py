@@ -27,7 +27,7 @@ def _get_environment_names():
     return [x for x in (Path.cwd() / "environments").iterdir() if x.is_dir()]
 
 
-def _migrate_environment(name: str) -> None:
+def _migrate_environment(name):
     cwd = Path.cwd()
     environment_dir = cwd / "environments" / name
     secrets_cfg = environment_dir / f"secrets.cfg"

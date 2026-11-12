@@ -39,7 +39,7 @@ def _get_environment_names():
     ]
 
 
-def _migrate_environment(name: str) -> None:
+def _migrate_environment(name):
     cwd = Path.cwd()
     environments = cwd / "environments"
     (environments / name).mkdir(exist_ok=True)
