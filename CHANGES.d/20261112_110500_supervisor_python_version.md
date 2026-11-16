@@ -1,0 +1,1 @@
+- Supervisor: add `python_version` attribute (default `3`) so the Python version used for the supervisor virtualenv can be set per environment, e.g. `[component:supervisor] python_version = 3.12`. Fixes #561.

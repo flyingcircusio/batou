@@ -167,6 +167,7 @@ process_name={{component.name}}
 class Supervisor(Component):
     address = Attribute(Address, default=ConfigString("localhost:9001"))
     buildout_version = Attribute(default="5.1.1")
+    python_version = Attribute(str, default="3")
     setuptools_version = Attribute(default="68.0.0")
     wheel_version = Attribute(default="0.40.0")
     packaging_version = Attribute(default="24.0")
@@ -209,7 +210,7 @@ class Supervisor(Component):
             version=self.buildout_version,
             setuptools=self.setuptools_version,
             config=buildout_cfg,
-            python="3",
+            python=self.python_version,
             wheel=self.wheel_version,
             packaging=self.packaging_version,
         )
