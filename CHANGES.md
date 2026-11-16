@@ -1,6 +1,6 @@
 
 
-## 2.8.0 (unreleased)
+## 2.8.0 (2026-11-16)
 ---------------------
 
 - Replace pkg_resources with importlib.
