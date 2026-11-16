@@ -3,7 +3,32 @@
 ## 2.8.0 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Replace pkg_resources with importlib.
+
+- Migrate dependency management and tool configuration to pyproject.toml, use uv for virtualenv management.
+
+- Drop support for Python 3.8 and 3.9.
+- Support Python 3.13 and 3.14.
+- Buildout and Python components: remove obsolete `check_package_is_module` workaround.
+- Replace `pkg_resources` with `importlib.metadata`.
+- Supervisor: bump zc.buildout to 5.1.1 version.
+- Replace isort and black with ruff and reformat everything.
+
+- Add `rsync_path` and `remote_rsync_path` environment options and `rsync_path` host option to allow configuring the path to the local and remote rsync binaries when using the `rsync-ext` repository type.
+
+- Only try to create mysql db if it doesn't exist.
+
+  This helps with long running mysql connections which stall a noop create, too.
+
+- Replace the GPG test fixtures with self-generated, never-expiring
+  fixture keys (`ct@example.com` / `cz@example.com`) instead of real,
+  potentially expiring keys. The new `regenerate-gpg-fixtures.sh` script
+  regenerates keys, signatures, and all encrypted fixture files in one
+  step.
+
+- Update bootstrap script for appenv/uv.
+
+- Supervisor: add `python_version` attribute (default `3`) so the Python version used for the supervisor virtualenv can be set per environment, e.g. `[component:supervisor] python_version = 3.12`. Fixes #561.
 
 
 ## 2.7.0 (2026-03-13)
