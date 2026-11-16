@@ -57,7 +57,7 @@ wheels = [
 
 [[package]]
 name = "batou"
-version = "2.8.0.dev0"
+version = "2.8.0"
 source = { editable = "." }
 dependencies = [
     { name = "configupdater" },
