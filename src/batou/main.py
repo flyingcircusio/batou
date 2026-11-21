@@ -92,6 +92,16 @@ def main(args: Optional[list] = None) -> None:
         "for operational flexibility.",
     )
     p.add_argument(
+        "-I",
+        "--ignore",
+        type=lambda arg: {x.strip() for x in arg.split(",")},
+        default=set(),
+        dest="ignore_hosts",
+        help="Comma-separated list of hosts to ignore. Equivalent to "
+        "the host setting ignore=True in the environment configuration "
+        "file.",
+    )
+    p.add_argument(
         "--provision-rebuild",
         action="store_true",
         help="Rebuild provisioned resources from scratch. "

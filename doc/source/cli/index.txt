@@ -30,9 +30,8 @@ batou deploy
 
 .. code-block:: console
 
-  usage: batou deploy [-h] [-p PLATFORM] [-t TIMEOUT] [-D] [-c] [-P]
-                      [--local] [-j JOBS]
-                      [--provision-rebuild]
+  usage: batou deploy [-h] [-p PLATFORM] [-t TIMEOUT] [-D] [-c] [-P] [-L] [-j JOBS]
+                      [-I IGNORE_HOSTS] [--provision-rebuild]
                       environment
 
   positional arguments:
@@ -59,6 +58,10 @@ batou deploy
                           default results in a serial deployment of components.
                           Will override the environment settings for operational
                           flexibility.
+    -I IGNORE_HOSTS, --ignore IGNORE_HOSTS
+                          Comma-separated list of hosts to ignore. Equivalent to
+                          the host setting ignore=True in the environment
+                          configuration file.
     --provision-rebuild   Rebuild provisioned resources from scratch. DANGER:
                           this is potentially destructive.
 
